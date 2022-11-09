@@ -1,6 +1,4 @@
 farms
 =====
 
-"Fork farms" to create a new MOOSE-based application.
-
-For more information see: [http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)
+"FARMS" : Fault And Rupture Mechanics Simulations, a new MOOSE-based application.
