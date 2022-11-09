@@ -1,5 +1,6 @@
-"FARMS" : **F**ault **A**nd **R**upture **M**echanics **S**imulations
+farms
+ =====
 
-## Description
+ "Fork farms" to create a new MOOSE-based application.
 
-FARMS is a MOOSE-based Application for simulating dynamic rupture and earthquake problem.
+ For more information see: [http://mooseframework.org/create-an-app/](http://mooseframework.org/create-an-app/)
