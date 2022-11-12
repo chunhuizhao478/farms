@@ -4,7 +4,7 @@
 
 FARMS is a MOOSE-based application for simulating dynamic rupture and earthquake problem.
 
-## To Run Scripts
+## Compile and Run
 
 1. Install MOOSE: https://mooseframework.inl.gov/getting_started/installation/ 
 
