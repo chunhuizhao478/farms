@@ -1,3 +1,7 @@
+/*
+AuxKernel of Passing Variable Time Derivative 
+*/
+
 #include "CompVarRate.h"
 
 registerMooseObject("farmsApp", CompVarRate);
