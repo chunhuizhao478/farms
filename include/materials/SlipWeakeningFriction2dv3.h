@@ -7,11 +7,11 @@ Generalize the computation of sticking traction using consistent displacement ju
 
 #include "CZMComputeLocalTractionTotalBase.h"
 
-class SlipWeakeningReaction2dv3 : public CZMComputeLocalTractionTotalBase
+class SlipWeakeningFriction2dv3 : public CZMComputeLocalTractionTotalBase
 {
 public:
   static InputParameters validParams();
-  SlipWeakeningReaction2dv3(const InputParameters & parameters);
+  SlipWeakeningFriction2dv3(const InputParameters & parameters);
 
 protected:
   /// method computing the total traction and its derivatives

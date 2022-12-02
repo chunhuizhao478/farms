@@ -191,7 +191,7 @@
         prop_values = 2670
     []
     [./czm_mat]
-        type = SlipWeakeningReaction2dv3
+        type = SlipWeakeningFriction2dv3
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         reaction_slipweakening_x = resid_slipweakening_x

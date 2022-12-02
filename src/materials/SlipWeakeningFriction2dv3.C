@@ -3,13 +3,13 @@ Material Description of Slip Weakening Friction v3
 Generalize the computation of sticking traction using consistent displacement jump and nodal reaction forces
 */
 
-#include "SlipWeakeningReaction2dv3.h"
+#include "SlipWeakeningFriction2dv3.h"
 #include "InterfaceKernel.h"
 
-registerMooseObject("farmsApp", SlipWeakeningReaction2dv3);
+registerMooseObject("farmsApp", SlipWeakeningFriction2dv3);
 
 InputParameters
-SlipWeakeningReaction2dv3::validParams()
+SlipWeakeningFriction2dv3::validParams()
 {
   InputParameters params = CZMComputeLocalTractionTotalBase::validParams();
   params.addClassDescription("Linear Slip Weakening Traction Separation Law.");
@@ -24,7 +24,7 @@ SlipWeakeningReaction2dv3::validParams()
   return params;
 }
 
-SlipWeakeningReaction2dv3::SlipWeakeningReaction2dv3(const InputParameters & parameters)
+SlipWeakeningFriction2dv3::SlipWeakeningFriction2dv3(const InputParameters & parameters)
   : CZMComputeLocalTractionTotalBase(parameters),
     _T2_o(getParam<Real>("T2_o")), 
     _mu_d(getParam<Real>("mu_d")),
@@ -89,7 +89,7 @@ double computeT1oDistribution2DReactv3(Real x_coord)
 }
 
 void
-SlipWeakeningReaction2dv3::computeInterfaceTractionAndDerivatives()
+SlipWeakeningFriction2dv3::computeInterfaceTractionAndDerivatives()
 {   
    //Global Displacement Jump
    RealVectorValue displacement_jump_global(_disp_slipweakening_x[_qp]-_disp_slipweakening_neighbor_x[_qp],_disp_slipweakening_y[_qp]-_disp_slipweakening_neighbor_y[_qp]);
