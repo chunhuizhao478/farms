@@ -1,17 +1,17 @@
 /*
-AuxKernel of Passing Variable Time Derivative 
+AuxKernel of Passing Variable
 */
 
 #pragma once
 
 #include "AuxKernel.h"
 
-class CompVarRate : public AuxKernel
+class CompVar : public AuxKernel
 {
     public:
 
     static InputParameters validParams();
-    CompVarRate(const InputParameters & parameters);
+    CompVar(const InputParameters & parameters);
 
     protected:
 
