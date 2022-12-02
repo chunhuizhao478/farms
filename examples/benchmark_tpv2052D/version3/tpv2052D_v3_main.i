@@ -10,12 +10,12 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2
-      nx = 300
-      ny = 300
-      xmin = -15000
-      xmax = 15000
-      ymin = -15000
-      ymax = 15000
+      nx = 1000
+      ny = 1000
+      xmin = -50000
+      xmax = 50000
+      ymin = -50000
+      ymax = 50000
     []
     [./new_block]
       type = ParsedSubdomainMeshGenerator
