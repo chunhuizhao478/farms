@@ -1,0 +1,1 @@
+The generation file has a lot of hard-code.
