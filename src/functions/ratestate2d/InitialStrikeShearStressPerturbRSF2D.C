@@ -19,9 +19,9 @@ InitialStrikeShearStressPerturbRSF2D::InitialStrikeShearStressPerturbRSF2D(const
 {
 }
 
-double Func_F(Real r, Real R)
+Real Func_F(Real r, Real R)
 {
-    double Val_F = 0.0;
+    Real Val_F = 0.0;
     if (r < R){
         Val_F = exp((r*r)/(r*r-R*R));
     }
@@ -31,9 +31,9 @@ double Func_F(Real r, Real R)
     return Val_F;
 }
 
-double Func_G(Real t, Real T)
+Real Func_G(Real t, Real T)
 {
-    double Val_G = 0.0;
+    Real Val_G = 0.0;
     if (t < T && t > 0 ){
         Val_G = exp(((t-T)*(t-T))/(t*(t-2*T)));
     }
@@ -62,8 +62,8 @@ InitialStrikeShearStressPerturbRSF2D::value(Real t, const Point & p) const
   Real r = sqrt(x_coord*x_coord+z_coord*z_coord); //2D
 
   //Evalute Spatial and Temporal Function
-  double Val_F = Func_F(r, R);
-  double Val_G = Func_G(t, T);
+  Real Val_F = Func_F(r, R);
+  Real Val_G = Func_G(t, T);
 
   //Obtain initial shear stress
   Real T1_o = T1_perturb * Val_F * Val_G;
