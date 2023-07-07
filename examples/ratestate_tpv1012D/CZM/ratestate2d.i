@@ -112,13 +112,21 @@
         family = LAGRANGE
     []
 
+    #tangent jump
     [./tangent_jump]
         order = CONSTANT
         family = MONOMIAL
     []
 
+    #tangent jump rate
     [./tangent_jump_rate]
         order = CONSTANT
+        family = MONOMIAL
+    []
+
+    #slip rate
+    [./sliprate_strike]
+        order = FIRST
         family = MONOMIAL
     []
 
@@ -128,7 +136,7 @@
     [./czm_ik]
         boundary = 'Block0_Block1'
         strain = SMALL
-        generate_output='normal_jump tangent_jump normal_traction tangent_traction'
+        generate_output = 'tangent_jump'
     [../]
 []
 
@@ -159,6 +167,14 @@
         execute_on = 'TIMESTEP_END'
     []
 
+    ##Compute tangent jump rate
+    [TJump_rate]
+        type = FDCompVarRate
+        variable = tangent_jump_rate
+        coupled = tangent_jump
+        execute_on = 'TIMESTEP_END'
+    []
+
     ##pass restoration force
     ##Pass value at time t ##it may not be different using either "BEGIN" or "END"
     [Residual_x_tsend]
@@ -180,6 +196,14 @@
         variable = ini_shear_stress_perturb
         function = func_initial_strike_shear_stress
         execute_on = 'TIMESTEP_BEGIN'
+    []
+
+    ##output
+    [outputsliprate]
+        type = MaterialRealAux
+        property = sliprate_strike
+        variable = sliprate_strike
+        boundary = 'Block0_Block1'
     []
 []
 
@@ -227,8 +251,6 @@
         reaction_rsf_y = resid_rsf_y
         Ts_perturb = ini_shear_stress_perturb
         boundary = 'Block0_Block1'
-        output_properties = 'sliprate_strike slip_strike statevar traction_strike traction_normal alongfaultvel_strike_plus alongfaultvel_strike_minus alongfaultdisp_strike_plus alongfaultdisp_strike_minus'
-        outputs = exodus
     [../]
 []
 
@@ -241,8 +263,8 @@
 [Executioner]
     type = Transient
     dt = 0.0025
-    end_time = 1.5
-    # num_steps = 10
+    end_time = 3.0
+    # num_steps = 5
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
