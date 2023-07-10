@@ -2,8 +2,8 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 600
-        ny = 600
+        nx = 150
+        ny = 150
         xmin = -15000
         xmax = 15000
         ymin = -15000
@@ -237,9 +237,9 @@
 
 [Executioner]
     type = Transient
-    dt = 0.00125
+    dt = 0.005
     end_time = 3.0
-    # num_steps = 2
+    num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -248,7 +248,7 @@
 
 [Outputs]
     exodus = true
-    interval = 20
+    interval = 1
 []
 
 [MultiApps]
