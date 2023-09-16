@@ -226,7 +226,7 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
         //*Compute Trial Shear Traction Along Strike Direction at Current Time Step*
         Real Ts_trial = ( M * M * sliprate_strike_tminusdtover2 )/( len * _dt * (M + M) ) + (M * R_plus_local_strike - M * R_minus_local_strike) / ( len * ( M + M ) ) + Ts_o + Ts_perturb;
         Real Tmag_trial = sqrt(Ts_trial*Ts_trial);
-        std::cout<<R_plus_local_strike<<R_minus_local_strike<<std::endl;
+        //std::cout<<R_plus_local_strike<<R_minus_local_strike<<std::endl;
 
 
         //std::cout<<Ts_perturb<<std::endl;
