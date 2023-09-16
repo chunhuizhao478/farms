@@ -2,9 +2,9 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 100
-        ny = 100
-        nz = 100
+        nx = 200
+        ny = 200
+        nz = 200
         xmin = -5000
         xmax = 5000
         ymin = -5000
@@ -110,6 +110,15 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    #velocity
+    [vel_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [vel_y]
+        order = FIRST
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]
@@ -156,6 +165,19 @@
         v = 'disp_z'
         variable = 'resid_damp_z'
         execute_on = 'TIMESTEP_END'
+    []
+    #calc velocity
+    [Vel_x]
+        type = CompVarRate
+        variable = vel_x
+        coupled = disp_x
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Vel_y]
+        type = CompVarRate
+        variable = vel_y
+        coupled = disp_y
+        execute_on = 'TIMESTEP_BEGIN'
     []
 []
 
@@ -298,7 +320,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.005
+    dt = 0.0025
     end_time = 1.5
     # num_steps = 10
     [TimeIntegrator]
@@ -309,7 +331,7 @@
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 20
 []
 
 [MultiApps]
