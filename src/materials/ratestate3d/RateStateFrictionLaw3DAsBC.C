@@ -341,11 +341,11 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     ///Disp (t+dt)
     _alongfaultdisp_strike_plus[_qp] = alongfaultdisp_strike_plus_tplusdt;
     _alongfaultdisp_normal_plus[_qp] = alongfaultdisp_normal_plus_tplusdt;
-    _alongfaultdisp_dip_plus[_qp]    = alongfaultdisp_dip_plus_tplusdt;
+    _alongfaultdisp_dip_plus[_qp]    = 0;
 
     _alongfaultdisp_strike_minus[_qp] = alongfaultdisp_strike_minus_tplusdt;
     _alongfaultdisp_normal_minus[_qp] = alongfaultdisp_normal_minus_tplusdt;
-    _alongfaultdisp_dip_minus[_qp]    = alongfaultdisp_dip_minus_tplusdt;
+    _alongfaultdisp_dip_minus[_qp]    = 0;
 
     ///Slip Rate (t+dt/2)
     _sliprate_strike[_qp] = sliprate_strike_tplusdtover2;
