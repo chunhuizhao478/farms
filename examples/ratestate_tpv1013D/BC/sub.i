@@ -2,9 +2,9 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 50
-        ny = 50
-        nz = 50
+        nx = 100
+        ny = 100
+        nz = 100
         xmin = -5000
         xmax = 5000
         ymin = -5000
@@ -31,7 +31,7 @@
     displacements = 'disp_sub_x disp_sub_y disp_sub_z'
     
     ##element length (m)
-    len = 200
+    len = 100
     
     ##rate-and-state coefficients
     f_o = 0.6
