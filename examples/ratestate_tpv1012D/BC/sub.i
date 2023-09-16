@@ -2,12 +2,12 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 150
-        ny = 150
-        xmin = -15000
-        xmax = 15000
-        ymin = -15000
-        ymax = 15000
+        nx = 800
+        ny = 800
+        xmin = -10000
+        xmax = 10000
+        ymin = -10000
+        ymax = 10000
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -28,7 +28,7 @@
     displacements = 'disp_sub_x disp_sub_y'
     
     ##element length (m)
-    len = 200
+    len = 25
     
     ##rate-and-state coefficients
     f_o = 0.6

@@ -226,7 +226,10 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
         //*Compute Trial Shear Traction Along Strike Direction at Current Time Step*
         Real Ts_trial = ( M * M * sliprate_strike_tminusdtover2 )/( len * _dt * (M + M) ) + (M * R_plus_local_strike - M * R_minus_local_strike) / ( len * ( M + M ) ) + Ts_o + Ts_perturb;
         Real Tmag_trial = sqrt(Ts_trial*Ts_trial);
+        std::cout<<R_plus_local_strike<<R_minus_local_strike<<std::endl;
 
+
+        //std::cout<<Ts_perturb<<std::endl;
         //Setup outer while loop
         Real err = 1;
         Real iter = 1;
@@ -239,95 +242,100 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
         Real solution; 
         //
         Real c = len * _dt * ( M + M ) / (M * M);
-        while ( iter < 50){
+       
+        
+        //
+        dv_pre = 0.5 * ( abs(sliprate_mag_tminusdtover2) + dv_pre ); //average slip rate predictor
+        //
+
+        //theta_ref = theta_pre + _dt*(1-(theta_pre*dv_pre)/rsf_L);
+
+        //theta_ref = theta_pre.*exp(-dv_pre(1:2:end).*dt/obj.L) + (obj.L./dv_pre(1:2:end)).*(1-exp(-dv_pre(1:2:end).*dt/obj.L));
+
+        //theta_ref = theta_pre * exp(-dv_pre*_dt/rsf_L) + (rsf_L/dv_pre) * (1-exp(-dv_pre*_dt/rsf_L)); //update state variable
+        //first-order approximation
+        theta_ref = ( theta_pre + _dt ) / ( 1.0 + _dt * dv_pre / rsf_L );
+        //second-order approximation
+        // theta_ref = ( _statevar_older[_qp] + 2 * _dt ) / ( 1.0 + 2 * _dt * dv_pre / rsf_L );
+        //runge-kutta approximation 2nd order
+        // Real k1 = 1 - dv_pre * ( theta_pre                  ) / rsf_L;
+        // Real k2 = 1 - dv_pre * ( theta_pre + 0.5 * _dt * k1 ) / rsf_L;
+        // theta_ref = theta_pre + _dt * k2;
+        
+        //--//
+        // Real theta_ref_1 = theta_pre * exp(-dv_pre*_dt/rsf_L) + (rsf_L/dv_pre) * (1-exp(-dv_pre*_dt/rsf_L)); //update state variable
+        // Real theta_ref_2 = ( _statevar_older[_qp] + 2 * _dt ) / ( 1.0 + 2 * _dt * dv_pre / rsf_L );
+        // theta_ref = 0.5 * ( theta_ref_1 + theta_ref_2 );
+        //--//
+        
+        //
+        Real iterr = 1;
+        Real max_iter = 10000;
+        Real er = 1;
+        //Setup inner while loop
+        Real guess_i = sliprate_mag_tminusdtover2;
+        Real residual;
+        Real jacobian;
+        Real guess_j;
+        while ( er > 1e-8 && iterr < max_iter ){  
             
-            //
-            dv_pre = 0.5 * ( abs(sliprate_mag_tminusdtover2) + dv_pre ); //average slip rate predictor
-            //
-            //theta_ref = theta_pre * exp(-v_h_pre*_dt/rsf_L) + (rsf_L/v_h_pre) * (1-exp(-v_h_pre*_dt/rsf_L)); //update state variable
-            //first-order approximation
-            //theta_ref = ( theta_pre + _dt ) / ( 1.0 + _dt * dv_pre / rsf_L );
-            //second-order approximation
-            // theta_ref = ( _statevar_older[_qp] + 2 * _dt ) / ( 1.0 + 2 * _dt * dv_pre / rsf_L );
-            //runge-kutta approximation 2nd order
-            // Real k1 = 1 - dv_pre * ( theta_pre                  ) / rsf_L;
-            // Real k2 = 1 - dv_pre * ( theta_pre + 0.5 * _dt * k1 ) / rsf_L;
-            // theta_ref = theta_pre + _dt * k2;
-            
-            //--//
-            // Real theta_ref_1 = theta_pre * exp(-dv_pre*_dt/rsf_L) + (rsf_L/dv_pre) * (1-exp(-dv_pre*_dt/rsf_L)); //update state variable
-            // Real theta_ref_2 = ( _statevar_older[_qp] + 2 * _dt ) / ( 1.0 + 2 * _dt * dv_pre / rsf_L );
-            // theta_ref = 0.5 * ( theta_ref_1 + theta_ref_2 );
-            //--//
-            
-            //
-            Real iterr = 1;
-            Real max_iter = 10000;
-            Real er = 1;
-            //Setup inner while loop
-            Real guess_i = sliprate_mag_tminusdtover2;
-            Real residual;
-            Real jacobian;
-            Real guess_j;
-            while ( er > 1e-8 && iterr < max_iter ){  
-                
-                //Compute Residual
-                residual = guess_i + c * Tn * mu_friction_law_2DAsBC(0.5*(guess_i+sliprate_mag_tminusdtover2), theta_pre, rsf_a, rsf_b, rsf_L, delta_o, f_o) - c * Tmag_trial;
+            //Compute Residual
+            residual = guess_i + c * Tn * mu_friction_law_2DAsBC(0.5*(guess_i+sliprate_mag_tminusdtover2), theta_ref, rsf_a, rsf_b, rsf_L, delta_o, f_o) - c * Tmag_trial;
 
-                //Compute Jacobian
-                Real ratioup = rsf_a * exp((f_o+rsf_b*log((delta_o*theta_pre)/(rsf_L)))/(rsf_a));
-                Real ratiodown = 2 * delta_o * sqrt((exp((2*f_o+2*rsf_b*log((delta_o*theta_pre)/(rsf_L)))/(rsf_a))*(0.5*(guess_i+sliprate_strike_tminusdtover2))*(0.5*(guess_i+sliprate_strike_tminusdtover2)))/(4*delta_o*delta_o)+1);
-                jacobian = 1.0 + c * Tn * ratioup / ratiodown;
+            //Compute Jacobian
+            Real ratioup = rsf_a * exp((f_o+rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a));
+            Real ratiodown = 2 * delta_o * sqrt((exp((2*f_o+2*rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a))*(0.5*(guess_i+sliprate_strike_tminusdtover2))*(0.5*(guess_i+sliprate_strike_tminusdtover2)))/(4*delta_o*delta_o)+1);
+            jacobian = 1.0 + c * Tn * ratioup / ratiodown;
 
-                //Compute New guess
-                guess_j = guess_i - residual / jacobian;
+            //Compute New guess
+            guess_j = guess_i - residual / jacobian;
 
-                //save
-                solution = guess_j;
+            //save
+            solution = guess_j;
 
-                //Compute err
-                er = abs(guess_j - guess_i)/abs(guess_j);
+            //Compute err
+            er = abs(guess_j - guess_i)/abs(guess_j);
 
-                //Update Old guess
-                guess_i = guess_j;
+            //Update Old guess
+            guess_i = guess_j;
 
-                //printout
-                // if (x_coord > 0 && x_coord < 30){
-                //     std::cout<<"inner er: "<< er <<std::endl;
-                // }
-                if (iterr == max_iter){
-                    std::cout<<"NOT CONVERGED!"<<std::endl;
-                }
-
-                //
-                iterr = iterr + 1;
-            
-            }
-            //
-            dv_corr = 0.5 * ( abs(sliprate_mag_tminusdtover2) + abs(guess_j)); //update slip rate corrector
-            // 
-            err = abs(guess_j - v_h_pre)/abs(guess_j);
-            //
-            v_h_pre = guess_j; //pass previous value <- current value
-            //
-            dv_pre = dv_corr; //pass predictor <- corrector
-            //
-            iter = iter + 1;
-
+            //printout
             // if (x_coord > 0 && x_coord < 30){
-            //     std::cout<<"outer err: "<< er <<std::endl;
+            //     std::cout<<"inner er: "<< er <<std::endl;
             // }
-
-            if (iter == max_iter){
+            if (iterr == max_iter){
                 std::cout<<"NOT CONVERGED!"<<std::endl;
             }
 
+            //
+            iterr = iterr + 1;
+        
+        }
+        //
+        dv_corr = 0.5 * ( abs(sliprate_mag_tminusdtover2) + abs(guess_j)); //update slip rate corrector
+        // 
+        err = abs(guess_j - v_h_pre)/abs(guess_j);
+        //
+        v_h_pre = guess_j; //pass previous value <- current value
+        //
+        dv_pre = dv_corr; //pass predictor <- corrector
+        //
+        iter = iter + 1;
+
+        // if (x_coord > 0 && x_coord < 30){
+        //     std::cout<<"outer err: "<< er <<std::endl;
+        // }
+
+        if (iter == max_iter){
+            std::cout<<"NOT CONVERGED!"<<std::endl;
         }
 
-        Real sliprate_mag_tplusdtover2 = solution; 
+    
+
+        Real sliprate_mag_tplusdtover2 = abs(solution); 
 
         ///first-order approximation
-        theta_ref = ( theta_pre + _dt ) / ( 1.0 + _dt * dv_pre / rsf_L ); //febealg2dot1
+        //theta_ref = ( theta_pre + _dt ) / ( 1.0 + _dt * dv_pre / rsf_L ); //febealg2dot1
         ///second-order approximation
         //theta_ref = ( _statevar_older[_qp] + 2 * _dt ) / ( 1.0 + 2 * _dt * dv_pre / rsf_L ); //febealg2dot2
         //runge-kutta approximation 2nd order
@@ -338,7 +346,7 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
 
         //*Compute shear traction at time t*
         ///trapezoidal method
-        Real mu_predict = mu_friction_law_2DAsBC(0.5*(sliprate_mag_tminusdtover2+sliprate_mag_tplusdtover2), theta_pre, rsf_a, rsf_b, rsf_L, delta_o, f_o);
+        Real mu_predict = mu_friction_law_2DAsBC(0.5*(sliprate_mag_tminusdtover2+sliprate_mag_tplusdtover2), theta_ref, rsf_a, rsf_b, rsf_L, delta_o, f_o);
         Real T_mag = Tn * mu_predict;
 
         ///
@@ -368,11 +376,11 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
         // bool converged = performExplicitSolve(mass_matrix);
 
         ////DISP
-        Real du_strike_plus_t  =  alongfaultdisp_strike_plus_t  - alongfaultdisp_strike_plus_tminust  + _dt * _dt / M * (R_plus_local_strike + R_plus_local_strike_damp - len * (Ts - Ts_o - Ts_perturb));
-        Real du_normal_plus_t  =  alongfaultdisp_normal_plus_t  - alongfaultdisp_normal_plus_tminust  + _dt * _dt / M * (R_plus_local_normal + R_plus_local_normal_damp - len * (Tn - Tn_o));
+        Real du_strike_plus_t  =  alongfaultdisp_strike_plus_t  - alongfaultdisp_strike_plus_tminust  + _dt * _dt / M * (R_plus_local_strike  - len * (Ts - Ts_o - Ts_perturb));
+        Real du_normal_plus_t  =  alongfaultdisp_normal_plus_t  - alongfaultdisp_normal_plus_tminust  + _dt * _dt / M * (R_plus_local_normal  - len * (Tn - Tn_o));
         
-        Real du_strike_minus_t =  alongfaultdisp_strike_minus_t  - alongfaultdisp_strike_minus_tminust + _dt * _dt / M * (R_minus_local_strike + R_minus_local_strike_damp + len * (Ts - Ts_o - Ts_perturb));
-        Real du_normal_minus_t =  alongfaultdisp_normal_minus_t  - alongfaultdisp_normal_minus_tminust + _dt * _dt / M * (R_minus_local_normal + R_minus_local_normal_damp + len * (Tn - Tn_o));
+        Real du_strike_minus_t =  alongfaultdisp_strike_minus_t  - alongfaultdisp_strike_minus_tminust + _dt * _dt / M * (R_minus_local_strike  + len * (Ts - Ts_o - Ts_perturb));
+        Real du_normal_minus_t =  alongfaultdisp_normal_minus_t  - alongfaultdisp_normal_minus_tminust + _dt * _dt / M * (R_minus_local_normal  + len * (Tn - Tn_o));
 
         //std::cout<<"material object: "<<(Ts - Ts_o - Ts_perturb)<<std::endl;
 
