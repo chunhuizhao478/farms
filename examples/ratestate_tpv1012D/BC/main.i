@@ -2,12 +2,12 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 150
-        ny = 150
-        xmin = -15000
-        xmax = 15000
-        ymin = -15000
-        ymax = 15000
+        nx = 800
+        ny = 800
+        xmin = -10000
+        xmax = 10000
+        ymin = -10000
+        ymax = 10000
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -28,7 +28,7 @@
     displacements = 'disp_x disp_y'
 
     ##damping ratio 
-    q = 0.1
+    q = 0.2
 
 []
 
@@ -237,9 +237,9 @@
 
 [Executioner]
     type = Transient
-    dt = 0.005
+    dt = 0.00125
     end_time = 3.0
-    num_steps = 10
+  #  num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -248,7 +248,7 @@
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 20
 []
 
 [MultiApps]
@@ -258,6 +258,7 @@
       positions = '0 0 0'
       input_files = 'sub.i'
       execute_on = 'INITIAL TIMESTEP_BEGIN'
+      sub_cycling = true
     [../]
   []
 

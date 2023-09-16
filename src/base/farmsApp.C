@@ -22,7 +22,7 @@ farmsApp::~farmsApp() {}
 void
 farmsApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 {
-  ModulesApp::registerAll(f, af, syntax);
+  ModulesApp::registerAllObjects<farmsApp>(f, af, syntax);
   Registry::registerObjectsTo(f, {"farmsApp"});
   Registry::registerActionsTo(af, {"farmsApp"});
 
