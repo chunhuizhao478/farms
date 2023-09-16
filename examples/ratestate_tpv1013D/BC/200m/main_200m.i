@@ -2,9 +2,9 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 100
-        ny = 100
-        nz = 100
+        nx = 50
+        ny = 50
+        nz = 50
         xmin = -5000
         xmax = 5000
         ymin = -5000
@@ -309,7 +309,7 @@
     [./sub_app]
       type = TransientMultiApp
       positions = '0 0 0'
-      input_files = 'sub.i'
+      input_files = 'sub_200m.i'
       execute_on = 'INITIAL TIMESTEP_BEGIN'
     [../]
   []
