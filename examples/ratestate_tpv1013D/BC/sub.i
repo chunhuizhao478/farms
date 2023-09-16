@@ -2,9 +2,9 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 200
-        ny = 200
-        nz = 200
+        nx = 50
+        ny = 50
+        nz = 50
         xmin = -5000
         xmax = 5000
         ymin = -5000
@@ -31,7 +31,7 @@
     displacements = 'disp_sub_x disp_sub_y disp_sub_z'
     
     ##element length (m)
-    len = 50
+    len = 200
     
     ##rate-and-state coefficients
     f_o = 0.6
@@ -113,19 +113,6 @@
         order = FIRST
         family = LAGRANGE
     []
-    #residual received from mainApp (damping)
-    [resid_damp_sub_x]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [resid_damp_sub_y]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [resid_damp_sub_z]
-        order = FIRST
-        family = LAGRANGE
-    []
     ##initial shear stress
     [./ini_shear_stress_perturb]
         order = FIRST
@@ -145,7 +132,15 @@
         family = MONOMIAL
     []
     #sliprate
-    [sliprate_sub_mag]
+    [sliprate_sub_strike]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [sliprate_sub_normal]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [sliprate_sub_dip]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -239,8 +234,22 @@
     []
     [output_sliprate_strike]
         type = MaterialRealAux
-        property = sliprate_mag
-        variable = sliprate_sub_mag
+        property = sliprate_strike
+        variable = sliprate_sub_strike
+        boundary = 'Block0_Block1'
+        execute_on = 'TIMESTEP_END'
+    []
+    [output_sliprate_normal]
+        type = MaterialRealAux
+        property = sliprate_normal
+        variable = sliprate_sub_normal
+        boundary = 'Block0_Block1'
+        execute_on = 'TIMESTEP_END'
+    []
+    [output_sliprate_dip]
+        type = MaterialRealAux
+        property = sliprate_dip
+        variable = sliprate_sub_dip
         boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []

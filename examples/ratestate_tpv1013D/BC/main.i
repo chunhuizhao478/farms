@@ -2,9 +2,9 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 200
-        ny = 200
-        nz = 200
+        nx = 50
+        ny = 50
+        nz = 50
         xmin = -5000
         xmax = 5000
         ymin = -5000
@@ -64,19 +64,6 @@
         order = FIRST
         family = LAGRANGE
     [../] 
-    #restoration force damping (tag after solve)
-    [./resid_damp_x]
-        order = FIRST
-        family = LAGRANGE
-    [../]
-    [./resid_damp_y]
-        order = FIRST
-        family = LAGRANGE
-    [../] 
-    [./resid_damp_z]
-        order = FIRST
-        family = LAGRANGE
-    [../] 
     #interface displacement boundary condition (scale disp_plusminus_(x/y))
     [disp_plusminus_scaled_x]
         order = FIRST
@@ -95,8 +82,24 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [traction_normal]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [traction_dip]
+        order = CONSTANT
+        family = MONOMIAL
+    []
     #sliprate
-    [sliprate_mag]
+    [sliprate_strike]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [sliprate_normal]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [sliprate_dip]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -144,28 +147,6 @@
         variable = 'resid_z'
         execute_on = 'TIMESTEP_END'
     []
-    #damping
-    [restore_damp_x]
-        type = TagVectorAux
-        vector_tag = 'restore_dampx_tag'
-        v = 'disp_x'
-        variable = 'resid_damp_x'
-        execute_on = 'TIMESTEP_END'
-    []
-    [restore_damp_y]
-        type = TagVectorAux
-        vector_tag = 'restore_dampy_tag'
-        v = 'disp_y'
-        variable = 'resid_damp_y'
-        execute_on = 'TIMESTEP_END'
-    []
-    [restore_damp_z]
-        type = TagVectorAux
-        vector_tag = 'restore_dampz_tag'
-        v = 'disp_z'
-        variable = 'resid_damp_z'
-        execute_on = 'TIMESTEP_END'
-    []
     #calc velocity
     [Vel_x]
         type = CompVarRate
@@ -179,10 +160,6 @@
         coupled = disp_y
         execute_on = 'TIMESTEP_BEGIN'
     []
-[]
-
-[Problem]
-    extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag restore_dampz_tag'
 []
 
 [Modules]
@@ -217,19 +194,16 @@
         type = StiffPropDamping
         variable = disp_x
         component = 0
-        extra_vector_tags = 'restore_dampx_tag'
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = disp_y
         component = 1
-        extra_vector_tags = 'restore_dampy_tag'
     []
     [./Reactionz]
         type = StiffPropDamping
         variable = disp_z
-        component = 1
-        extra_vector_tags = 'restore_dampz_tag'
+        component = 2
     []
 []
 
@@ -258,24 +232,10 @@
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
-    [recompute_dampx_residual_tag]
-        type = ResidualEvaluationUserObject
-        vector_tag = 'restore_dampx_tag'
-        force_preaux = true
-        execute_on = 'TIMESTEP_END'
-    []
-    [recompute_dampy_residual_tag]
-        type = ResidualEvaluationUserObject
-        vector_tag = 'restore_dampy_tag'
-        force_preaux = true
-        execute_on = 'TIMESTEP_END'
-    []
-    [recompute_dampz_residual_tag]
-        type = ResidualEvaluationUserObject
-        vector_tag = 'restore_dampz_tag'
-        force_preaux = true
-        execute_on = 'TIMESTEP_END'
-    []
+[]
+
+[Problem]
+    extra_tag_vectors = 'restore_tag'
 []
 
 [BCs]
@@ -349,20 +309,16 @@
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'disp_plusminus_sub_scaled_x disp_plusminus_sub_scaled_y disp_plusminus_sub_scaled_z traction_sub_strike sliprate_sub_mag slip_sub_strike statevar_sub'
-        variable = 'disp_plusminus_scaled_x disp_plusminus_scaled_y disp_plusminus_scaled_z traction_strike sliprate_mag slip_strike statevar'
+        source_variable = 'disp_plusminus_sub_scaled_x disp_plusminus_sub_scaled_y disp_plusminus_sub_scaled_z traction_sub_strike traction_sub_normal traction_sub_dip sliprate_sub_strike sliprate_sub_normal sliprate_sub_dip slip_sub_strike statevar_sub'
+        variable = 'disp_plusminus_scaled_x disp_plusminus_scaled_y disp_plusminus_scaled_z traction_strike traction_normal traction_dip sliprate_strike sliprate_normal sliprate_dip slip_strike statevar'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #push system residual vector from mainApp to subApp
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'resid_x resid_y resid_z resid_damp_x resid_damp_y resid_damp_z'
-        variable = 'resid_sub_x resid_sub_y resid_sub_z resid_damp_sub_x resid_damp_sub_y resid_damp_sub_z'
+        source_variable = 'resid_x resid_y resid_z '
+        variable = 'resid_sub_x resid_sub_y resid_sub_z '
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []
-
-# [Debug]
-#     show_execution_order = ALWAYS
-# []
