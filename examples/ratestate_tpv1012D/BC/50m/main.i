@@ -2,8 +2,8 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 800
-        ny = 800
+        nx = 400
+        ny = 400
         xmin = -10000
         xmax = 10000
         ymin = -10000
