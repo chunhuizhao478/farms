@@ -2,8 +2,8 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 800
-        ny = 800
+        nx = 400
+        ny = 400
         xmin = -10000
         xmax = 10000
         ymin = -10000
@@ -53,15 +53,6 @@
         order = FIRST
         family = LAGRANGE
     [../] 
-     #restoration force damping (tag after solve)
-     [./resid_damp_x]
-        order = FIRST
-        family = LAGRANGE
-    [../]
-    [./resid_damp_y]
-        order = FIRST
-        family = LAGRANGE
-    [../] 
     #interface displacement boundary condition (scale disp_plusminus_(x/y))
     [disp_plusminus_scaled_x]
         order = FIRST
@@ -91,6 +82,15 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    #velocity
+    [vel_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [vel_y]
+        order = FIRST
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]
@@ -109,25 +109,23 @@
         variable = 'resid_y'
         execute_on = 'TIMESTEP_END'
     []
-    #damping
-    [restore_damp_x]
-        type = TagVectorAux
-        vector_tag = 'restore_dampx_tag'
-        v = 'disp_x'
-        variable = 'resid_damp_x'
-        execute_on = 'TIMESTEP_END'
+    #calc velocity
+    [Vel_x]
+        type = CompVarRate
+        variable = vel_x
+        coupled = disp_x
+        execute_on = 'TIMESTEP_BEGIN'
     []
-    [restore_damp_y]
-        type = TagVectorAux
-        vector_tag = 'restore_dampy_tag'
-        v = 'disp_y'
-        variable = 'resid_damp_y'
-        execute_on = 'TIMESTEP_END'
+    [Vel_y]
+        type = CompVarRate
+        variable = vel_y
+        coupled = disp_y
+        execute_on = 'TIMESTEP_BEGIN'
     []
 []
 
 [Problem]
-    extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag'
+    extra_tag_vectors = 'restore_tag'
 []
 
 [Modules]
@@ -158,13 +156,11 @@
         type = StiffPropDamping
         variable = disp_x
         component = 0
-        extra_vector_tags = 'restore_dampx_tag'
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = disp_y
         component = 1
-        extra_vector_tags = 'restore_dampy_tag'
     []
 []
 
@@ -190,18 +186,6 @@
     [recompute_residual_tag]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag'
-        force_preaux = true
-        execute_on = 'TIMESTEP_END'
-    []
-    [recompute_dampx_residual_tag]
-        type = ResidualEvaluationUserObject
-        vector_tag = 'restore_dampx_tag'
-        force_preaux = true
-        execute_on = 'TIMESTEP_END'
-    []
-    [recompute_dampy_residual_tag]
-        type = ResidualEvaluationUserObject
-        vector_tag = 'restore_dampy_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
@@ -275,8 +259,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'resid_x resid_y resid_damp_x resid_damp_y'
-        variable = 'resid_sub_x resid_sub_y resid_damp_sub_x resid_damp_sub_y'
+        source_variable = 'resid_x resid_y'
+        variable = 'resid_sub_x resid_sub_y'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []
