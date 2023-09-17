@@ -180,18 +180,11 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
     #get jump from uo - aux
-    [tangent_jump_aux]
-        type = InterfaceValueUserObjectAux
-        interface_uo_name = tangent_jump_uo
-        variable = tangent_jump
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #compute jump rate
     [tangent_jump_rate_aux]
-        type = FDCompVarRate
+        type = InterfaceValueUserObjectAux
+        interface_uo_name = tangent_jump_rate_uo
         variable = tangent_jump_rate
-        coupled = tangent_jump
+        boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
@@ -266,13 +259,14 @@
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
-    [tangent_jump_uo]
+    [tangent_jump_rate_uo]
         type = InterfaceQpValueUserObject
         var = disp_x
         var_neighbor = disp_x
         boundary = 'Block0_Block1'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
         interface_value_type = jump_primary_minus_secondary
+        value_type = rate
     []
 []
 
