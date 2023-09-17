@@ -2,15 +2,15 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 100
-        ny = 100
-        nz = 100
-        xmin = -5000
-        xmax = 5000
-        ymin = -5000
-        ymax = 5000
-        zmin = -5000
-        zmax = 5000
+        nx = 150
+        ny = 150
+        nz = 150
+        xmin = -7500
+        xmax = 7500
+        ymin = -7500
+        ymax = 7500
+        zmin = -15000
+        zmax = 0
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -388,7 +388,7 @@
     []
 []
 
-# [Outputs]
-#     exodus = true
-#     interval = 10
-# []
+[Outputs]
+    exodus = true
+    interval = 20
+[]
