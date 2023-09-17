@@ -206,19 +206,14 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     Real Tmag_trial = sqrt(Ts_trial*Ts_trial+Td_trial*Td_trial);
 
     //Setup outer while loop
-    Real err = 1;
-    Real iter = 1;
-    Real v_h_pre = sliprate_mag_tminusdtover2; //sliprate value at previous time step
     Real theta_pre = statevar_t; //state variable at previous time step
     Real dv_pre = abs(sliprate_mag_tminusdtover2); //sliprate predictor initialization 
-    Real dv_corr;  //sliprate corrector initialization 
     //
     Real theta_ref; 
     Real solution; 
     //
     Real c = len_len * _dt * ( M + M ) / (M * M);
 
-        
     //
     dv_pre = 0.5 * ( abs(sliprate_mag_tminusdtover2) + dv_pre ); //average slip rate predictor
     //
@@ -241,7 +236,7 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
 
         //Compute Jacobian
         Real ratioup = rsf_a * exp((f_o+rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a));
-        Real ratiodown = 2 * delta_o * sqrt((exp((2*f_o+2*rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a))*(0.5*(guess_i+sliprate_strike_tminusdtover2))*(0.5*(guess_i+sliprate_strike_tminusdtover2)))/(4*delta_o*delta_o)+1);
+        Real ratiodown = 2 * delta_o * sqrt((exp((2*f_o+2*rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a))*(0.5*(guess_i+sliprate_mag_tminusdtover2))*(0.5*(guess_i+sliprate_mag_tminusdtover2)))/(4*delta_o*delta_o)+1);
         jacobian = 1.0 + c * Tn * ratioup / ratiodown;
 
         //Compute New guess
@@ -268,29 +263,12 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
         iterr = iterr + 1;
     
     }
-    //
-    dv_corr = 0.5 * ( abs(sliprate_mag_tminusdtover2) + abs(guess_j)); //update slip rate corrector
-    // 
-    err = abs(guess_j - v_h_pre)/abs(guess_j);
-    //
-    v_h_pre = guess_j; //pass previous value <- current value
-    //
-    dv_pre = dv_corr; //pass predictor <- corrector
-    //
-    iter = iter + 1;
-
-    // if (x_coord > 0 && x_coord < 30){
-    //     std::cout<<"outer err: "<< er <<std::endl;
-    // }
-
-    if (iter == max_iter){
-        std::cout<<"NOT CONVERGED!"<<std::endl;
-    }
 
     Real sliprate_mag_tplusdtover2 = abs(solution); 
     
     // theta_ref = ( theta_pre + _dt ) / ( 1.0 + _dt * dv_pre / rsf_L ); //febealg2dot1
     //theta_ref = ( _statevar_older[_qp] + 2 * _dt ) / ( 1.0 + 2 * _dt * dv_pre / rsf_L );
+    theta_ref = theta_pre * exp(-sliprate_mag_tplusdtover2*_dt/rsf_L) + (rsf_L/sliprate_mag_tplusdtover2) * (1-exp(-sliprate_mag_tplusdtover2*_dt/rsf_L));
     Real statevar_tplusdt = theta_ref;
 
     //*Compute shear traction at time t*
@@ -299,9 +277,9 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     Real T_mag = Tn * mu_predict;
 
     ///Get Components
-    Ts = T_mag;
-    // Ts = T_mag * ( Ts_trial / Tmag_trial );
-    // Td = T_mag * ( Td_trial / Tmag_trial );
+    //Ts = T_mag;
+    Ts = T_mag * ( Ts_trial / Tmag_trial );
+    Td = T_mag * ( Td_trial / Tmag_trial );
 
     //*Compute quantities at time t + dt/2 or t + dt
     ////DISP
@@ -323,9 +301,9 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
 
     //Update Slip Rate and Slip at t + dt/2 or t + dt
     ///Slip Rate
-    Real sliprate_strike_tplusdtover2 = sliprate_mag_tplusdtover2;
+    Real sliprate_strike_tplusdtover2 = sliprate_mag_tplusdtover2 * ( Ts_trial / Tmag_trial );
     Real sliprate_normal_tplusdtover2 = 0.0;
-    Real sliprate_dip_tplusdtover2    = 0.0;
+    Real sliprate_dip_tplusdtover2    = sliprate_mag_tplusdtover2 * ( Td_trial / Tmag_trial );
 
     ///Slip
     Real slip_strike_tplusdtover2 = slip_strike_t + sliprate_strike_tplusdtover2 * _dt;
@@ -336,16 +314,16 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     ///Traction (t)
     _traction_strike[_qp] = Ts;
     _traction_normal[_qp] = Tn;
-    _traction_dip[_qp] = 0;
+    _traction_dip[_qp] = Td;
 
     ///Disp (t+dt)
     _alongfaultdisp_strike_plus[_qp] = alongfaultdisp_strike_plus_tplusdt;
     _alongfaultdisp_normal_plus[_qp] = alongfaultdisp_normal_plus_tplusdt;
-    _alongfaultdisp_dip_plus[_qp]    = 0;
+    _alongfaultdisp_dip_plus[_qp]    = alongfaultdisp_dip_plus_tplusdt;
 
     _alongfaultdisp_strike_minus[_qp] = alongfaultdisp_strike_minus_tplusdt;
     _alongfaultdisp_normal_minus[_qp] = alongfaultdisp_normal_minus_tplusdt;
-    _alongfaultdisp_dip_minus[_qp]    = 0;
+    _alongfaultdisp_dip_minus[_qp]    = alongfaultdisp_dip_minus_tplusdt;
 
     ///Slip Rate (t+dt/2)
     _sliprate_strike[_qp] = sliprate_strike_tplusdtover2;
@@ -362,20 +340,7 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     ///State Variable (t+dt)
     _statevar[_qp] = statevar_tplusdt;
 
-    // }
-    // else{
-
-    //     /*
-    //     After System Solve, keep the traction same as last step
-    //     */
-
-    //     //get latest value
-    //     Ts = _traction_strike[_qp];
-    //     Tn = _traction_normal[_qp];
-    //     Td = _traction_dip[_qp];
-
-    // }
-
+    //
     //Feed traction into the system
     //Assign back traction in CZM
     _interface_traction[_qp] = 0.0;

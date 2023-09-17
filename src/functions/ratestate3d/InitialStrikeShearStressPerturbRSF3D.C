@@ -57,7 +57,7 @@ InitialStrikeShearStressPerturbRSF3D::value(Real t, const Point & p) const
   
   //Compute radius r
   Real x_o = 0.0; //3D //along strike direction
-  Real z_o = 0.0; //3D //along dip direction
+  Real z_o = -7500; //3D //along dip direction
 
   Real r = sqrt((x_coord-x_o)*(x_coord-x_o)+(z_coord-z_o)*(z_coord-z_o)); //3D
 
