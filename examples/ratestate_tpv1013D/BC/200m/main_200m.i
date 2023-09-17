@@ -2,15 +2,15 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 50
-        ny = 50
-        nz = 50
-        xmin = -5000
-        xmax = 5000
-        ymin = -5000
-        ymax = 5000
-        zmin = -5000
-        zmax = 5000
+        nx = 75
+        ny = 75
+        nz = 75
+        xmin = -7500
+        xmax = 7500
+        ymin = -7500
+        ymax = 7500
+        zmin = -15000
+        zmax = 0
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -126,6 +126,15 @@
         order = FIRST
         family = LAGRANGE
     []
+    #
+    [tangent_jump]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [tangent_jump_rate]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -168,6 +177,21 @@
         type = CompVarRate
         variable = vel_z
         coupled = disp_z
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #get jump from uo - aux
+    [tangent_jump_aux]
+        type = InterfaceValueUserObjectAux
+        interface_uo_name = tangent_jump_uo
+        variable = tangent_jump
+        boundary = 'Block0_Block1'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #compute jump rate
+    [tangent_jump_rate_aux]
+        type = FDCompVarRate
+        variable = tangent_jump_rate
+        coupled = tangent_jump
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
@@ -241,6 +265,14 @@
         vector_tag = 'restore_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
+    []
+    [tangent_jump_uo]
+        type = InterfaceQpValueUserObject
+        var = disp_x
+        var_neighbor = disp_x
+        boundary = 'Block0_Block1'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        interface_value_type = jump_primary_minus_secondary
     []
 []
 
