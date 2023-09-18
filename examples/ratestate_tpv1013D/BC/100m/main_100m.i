@@ -2,13 +2,13 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 150
-        ny = 150
+        nx = 100
+        ny = 100
         nz = 150
-        xmin = -7500
-        xmax = 7500
-        ymin = -7500
-        ymax = 7500
+        xmin = -5000
+        xmax = 5000
+        ymin = -5000
+        ymax = 5000
         zmin = -15000
         zmax = 0
     [../]
