@@ -283,16 +283,13 @@ x=[5.0000000e-13 7.3661227e-13 4.5669701e-11 1.2544041e-08 1.6639646e-06
  time_Moose2(i) = data(1,1);
  sliprate2(i) = data(501,2);
  end
- %%
+  %%
  for i = 1 : 121
- filename = join(['./data/25m_sep17/data_2d_25m_' num2str(i-1) '.txt']);
+ filename = join(['./data/50m/data_2d_50m_' num2str(i-1) '.txt']);
  data = readmatrix(filename);
- time_Moose3(i) = data(1,1);
- sliprate3(i) = data(501,2);
+ time_Moose2(i) = data(1,1);
+ sliprate2(i) = data(501,2);
  end
- %%
- time_Moose4 = readmatrix("./files/50m/time.txt");
- sliprate4 = readmatrix("./files/50m/sliprate_0strike0dot75dip.txt");
 
 
 %  plot(time_Moose,sliprate,'--k');
@@ -313,17 +310,10 @@ x=[5.0000000e-13 7.3661227e-13 4.5669701e-11 1.2544041e-08 1.6639646e-06
 %  hold on;
 % plot(time_Moose8,sliprate8,'--b');
 % hold on;
-% plot(time_Moose,sliprate,'-.b');
-% hold on;
-plot(time_Moose2,sliprate2,'-.m');
+plot(time_Moose,sliprate,'-.b');
 hold on;
-% plot(time_Moose3,sliprate3,'-.k');
-% hold on;
-plot(time_Moose4,sliprate4,'-.r');
-% legend("100m","50m","25m",'fontsize',12)
+plot(time_Moose2,sliprate2,'-.m');
+legend("100m","25m",'fontsize',12)
 xlim([0,3.0])
 
-legend("ugunca - 25m","ugunca - 100m","ugunca - 50m","moose-100m","moose-50m","moose-25m","fontsize",12)
-title("slip rate","fontsize",20)
-ylabel("slip rate (m/s)","fontsize",20)
-xlabel("time (s)","fontsize",20)
+legend("ugunca - 25m","ugunca - 100m","ugunca - 50m","tangent-jump-rate-100m","tangent-jump-rate-50m","fontsize",12)

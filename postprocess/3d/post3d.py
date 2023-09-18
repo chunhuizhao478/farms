@@ -21,14 +21,20 @@ loc = 502 - 1
 # data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_liu.txt")
 # data_index_end = int(156) #liu
 
-# data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_MDSBI.txt")
-# data_index_end = int(301) #MDSBI
+data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_MDSBI.txt")
+data_index_end = int(301) #MDSBI
 
 # data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_SPECFEM3D.txt")
 # data_index_end = int(300) #SPECFEM3D
 
-data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_uguca.txt")
-data_index_end = int(150) #uguca
+# data_FaultMod100m = np.loadtxt("./benchmark/tpv102_0strike7dot5dip_Pylith_200m.txt")
+# data_index_end = int(31) #Pylith
+
+# data_FaultMod100m = np.loadtxt("./benchmark/tpv102_0strike7dot5dip_Pylith_200m_Tet4.txt")
+# data_index_end = int(31) #Pylith
+
+# data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_uguca.txt")
+# data_index_end = int(150) #uguca
 
 # data_FaultMod100m = np.loadtxt("./benchmark/tpv101_0strike7dot5dip_FaultMod.txt")
 # data_index_end = int(150) #FaultMod
@@ -63,17 +69,20 @@ for index_i in range(num_end+1):
     #load file
     datafile_time_h = np.loadtxt("./data/200m_dipleak/data_3d_200m_"+str(int(file_num_i))+".txt", skiprows=1, delimiter=',')
     datafile_time_i = np.loadtxt("./data/100m/data_3d_100m_"+str(int(file_num_i))+".txt", skiprows=1, delimiter=',')
-    datafile_time_j = np.loadtxt("./data/50m/data_3d_50m_"+str(int(file_num_i))+".txt", skiprows=1, delimiter=',')
+    # datafile_time_j = np.loadtxt("./data/50m/data_3d_50m_"+str(int(file_num_i))+".txt", skiprows=1, delimiter=',')
+    datafile_time_j = np.loadtxt("./files/200m/sliprate_0strike0dot75dip.txt")
 
     #get dataline
     data_time_h = datafile_time_h[loc,:]
     data_time_i = datafile_time_i[loc,:]
-    data_time_j = datafile_time_j[loc,:]
+    # data_time_j = datafile_time_j[loc,:]
+
+    data_time_j = datafile_time_j[:]
 
     #save data
     traction_strike_0.append(data_time_h[4]/1e6)
     statevar_log_0.append(np.log10(data_time_h[3]))
-    sliprate_strike_0.append(data_time_h[2])
+    sliprate_strike_0.append(data_time_h[2]) 
     slip_strike_0.append(data_time_h[1])
 
     traction_strike.append(data_time_i[4]/1e6)
@@ -81,50 +90,56 @@ for index_i in range(num_end+1):
     sliprate_strike.append(data_time_i[2])
     slip_strike.append(data_time_i[1])
 
-    traction_strike_2.append(data_time_j[4]/1e6)
-    statevar_log_2.append(np.log10(data_time_j[3]))
-    sliprate_strike_2.append(data_time_j[2])
-    slip_strike_2.append(data_time_j[1])
+    # traction_strike_2.append(data_time_j[4]/1e6)
+    # statevar_log_2.append(np.log10(data_time_j[3]))
+    # sliprate_strike_2.append(data_time_j[2]) #flip
+    # slip_strike_2.append(data_time_j[1]) #flip
 
-plt.figure()
-plt.plot(time[1:],traction_strike_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
-plt.plot(time[1:],traction_strike[1:],'b-.',label="FARMS3D-100m-ApplyBC")
-plt.plot(time[1:],traction_strike_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
-plt.plot(timehist_strikeFaultMod100m,traction_strikeFaultMod100m,'r.',label='uguca-100m')
-plt.title("Time History Traction Along Strike Direction (MPa)")
-plt.xlabel("time (s)")
-plt.ylabel("traction (MPa)")
-plt.legend()
+    time_2 = np.loadtxt("./files/200m/time.txt")
+    traction_strike_2 = data_time_j
+    statevar_log_2 = data_time_j
+    sliprate_strike_2 = data_time_j
+    slip_strike_2 = data_time_j
+
+# plt.figure()
+# plt.plot(time[1:],traction_strike_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
+# plt.plot(time[1:],traction_strike[1:],'b-.',label="FARMS3D-100m-ApplyBC")
+# plt.plot(time[1:],traction_strike_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
+# plt.plot(timehist_strikeFaultMod100m,traction_strikeFaultMod100m,'r.',label='uguca-100m')
+# plt.title("Time History Traction Along Strike Direction (MPa)")
+# plt.xlabel("time (s)")
+# plt.ylabel("traction (MPa)")
+# plt.legend()
 
 plt.figure()
 plt.plot(time[1:],sliprate_strike_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
 plt.plot(time[1:],sliprate_strike[1:],'b-.',label="FARMS3D-100m-ApplyBC")
-plt.plot(time[1:],sliprate_strike_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
+plt.plot(time_2,sliprate_strike_2,'k-.',label="FARMS3D-50m-ApplyBC")
 plt.plot(timehist_strikeFaultMod100m,sliprate_strikeFaultMod100m,'r.',label='uguca-100m')
 plt.title("Time History Slip Rate Along Strike Direction (m/s)")
 plt.xlabel("time (s)")
 plt.ylabel("slip rate (m/s)")
 plt.legend()
 
-plt.figure()
-plt.plot(time[1:],statevar_log_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
-plt.plot(time[1:],statevar_log[1:],'b-.',label="FARMS3D-100m-ApplyBC")
-plt.plot(time[1:],statevar_log_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
-plt.plot(timehist_strikeFaultMod100m,statevar_strikeFaultMod100m,'r.',label='uguca-100m')
-plt.title("Time History log state variable")
-plt.xlabel("time (s)")
-plt.ylabel("state variable")
-plt.legend()
+# plt.figure()
+# plt.plot(time[1:],statevar_log_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
+# plt.plot(time[1:],statevar_log[1:],'b-.',label="FARMS3D-100m-ApplyBC")
+# plt.plot(time[1:],statevar_log_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
+# plt.plot(timehist_strikeFaultMod100m,statevar_strikeFaultMod100m,'r.',label='uguca-100m')
+# plt.title("Time History log state variable")
+# plt.xlabel("time (s)")
+# plt.ylabel("state variable")
+# plt.legend()
 
-plt.figure()
-plt.plot(time[1:],slip_strike_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
-plt.plot(time[1:],slip_strike[1:],'b-.',label="FARMS3D-100m-ApplyBC")
-plt.plot(time[1:],slip_strike_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
-plt.plot(timehist_strikeFaultMod100m,slip_strikeFaultMod100m,'r.',label='uguca-100m')
-plt.title("Time History slip")
-plt.xlabel("time (s)")
-plt.ylabel("slip")
-plt.legend()
+# plt.figure()
+# plt.plot(time[1:],slip_strike_0[1:],'m-.',label="FARMS3D-200m-ApplyBC")
+# plt.plot(time[1:],slip_strike[1:],'b-.',label="FARMS3D-100m-ApplyBC")
+# plt.plot(time[1:],slip_strike_2[1:],'k-.',label="FARMS3D-50m-ApplyBC")
+# plt.plot(timehist_strikeFaultMod100m,slip_strikeFaultMod100m,'r.',label='uguca-100m')
+# plt.title("Time History slip")
+# plt.xlabel("time (s)")
+# plt.ylabel("slip")
+# plt.legend()
 
 #
 plt.show()
