@@ -291,12 +291,12 @@ x=[5.0000000e-13 7.3661227e-13 4.5669701e-11 1.2544041e-08 1.6639646e-06
  sliprate3(i) = data(501,2);
  end
  %%
- time_Moose4 = readmatrix("./files/50m/time.txt");
- sliprate4 = readmatrix("./files/50m/sliprate_0strike0dot75dip.txt");
+ time_Moose4 = readmatrix("./files/100m_919/time.txt");
+ sliprate4 = readmatrix("./files/100m_919/sliprate_0strike0dot75dip.txt");
 
 
-%  plot(time_Moose,sliprate,'--k');
-%  hold on;
+ plot(time_Moose,sliprate,'--k');
+ hold on;
 %  plot(time_Moose2,sliprate2,'--m');
 %  hold on;
 %  plot(time_Moose3,sliprate3,'--r');
@@ -315,12 +315,11 @@ x=[5.0000000e-13 7.3661227e-13 4.5669701e-11 1.2544041e-08 1.6639646e-06
 % hold on;
 % plot(time_Moose,sliprate,'-.b');
 % hold on;
-plot(time_Moose2,sliprate2,'-.m');
-hold on;
+% plot(time_Moose2,sliprate2,'-.m');
+% hold on;
 % plot(time_Moose3,sliprate3,'-.k');
 % hold on;
 plot(time_Moose4,sliprate4,'-.r');
-% legend("100m","50m","25m",'fontsize',12)
 xlim([0,3.0])
 
 legend("ugunca - 25m","ugunca - 100m","ugunca - 50m","moose-100m","moose-50m","moose-25m","fontsize",12)
