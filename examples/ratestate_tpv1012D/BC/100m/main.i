@@ -28,7 +28,7 @@
     displacements = 'disp_x disp_y'
 
     ##damping ratio 
-    q = 0.2
+    q = 0.1
 
 []
 
