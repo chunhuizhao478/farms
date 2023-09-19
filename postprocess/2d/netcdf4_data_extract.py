@@ -4,16 +4,18 @@ import functions
 import matplotlib.pyplot as plt
 
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m/"
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m/"
+overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919/"
 exodus_file_path = overall_file_path + "main_out.e"
 
 # save_folder_output_file_path = "./files/100m"
-save_folder_output_file_path = "./files/50m"
+# save_folder_output_file_path = "./files/50m"
+save_folder_output_file_path = "./files/100m_919"
 
 decodeflag = "name_nod_var"
 
 #mid ptr locs
-mid_ptr_loc = 400
+mid_ptr_loc = 100
 
 #dt
 dt = 0.025
@@ -42,6 +44,8 @@ lower_ptr_data = np.loadtxt(overall_file_path+"block1_block0_ptrs.txt",skiprows=
 
 #get x coordinate
 interface_coordx = upper_ptr_data[:,0]
+
+np.savetxt(save_folder_output_file_path + "/interface_coordx.txt",interface_coordx)
 
 #get index (ids - 1)
 upper_ptr_index = upper_ptr_data[:,-1] - 1
