@@ -307,8 +307,6 @@
 [Functions]
     [./func_initial_strike_shear_stress]
         type = InitialStrikeShearStressPerturbRSF2D
-        # type = ConstantFunction
-        # value = 0
     []
 []
 
@@ -320,7 +318,7 @@
     []
 []
 
-# [Outputs]
-#     exodus = true
-#     interval = 10
-# []
+[Outputs]
+    exodus = true
+    interval = 20
+[]
