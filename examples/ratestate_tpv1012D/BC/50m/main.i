@@ -28,7 +28,7 @@
     displacements = 'disp_x disp_y'
 
     ##damping ratio 
-    q = 0.2
+    q = 0.1
 
 []
 
@@ -216,6 +216,87 @@
         variable = disp_y
         v = disp_plusminus_scaled_y
         boundary = 'Block1_Block0'
+    []
+    ##non-reflecting bc
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
     []
 []
 
