@@ -4,13 +4,13 @@
         dim = 3
         nx = 100
         ny = 100
-        nz = 150
+        nz = 100
         xmin = -5000
         xmax = 5000
         ymin = -5000
         ymax = 5000
-        zmin = -15000
-        zmax = 0
+        zmin = -5000
+        zmax = 5000
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
