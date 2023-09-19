@@ -6,13 +6,17 @@ import matplotlib.pyplot as plt
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/200m_dipleak/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_dipleak/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_testSep17/"
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/50m/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/50m/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/200m_918/"
+overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_918/"
 exodus_file_path = overall_file_path + "main_out.e"
 
 # save_folder_output_file_path = "./files/200m"
 # save_folder_output_file_path = "./files/100m"
 # save_folder_output_file_path = "./files/100m_testSep17"
-save_folder_output_file_path = "./files/50m"
+# save_folder_output_file_path = "./files/50m"
+# save_folder_output_file_path = "./files/200m_918"
+save_folder_output_file_path = "./files/100m_918"
 
 decodeflag = "name_nod_var"
 
@@ -22,15 +26,27 @@ mid_ptr_loc = 50
 #dt
 dt = 0.05
 t_max = 1.5
+num_end = 30
 time = np.arange(0,t_max+dt,dt)
+
+#file nums
+num_begin = 0
+num_end = 30
+file_nums = np.linspace(num_begin,num_end,num_end+1)
+
 #save
 np.savetxt(save_folder_output_file_path + "/time.txt",time)
 
 #options
-decodenow  = True
-getvelnow = True
-getslipratenow = True
+decodenow  = False
+getvelnow = False
+getslipratenow = False
 plotnow = True
+
+getdispnow = False
+getslipnow = False
+
+get_traction_statevar_now = False
 
 nc = netCDF4.Dataset(exodus_file_path)
 
@@ -75,6 +91,9 @@ lower_ptr_index = [int(i) for i in lower_ptr_index]
 #     if y_i != 0:
 #         print("wrong")
 
+traction_strike = []
+statevar_log = []
+
 #Decode Nodal Name
 if decodenow == True:   
     
@@ -94,7 +113,6 @@ if getslipratenow == True:
     upper_velx = velx[:,upper_ptr_index]
     lower_velx = velx[:,lower_ptr_index]
 
-    sliprate = np.zeros((np.shape(upper_velx)[0],np.shape(upper_velx)[1]))
     #elementwise ops
     sliprate = np.subtract(upper_velx,lower_velx)
     #save
@@ -102,16 +120,62 @@ if getslipratenow == True:
     #save middle ptrs time history
     np.savetxt(save_folder_output_file_path + "/sliprate_0strike0dot75dip.txt",sliprate[:,mid_ptr_loc])
 
+if getdispnow == True:
+
+    #get dispx
+    dispx = nc.variables["vals_nod_var4"]
+    #save dispx
+    np.savetxt(save_folder_output_file_path + "/dispx.txt",dispx)
+
+if getslipnow == True:
+
+    dispx = np.loadtxt(save_folder_output_file_path + "/dispx.txt")
+
+    upper_dispx = dispx[:,upper_ptr_index]
+    lower_dispx = dispx[:,lower_ptr_index]
+
+    #elementwise ops
+    slip = np.subtract(upper_dispx,lower_dispx)
+    #save
+    np.savetxt(save_folder_output_file_path + "/slip.txt",slip)
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_0strike0dot75dip.txt",slip[:,mid_ptr_loc])
+
+if get_traction_statevar_now == True:
+
+   loc = 502 - 1
+
+   for index_i in range(num_end+1):
+       
+       #get file 
+       file_num_i = file_nums[index_i]
+       
+       #load file
+       datafile_time = np.loadtxt(save_folder_output_file_path+"/datatimeseries/data_3d_100m_"+str(int(file_num_i))+".txt", skiprows=1, delimiter=',')
+       
+       #get dataline
+       data_time = datafile_time[loc,:]
+
+       #save data
+       traction_strike.append(data_time[2]/1e6)
+       statevar_log.append(np.log10(data_time[1]))
+    
+   #save file
+   np.savetxt(save_folder_output_file_path + "/traction_strike_0strike0dot75dip.txt",traction_strike)
+   np.savetxt(save_folder_output_file_path + "/statevar_log_0strike0dot75dip.txt",statevar_log)
 
 if plotnow == True:
 
     #plot
     sliprate = np.loadtxt(save_folder_output_file_path + "/sliprate.txt")
 
-    print(np.shape(interface_coordx))
-    plt.figure()
-    plt.plot(interface_coordx,sliprate[15,:])
-    plt.show()
+    for i in range(num_end):
+    # print(np.shape(interface_coordx))
+        plt.figure()
+        plt.plot(interface_coordx,sliprate[i,:])
+        plt.ylim([0,4.5])
+        plt.savefig(save_folder_output_file_path+'/sliprate'+str(i)+'.png')
+        plt.close()
 
 
 
