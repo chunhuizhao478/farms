@@ -24,8 +24,8 @@ def read_full_data(path, nx, nt):
 # full_path = "./TPV101_Nx360_s2.00_tf0.35_npc1-DataFiles" #200m
 full_path = "./TPV101_Nx720_s2.00_tf0.35_npc1-DataFiles" #100m
 
-veldata = read_full_data(full_path+"/top_velo_0.out", 720, 149)
+veldata = read_full_data(full_path+"/top_velo_1.out", 720, 149)
 
 print(np.shape(veldata))
 
-np.savetxt(full_path+'/vel.txt',veldata)
+np.savetxt(full_path+'/vel1.txt',veldata)
