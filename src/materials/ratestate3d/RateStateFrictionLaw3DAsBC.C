@@ -262,12 +262,12 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     //Update Slip Rate and Slip at t + dt/2 or t + dt
     ///Slip Rate
     Real sliprate_strike_tplusdtover2 = sliprate_mag_tplusdtover2 * ( Ts_trial / Tmag_trial );
-    Real sliprate_normal_tplusdtover2 = 0.0;
+    Real sliprate_normal_tplusdtover2 = ( alongfaultdisp_normal_plus_tplusdt - alongfaultdisp_normal_plus_t ) / _dt - ( alongfaultdisp_normal_minus_tplusdt - alongfaultdisp_normal_minus_t ) / _dt;
     Real sliprate_dip_tplusdtover2    = sliprate_mag_tplusdtover2 * ( Td_trial / Tmag_trial );
 
     ///Slip
     Real slip_strike_tplusdtover2 = slip_strike_t + sliprate_strike_tplusdtover2 * _dt;
-    Real slip_normal_tplusdtover2 = 0.0;
+    Real slip_normal_tplusdtover2 = alongfaultdisp_normal_plus_tplusdt - alongfaultdisp_normal_minus_tplusdt;
     Real slip_dip_tplusdtover2    = slip_dip_t + sliprate_dip_tplusdtover2 * _dt;
 
     //Save Results
