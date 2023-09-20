@@ -28,12 +28,12 @@ RateStateInterfaceKernelGlobaly::computeQpResidual(Moose::DGResidualType type)
   {
     // displacement applied on the primary surface
     case Moose::Element:
-      //r = _disp_normal_plus[_qp] * _test[_i][_qp];
+      r = ( -1 * _disp_normal_plus[_qp] ) * _test[_i][_qp];
       break;
 
     // displacement applied on the secondary surface
     case Moose::Neighbor:
-      //r = _disp_normal_minus[_qp] * _test_neighbor[_i][_qp];
+      r = ( -1 * _disp_normal_minus[_qp] ) * _test_neighbor[_i][_qp];
       break;
   }
   return r;

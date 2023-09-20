@@ -67,13 +67,25 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [traction_normal]
+        order = CONSTANT
+        family = MONOMIAL
+    []
     #sliprate
-    [sliprate_mag]
+    [sliprate_strike]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [sliprate_normal]
         order = CONSTANT
         family = MONOMIAL
     []
     #slip
     [slip_strike]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [slip_normal]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -217,6 +229,87 @@
         v = disp_plusminus_scaled_y
         boundary = 'Block1_Block0'
     []
+    ##non-reflecting bc
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
 []
 
 [Executioner]
@@ -242,7 +335,6 @@
       positions = '0 0 0'
       input_files = 'sub.i'
       execute_on = 'INITIAL TIMESTEP_BEGIN'
-      sub_cycling = true
     [../]
   []
 
@@ -251,8 +343,8 @@
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'disp_plusminus_sub_scaled_x disp_plusminus_sub_scaled_y traction_sub_strike sliprate_sub_mag slip_sub_strike statevar_sub'
-        variable = 'disp_plusminus_scaled_x disp_plusminus_scaled_y traction_strike sliprate_mag slip_strike statevar'
+        source_variable = 'disp_plusminus_sub_scaled_x disp_plusminus_sub_scaled_y traction_sub_strike traction_sub_normal sliprate_sub_strike sliprate_sub_normal slip_sub_strike slip_sub_normal statevar_sub'
+        variable = 'disp_plusminus_scaled_x disp_plusminus_scaled_y traction_strike traction_normal sliprate_strike sliprate_normal slip_strike slip_normal statevar'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #push system residual vector from mainApp to subApp
