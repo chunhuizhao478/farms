@@ -5,12 +5,22 @@ import matplotlib.pyplot as plt
 
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m/"
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_2/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m_919/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_damp03/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_damp08/"
+overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_fixnormal/"
 exodus_file_path = overall_file_path + "main_out.e"
 
 # save_folder_output_file_path = "./files/100m"
 # save_folder_output_file_path = "./files/50m"
-save_folder_output_file_path = "./files/100m_919"
+# save_folder_output_file_path = "./files/100m_919"
+# save_folder_output_file_path = "./files/100m_919_2"
+# save_folder_output_file_path = "./files/50m_919"
+# save_folder_output_file_path = "./files/100m_919_damp03"
+# save_folder_output_file_path = "./files/100m_919_damp08"
+save_folder_output_file_path = "./files/100m_919_fixnormal"
 
 decodeflag = "name_nod_var"
 
@@ -29,6 +39,9 @@ decodenow  = True
 getvelnow = True
 getslipratenow = True
 plotnow = True
+
+getdispnow = True
+getresidnow = True
 
 nc = netCDF4.Dataset(exodus_file_path)
 
@@ -88,15 +101,39 @@ if getslipratenow == True:
     #save middle ptrs time history
     np.savetxt(save_folder_output_file_path + "/sliprate_0strike0dot75dip.txt",sliprate[:,mid_ptr_loc])
 
+if getdispnow == True:
+
+    #get dispx
+    dispx = nc.variables["vals_nod_var3"]
+
+    dispx_upper = dispx[:,upper_ptr_index]
+    #save dispx
+    np.savetxt(save_folder_output_file_path + "/dispx_upper.txt",dispx_upper)
+
+    #get dispy
+    dispy = nc.variables["vals_nod_var4"]
+
+    dispy_upper = dispy[:,upper_ptr_index]
+    #save dispx
+    np.savetxt(save_folder_output_file_path + "/dispy_upper.txt",dispy_upper)
+
+if getresidnow == True:
+
+    #get residx
+    residx = nc.variables["vals_nod_var5"]
+
+    residx_upper = residx[:,upper_ptr_index]
+    #save residx
+    np.savetxt(save_folder_output_file_path + "/residx_upper.txt",residx_upper)
 
 if plotnow == True:
 
     #plot
-    sliprate = np.loadtxt(save_folder_output_file_path + "/sliprate.txt")
+    prop = np.loadtxt(save_folder_output_file_path + "/sliprate.txt")
 
-    print(np.shape(interface_coordx))
+    print(np.shape(prop))
     plt.figure()
-    plt.plot(interface_coordx,sliprate[56-3,:])
+    plt.plot(interface_coordx,prop[100-3,:])
     plt.show()
 
 
