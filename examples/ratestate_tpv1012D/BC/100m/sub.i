@@ -118,12 +118,20 @@
         family = MONOMIAL
     []
     #sliprate
-    [sliprate_sub_mag]
+    [sliprate_sub_strike]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [sliprate_sub_normal]
         order = CONSTANT
         family = MONOMIAL
     []
     #slip
     [slip_sub_strike]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [slip_sub_normal]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -191,8 +199,15 @@
     []
     [output_sliprate_strike]
         type = MaterialRealAux
-        property = sliprate_mag
-        variable = sliprate_sub_mag
+        property = sliprate_strike
+        variable = sliprate_sub_strike
+        boundary = 'Block0_Block1'
+        execute_on = 'TIMESTEP_END'
+    []
+    [output_sliprate_normal]
+        type = MaterialRealAux
+        property = sliprate_normal
+        variable = sliprate_sub_normal
         boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
@@ -200,6 +215,13 @@
         type = MaterialRealAux
         property = slip_strike
         variable = slip_sub_strike
+        boundary = 'Block0_Block1'
+        execute_on = 'TIMESTEP_END'
+    []
+    [output_slip_normal]
+        type = MaterialRealAux
+        property = slip_normal
+        variable = slip_sub_normal
         boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
@@ -228,7 +250,6 @@
     [./czm_ik]
         boundary = 'Block0_Block1'
         strain = SMALL
-        generate_output='normal_jump tangent_jump normal_traction tangent_traction'
     [../]
 []
 
