@@ -10,8 +10,13 @@ import matplotlib.pyplot as plt
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m_919/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_damp03/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_damp08/"
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_fixnormal/"
-exodus_file_path = overall_file_path + "main_out.e"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_fixnormal/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m_919_fixnormal/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/25m_919_fixnormal/"
+overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_920_dampingcomp/"
+
+#exodus_file_path = overall_file_path + "main_out.e"
+exodus_file_path = overall_file_path + "main_out_1dot5damp.e"
 
 # save_folder_output_file_path = "./files/100m"
 # save_folder_output_file_path = "./files/50m"
@@ -20,7 +25,9 @@ exodus_file_path = overall_file_path + "main_out.e"
 # save_folder_output_file_path = "./files/50m_919"
 # save_folder_output_file_path = "./files/100m_919_damp03"
 # save_folder_output_file_path = "./files/100m_919_damp08"
-save_folder_output_file_path = "./files/100m_919_fixnormal"
+# save_folder_output_file_path = "./files/100m_919_fixnormal"
+# save_folder_output_file_path = "./files/50m_919_fixnormal"
+save_folder_output_file_path = "./files/100m_920_dampcomp_1dot5"
 
 decodeflag = "name_nod_var"
 
@@ -82,7 +89,7 @@ if decodenow == True:
 if getvelnow == True:
 
     #get vel_x
-    velx = nc.variables["vals_nod_var7"]
+    velx = nc.variables["vals_nod_var9"]
     #save velx
     np.savetxt(save_folder_output_file_path + "/velx.txt",velx)
 
@@ -107,8 +114,10 @@ if getdispnow == True:
     dispx = nc.variables["vals_nod_var3"]
 
     dispx_upper = dispx[:,upper_ptr_index]
-    #save dispx
     np.savetxt(save_folder_output_file_path + "/dispx_upper.txt",dispx_upper)
+
+    dispx_lower = dispx[:,upper_ptr_index]
+    np.savetxt(save_folder_output_file_path + "/dispx_lower.txt",dispx_lower)
 
     #get dispy
     dispy = nc.variables["vals_nod_var4"]
@@ -120,7 +129,7 @@ if getdispnow == True:
 if getresidnow == True:
 
     #get residx
-    residx = nc.variables["vals_nod_var5"]
+    residx = nc.variables["vals_nod_var7"]
 
     residx_upper = residx[:,upper_ptr_index]
     #save residx

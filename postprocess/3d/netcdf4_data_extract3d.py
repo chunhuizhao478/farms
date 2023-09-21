@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_testSep17/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/50m/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/200m_918/"
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_918/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_918/"
+overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/200m_fixnormal/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/3D/BC/100m_fixnormal/"
 exodus_file_path = overall_file_path + "main_out.e"
 
 # save_folder_output_file_path = "./files/200m"
@@ -16,12 +18,14 @@ exodus_file_path = overall_file_path + "main_out.e"
 # save_folder_output_file_path = "./files/100m_testSep17"
 # save_folder_output_file_path = "./files/50m"
 # save_folder_output_file_path = "./files/200m_918"
-save_folder_output_file_path = "./files/100m_918"
+# save_folder_output_file_path = "./files/100m_918"
+save_folder_output_file_path = "./files/200m_fixnormal"
+# save_folder_output_file_path = "./files/100m_fixnormal"
 
 decodeflag = "name_nod_var"
 
 #mid ptr locs
-mid_ptr_loc = 50
+mid_ptr_loc = 25
 
 #dt
 dt = 0.05
@@ -38,13 +42,13 @@ file_nums = np.linspace(num_begin,num_end,num_end+1)
 np.savetxt(save_folder_output_file_path + "/time.txt",time)
 
 #options
-decodenow  = False
-getvelnow = False
-getslipratenow = False
+decodenow  = True
+getvelnow = True
+getslipratenow = True
 plotnow = True
 
-getdispnow = False
-getslipnow = False
+getdispnow = True
+getslipnow = True
 
 get_traction_statevar_now = False
 
@@ -168,6 +172,8 @@ if plotnow == True:
 
     #plot
     sliprate = np.loadtxt(save_folder_output_file_path + "/sliprate.txt")
+
+    print(np.shape(sliprate))
 
     for i in range(num_end):
     # print(np.shape(interface_coordx))
