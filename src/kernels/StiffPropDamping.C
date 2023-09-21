@@ -14,7 +14,7 @@ StiffPropDamping::validParams()
   params.addClassDescription(
       "Compute Stiffness Proportional Damping Residual");
 
-  params.addParam<Real>("q", 0.1, "Ratio Factor to assign magnitude of stiffness proportional damping term");
+  params.addRequiredParam<Real>("q","Ratio Factor to assign magnitude of stiffness proportional damping term");
 
   return params;
 }
@@ -38,9 +38,7 @@ Real
 StiffPropDamping::computeQpResidual()
 {
 
-  Real residual = 0.0;
-
-  residual += _q*(_stress[_qp].row(_component)-_stress_older[_qp].row(_component)) * _grad_test[_i][_qp];
+  Real residual = _q*(_stress[_qp].row(_component)-_stress_older[_qp].row(_component)) * _grad_test[_i][_qp];
 
   return residual;
 }

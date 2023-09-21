@@ -28,7 +28,7 @@
     displacements = 'disp_x disp_y'
 
     ##damping ratio 
-    q = 0.2
+    q = 0.5
 
 []
 
@@ -50,6 +50,15 @@
         family = LAGRANGE
     [../]
     [./resid_y]
+        order = FIRST
+        family = LAGRANGE
+    [../] 
+    #restoration force for damping (tag after solve)
+    [./resid_damp_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_damp_y]
         order = FIRST
         family = LAGRANGE
     [../] 
@@ -121,23 +130,37 @@
         variable = 'resid_y'
         execute_on = 'TIMESTEP_END'
     []
+    [restore_dampx]
+        type = TagVectorAux
+        vector_tag = 'restore_dampx_tag'
+        v = 'disp_x'
+        variable = 'resid_damp_x'
+        execute_on = 'TIMESTEP_END'
+    []
+    [restore_dampy]
+        type = TagVectorAux
+        vector_tag = 'restore_dampy_tag'
+        v = 'disp_y'
+        variable = 'resid_damp_y'
+        execute_on = 'TIMESTEP_END'
+    []
     #calc velocity
     [Vel_x]
         type = CompVarRate
         variable = vel_x
         coupled = disp_x
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [Vel_y]
         type = CompVarRate
         variable = vel_y
         coupled = disp_y
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
 []
 
 [Problem]
-    extra_tag_vectors = 'restore_tag'
+    extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag'
 []
 
 [Modules]
@@ -168,11 +191,13 @@
         type = StiffPropDamping
         variable = disp_x
         component = 0
+        extra_vector_tags = 'restore_dampx_tag'
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = disp_y
         component = 1
+        extra_vector_tags = 'restore_dampy_tag'
     []
 []
 
@@ -198,6 +223,18 @@
     [recompute_residual_tag]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+    [recompute_residual_tag_dampx]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampx_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+    [recompute_residual_tag_dampy]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampy_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
@@ -315,7 +352,7 @@
 [Executioner]
     type = Transient
     dt = 0.00125
-    end_time = 3.0
+    end_time = 5.0
   #  num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
@@ -351,8 +388,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'resid_x resid_y'
-        variable = 'resid_sub_x resid_sub_y'
+        source_variable = 'resid_x resid_y resid_damp_x resid_damp_y'
+        variable = 'resid_sub_x resid_sub_y resid_damp_sub_x resid_damp_sub_y'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []

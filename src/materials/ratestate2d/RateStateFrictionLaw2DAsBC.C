@@ -91,23 +91,60 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
     Real Tn = 0.0; //normal
     
     //*Restoration Force*
+
+    //Stress Divergence Components (label as stsdivcomp)
+
+    //--------------------------------------------------------------------------------------------------//
+
     ///Define in global coordinate
     //current time step 
-    RealVectorValue R_plus_global(-_reaction_rsf_x[_qp],-_reaction_rsf_y[_qp], 0.0);
-    RealVectorValue R_minus_global(-_reaction_rsf_neighbor_x[_qp],-_reaction_rsf_neighbor_y[_qp], 0.0);
+    RealVectorValue R_plus_global_stsdivcomp(-_reaction_rsf_x[_qp],-_reaction_rsf_y[_qp], 0.0);
+    RealVectorValue R_minus_global_stsdivcomp(-_reaction_rsf_neighbor_x[_qp],-_reaction_rsf_neighbor_y[_qp], 0.0);
 
     ///Rotate in local coordinate
     //current time step
-    RealVectorValue R_plus_local = _rot[_qp].transpose() * R_plus_global;
-    RealVectorValue R_minus_local = _rot[_qp].transpose() * R_minus_global;
+    RealVectorValue R_plus_local_stsdivcomp = _rot[_qp].transpose() * R_plus_global_stsdivcomp;
+    RealVectorValue R_minus_local_stsdivcomp = _rot[_qp].transpose() * R_minus_global_stsdivcomp;
 
     ///Get Components
     //current time step
-    Real R_plus_local_normal  = R_plus_local(0);
-    Real R_plus_local_strike  = R_plus_local(1);
+    Real R_plus_local_normal_stsdivcomp  = R_plus_local_stsdivcomp(0);
+    Real R_plus_local_strike_stsdivcomp  = R_plus_local_stsdivcomp(1);
     
-    Real R_minus_local_normal = R_minus_local(0);
-    Real R_minus_local_strike = R_minus_local(1);
+    Real R_minus_local_normal_stsdivcomp = R_minus_local_stsdivcomp(0);
+    Real R_minus_local_strike_stsdivcomp = R_minus_local_stsdivcomp(1);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Damping Components Contribution (label as dampingcomp)
+
+    ///Define in global coordinate
+    //current time step 
+    RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],-_reaction_damp_y[_qp], 0.0);
+    RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],-_reaction_damp_neighbor_y[_qp], 0.0);
+
+    ///Rotate in local coordinate
+    //current time step
+    RealVectorValue R_plus_local_dampingcomp = _rot[_qp].transpose() * R_plus_global_dampingcomp;
+    RealVectorValue R_minus_local_dampingcomp = _rot[_qp].transpose() * R_minus_global_dampingcomp;
+
+    ///Get Components
+    //current time step
+    Real R_plus_local_normal_dampingcomp  = R_plus_local_dampingcomp(0);
+    Real R_plus_local_strike_dampingcomp  = R_plus_local_dampingcomp(1);
+    
+    Real R_minus_local_normal_dampingcomp = R_minus_local_dampingcomp(0);
+    Real R_minus_local_strike_dampingcomp = R_minus_local_dampingcomp(1);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Add restoration forces from two contributions
+    Real R_plus_local_normal  = R_plus_local_normal_stsdivcomp  + R_plus_local_normal_dampingcomp;
+    Real R_plus_local_strike  = R_plus_local_strike_stsdivcomp  + R_plus_local_strike_dampingcomp;
+    Real R_minus_local_normal = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
+    Real R_minus_local_strike = R_minus_local_strike_stsdivcomp + R_minus_local_strike_dampingcomp;  
+
+    //--------------------------------------------------------------------------------------------------//
 
     //*Nodal Mass*
     ///QUAD4 Element
@@ -196,7 +233,7 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
         guess_i = guess_j;
 
         if (iterr == max_iter){
-            std::cout<<"NOT CONVERGED!"<<std::endl;
+            mooseError("NOT CONVERGED!"); //strong convergence check
         }
 
         //update iterr
