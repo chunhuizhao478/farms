@@ -158,6 +158,13 @@
         scale = element_side_volume
         execute_on = 'TIMESTEP_END'
     []
+    #const element_side_volume
+    [const_element_side_volume]
+        type = ConstantAux
+        variable = element_side_volume
+        value = 50
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
     #retrieve fault displacement residual vector using tagging
     [restore_x]
         type = TagVectorAux
@@ -305,12 +312,12 @@
 
 [UserObjects]
     #compute element side volume (using CONTACT modulus)
-    [element_side_volume]
-        type = NodalArea
-        variable = element_side_volume
-        boundary = 'Block0_Block1 Block1_Block0'
-        execute_on = 'initial TIMESTEP_BEGIN'
-    []
+    # [element_side_volume]
+    #     type = NodalArea
+    #     variable = element_side_volume
+    #     boundary = 'Block0_Block1 Block1_Block0'
+    #     execute_on = 'initial TIMESTEP_BEGIN'
+    # []
     [recompute_residual_tag_x]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag_x'
