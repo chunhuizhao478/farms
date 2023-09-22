@@ -13,10 +13,12 @@ import matplotlib.pyplot as plt
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_919_fixnormal/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m_919_fixnormal/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/25m_919_fixnormal/"
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_920_dampingcomp/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_920_dampingcomp/"
+# overall_file_path = "/Users/andyz/Downloads/100m_921_damp05/"
+overall_file_path = "/Users/andyz/Downloads/50m_921_damp05/"
 
 #exodus_file_path = overall_file_path + "main_out.e"
-exodus_file_path = overall_file_path + "main_out_1dot5damp.e"
+exodus_file_path = overall_file_path + "main_out.e"
 
 # save_folder_output_file_path = "./files/100m"
 # save_folder_output_file_path = "./files/50m"
@@ -27,16 +29,19 @@ exodus_file_path = overall_file_path + "main_out_1dot5damp.e"
 # save_folder_output_file_path = "./files/100m_919_damp08"
 # save_folder_output_file_path = "./files/100m_919_fixnormal"
 # save_folder_output_file_path = "./files/50m_919_fixnormal"
-save_folder_output_file_path = "./files/100m_920_dampcomp_1dot5"
+# save_folder_output_file_path = "./files/100m_921_damp05"
+save_folder_output_file_path = "./files/50m_921_damp05"
 
 decodeflag = "name_nod_var"
 
 #mid ptr locs
-mid_ptr_loc = 100
+# left_ptr_loc = 99
+# mid_ptr_loc = 200
+# right_ptr_loc = 302
 
 #dt
 dt = 0.025
-t_max = 3
+t_max = 5
 time = np.arange(0,t_max+dt,dt)
 #save
 np.savetxt(save_folder_output_file_path + "/time.txt",time)
@@ -106,7 +111,15 @@ if getslipratenow == True:
     #save
     np.savetxt(save_folder_output_file_path + "/sliprate.txt",sliprate)
     #save middle ptrs time history
-    np.savetxt(save_folder_output_file_path + "/sliprate_0strike0dot75dip.txt",sliprate[:,mid_ptr_loc])
+    np.savetxt(save_folder_output_file_path + "/sliprate_neg5kmstrike0dot75dip.txt",0.5*(sliprate[:,99]+sliprate[:,100]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/sliprate_0strike0dot75dip.txt",0.5*(sliprate[:,200]+sliprate[:,201]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/sliprate_pos5kmstrike0dot75dip.txt",0.5*(sliprate[:,300]+sliprate[:,301]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/sliprate_neg2dot5kmstrike0dot75dip.txt",0.5*(sliprate[:,149]+sliprate[:,150]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/sliprate_pos2dot5kmstrike0dot75dip.txt",0.5*(sliprate[:,250]+sliprate[:,251]))
 
 if getdispnow == True:
 
@@ -114,10 +127,22 @@ if getdispnow == True:
     dispx = nc.variables["vals_nod_var3"]
 
     dispx_upper = dispx[:,upper_ptr_index]
-    np.savetxt(save_folder_output_file_path + "/dispx_upper.txt",dispx_upper)
+    dispx_lower = dispx[:,lower_ptr_index]
 
-    dispx_lower = dispx[:,upper_ptr_index]
-    np.savetxt(save_folder_output_file_path + "/dispx_lower.txt",dispx_lower)
+    slip = np.subtract(dispx_upper,dispx_lower)
+
+    #save
+    np.savetxt(save_folder_output_file_path + "/slip.txt",slip)
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_neg5kmstrike0dot75dip.txt",0.5*(slip[:,99]+slip[:,100]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_0strike0dot75dip.txt",0.5*(slip[:,200]+slip[:,201]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_pos5kmstrike0dot75dip.txt",0.5*(slip[:,300]+slip[:,301]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_neg2dot5kmstrike0dot75dip.txt",0.5*(slip[:,149]+slip[:,150]))
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_pos2dot5kmstrike0dot75dip.txt",0.5*(slip[:,250]+slip[:,251]))
 
     #get dispy
     dispy = nc.variables["vals_nod_var4"]
