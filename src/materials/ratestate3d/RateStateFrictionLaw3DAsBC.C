@@ -115,23 +115,23 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
 
     ///Define in global coordinate
     //current time step 
-    RealVectorValue R_plus_global(-_reaction_rsf_x[_qp],-_reaction_rsf_y[_qp], -_reaction_rsf_z[_qp]);
-    RealVectorValue R_minus_global(-_reaction_rsf_neighbor_x[_qp],-_reaction_rsf_neighbor_y[_qp], -_reaction_rsf_neighbor_z[_qp]);
+    RealVectorValue R_plus_global_stsdivcomp(-_reaction_rsf_x[_qp],-_reaction_rsf_y[_qp], -_reaction_rsf_z[_qp]);
+    RealVectorValue R_minus_global_stsdivcomp(-_reaction_rsf_neighbor_x[_qp],-_reaction_rsf_neighbor_y[_qp], -_reaction_rsf_neighbor_z[_qp]);
 
     ///Rotate in local coordinate
     //current time step
-    RealVectorValue R_plus_local = _rot[_qp].transpose() * R_plus_global;
-    RealVectorValue R_minus_local = _rot[_qp].transpose() * R_minus_global;
+    RealVectorValue R_plus_local_stsdivcomp = _rot[_qp].transpose() * R_plus_global_stsdivcomp;
+    RealVectorValue R_minus_local_stsdivcomp = _rot[_qp].transpose() * R_minus_global_stsdivcomp;
 
     ///Get Components
     //current time step
-    Real R_plus_local_normal_stsdivcomp  = R_plus_local(0);
-    Real R_plus_local_strike_stsdivcomp  = R_plus_local(1);
-    Real R_plus_local_dip_stsdivcomp     = R_plus_local(2);
+    Real R_plus_local_normal_stsdivcomp  = R_plus_local_stsdivcomp(0);
+    Real R_plus_local_strike_stsdivcomp  = R_plus_local_stsdivcomp(1);
+    Real R_plus_local_dip_stsdivcomp     = R_plus_local_stsdivcomp(2);
 
-    Real R_minus_local_normal_stsdivcomp = R_minus_local(0);
-    Real R_minus_local_strike_stsdivcomp = R_minus_local(1);
-    Real R_minus_local_dip_stsdivcomp    = R_minus_local(2);
+    Real R_minus_local_normal_stsdivcomp = R_minus_local_stsdivcomp(0);
+    Real R_minus_local_strike_stsdivcomp = R_minus_local_stsdivcomp(1);
+    Real R_minus_local_dip_stsdivcomp    = R_minus_local_stsdivcomp(2);
 
     //--------------------------------------------------------------------------------------------------//
 
