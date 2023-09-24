@@ -504,7 +504,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.005
+    dt = 0.00125
     end_time = 5.0
     # num_steps = 10
     [TimeIntegrator]
@@ -515,7 +515,7 @@
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 40
 []
 
 [MultiApps]
