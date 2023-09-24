@@ -2,15 +2,15 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 50
+        nx = 100
         ny = 50
-        nz = 50
-        xmin = -5000
-        xmax = 5000
+        nz = 100
+        xmin = -10000
+        xmax = 10000
         ymin = -5000
         ymax = 5000
-        zmin = -5000
-        zmax = 5000
+        zmin = -10000
+        zmax = 10000
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -64,6 +64,19 @@
         order = FIRST
         family = LAGRANGE
     [../] 
+    #restoration force for damping (tag after solve)
+    [./resid_damp_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_damp_y]
+        order = FIRST
+        family = LAGRANGE
+    [../] 
+    [./resid_damp_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     #interface displacement boundary condition (scale disp_plusminus_(x/y))
     [disp_plusminus_scaled_x]
         order = FIRST
@@ -160,6 +173,27 @@
         variable = 'resid_z'
         execute_on = 'TIMESTEP_END'
     []
+    [restore_dampx]
+        type = TagVectorAux
+        vector_tag = 'restore_dampx_tag'
+        v = 'disp_x'
+        variable = 'resid_damp_x'
+        execute_on = 'TIMESTEP_END'
+    []
+    [restore_dampy]
+        type = TagVectorAux
+        vector_tag = 'restore_dampy_tag'
+        v = 'disp_y'
+        variable = 'resid_damp_y'
+        execute_on = 'TIMESTEP_END'
+    []
+    [restore_dampz]
+        type = TagVectorAux
+        vector_tag = 'restore_dampz_tag'
+        v = 'disp_z'
+        variable = 'resid_damp_z'
+        execute_on = 'TIMESTEP_END'
+    []
     #calc velocity
     [Vel_x]
         type = CompVarRate
@@ -221,16 +255,19 @@
         type = StiffPropDamping
         variable = disp_x
         component = 0
+        extra_vector_tags = 'restore_dampx_tag'
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = disp_y
         component = 1
+        extra_vector_tags = 'restore_dampy_tag'
     []
     [./Reactionz]
         type = StiffPropDamping
         variable = disp_z
         component = 2
+        extra_vector_tags = 'restore_dampz_tag'
     []
 []
 
@@ -268,10 +305,28 @@
         interface_value_type = jump_primary_minus_secondary
         value_type = rate
     []
+    [recompute_residual_tag_dampx]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampx_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+    [recompute_residual_tag_dampy]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampy_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+    [recompute_residual_tag_dampz]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampz_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
 []
 
 [Problem]
-    extra_tag_vectors = 'restore_tag'
+    extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag restore_dampz_tag'
 []
 
 [BCs]
@@ -312,12 +367,145 @@
         v = disp_plusminus_scaled_z
         boundary = 'Block1_Block0'
     []
+    ##non-reflecting bc
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_top_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_bottom_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
 []
 
 [Executioner]
     type = Transient
-    dt = 0.00125
-    end_time = 1.5
+    dt = 0.005
+    end_time = 5.0
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
@@ -327,7 +515,7 @@
 
 [Outputs]
     exodus = true
-    interval = 40
+    interval = 10
 []
 
 [MultiApps]
@@ -353,8 +541,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'resid_x resid_y resid_z'
-        variable = 'resid_sub_x resid_sub_y resid_sub_z'
+        source_variable = 'resid_x resid_y resid_z resid_damp_x resid_damp_y resid_damp_z'
+        variable = 'resid_sub_x resid_sub_y resid_sub_z resid_damp_sub_x resid_damp_sub_y resid_damp_sub_z'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []

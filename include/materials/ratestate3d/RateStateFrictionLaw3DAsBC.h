@@ -36,6 +36,13 @@ protected:
   const VariableValue & _reaction_rsf_neighbor_y;
   const VariableValue & _reaction_rsf_neighbor_z;
 
+  const VariableValue & _reaction_damp_x;
+  const VariableValue & _reaction_damp_y;
+  const VariableValue & _reaction_damp_z;
+  const VariableValue & _reaction_damp_neighbor_x;
+  const VariableValue & _reaction_damp_neighbor_y;
+  const VariableValue & _reaction_damp_neighbor_z;
+  
   //shear stress perturbation
   ///Measure from current time step
   const VariableValue & _Ts_perturb;

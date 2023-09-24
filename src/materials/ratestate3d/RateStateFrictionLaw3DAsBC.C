@@ -25,6 +25,9 @@ RateStateFrictionLaw3DAsBC::validParams()
   params.addRequiredCoupledVar("reaction_rsf_x","reaction in x dir");
   params.addRequiredCoupledVar("reaction_rsf_y","reaction in y dir");
   params.addRequiredCoupledVar("reaction_rsf_z","reaction in z dir");
+  params.addRequiredCoupledVar("reaction_damp_x","reaction damping in x dir");
+  params.addRequiredCoupledVar("reaction_damp_y","reaction damping in y dir");
+  params.addRequiredCoupledVar("reaction_damp_z","reaction damping in z dir");
   params.addRequiredCoupledVar("Ts_perturb","shear stress perturbation in strike dir");
   return params;
 }
@@ -45,6 +48,12 @@ RateStateFrictionLaw3DAsBC::RateStateFrictionLaw3DAsBC(const InputParameters & p
     _reaction_rsf_neighbor_x(coupledNeighborValue("reaction_rsf_x")),
     _reaction_rsf_neighbor_y(coupledNeighborValue("reaction_rsf_y")),
     _reaction_rsf_neighbor_z(coupledNeighborValue("reaction_rsf_z")),
+    _reaction_damp_x(coupledValue("reaction_damp_x")),
+    _reaction_damp_y(coupledValue("reaction_damp_y")),
+    _reaction_damp_z(coupledValue("reaction_damp_z")),
+    _reaction_damp_neighbor_x(coupledNeighborValue("reaction_damp_x")),
+    _reaction_damp_neighbor_y(coupledNeighborValue("reaction_damp_y")),
+    _reaction_damp_neighbor_z(coupledNeighborValue("reaction_damp_z")),
     _Ts_perturb(coupledValue("Ts_perturb")),
     _Ts_perturb_old(coupledValueOld("Ts_perturb")),
     _alongfaultvel_strike_plus_old(getMaterialPropertyOldByName<Real>("alongfaultvel_strike_plus")),
@@ -99,6 +108,11 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     Real Td = 0.0; //dip
     
     //*Restoration Force*
+
+    //Stress Divergence Components (label as stsdivcomp)
+
+    //--------------------------------------------------------------------------------------------------//
+
     ///Define in global coordinate
     //current time step 
     RealVectorValue R_plus_global(-_reaction_rsf_x[_qp],-_reaction_rsf_y[_qp], -_reaction_rsf_z[_qp]);
@@ -111,13 +125,49 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
 
     ///Get Components
     //current time step
-    Real R_plus_local_normal  = R_plus_local(0);
-    Real R_plus_local_strike  = R_plus_local(1);
-    Real R_plus_local_dip     = R_plus_local(2);
+    Real R_plus_local_normal_stsdivcomp  = R_plus_local(0);
+    Real R_plus_local_strike_stsdivcomp  = R_plus_local(1);
+    Real R_plus_local_dip_stsdivcomp     = R_plus_local(2);
 
-    Real R_minus_local_normal = R_minus_local(0);
-    Real R_minus_local_strike = R_minus_local(1);
-    Real R_minus_local_dip    = R_minus_local(2);
+    Real R_minus_local_normal_stsdivcomp = R_minus_local(0);
+    Real R_minus_local_strike_stsdivcomp = R_minus_local(1);
+    Real R_minus_local_dip_stsdivcomp    = R_minus_local(2);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Damping Components Contribution (label as dampingcomp)
+
+    ///Define in global coordinate
+    //current time step 
+    RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],-_reaction_damp_y[_qp], -_reaction_damp_z[_qp]);
+    RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],-_reaction_damp_neighbor_y[_qp], -_reaction_damp_neighbor_z[_qp]);
+
+    ///Rotate in local coordinate
+    //current time step
+    RealVectorValue R_plus_local_dampingcomp = _rot[_qp].transpose() * R_plus_global_dampingcomp;
+    RealVectorValue R_minus_local_dampingcomp = _rot[_qp].transpose() * R_minus_global_dampingcomp;
+
+    ///Get Components
+    //current time step
+    Real R_plus_local_normal_dampingcomp  = R_plus_local_dampingcomp(0);
+    Real R_plus_local_strike_dampingcomp  = R_plus_local_dampingcomp(1);
+    Real R_plus_local_dip_dampingcomp     = R_plus_local_dampingcomp(2);
+    
+    Real R_minus_local_normal_dampingcomp = R_minus_local_dampingcomp(0);
+    Real R_minus_local_strike_dampingcomp = R_minus_local_dampingcomp(1);
+    Real R_minus_local_dip_dampingcomp    = R_minus_local_dampingcomp(2);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Add restoration forces from two contributions
+    Real R_plus_local_normal  = R_plus_local_normal_stsdivcomp  + R_plus_local_normal_dampingcomp;
+    Real R_plus_local_strike  = R_plus_local_strike_stsdivcomp  + R_plus_local_strike_dampingcomp;
+    Real R_plus_local_dip     = R_plus_local_dip_stsdivcomp     + R_plus_local_dip_dampingcomp;
+    Real R_minus_local_normal = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
+    Real R_minus_local_strike = R_minus_local_strike_stsdivcomp + R_minus_local_strike_dampingcomp;  
+    Real R_minus_local_dip    = R_minus_local_dip_stsdivcomp    + R_minus_local_dip_dampingcomp;
+
+    //--------------------------------------------------------------------------------------------------//
 
     //*Nodal Mass*
     ///HEX8 Element
@@ -129,6 +179,7 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     //Assign shear perturbation at t
     Real Ts_perturb = _Ts_perturb[_qp];
 
+    //Old Value
     ///Disp Plus Side
     Real alongfaultdisp_strike_plus_t = _alongfaultdisp_strike_plus_old[_qp];
     Real alongfaultdisp_normal_plus_t = _alongfaultdisp_normal_plus_old[_qp];

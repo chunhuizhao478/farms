@@ -2,15 +2,15 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 100
+        nx = 200
         ny = 100
-        nz = 100
-        xmin = -5000
-        xmax = 5000
+        nz = 200
+        xmin = -10000
+        xmax = 10000
         ymin = -5000
         ymax = 5000
-        zmin = -5000
-        zmax = 5000
+        zmin = -10000
+        zmax = 10000
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -113,6 +113,19 @@
         order = FIRST
         family = LAGRANGE
     []
+    #residual damping received from mainApp
+    [resid_damp_sub_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [resid_damp_sub_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [resid_damp_sub_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     ##initial shear stress
     [./ini_shear_stress_perturb]
         order = FIRST
@@ -178,6 +191,13 @@
         coupled = disp_plusminus_sub_z
         scale = element_side_volume
         execute_on = 'TIMESTEP_END'
+    []
+    #const element_side_volume
+    [const_element_side_volume]
+        type = ConstantAux
+        variable = element_side_volume
+        value = 100
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #retrieve fault displacement residual vector using tagging
     [restore_x]
@@ -337,6 +357,9 @@
         reaction_rsf_x = resid_sub_x
         reaction_rsf_y = resid_sub_y
         reaction_rsf_z = resid_sub_z
+        reaction_damp_x = resid_damp_sub_x
+        reaction_damp_y = resid_damp_sub_y
+        reaction_damp_z = resid_damp_sub_z
         Ts_perturb = ini_shear_stress_perturb
         boundary = 'Block0_Block1'
         output_properties = 'sliprate_strike slip_strike statevar traction_strike traction_normal traction_dip alongfaultdisp_strike_plus alongfaultdisp_strike_minus'
@@ -346,12 +369,12 @@
 
 [UserObjects]
     #compute element side volume (using CONTACT modulus)
-    [element_side_volume]
-        type = NodalArea
-        variable = element_side_volume
-        boundary = 'Block0_Block1 Block1_Block0'
-        execute_on = 'initial TIMESTEP_BEGIN'
-    []
+    # [element_side_volume]
+    #     type = NodalArea
+    #     variable = element_side_volume
+    #     boundary = 'Block0_Block1 Block1_Block0'
+    #     execute_on = 'initial TIMESTEP_BEGIN'
+    # []
     [recompute_residual_tag_x]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag_x'
@@ -390,5 +413,5 @@
 
 [Outputs]
     exodus = true
-    interval = 20
+    interval = 40
 []
