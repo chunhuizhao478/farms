@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m_921_damp05/"
 # overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/100m_922_uguca_setup/"
 overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/50m_922_uguca_setup/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/2D/25m_922_uguca_setup/"
 
 #exodus_file_path = overall_file_path + "main_out.e"
 exodus_file_path = overall_file_path + "main_out.e"
@@ -34,6 +35,7 @@ exodus_file_path = overall_file_path + "main_out.e"
 # save_folder_output_file_path = "./files/100m_921_damp05"
 # save_folder_output_file_path = "./files/100m_922_uguca_setup"
 save_folder_output_file_path = "./files/50m_922_uguca_setup"
+# save_folder_output_file_path = "./files/25m_922_uguca_setup"
 
 decodeflag = "name_nod_var"
 
@@ -55,6 +57,35 @@ ptr4_loc = 151 - 1 #-2525
 ptr5_loc = 252 - 1 #2525
 ptr6_loc = 51  - 1 #-7525
 ptr7_loc = 352 - 1 #7525
+
+# ptr8_loc = 103 - 1 #-4925
+# ptr9_loc = 300 - 1 #4925
+
+# ptr8_loc = 102 - 1 #-4975
+# ptr9_loc = 301 - 1 #4975
+
+# ptr8_loc = 104 - 1 #-4875
+# ptr9_loc = 299 - 1 #4875
+
+# ptr8_loc = 105 - 1 #-4875
+# ptr9_loc = 298 - 1 #4875
+
+# ptr8_loc = 111 - 1 #-4525
+# ptr9_loc = 292 - 1 #4525
+
+ptr8_loc = 81 - 1  #-6025
+ptr9_loc = 322 - 1 #6025
+
+#25m
+# ptr1_loc = 201 - 1 #-5012
+# ptr2_loc = 402 - 1 #12.5
+# ptr3_loc = 602 - 1 #5012
+# ptr4_loc = 301 - 1 #-2512
+# ptr5_loc = 502 - 1 #2512
+# ptr6_loc = 101 - 1 #-7512
+# ptr7_loc = 702 - 1 #7512
+# ptr8_loc = 221 - 1 #-4512
+# ptr9_loc = 582 - 1 #4512
 
 #dt
 dt = 0.025
@@ -124,7 +155,6 @@ if getslipratenow == True:
     upper_velx = velx[:,upper_ptr_index]
     lower_velx = velx[:,lower_ptr_index]
 
-    sliprate = np.zeros((np.shape(upper_velx)[0],np.shape(upper_velx)[1]))
     #elementwise ops
     sliprate = np.subtract(upper_velx,lower_velx)
     #save
@@ -143,6 +173,10 @@ if getslipratenow == True:
     np.savetxt(save_folder_output_file_path + "/sliprate_neg7dot5kmstrike0dot75dip.txt",sliprate[:,ptr6_loc])
     #save middle ptrs time history
     np.savetxt(save_folder_output_file_path + "/sliprate_pos7dot5kmstrike0dot75dip.txt",sliprate[:,ptr7_loc])
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/sliprate_neg6025mstrike0dot75dip.txt",sliprate[:,ptr8_loc])
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/sliprate_pos6025mstrike0dot75dip.txt",sliprate[:,ptr9_loc])
 
 if getdispnow == True:
 
@@ -170,6 +204,10 @@ if getdispnow == True:
     np.savetxt(save_folder_output_file_path + "/slip_neg7dot5kmstrike0dot75dip.txt",slip[:,ptr6_loc])
     #save middle ptrs time history
     np.savetxt(save_folder_output_file_path + "/slip_pos7dot5kmstrike0dot75dip.txt",slip[:,ptr7_loc])
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_neg6025mstrike0dot75dip.txt",slip[:,ptr8_loc])
+    #save middle ptrs time history
+    np.savetxt(save_folder_output_file_path + "/slip_pos6025mstrike0dot75dip.txt",slip[:,ptr9_loc])
 
     #get dispy
     dispy = nc.variables["vals_nod_var4"]
@@ -198,16 +236,17 @@ if peakslipratepositionfunc == True:
     sliprate_max = np.max(sliprate[:161,:],axis=0)
 
     #get vel0
-    vel0 = np.loadtxt("/Users/andyz/projects/farms/postprocess/2d/TPV101_Nx/TPV101_Nx_50and25m/TPV101_Nx1440_s2.00_tf0.35_npc1-DataFiles/vel0.txt")
+    vel0 = np.loadtxt("/Users/andyz/projects/farms/postprocess/2d/TPV101_Nx/TPV101_Nx_50and25m/TPV101_Nx2880_s2.00_tf0.35_npc1-DataFiles/vel0.txt")
     sliprate0 = vel0 * 2
     sliprate_max0 = np.max(sliprate0[:40,:],axis=0)
-    xcoord0 = np.linspace(-35975,35975,720*2)
+    xcoord0 = np.linspace(-35987.5,35987.5,1440*2)
 
     plt.plot(interface_coordx, sliprate_max, 'b.',label="moose-50m")
-    plt.plot(xcoord0, sliprate_max0, 'r.',label="uguca-50m")
+    plt.plot(xcoord0, sliprate_max0, 'r.',label="uguca-25m")
     plt.xlim([-10000,10000])
     plt.xlabel("x coordinate (m)")
     plt.ylabel("peak slip rate (m/s)")
+    plt.title("Spatial Distribution of Maximum Slip Rate Along the Fault")
     plt.legend()
     plt.show()
 
@@ -277,13 +316,13 @@ if rupturespeed == True:
     # plt.show()
 
     ####for uguca data
-    time = np.loadtxt("/Users/andyz/projects/farms/postprocess/2d/TPV101_Nx/TPV101_Nx_50and25m/TPV101_Nx1440_s2.00_tf0.35_npc1.time")
+    time = np.loadtxt("/Users/andyz/projects/farms/postprocess/2d/TPV101_Nx/TPV101_Nx_50and25m/TPV101_Nx2880_s2.00_tf0.35_npc1.time")
     time = time[:,1]
     #get slip rate time series
-    vel = np.loadtxt("/Users/andyz/projects/farms/postprocess/2d/TPV101_Nx/TPV101_Nx_50and25m/TPV101_Nx1440_s2.00_tf0.35_npc1-DataFiles/vel0.txt")
+    vel = np.loadtxt("/Users/andyz/projects/farms/postprocess/2d/TPV101_Nx/TPV101_Nx_50and25m/TPV101_Nx2880_s2.00_tf0.35_npc1-DataFiles/vel0.txt")
     sliprate = vel * 2
     #load location
-    interface_coordx = np.linspace(-35975,35975,720*2)
+    interface_coordx = np.linspace(-35987.5,35987.5,1440*2)
 
     #get time
     timeright = time[:40]
@@ -316,27 +355,123 @@ if rupturespeed == True:
         ugucaindex_save.append(index_rightmost)
 
     #fit whole curve
-    ugucadata001_terms = np.polyfit(ugucatime_plot,ugucalocs_plot,6)
+    ugucadata001_terms = np.polyfit(ugucatime_plot,ugucalocs_plot,10)
     ugucadata001 = np.poly1d(ugucadata001_terms)
     ugucavel001_terms = np.polyder(ugucadata001_terms)
     ugucavel001 = np.poly1d(ugucavel001_terms)
 
-    # plt.plot(ugucatime_plot,ugucadata001(ugucatime_plot),'b-')
-    plt.plot(ugucatime_plot,ugucalocs_plot,'r-.',label="uguca-50m")
+    # # plt.plot(ugucatime_plot,ugucadata001(ugucatime_plot),'b-')
+    # plt.plot(ugucatime_plot,ugucalocs_plot,'r-.',label="uguca-25m")
     # plt.plot(time_plot,polydata001(time_plot),'r-')
-    plt.plot(time_plot,locs_plot,'b-.',label="moose-50m")
-    plt.ylim([0,10000])
-    plt.xlim([0,4])
-    plt.title("rupture tip position (m) vs time (s)")
-    plt.xlabel("time (s)")
-    plt.ylabel("rupture tip position (m)")
-    plt.legend()
-    plt.show()
+    # plt.plot(time_plot,locs_plot,'b-.',label="moose-50m")
+    # plt.ylim([0,10000])
+    # plt.xlim([0,4])
+    # plt.title("rupture tip position (m) vs time (s)")
+    # plt.xlabel("time (s)")
+    # plt.ylabel("rupture tip position (m)")
+    # plt.legend()
+    # plt.show()
 
-    plt.plot(ugucatime_plot,ugucavel001(ugucatime_plot),'b--')
-    plt.plot(time_plot,polyvel001(time_plot),'r--')
-    plt.title("list_front_time0 vs polyvel001(list_front_time0)")
+    # plt.plot(ugucatime_plot,ugucavel001(ugucatime_plot),'b--')
+    # plt.plot(time_plot,polyvel001(time_plot),'r--')
+    # plt.title("list_front_time0 vs polyvel001(list_front_time0)")
+    # plt.show()
+
+    list_time_temp = []
+    list_vel_temp = []
+    list_locs_temp = []
+
+    list_time_final = []
+    list_vel_final = []
+    list_locs_final = []
+    #curve-fitting
+    chunck_size = 20
+    for index in range(chunck_size, len(locs_plot)):
+
+        list_front_time_chunck_i = time_plot[index-chunck_size:index]
+        list_front_locs_chunck_i = locs_plot[index-chunck_size:index]
+
+        polydata001_terms = np.polyfit(list_front_time_chunck_i,list_front_locs_chunck_i,8)
+        polydata001 = np.poly1d(polydata001_terms)
+        polyvel001_terms = np.polyder(polydata001_terms)
+        polyvel001 = np.poly1d(polyvel001_terms)
+
+        velpointuseindex = 10
+        velpointuse = polyvel001(list_front_time_chunck_i[velpointuseindex])
+        if (velpointuse >= 0 and velpointuse < 3464):
+
+            #save
+            list_time_temp.append(list_front_time_chunck_i[velpointuseindex])
+            list_vel_temp.append(polyvel001(list_front_time_chunck_i[velpointuseindex]))
+            list_locs_temp.append(list_front_locs_chunck_i[velpointuseindex])
+
+    # vel_plot = []
+    # time_plot_new = []
+    # for i in range(2,len(locs_plot)-2):
+    #     data = ( -1 * locs_plot[i+2] + 8 * locs_plot[i+1] - 8 * locs_plot[i-1] + locs_plot[i-2] ) / ( 8 * ( time_plot[i+1] - time_plot[i] ) )
+    #     if (data >= 0 and data < 6000):
+    #         vel_plot.append( data )
+    #         time_plot_new.append(time_plot[i])
+
+    polydata001_terms = np.polyfit(list_locs_temp,list_vel_temp,4)
+    polydata001 = np.poly1d(polydata001_terms)
+
+    #-------------------------------#
+    list_time_moose = list_time_temp
+    list_vel_moose = list_vel_temp
+    list_locs_moose = list_locs_temp
+    polydata_moose = polydata001
+    #-------------------------------#
+
+    ###uguca
+    list_time_temp = []
+    list_vel_temp = []
+    list_locs_temp = []
+
+    list_time_final = []
+    list_vel_final = []
+    list_locs_final = []
+    #curve-fitting
+    chunck_size = 5
+    for index in range(chunck_size, len(ugucalocs_plot)):
+
+        list_front_time_chunck_i = ugucatime_plot[index-chunck_size:index]
+        list_front_locs_chunck_i = ugucalocs_plot[index-chunck_size:index]
+
+        polydata001_terms = np.polyfit(list_front_time_chunck_i,list_front_locs_chunck_i,3)
+        polydata001 = np.poly1d(polydata001_terms)
+        polyvel001_terms = np.polyder(polydata001_terms)
+        polyvel001 = np.poly1d(polyvel001_terms)
+
+        velpointuseindex = 2
+        velpointuse = polyvel001(list_front_time_chunck_i[velpointuseindex])
+        if (velpointuse >= 0 and velpointuse < 3464):
+
+            #save
+            list_time_temp.append(list_front_time_chunck_i[velpointuseindex])
+            list_vel_temp.append(polyvel001(list_front_time_chunck_i[velpointuseindex]))
+            list_locs_temp.append(list_front_locs_chunck_i[velpointuseindex])
+
+    polydata001_terms = np.polyfit(list_locs_temp,list_vel_temp,4)
+    polydata001 = np.poly1d(polydata001_terms)
+    ###uguca
+
+    #-------------------------------#
+    list_time_uguca = list_time_temp
+    list_vel_uguca = list_vel_temp
+    list_locs_uguca = list_locs_temp
+    polydata_uguca = polydata001
+    #-------------------------------#
+
+    # plt.plot(list_locs_uguca,list_vel_uguca,'b-.')
+    locloc = np.linspace(0,8000,10000)
+    plt.plot(locloc,polydata_moose(locloc),'b-',label="moose-50m")
+    plt.plot(locloc,polydata_uguca(locloc),'r-',label="uguca-25m")
+    plt.title("Spatial Distribution of Rupture Speed")
+    plt.ylabel("rupture speed (m/s)")
+    plt.xlabel("location (m)")
     plt.show()
+        
 
 
 
