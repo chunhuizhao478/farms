@@ -7,7 +7,7 @@ time_max = 4;
 num_max = 40;
 meshsize = "50m";
 lenged1 = "uguca-2d-25m";
-legend2 = "moose-2d-25m";
+legend2 = "moose-2d-50m";
 filename = "50m_922_uguca_setup";
 datauguca_time = linspace(0,time_max,num_max);
 datauguca_ptr1 = 0.5*(datauguca(:,1240)+datauguca(:,1241));
@@ -18,8 +18,17 @@ datauguca_ptr5 = 0.5*(datauguca(:,1540)+datauguca(:,1541));
 datauguca_ptr6 = 0.5*(datauguca(:,1140)+datauguca(:,1141));
 datauguca_ptr7 = 0.5*(datauguca(:,1741)+datauguca(:,1742));
 
-datauguca_ptr8 = 0.5*(datauguca(:,1245)+datauguca(:,1246)); %4875
-datauguca_ptr9 = 0.5*(datauguca(:,1635)+datauguca(:,1636));
+datauguca_ptr8 = 0.5*(datauguca(:,1198)+datauguca(:,1199)); %6025
+datauguca_ptr9 = 0.5*(datauguca(:,1681)+datauguca(:,1682));
+
+% datauguca_ptr8 = 0.5*(datauguca(:,1259)+datauguca(:,1260)); %4525
+% datauguca_ptr9 = 0.5*(datauguca(:,1621)+datauguca(:,1622));
+
+% datauguca_ptr8 = 0.5*(datauguca(:,1247)+datauguca(:,1248)); %4825
+% datauguca_ptr9 = 0.5*(datauguca(:,1634)+datauguca(:,1635));
+
+% datauguca_ptr8 = 0.5*(datauguca(:,1245)+datauguca(:,1246)); %4875
+% datauguca_ptr9 = 0.5*(datauguca(:,1636)+datauguca(:,1637));
 
 % datauguca_ptr8 = 0.5*(datauguca(:,1243)+datauguca(:,1244)); %4925
 % datauguca_ptr9 = 0.5*(datauguca(:,1637)+datauguca(:,1638));
@@ -46,8 +55,8 @@ datasliprate_ptr5 = load("./files/"+filename+"/sliprate_pos2dot5kmstrike0dot75di
 datasliprate_ptr6 = load("./files/"+filename+"/sliprate_neg7dot5kmstrike0dot75dip.txt");
 datasliprate_ptr7 = load("./files/"+filename+"/sliprate_pos7dot5kmstrike0dot75dip.txt");
 
-datasliprate_ptr8 = load("./files/"+filename+"/sliprate_neg4875mstrike0dot75dip.txt");
-datasliprate_ptr9 = load("./files/"+filename+"/sliprate_pos4875mstrike0dot75dip.txt");
+datasliprate_ptr8 = load("./files/"+filename+"/sliprate_neg6025mstrike0dot75dip.txt");
+datasliprate_ptr9 = load("./files/"+filename+"/sliprate_pos6025mstrike0dot75dip.txt");
 
 
 %figures
@@ -143,28 +152,28 @@ ax = gca;
 ax.FontSize = 15; 
 saveas(gcf,'./plots/sliprate_ptr7_'+meshsize+'.png')
 
-figure(8);
-plot(datauguca_time(1:num_max),datauguca_ptr8(1:num_max)*2,'r.-'); hold on;
-plot(datatime(1:4:end),datasliprate_ptr8(1:4:end),'b.-')
-xlim([0,time_max])
-ylim([0,12.0])
-title("Slip Rate Time History at -4.5km","FontSize",30)
-xlabel("time (s)","FontSize",25)
-ylabel("slip rate (m/s)","FontSize",25)
-legend(lenged1,legend2,"FontSize",15,'Location','northwest');
-ax = gca;
-ax.FontSize = 15; 
-saveas(gcf,'./plots/sliprate_ptr8_'+meshsize+'.png')
-
-figure(9);
-plot(datauguca_time(1:num_max),datauguca_ptr9(1:num_max)*2,'r.-'); hold on;
-plot(datatime(1:4:end),datasliprate_ptr9(1:4:end),'b.-')
-xlim([0,time_max])
-ylim([0,12.0])
-title("Slip Rate Time History at 4.5km","FontSize",30)
-xlabel("time (s)","FontSize",25)
-ylabel("slip rate (m/s)","FontSize",25)
-legend(lenged1,legend2,"FontSize",15,'Location','northwest');
-ax = gca;
-ax.FontSize = 15; 
-saveas(gcf,'./plots/sliprate_ptr9_'+meshsize+'.png')
+% figure(8);
+% plot(datauguca_time(1:num_max),datauguca_ptr8(1:num_max)*2,'r.-'); hold on;
+% plot(datatime(1:4:end),datasliprate_ptr8(1:4:end),'b.-')
+% xlim([0,time_max])
+% ylim([0,12.0])
+% title("Slip Rate Time History at -4.5km","FontSize",30)
+% xlabel("time (s)","FontSize",25)
+% ylabel("slip rate (m/s)","FontSize",25)
+% legend(lenged1,legend2,"FontSize",15,'Location','northwest');
+% ax = gca;
+% ax.FontSize = 15; 
+% saveas(gcf,'./plots/sliprate_ptr8_'+meshsize+'.png')
+% 
+% figure(9);
+% plot(datauguca_time(1:num_max),datauguca_ptr9(1:num_max)*2,'r.-'); hold on;
+% plot(datatime(1:4:end),datasliprate_ptr9(1:4:end),'b.-')
+% xlim([0,time_max])
+% ylim([0,12.0])
+% title("Slip Rate Time History at 4.5km","FontSize",30)
+% xlabel("time (s)","FontSize",25)
+% ylabel("slip rate (m/s)","FontSize",25)
+% legend(lenged1,legend2,"FontSize",15,'Location','northwest');
+% ax = gca;
+% ax.FontSize = 15; 
+% saveas(gcf,'./plots/sliprate_ptr9_'+meshsize+'.png')
