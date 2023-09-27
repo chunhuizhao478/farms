@@ -31,7 +31,7 @@
     displacements = 'disp_x disp_y disp_z'
 
     ##damping ratio 
-    q = 0.2
+    q = 0.5
 
 []
 
@@ -76,7 +76,7 @@
     [./resid_damp_z]
         order = FIRST
         family = LAGRANGE
-    []
+    [../] 
     #interface displacement boundary condition (scale disp_plusminus_(x/y))
     [disp_plusminus_scaled_x]
         order = FIRST
@@ -214,11 +214,18 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
     #get jump from uo - aux
-    [tangent_jump_rate_aux]
+    [tangent_jump_aux]
         type = InterfaceValueUserObjectAux
-        interface_uo_name = tangent_jump_rate_uo
-        variable = tangent_jump_rate
+        interface_uo_name = tangent_jump_uo
+        variable = tangent_jump
         boundary = 'Block0_Block1'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #compute jump rate
+    [tangent_jump_rate_aux]
+        type = FDCompVarRate
+        variable = tangent_jump_rate
+        coupled = tangent_jump
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
@@ -255,19 +262,16 @@
         type = StiffPropDamping
         variable = disp_x
         component = 0
-        extra_vector_tags = 'restore_dampx_tag'
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = disp_y
         component = 1
-        extra_vector_tags = 'restore_dampy_tag'
     []
     [./Reactionz]
         type = StiffPropDamping
         variable = disp_z
         component = 2
-        extra_vector_tags = 'restore_dampz_tag'
     []
 []
 
@@ -296,14 +300,13 @@
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
-    [tangent_jump_rate_uo]
+    [tangent_jump_uo]
         type = InterfaceQpValueUserObject
         var = disp_x
         var_neighbor = disp_x
         boundary = 'Block0_Block1'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
         interface_value_type = jump_primary_minus_secondary
-        value_type = rate
     []
     [recompute_residual_tag_dampx]
         type = ResidualEvaluationUserObject
@@ -504,8 +507,8 @@
 
 [Executioner]
     type = Transient
-    dt = 0.00125
-    end_time = 5.0
+    dt = 0.0025
+    end_time = 2.0
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
@@ -515,7 +518,7 @@
 
 [Outputs]
     exodus = true
-    interval = 40
+    interval = 10
 []
 
 [MultiApps]
@@ -523,7 +526,7 @@
     [./sub_app]
       type = TransientMultiApp
       positions = '0 0 0'
-      input_files = 'sub_200m.i'
+      input_files = 'sub.i'
       execute_on = 'INITIAL TIMESTEP_BEGIN'
     [../]
   []
