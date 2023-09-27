@@ -30,11 +30,11 @@ sliprate_strikeFaultMod0 = data_uguca0[:data_index_end+1,2]
 sliprate_strikeFaultMod1 = data_uguca1[:data_index_end+1,2]
 sliprate_strikeFaultMod2 = data_uguca2[:data_index_end+1,2]
 
-time_moose = np.loadtxt("../tpv1032d/files/100m_926/time.txt")
+time_moose = np.loadtxt("./files/200m_927_wnonreflect/time.txt")
 
-sliprate_moose0 = np.loadtxt("../tpv1032d/files/100m_926/sliprate_0strike0dot75dip.txt")
-sliprate_moose1 = np.loadtxt("../tpv1032d/files/100m_926/sliprate_neg9dot0kmstrike0dot75dip.txt")
-sliprate_moose2 = np.loadtxt("../tpv1032d/files/100m_926/sliprate_pos9dot0kmstrike0dot75dip.txt")
+sliprate_moose0 = np.loadtxt("./files/200m_927_wnonreflect/sliprate_0strike0dot75dip.txt")
+# sliprate_moose1 = np.loadtxt("../tpv1032d/files/100m_926/sliprate_neg9dot0kmstrike0dot75dip.txt")
+# sliprate_moose2 = np.loadtxt("../tpv1032d/files/100m_926/sliprate_pos9dot0kmstrike0dot75dip.txt")
 
 plt.figure()
 plt.plot(time_moose,sliprate_moose0,'b--',label="moose")
@@ -44,21 +44,21 @@ plt.xlabel("time (s)")
 plt.ylabel("sliprate (m/s)")
 plt.legend()
 
-plt.figure()
-plt.plot(time_moose,sliprate_moose1,'b--',label="moose")
-plt.plot(timehist_strikeFaultMod,sliprate_strikeFaultMod1,'r-',label='uguca')
-plt.title("sliprate along strike -9km dip 7.5km")
-plt.xlabel("time (s)")
-plt.ylabel("sliprate (m/s)")
-plt.legend()
+# plt.figure()
+# plt.plot(time_moose,sliprate_moose1,'b--',label="moose")
+# plt.plot(timehist_strikeFaultMod,sliprate_strikeFaultMod1,'r-',label='uguca')
+# plt.title("sliprate along strike -9km dip 7.5km")
+# plt.xlabel("time (s)")
+# plt.ylabel("sliprate (m/s)")
+# plt.legend()
 
-plt.figure()
-plt.plot(time_moose,sliprate_moose2,'b--',label="moose")
-plt.plot(timehist_strikeFaultMod,sliprate_strikeFaultMod2,'r-',label='uguca')
-plt.title("sliprate along strike 9km dip 7.5km")
-plt.xlabel("time (s)")
-plt.ylabel("sliprate (m/s)")
-plt.legend()
+# plt.figure()
+# plt.plot(time_moose,sliprate_moose2,'b--',label="moose")
+# plt.plot(timehist_strikeFaultMod,sliprate_strikeFaultMod2,'r-',label='uguca')
+# plt.title("sliprate along strike 9km dip 7.5km")
+# plt.xlabel("time (s)")
+# plt.ylabel("sliprate (m/s)")
+# plt.legend()
 
 #
 plt.show()

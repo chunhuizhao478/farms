@@ -1,0 +1,5 @@
+field_description TPV103_Nx1440_s2.00_tf0.10_npc20.fields
+time_description TPV103_Nx1440_s2.00_tf0.10_npc20.time
+coord_description TPV103_Nx1440_s2.00_tf0.10_npc20.coord
+folder_name TPV103_Nx1440_s2.00_tf0.10_npc20-DataFiles
+output_format binary
