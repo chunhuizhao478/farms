@@ -21,12 +21,13 @@ def read_full_data(path, nx, nt):
   file.close()
   return data
 
-full_path = "./TPV103_Nx/TPV103_Nx720_s2.00_tf0.35_npc1-DataFiles" #100m
-# full_path = "./TPV103_Nx/TPV103_Nx1440_s2.00_tf0.35_npc1-DataFiles" #50m
+# full_path = "./TPV103_Nx/TPV103_Nx720_s2.00_tf0.10_npc1-DataFiles" #100m
+full_path = "./TPV103_Nx/TPV103_Nx1440_s2.00_tf0.10_npc20-DataFiles" #50m
+# full_path = "./TPV103_Nx/TPV103_Nx2880_s2.00_tf0.10_npc5-DataFiles" #25m
 
-veldata = read_full_data(full_path+"/top_velo_0.out", 720, 119)
+veldata = read_full_data(full_path+"/top_velo_0.out", 1440, 118)
 
-dispdata = read_full_data(full_path+"/top_disp_0.out", 720, 119)
+dispdata = read_full_data(full_path+"/top_disp_0.out", 1440, 118)
 
 print(np.shape(veldata))
 
