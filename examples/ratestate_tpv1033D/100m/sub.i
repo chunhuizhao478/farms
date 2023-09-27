@@ -2,13 +2,13 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 50
-        ny = 50
-        nz = 50
-        xmin = -5000
-        xmax = 5000
-        ymin = -5000
-        ymax = 5000
+        nx = 300
+        ny = 30
+        nz = 100
+        xmin = -15000
+        xmax = 15000
+        ymin = -1500
+        ymax = 1500
         zmin = -5000
         zmax = 5000
     [../]
@@ -31,26 +31,60 @@
     displacements = 'disp_sub_x disp_sub_y disp_sub_z'
     
     ##element length (m)
-    len = 200
+    len = 100
+
+    ##--------------tpv101------------------##
+    
+    # ##rate-and-state coefficients
+    # f_o = 0.6
+    # rsf_a = 0.008
+    # rsf_b = 0.012
+    # rsf_L = 0.02
+    # delta_o = 1e-6
+
+    # ##initial normal traction (Pa)
+    # Tn_o = 120e6
+
+    # ##initial shear traction (Pa)
+    # Ts_o = 75e6
+
+    # ##initial sliprate (m/s)
+    # Vini = 1e-12
+
+    # ##initial state variable
+    # statevarini = 1.606238999213454e9
+
+    # ##stress perturbation
+    # stress_perturb = 25e6
+
+    ##--------------tpv103------------------##
+
+    ##strong rate weakening
     
     ##rate-and-state coefficients
     f_o = 0.6
-    rsf_a = 0.008
-    rsf_b = 0.012
-    rsf_L = 0.02
+    rsf_a = 0.01
+    rsf_b = 0.014
+    rsf_L = 0.4
     delta_o = 1e-6
+    f_w = 0.2
+    Vw = 0.1
 
     ##initial normal traction (Pa)
     Tn_o = 120e6
 
     ##initial shear traction (Pa)
-    Ts_o = 75e6
+    Ts_o = 40e6
 
     ##initial sliprate (m/s)
-    Vini = 1e-12
+    Vini = 1e-16
 
     ##initial state variable
-    statevarini = 1.606238999213454e9
+    statevarini = 0.563591842632738
+
+    ##stress perturbation value (Pa)
+    # stress_perturb = 45e6
+
 []
 
 [Variables]
@@ -113,8 +147,8 @@
         order = FIRST
         family = LAGRANGE
     []
-    #residual damping received from mainApp
-    [resid_damp_sub_x]
+     #residual received from mainApp (damping)
+     [resid_damp_sub_x]
         order = FIRST
         family = LAGRANGE
     []
@@ -196,7 +230,7 @@
     [const_element_side_volume]
         type = ConstantAux
         variable = element_side_volume
-        value = 40000
+        value = 10000
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #retrieve fault displacement residual vector using tagging
@@ -353,7 +387,8 @@
         prop_values = 2670
     []
     [./czm_mat]
-        type = RateStateFrictionLaw3DAsBC
+        type = RateStateFrictionLaw3DAsBCdev
+        RSFlaw = 2
         reaction_rsf_x = resid_sub_x
         reaction_rsf_y = resid_sub_y
         reaction_rsf_z = resid_sub_z
@@ -397,9 +432,7 @@
 
 [Functions]
     [./func_initial_strike_shear_stress]
-        type = InitialStrikeShearStressPerturbRSF3D
-        # type = ConstantFunction
-        # value = 0
+        type = InitialStrikeShearStressPerturbRSF3Ddev
     []
 []
 
@@ -413,5 +446,5 @@
 
 [Outputs]
     exodus = true
-    interval = 40
+    interval = 10
 []
