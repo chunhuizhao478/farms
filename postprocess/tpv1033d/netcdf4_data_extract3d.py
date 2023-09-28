@@ -3,21 +3,23 @@ import numpy as np
 import functions
 import matplotlib.pyplot as plt
 
-overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/tpv1033D/200m_927_wnonreflect/"
+# overall_file_path = "/Volumes/One Touch/Research/RateStateDebug/tpv1033D/100m_927/"
+overall_file_path = "/Users/andyz/Downloads/"
 
 exodus_file_path = overall_file_path + "main_out.e"
 
-save_folder_output_file_path = "./files/200m_927_wnonreflect"
+save_folder_output_file_path = "./files/100m_928"
 
 decodeflag = "name_nod_var"
 
 #mid ptr locs
-mid_ptr_loc = 25
+mid_ptr_loc = 150
+ptr1 = 60
+ptr2 = 240
 
 #dt
 dt = 0.025
-t_max = 2.0
-num_end = 30
+t_max = 4.850
 time = np.arange(0,t_max+dt,dt)
 
 #file nums
@@ -34,8 +36,8 @@ getvelnow = True
 getslipratenow = True
 plotnow = False
 
-getdispnow = True
-getslipnow = True
+getdispnow = False
+getslipnow = False
 
 get_traction_statevar_now = False
 
@@ -104,10 +106,14 @@ if getslipratenow == True:
 
     #elementwise ops
     sliprate = np.subtract(upper_velx,lower_velx)
+
+    print(np.shape(sliprate))
     #save
     np.savetxt(save_folder_output_file_path + "/sliprate.txt",sliprate)
     #save middle ptrs time history
     np.savetxt(save_folder_output_file_path + "/sliprate_0strike0dot75dip.txt",sliprate[:,mid_ptr_loc])
+    np.savetxt(save_folder_output_file_path + "/sliprate_neg9strike0dot75dip.txt",sliprate[:,ptr1])
+    np.savetxt(save_folder_output_file_path + "/sliprate_pos9strike0dot75dip.txt",sliprate[:,ptr2])
 
 if getdispnow == True:
 
