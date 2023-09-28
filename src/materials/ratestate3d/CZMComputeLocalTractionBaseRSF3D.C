@@ -10,11 +10,11 @@ CZMComputeLocalTractionBaseRSF3D::validParams()
                              "models that can be formulated using the total displacement jump");
   params.addRequiredCoupledVar("displacements",
                                "The string of displacements suitable for the problem statement");
-  params.addParam<Real>("Tn_o",120e6,"initial normal traction");
-  params.addParam<Real>("Ts_o",75e6,"initial strike traction");
-  params.addParam<Real>("Td_o",0.0,"initial dip traction");
-  params.addParam<Real>("Vini",1e-12,"initial velocity");
-  params.addParam<Real>("statevarini",1e9,"initial state variable");
+  params.addRequiredParam<Real>("Tn_o","initial normal traction");
+  params.addRequiredParam<Real>("Ts_o","initial strike traction");
+  params.addRequiredParam<Real>("Td_o","initial dip traction");
+  params.addRequiredParam<Real>("Vini","initial velocity");
+  params.addRequiredParam<Real>("statevarini","initial state variable");
   params.suppressParameter<bool>("use_displaced_mesh");
   params.addParam<std::string>("base_name", "Material property base name");
   return params;

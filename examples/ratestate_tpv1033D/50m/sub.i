@@ -76,6 +76,9 @@
     ##initial shear traction (Pa)
     Ts_o = 40e6
 
+    ##initial dip traction(Pa)
+    Td_o = 0
+
     ##initial sliprate (m/s)
     Vini = 1e-16
 
