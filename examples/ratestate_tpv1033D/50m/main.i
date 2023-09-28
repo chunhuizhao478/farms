@@ -262,16 +262,19 @@
         type = StiffPropDamping
         variable = disp_x
         component = 0
+        extra_vector_tags = restore_dampx_tag
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = disp_y
         component = 1
+        extra_vector_tags = restore_dampy_tag
     []
     [./Reactionz]
         type = StiffPropDamping
         variable = disp_z
         component = 2
+        extra_vector_tags = restore_dampz_tag
     []
 []
 
