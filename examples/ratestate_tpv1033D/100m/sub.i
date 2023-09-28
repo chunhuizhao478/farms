@@ -178,29 +178,29 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    #sliprate
-    [sliprate_sub_strike]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [sliprate_sub_normal]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [sliprate_sub_dip]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    #slip
-    [slip_sub_strike]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    #statevar
-    [statevar_sub]
-        order = CONSTANT
-        family = MONOMIAL
-    []
+    # #sliprate
+    # [sliprate_sub_strike]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # [sliprate_sub_normal]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # [sliprate_sub_dip]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # #slip
+    # [slip_sub_strike]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # #statevar
+    # [statevar_sub]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
 []
 
 [AuxKernels]
@@ -286,41 +286,41 @@
         boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
-    [output_sliprate_strike]
-        type = MaterialRealAux
-        property = sliprate_strike
-        variable = sliprate_sub_strike
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_END'
-    []
-    [output_sliprate_normal]
-        type = MaterialRealAux
-        property = sliprate_normal
-        variable = sliprate_sub_normal
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_END'
-    []
-    [output_sliprate_dip]
-        type = MaterialRealAux
-        property = sliprate_dip
-        variable = sliprate_sub_dip
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_END'
-    []
-    [output_slip_strike]
-        type = MaterialRealAux
-        property = slip_strike
-        variable = slip_sub_strike
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_END'
-    []
-    [output_statevar]
-        type = MaterialRealAux
-        property = statevar
-        variable = statevar_sub
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_END'
-    []
+    # [output_sliprate_strike]
+    #     type = MaterialRealAux
+    #     property = sliprate_strike
+    #     variable = sliprate_sub_strike
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [output_sliprate_normal]
+    #     type = MaterialRealAux
+    #     property = sliprate_normal
+    #     variable = sliprate_sub_normal
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [output_sliprate_dip]
+    #     type = MaterialRealAux
+    #     property = sliprate_dip
+    #     variable = sliprate_sub_dip
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [output_slip_strike]
+    #     type = MaterialRealAux
+    #     property = slip_strike
+    #     variable = slip_sub_strike
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [output_statevar]
+    #     type = MaterialRealAux
+    #     property = statevar
+    #     variable = statevar_sub
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'TIMESTEP_END'
+    # []
 []
 
 [Modules]
@@ -338,7 +338,7 @@
     [./czm_ik]
         boundary = 'Block0_Block1'
         strain = SMALL
-        generate_output='normal_jump tangent_jump normal_traction tangent_traction'
+        # generate_output='normal_jump tangent_jump normal_traction tangent_traction'
     [../]
 []
 
@@ -397,7 +397,7 @@
         reaction_damp_z = resid_damp_sub_z
         Ts_perturb = ini_shear_stress_perturb
         boundary = 'Block0_Block1'
-        output_properties = 'sliprate_strike slip_strike statevar traction_strike traction_normal traction_dip alongfaultdisp_strike_plus alongfaultdisp_strike_minus'
+        output_properties = 'traction_strike traction_normal traction_dip'
         # outputs = exodus
     [../]
 []
@@ -444,7 +444,7 @@
     []
 []
 
-[Outputs]
-    exodus = true
-    interval = 10
-[]
+# [Outputs]
+#     exodus = true
+#     interval = 10
+# []
