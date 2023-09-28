@@ -31,7 +31,7 @@
     displacements = 'disp_x disp_y disp_z'
 
     ##damping ratio 
-    q = 0.5
+    q = 1.0
 
 []
 
@@ -104,28 +104,28 @@
         family = MONOMIAL
     []
     #sliprate
-    [sliprate_strike]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [sliprate_normal]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [sliprate_dip]
-        order = CONSTANT
-        family = MONOMIAL
-    []
+    # [sliprate_strike]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # [sliprate_normal]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # [sliprate_dip]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
     #slip
-    [slip_strike]
-        order = CONSTANT
-        family = MONOMIAL
-    []
+    # [slip_strike]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
     #statevar
-    [statevar]
-        order = CONSTANT
-        family = MONOMIAL
-    []
+    # [statevar]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
     #velocity
     [vel_x]
         order = FIRST
@@ -140,14 +140,14 @@
         family = LAGRANGE
     []
     #
-    [tangent_jump]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [tangent_jump_rate]
-        order = CONSTANT
-        family = MONOMIAL
-    []
+    # [tangent_jump]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
+    # [tangent_jump_rate]
+    #     order = CONSTANT
+    #     family = MONOMIAL
+    # []
 []
 
 [AuxKernels]
@@ -213,21 +213,21 @@
         coupled = disp_z
         execute_on = 'TIMESTEP_BEGIN'
     []
-    #get jump from uo - aux
-    [tangent_jump_aux]
-        type = InterfaceValueUserObjectAux
-        interface_uo_name = tangent_jump_uo
-        variable = tangent_jump
-        boundary = 'Block0_Block1'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #compute jump rate
-    [tangent_jump_rate_aux]
-        type = FDCompVarRate
-        variable = tangent_jump_rate
-        coupled = tangent_jump
-        execute_on = 'TIMESTEP_BEGIN'
-    []
+    # #get jump from uo - aux
+    # [tangent_jump_aux]
+    #     type = InterfaceValueUserObjectAux
+    #     interface_uo_name = tangent_jump_uo
+    #     variable = tangent_jump
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'TIMESTEP_BEGIN'
+    # []
+    # #compute jump rate
+    # [tangent_jump_rate_aux]
+    #     type = FDCompVarRate
+    #     variable = tangent_jump_rate
+    #     coupled = tangent_jump
+    #     execute_on = 'TIMESTEP_BEGIN'
+    # []
 []
 
 [Modules]
@@ -300,14 +300,14 @@
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
-    [tangent_jump_uo]
-        type = InterfaceQpValueUserObject
-        var = disp_x
-        var_neighbor = disp_x
-        boundary = 'Block0_Block1'
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        interface_value_type = jump_primary_minus_secondary
-    []
+    # [tangent_jump_uo]
+    #     type = InterfaceQpValueUserObject
+    #     var = disp_x
+    #     var_neighbor = disp_x
+    #     boundary = 'Block0_Block1'
+    #     execute_on = 'INITIAL TIMESTEP_BEGIN'
+    #     interface_value_type = jump_primary_minus_secondary
+    # []
     [recompute_residual_tag_dampx]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_dampx_tag'
@@ -536,8 +536,8 @@
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'disp_plusminus_sub_scaled_x disp_plusminus_sub_scaled_y disp_plusminus_sub_scaled_z traction_sub_strike traction_sub_normal traction_sub_dip sliprate_sub_strike sliprate_sub_normal sliprate_sub_dip slip_sub_strike statevar_sub'
-        variable = 'disp_plusminus_scaled_x disp_plusminus_scaled_y disp_plusminus_scaled_z traction_strike traction_normal traction_dip sliprate_strike sliprate_normal sliprate_dip slip_strike statevar'
+        source_variable = 'disp_plusminus_sub_scaled_x disp_plusminus_sub_scaled_y disp_plusminus_sub_scaled_z traction_sub_strike traction_sub_normal traction_sub_dip'
+        variable = 'disp_plusminus_scaled_x disp_plusminus_scaled_y disp_plusminus_scaled_z traction_strike traction_normal traction_dip'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #push system residual vector from mainApp to subApp
