@@ -1,0 +1,1 @@
+2D Material Object (Modify CZM) inherits from interface material
