@@ -8,18 +8,18 @@ overall_file_path = "/Users/andyz/Downloads/"
 
 exodus_file_path = overall_file_path + "main_out.e"
 
-save_folder_output_file_path = "./files/100m_928"
+save_folder_output_file_path = "./files/200m_929"
 
 decodeflag = "name_nod_var"
 
 #mid ptr locs
-mid_ptr_loc = 150
-ptr1 = 60
-ptr2 = 240
+mid_ptr_loc = 74
+ptr1 = 1
+ptr2 = 1
 
 #dt
 dt = 0.025
-t_max = 4.850
+t_max = 6.0
 time = np.arange(0,t_max+dt,dt)
 
 #file nums
