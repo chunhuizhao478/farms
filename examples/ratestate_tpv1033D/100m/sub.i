@@ -4,7 +4,7 @@
         dim = 3
         nx = 300
         ny = 30
-        nz = 100
+        nz = 300
         xmin = -15000
         xmax = 15000
         ymin = -1500
