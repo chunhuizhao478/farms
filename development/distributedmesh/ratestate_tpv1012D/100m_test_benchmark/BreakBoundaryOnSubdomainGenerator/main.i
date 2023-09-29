@@ -15,23 +15,16 @@
         combinatorial_geometry = 'y<0'
         block_id = 1
     []
-    [break_boundary]
-        type = BreakBoundaryOnSubdomainGenerator
-        input = new_block
-    []
     [interface]
         type = SideSetsBetweenSubdomainsGenerator
-        input = break_boundary
+        input = new_block
         primary_block = 0
         paired_block = 1
         new_boundary = 'Block0_Block1'
     []
-    [interface2]
-        type = SideSetsBetweenSubdomainsGenerator
+    [break_boundary]
+        type = BreakBoundaryOnSubdomainGenerator
         input = interface
-        primary_block = 1
-        paired_block = 0
-        new_boundary = 'Block1_Block0'
     []
 []
 
@@ -194,30 +187,30 @@
         execute_on = 'TIMESTEP_END'
     []
     #
-    # [project_disp_plus_x]
-    #     type = ProjectionAux
-    #     variable = disp_plus_scaled_x
-    #     v = alongfaultdisp_strike_plus
-    #     boundary = 'Block0_Block1'
-    # []
-    # [project_disp_minus_x]
-    #     type = ProjectionAux
-    #     variable = disp_minus_scaled_x
-    #     v = alongfaultdisp_strike_minus
-    #     boundary = 'Block1_Block0'
-    # []
-    # [project_disp_plus_y]
-    #     type = ProjectionAux
-    #     variable = disp_plus_scaled_y
-    #     v = alongfaultdisp_normal_plus
-    #     boundary = 'Block0_Block1'
-    # []
-    # [project_disp_minus_y]
-    #     type = ProjectionAux
-    #     variable = disp_minus_scaled_y
-    #     v = alongfaultdisp_normal_minus
-    #     boundary = 'Block1_Block0'
-    # []
+    [project_disp_plus_x]
+        type = ProjectionAux
+        variable = disp_plus_scaled_x
+        v = alongfaultdisp_strike_plus
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [project_disp_minus_x]
+        type = ProjectionAux
+        variable = disp_minus_scaled_x
+        v = alongfaultdisp_strike_minus
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [project_disp_plus_y]
+        type = ProjectionAux
+        variable = disp_plus_scaled_y
+        v = alongfaultdisp_normal_plus
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [project_disp_minus_y]
+        type = ProjectionAux
+        variable = disp_minus_scaled_y
+        v = alongfaultdisp_normal_minus
+        execute_on = 'TIMESTEP_BEGIN'
+    []
 []
 
 [Problem]
@@ -262,6 +255,26 @@
     []
 []
 
+[InterfaceKernels]
+    #apply displacement prediction and retrieve its residuals
+    [./ratestate_x]
+        type = RateStateInterfaceKernelGlobalxdev
+        variable = disp_x
+        neighbor_var = disp_x
+        disp_strike_plus = disp_plus_scaled_x
+        disp_strike_minus = disp_minus_scaled_x
+        boundary = 'Block0_Block1'
+    []
+    [./ratestate_y]
+        type = RateStateInterfaceKernelGlobalydev
+        variable = disp_y
+        neighbor_var = disp_y
+        disp_normal_plus = disp_plus_scaled_y
+        disp_normal_minus = disp_minus_scaled_y
+        boundary = 'Block0_Block1'
+    []
+[]
+
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
@@ -298,34 +311,6 @@
         vector_tag = 'restore_dampy_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
-    []
-[]
-
-[BCs]
-    #assign displacement boundary condition
-    [./matchval_primary_x]
-        type = MatchedValueBC
-        variable = disp_x
-        v = disp_plus_scaled_x
-        boundary = 'Block0_Block1'
-    []
-    [./matchval_secondary_x]
-        type = MatchedValueBC
-        variable = disp_x
-        v = disp_minus_scaled_x
-        boundary = 'Block1_Block0'
-    []
-    [./matchval_primary_y]
-        type = MatchedValueBC
-        variable = disp_y
-        v = disp_plus_scaled_y
-        boundary = 'Block0_Block1'
-    []
-    [./matchval_secondary_y]
-        type = MatchedValueBC
-        variable = disp_y
-        v = disp_minus_scaled_y
-        boundary = 'Block1_Block0'
     []
 []
 

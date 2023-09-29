@@ -15,23 +15,16 @@
         combinatorial_geometry = 'y<0'
         block_id = 1
     []
-    [break_boundary]
-        type = BreakBoundaryOnSubdomainGenerator
-        input = new_block
-    []
     [interface]
         type = SideSetsBetweenSubdomainsGenerator
-        input = break_boundary
+        input = new_block
         primary_block = 0
         paired_block = 1
         new_boundary = 'Block0_Block1'
     []
-    [interface2]
-        type = SideSetsBetweenSubdomainsGenerator
+    [break_boundary]
+        type = BreakBoundaryOnSubdomainGenerator
         input = interface
-        primary_block = 1
-        paired_block = 0
-        new_boundary = 'Block1_Block0'
     []
 []
 
@@ -218,28 +211,28 @@
         type = MaterialRealAux
         property = alongfaultdisp_strike_plus
         variable = alongfaultdisp_strike_plus_sub
-        boundary = 'Block0_Block1 Block1_Block0'
+        boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
     [output_alongdisp_strike_minus]
         type = MaterialRealAux
         property = alongfaultdisp_strike_minus
         variable = alongfaultdisp_strike_minus_sub
-        boundary = 'Block0_Block1 Block1_Block0'
+        boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
     [output_alongdisp_normal_plus]
         type = MaterialRealAux
         property = alongfaultdisp_normal_plus
         variable = alongfaultdisp_normal_plus_sub
-        boundary = 'Block0_Block1 Block1_Block0'
+        boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
     [output_alongdisp_normal_minus]
         type = MaterialRealAux
         property = alongfaultdisp_normal_minus
         variable = alongfaultdisp_normal_minus_sub
-        boundary = 'Block0_Block1 Block1_Block0'
+        boundary = 'Block0_Block1'
         execute_on = 'TIMESTEP_END'
     []
 []
@@ -279,7 +272,7 @@
         reaction_damp_x = resid_damp_sub_x
         reaction_damp_y = resid_damp_sub_y
         Ts_perturb = ini_shear_stress_perturb
-        boundary = 'Block0_Block1 Block1_Block0'
+        boundary = 'Block0_Block1'
     [../]
 []
 
