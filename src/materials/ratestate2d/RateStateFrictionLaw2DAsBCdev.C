@@ -22,9 +22,9 @@ RateStateFrictionLaw2DAsBCdev::validParams()
   params.addRequiredParam<Real>("rsf_b","rate-and-state friction coefficients");
   params.addRequiredParam<Real>("rsf_L","rate-and-state friction coefficients");
   params.addRequiredParam<Real>("delta_o","slip rate parameter");
-  params.addRequiredParam<Real>("f_w","weakened state friction coefficient");
-  params.addRequiredParam<Real>("Vw","characteristic weakening velocity");
   params.addRequiredParam<int>("RSFlaw","rate-and-state law options 1 (RS-A) : againg law + modified form; 2 (RS-S) : slip law + variant form");
+  params.addParam<Real>("f_w",0.0,"weakened state friction coefficient");
+  params.addParam<Real>("Vw",0.0,"characteristic weakening velocity");
   params.addRequiredCoupledVar("reaction_rsf_x","reaction in x dir");
   params.addRequiredCoupledVar("reaction_rsf_y","reaction in y dir");
   params.addRequiredCoupledVar("reaction_damp_x","reaction in x dir");
@@ -41,9 +41,9 @@ RateStateFrictionLaw2DAsBCdev::RateStateFrictionLaw2DAsBCdev(const InputParamete
     _rsf_b(getParam<Real>("rsf_b")),
     _rsf_L(getParam<Real>("rsf_L")),
     _delta_o(getParam<Real>("delta_o")),
+    _RSFlaw(getParam<int>("RSFlaw")),
     _f_w(getParam<Real>("f_w")),
     _Vw(getParam<Real>("Vw")),
-    _RSFlaw(getParam<int>("RSFlaw")),
     _density(getMaterialPropertyByName<Real>(_base_name + "density")),
     _rot(getMaterialPropertyByName<RankTwoTensor>(_base_name + "czm_total_rotation")),
     _reaction_rsf_x(coupledValue("reaction_rsf_x")),
@@ -84,6 +84,18 @@ RateStateFrictionLaw2DAsBCdev::RateStateFrictionLaw2DAsBCdev(const InputParamete
 void
 RateStateFrictionLaw2DAsBCdev::computeInterfaceTractionAndDerivatives()
 {   
+    //Check at the beginning
+    if ( _t == 0.0 ) {
+        
+        //Check if fw and Vw is not provided in _RSFlaw == 2
+        if ( _RSFlaw == 2 and ( _f_w == 0.0 or _Vw == 0.0 ) ){
+            mooseError(" Must provide valid fw, Vw for RSFlaw == 2 !");
+        }
+        if ( _RSFlaw == 1 and ( _f_w != 0.0 or _Vw != 0.0 ) ){
+            mooseError(" Wrong RSFlaw for nonzero fw, Vw !");
+        }
+    }
+    
     //Define Parameters
     Real len = _len;
     Real f_o = _f_o;

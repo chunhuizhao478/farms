@@ -22,12 +22,12 @@ protected:
   Real _rsf_L;
   Real _delta_o;
 
+  //switch case
+  int _RSFlaw;
+
   //strong rate weakening
   Real _f_w;
   Real _Vw;
-
-  //switch case
-  int _RSFlaw;
 
   //density
   const MaterialProperty<Real> & _density;
