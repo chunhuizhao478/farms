@@ -87,8 +87,8 @@ RateStateFrictionLaw2DAsBCdev::computeInterfaceTractionAndDerivatives()
     //Check at the beginning
     if ( _t == 0.0 ) {
         
-        //Check if fw and Vw is not provided in _RSFlaw == 2
-        if ( _RSFlaw == 2 and ( _f_w == 0.0 or _Vw == 0.0 ) ){
+        //Check if fw and Vw is not provided in _RSFlaw == 2 or 3
+        if ( ( _RSFlaw == 2 or _RSFlaw == 3) and ( _f_w == 0.0 or _Vw == 0.0 ) ){
             mooseError(" Must provide valid fw, Vw for RSFlaw == 2 !");
         }
         if ( _RSFlaw == 1 and ( _f_w != 0.0 or _Vw != 0.0 ) ){
@@ -230,6 +230,10 @@ RateStateFrictionLaw2DAsBCdev::computeInterfaceTractionAndDerivatives()
             Z = 0.5 / delta_o * exp( statevar_t / rsf_a );
             break; 
 
+        case 3:
+
+            break;
+
         default:
 
             mooseError("Must specify a valid RSFlaw Parameter!");
@@ -251,11 +255,36 @@ RateStateFrictionLaw2DAsBCdev::computeInterfaceTractionAndDerivatives()
     Real guess_j;
     while ( er > 1e-10 && iterr < max_iter ){  
         
-        //Compute Residual
-        residual = guess_i + c * Tn * rsf_a * asinh( 0.5*(guess_i+sliprate_mag_tminusdtover2) * Z ) - c * Tmag_trial;
+        switch ( _RSFlaw )
+        {
 
-        //Compute Jacobian
-        jacobian = 1.0 + c * Tn * rsf_a * 0.5 * Z / sqrt( 1.0 + 0.5 * 0.5 * (guess_i+sliprate_mag_tminusdtover2) * (guess_i+sliprate_mag_tminusdtover2) * Z * Z );
+            case 1:
+            case 2:
+
+                //Compute Residual
+                residual = guess_i + c * Tn * rsf_a * asinh( 0.5*(guess_i+sliprate_mag_tminusdtover2) * Z ) - c * Tmag_trial;
+
+                //Compute Jacobian
+                jacobian = 1.0 + c * Tn * rsf_a * 0.5 * Z / sqrt( 1.0 + 0.5 * 0.5 * (guess_i+sliprate_mag_tminusdtover2) * (guess_i+sliprate_mag_tminusdtover2) * Z * Z );
+
+                break;
+
+            case 3:
+
+                //Compute Residual
+                residual = guess_i + c * Tn * ( _f_w + ( f_o + rsf_a * log( 0.5*(guess_i+sliprate_mag_tminusdtover2) / delta_o ) + rsf_b * log( delta_o * statevar_t / rsf_L ) - _f_w  ) / ( 1 + rsf_L / ( _Vw * statevar_t ) ) ) - c * Tmag_trial;
+
+                //Compute Jacobian
+                jacobian = 1.0 + c * Tn * rsf_a / ( 2 * ( rsf_L / ( _Vw * statevar_t ) + 1 ) * ( 0.5*(guess_i+sliprate_mag_tminusdtover2) ) );
+
+                break;
+
+            default:
+
+                mooseError("Must specify a valid RSFlaw Parameter!");
+
+        }
+
 
         //Compute New guess
         guess_j = guess_i - residual / jacobian;
@@ -290,6 +319,7 @@ RateStateFrictionLaw2DAsBCdev::computeInterfaceTractionAndDerivatives()
     switch (_RSFlaw)
     {
         case 1:
+        case 3:
 
             statevar_ss = (rsf_L/sliprate_mag_tplusdtover2);
             break;
