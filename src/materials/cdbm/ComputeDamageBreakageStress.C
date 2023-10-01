@@ -13,7 +13,8 @@
 
 /*
 
-v2: Modify the stress computation to include alpha, B computed from subApp
+v3: Modify the stress computation to include alpha, B computed from subApp
+v4: Add pore pressure option to modify mean stress
 
 */
 
@@ -28,29 +29,36 @@ ComputeDamageBreakageStress::validParams()
   params.addClassDescription("Compute stress using elasticity for small strains");
   
   //constant parameters
-  params.addParam<Real>(            "xi_0",          1.0, "strain invariants ratio: onset of damage evolution");
-  params.addParam<Real>(            "xi_d",          1.0, "strain invariants ratio: onset of breakage healing");
-  params.addParam<Real>(            "xi_1",          1.0, "critical point of three phases");
-  params.addParam<Real>(          "xi_min",          1.0, "strain invariants ratio: minimum allowable value");
-  params.addParam<Real>(          "xi_max",          1.0, "strain invariants ratio: maximum allowable value");
-  params.addParam<Real>(             "C_1",          1.0, "coefficient of healing for damage evolution");
-  params.addParam<Real>(             "C_2",          1.0, "coefficient of healing for damage evolution");
-  params.addParam<Real>(             "C_d",          1.0, "coefficient gives positive damage evolution");
-  params.addParam<Real>(             "C_B",          1.0, "coefficient gives positive breakage evolution");
-  params.addParam<Real>(            "C_BH",          1.0, "coefficient of healing for breakage evolution");
-  params.addParam<Real>(      "beta_width",          1.0, "coefficient gives width of transitional region");
-  params.addParam<Real>(              "a0",          1.0, "parameters in granular states");
-  params.addParam<Real>(              "a1",          1.0, "parameters in granular states");
-  params.addParam<Real>(              "a2",          1.0, "parameters in granular states");
-  params.addParam<Real>(              "a3",          1.0, "parameters in granular states");
-  params.addParam<Real>( "gamma_damaged_r",          1.0, "coefficient of damage solid modulus");
-  params.addParam<Real>(             "C_g",          1.0, "material parameter: compliance or fluidity of the fine grain granular material");
-  params.addParam<Real>(              "m1",          1.0, "coefficient of power law indexes");
-  params.addParam<Real>(              "m2",          1.0, "coefficient of power law indexes");
+  params.addRequiredParam<Real>(            "xi_0", "strain invariants ratio: onset of damage evolution");
+  params.addRequiredParam<Real>(            "xi_d", "strain invariants ratio: onset of breakage healing");
+  params.addRequiredParam<Real>(            "xi_1", "critical point of three phases");
+  params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
+  params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
+  params.addRequiredParam<Real>(             "C_1", "coefficient of healing for damage evolution");
+  params.addRequiredParam<Real>(             "C_2", "coefficient of healing for damage evolution");
+  params.addRequiredParam<Real>(             "C_d", "coefficient gives positive damage evolution");
+  params.addRequiredParam<Real>(             "C_B", "coefficient gives positive breakage evolution");
+  params.addRequiredParam<Real>(            "C_BH", "coefficient of healing for breakage evolution");
+  params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
+  params.addRequiredParam<Real>(              "a0", "parameters in granular states");
+  params.addRequiredParam<Real>(              "a1", "parameters in granular states");
+  params.addRequiredParam<Real>(              "a2", "parameters in granular states");
+  params.addRequiredParam<Real>(              "a3", "parameters in granular states");
+  params.addRequiredParam<Real>( "gamma_damaged_r", "coefficient of damage solid modulus");
+  params.addRequiredParam<Real>(             "C_g", "material parameter: compliance or fluidity of the fine grain granular material");
+  params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
+  params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");
   
   //variable parameters
   params.addRequiredCoupledVar("alpha_in", "damage variable computed from subApp");
   params.addRequiredCoupledVar(    "B_in", "breakage variable computed from subApp");
+
+  //add pore pressure
+  params.addParam<Real>("effec_sts_coeff", 0.0, "effective stress coefficient (along with pore pressure)");
+  params.addCoupledVar("pressure", "pore pressure");
+
+  //add option
+  params.addRequiredParam<int>("option","specify the option using this stress material object");
   
   return params;
 }
@@ -91,6 +99,10 @@ ComputeDamageBreakageStress::ComputeDamageBreakageStress(const InputParameters &
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
     _alpha_in(coupledValue("alpha_in")),
     _B_in(coupledValue("B_in")),
+    _effec_sts_coeff(isParamValid("effec_sts_coeff") ? getParam<Real>("effec_sts_coeff") : 0.0),
+    _is_pressure_coupled(isCoupled("pressure")),
+    _pressure(_is_pressure_coupled ? &coupledValue("pressure") : nullptr),
+    _option(getParam<int>("option")),
     _density(getMaterialPropertyByName<Real>("density"))
 {
 }
@@ -107,6 +119,10 @@ ComputeDamageBreakageStress::initialSetup()
     mooseError("This linear elastic stress calculation only works for small strains; use "
                "ComputeFiniteStrainElasticStress for simulations using incremental and finite "
                "strains.");
+
+  //check option 2 
+  if (_effec_sts_coeff == 0.0 && _option == 2)
+  {mooseError("Nonzero effective stress coefficient is needed for option 2 !");}
                
 }
 
@@ -217,12 +233,19 @@ ComputeDamageBreakageStress::computeQpStress()
           Real xi = I1 / sqrt(I2);
 
           //Represent sigma (solid(s) + granular(b))
+          //add pore pressure in the sigma11 sigma22 direction
           Real sigma11_s = ( lambda - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps11e;
           Real sigma11_b = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps11e;
           Real sigma22_s = ( lambda - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps22e;
           Real sigma22_b = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps22e;
           Real sigma12_s = ( 2 * shear_modulus - gamma_damaged * xi ) * eps12e;
           Real sigma12_b = ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps12e;
+
+          //nullptr will cause segfault 11 if you try to access it!
+          if ( _is_pressure_coupled ){
+              sigma11_s = sigma11_s - _effec_sts_coeff * (*_pressure)[_qp];
+              sigma22_s = sigma22_s - _effec_sts_coeff * (*_pressure)[_qp];
+          }
 
           //Represent total stress
           Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b;
@@ -321,11 +344,17 @@ ComputeDamageBreakageStress::computeQpStress()
       //compute stress
       //sts_total, stress are updated
       //feed total stress
+      //add pore pressure in the sigma11 sigma22 direction
       RankTwoTensor stress_total_out;
       stress_total_out(0,0) = computeStressComps(1, 1, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
       stress_total_out(1,1) = computeStressComps(2, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
       stress_total_out(0,1) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
       stress_total_out(1,0) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
+
+      if ( _is_pressure_coupled ){
+        stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * (*_pressure)[_qp];
+        stress_total_out(1,1) = stress_total_out(1,1) - _effec_sts_coeff * (*_pressure)[_qp];
+      }
 
       _sts_total[_qp] = stress_total_out;
 

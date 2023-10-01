@@ -15,8 +15,8 @@ InputParameters
 ComputeGeneralDamageBreakageStressBase::validParams()
 {
   InputParameters params = Material::validParams();
-  params.addParam<Real>("lambda_o", 10e10, "initial lambda value (first lame constant) [Pa]");
-  params.addParam<Real>("shear_modulus_o", 10e10, "initial shear modulus value (second lame constant) [Pa]");
+  params.addRequiredParam<Real>("lambda_o", "initial lambda value (first lame constant) [Pa]");
+  params.addRequiredParam<Real>("shear_modulus_o", "initial shear modulus value (second lame constant) [Pa]");
   params.addParam<std::string>("base_name",
                                "Optional parameter that allows the user to define "
                                "multiple mechanics material systems on the same "

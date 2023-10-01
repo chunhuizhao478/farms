@@ -110,6 +110,14 @@ protected:
   const VariableValue & _alpha_in;
   const VariableValue & _B_in;
 
+  // pore pressure
+  Real _effec_sts_coeff;
+  const bool _is_pressure_coupled; //check if pressure is coupled or not
+  const VariableValue * const _pressure; //constant pointer to _pressure //the value being pointed at can change but the pointer can't
+
+  // option
+  int _option;
+
   /// density
   const MaterialProperty<Real> & _density;
 

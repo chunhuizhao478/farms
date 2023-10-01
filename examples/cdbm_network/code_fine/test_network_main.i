@@ -416,6 +416,7 @@
     #damage breakage model
     [stress_medium]
         type = ComputeDamageBreakageStress
+        option = 1
         alpha_in = alpha_in
         B_in = B_in
         output_properties = 'eps_p eps_e eps_total I1'
