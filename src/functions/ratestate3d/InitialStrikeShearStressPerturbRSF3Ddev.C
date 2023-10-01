@@ -11,11 +11,13 @@ InputParameters
 InitialStrikeShearStressPerturbRSF3Ddev::validParams()
 {
   InputParameters params = Function::validParams();
+  params.addRequiredParam<Real>("stress_perturb","stress perturbation");
   return params;
 }
 
 InitialStrikeShearStressPerturbRSF3Ddev::InitialStrikeShearStressPerturbRSF3Ddev(const InputParameters & parameters)
-  : Function(parameters)
+  : Function(parameters),
+  _stress_perturb(getParam<Real>("stress_perturb"))
 {
 }
 
@@ -51,7 +53,7 @@ InitialStrikeShearStressPerturbRSF3Ddev::value(Real t, const Point & p) const
   Real z_coord = p(2); //along the dip direction
 
   //Parameter
-  Real T1_perturb = 45e6; //pertubation (Pa)
+  Real T1_perturb = _stress_perturb; //pertubation (Pa)
   Real R = 3000; //(m)
   Real T = 1.0; //(s)
   
