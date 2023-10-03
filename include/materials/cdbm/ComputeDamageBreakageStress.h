@@ -110,6 +110,10 @@ protected:
   const VariableValue & _alpha_in;
   const VariableValue & _B_in;
 
+  //add grad term
+  const VariableValue & _alpha_grad_x;
+  const VariableValue & _alpha_grad_y;
+
   // pore pressure
   Real _effec_sts_coeff;
   const bool _is_pressure_coupled; //check if pressure is coupled or not
@@ -121,6 +125,9 @@ protected:
   /// density
   const MaterialProperty<Real> & _density;
 
+  /// diffusion coefficient
+  Real _D;
+
     /// Function: deltaij
   Real deltaij(int i, int j);
 
@@ -130,6 +137,10 @@ protected:
                  Real eps11e_in,
                  Real eps22e_in,
                  Real eps12e_in);
+
+  Real grad_alpha(int i, 
+                  Real alpha_grad_x,
+                  Real alpha_grad_y);
 
   /// Function: compute stress components
   Real computeStressComps(int i, 
@@ -142,6 +153,8 @@ protected:
                           Real shear_modulus_in,
                           Real eps11e_in,
                           Real eps22e_in,
-                          Real eps12e_in);
-
+                          Real eps12e_in,
+                          Real alpha_grad_x,
+                          Real alpha_grad_y,
+                          Real D);
 };

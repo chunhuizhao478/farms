@@ -13,8 +13,7 @@
 
 /*
 
-v3: Modify the stress computation to include alpha, B computed from subApp
-v4: Add pore pressure option to modify mean stress
+v2: Modify the stress computation to include alpha, B computed from subApp
 
 */
 
@@ -48,18 +47,21 @@ ComputeDamageBreakageStress::validParams()
   params.addRequiredParam<Real>(             "C_g", "material parameter: compliance or fluidity of the fine grain granular material");
   params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
   params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");
+  params.addRequiredParam<Real>(               "D", "coefficient of alpha gradient");
   
   //variable parameters
   params.addRequiredCoupledVar("alpha_in", "damage variable computed from subApp");
   params.addRequiredCoupledVar(    "B_in", "breakage variable computed from subApp");
-
+  params.addRequiredCoupledVar("alpha_grad_x", "damage variable gradient component in x computed from subApp");
+  params.addRequiredCoupledVar("alpha_grad_y", "damage variable gradient component in y computed from subApp");
+  
   //add pore pressure
   params.addParam<Real>("effec_sts_coeff", 0.0, "effective stress coefficient (along with pore pressure)");
   params.addCoupledVar("pressure", "pore pressure");
 
   //add option
   params.addRequiredParam<int>("option","specify the option using this stress material object");
-  
+
   return params;
 }
 
@@ -99,11 +101,14 @@ ComputeDamageBreakageStress::ComputeDamageBreakageStress(const InputParameters &
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
     _alpha_in(coupledValue("alpha_in")),
     _B_in(coupledValue("B_in")),
+    _alpha_grad_x(coupledValue("alpha_grad_x")),
+    _alpha_grad_y(coupledValue("alpha_grad_y")),
     _effec_sts_coeff(isParamValid("effec_sts_coeff") ? getParam<Real>("effec_sts_coeff") : 0.0),
     _is_pressure_coupled(isCoupled("pressure")),
     _pressure(_is_pressure_coupled ? &coupledValue("pressure") : nullptr),
     _option(getParam<int>("option")),
-    _density(getMaterialPropertyByName<Real>("density"))
+    _density(getMaterialPropertyByName<Real>("density")),
+    _D(getParam<Real>("D"))
 {
 }
 
@@ -149,6 +154,11 @@ ComputeDamageBreakageStress::computeQpStress()
       //alpha, B are updated
       Real alpha_out = _alpha_in[_qp];
       Real B_out = _B_in[_qp];
+
+      //grad_alpha
+      Real alpha_grad_x = _alpha_grad_x[_qp];
+      Real alpha_grad_y = _alpha_grad_y[_qp];
+      Real D = _D;
 
       //save alpha and B
       _alpha_damagedvar[_qp] = alpha_out;
@@ -233,7 +243,6 @@ ComputeDamageBreakageStress::computeQpStress()
           Real xi = I1 / sqrt(I2);
 
           //Represent sigma (solid(s) + granular(b))
-          //add pore pressure in the sigma11 sigma22 direction
           Real sigma11_s = ( lambda - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps11e;
           Real sigma11_b = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps11e;
           Real sigma22_s = ( lambda - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps22e;
@@ -344,12 +353,11 @@ ComputeDamageBreakageStress::computeQpStress()
       //compute stress
       //sts_total, stress are updated
       //feed total stress
-      //add pore pressure in the sigma11 sigma22 direction
       RankTwoTensor stress_total_out;
-      stress_total_out(0,0) = computeStressComps(1, 1, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
-      stress_total_out(1,1) = computeStressComps(2, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
-      stress_total_out(0,1) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
-      stress_total_out(1,0) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out);
+      stress_total_out(0,0) = computeStressComps(1, 1, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
+      stress_total_out(1,1) = computeStressComps(2, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
+      stress_total_out(0,1) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
+      stress_total_out(1,0) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
 
       if ( _is_pressure_coupled ){
         stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * (*_pressure)[_qp];
@@ -423,6 +431,25 @@ ComputeDamageBreakageStress::epsilonij(int i,
   return eps_e_out;
 }
 
+/// Function: grad_alpha
+Real 
+ComputeDamageBreakageStress::grad_alpha(int i, 
+                                          Real alpha_grad_x,
+                                          Real alpha_grad_y)
+{ 
+  //take alpha grad
+  Real alpha_grad_out = 0.0;
+  if ( i == 1 )
+  {
+    alpha_grad_out = alpha_grad_x;
+  }
+  else
+  {
+    alpha_grad_out = alpha_grad_y;
+  }
+  return alpha_grad_out;
+}
+
 /// Function: compute stress components
 Real 
 ComputeDamageBreakageStress::computeStressComps(int i, 
@@ -435,7 +462,10 @@ ComputeDamageBreakageStress::computeStressComps(int i,
                                                 Real shear_modulus_in,
                                                 Real eps11e_in,
                                                 Real eps22e_in,
-                                                Real eps12e_in)
+                                                Real eps12e_in,
+                                                Real alpha_grad_x,
+                                                Real alpha_grad_y,
+                                                Real D)
 {
   //Retrieve parameters
   Real xi = xi_in;
@@ -450,7 +480,7 @@ ComputeDamageBreakageStress::computeStressComps(int i,
   Real stresscomp_b_out;
   Real stresscomp;
 
-  stresscomp_s_out = (lambda - gamma_damaged / xi) * I1 * deltaij(i,j) + ( 2 * shear_modulus - gamma_damaged * xi ) * epsilonij(i,j,eps11e_in,eps22e_in,eps12e_in);
+  stresscomp_s_out = (lambda - gamma_damaged / xi) * I1 * deltaij(i,j) + ( 2 * shear_modulus - gamma_damaged * xi ) * epsilonij(i,j,eps11e_in,eps22e_in,eps12e_in) - D * grad_alpha(i,alpha_grad_x,alpha_grad_y) * grad_alpha(j,alpha_grad_x,alpha_grad_y);
   stresscomp_b_out = (2 * _a2 + _a1 / xi + 3 * _a3 * xi) * I1 * deltaij(i,j) + ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * epsilonij(i,j,eps11e_in,eps22e_in,eps12e_in);
 
   //

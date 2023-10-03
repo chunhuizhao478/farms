@@ -25,4 +25,12 @@ ylabel("damage variable")
 
 % xline(-0.3)
 
-xiCd40e
+xiCd40e1_eta0dot8 = readmatrix("xiCd40e1eta0dot8.txt");
+alphaCd40e1_eta0dot8 = readmatrix("alphaCd40e1eta0dot8.txt");
+xiCd40e1_eta0dot8 = readmatrix("xiCd40e1eta0dot8.txt");
+alphaCd40e1_eta0dot8 = readmatrix("alphaCd40e1eta0dot8.txt");
+
+figure();
+plot(xiCd40e1_eta0dot8,alphaCd40e1_eta0dot8,'r-'); hold on;
+plot(xiCd40e1,alphaCd40e1,'k-'); hold on;
+plot(xiCd40e1_eta0dot1,alphaCd40e1_eta0dot1,'b-'); hold on;
