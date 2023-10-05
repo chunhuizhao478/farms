@@ -19,10 +19,10 @@
   [./msh]
     type = GeneratedMeshGenerator
     dim = 2
-    nx = 100
+    nx = 800
     ny = 100
-    xmin = -2500
-    xmax = 2500
+    xmin = -20000
+    xmax = 20000
     ymin = -2500
     ymax = 2500
     elem_type = TRI3
@@ -53,7 +53,7 @@
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
   lambda_o = 3.204e10
-  
+    
   #initial shear modulus value (second lame constant) [Pa]
   shear_modulus_o = 3.204e10
 
@@ -64,32 +64,13 @@
   xi_d = -0.9
 
   #<strain invariants ratio: maximum allowable value>: set boundary
+  #Xu_etal_P15-2D
+  #may need a bit space, use 1.5 as boundary
   xi_max = 1.5
 
   #<strain invariants ratio: minimum allowable value>: set boundary
+  #Xu_etal_P15-2D
   xi_min = -1.5
-
-  #<ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
-  #Note: this value is used to determine coefficients: a0 a1 a2 a3
-  #chi = 0.5 
-
-  #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  C_d = 40e5
-
-  #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  C_B = 40e7
-
-  #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-  C_BH = 0
-
-  #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-  C_1 = 0
-
-  #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-  C_2 = 0.05
-
-  #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  beta_width = 0.03
 
   #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   C_g = 1e-10
@@ -115,7 +96,9 @@
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
   #check struct_param.m
 
+  #--------------------------------------------------------------------------------#
   #Note: "computeAlphaCr" needs to change every time the related parameters changed
+  #--------------------------------------------------------------------------------#
 
   #coefficients
   a0 = 4.9526e9
@@ -229,6 +212,16 @@
     family = MONOMIAL
   []
   [./alpha_grad_y]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  #mechanical strain rate
+  [./mechanical_strain_rate]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  #track Cd
+  [./track_Cd]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -379,6 +372,14 @@
       variable = gamma_old
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
+  #define shear strain material property (elastic) inside damage stress 
+  #and compute its rate using "MaterialRateRealAux"
+  [get_shear_strain_rate]
+      type = MaterialRateRealAux
+      property = shear_strain
+      variable = mechanical_strain_rate
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+  []
   #fault length
   [fault_len]
       type = ConstantAux
@@ -428,6 +429,7 @@
       prop_names = density
       prop_values = 2670
   []
+  #SlipWeakeningMultifaults ONLY supports TRIA currently!
   [./czm_mat]
       type = SlipWeakeningMultifaults
       disp_slipweakening_x     = disp_slipweakening_x
@@ -508,7 +510,7 @@
   type = Transient
   dt = 0.0001
   end_time = 4.0
-  # num_steps = 10
+  # num_steps = 20
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -631,16 +633,16 @@
   [pull_resid]
       type = MultiAppCopyTransfer
       from_multi_app = sub_app
-      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub'
-      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y'
+      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd'
+      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd'
       execute_on = 'TIMESTEP_BEGIN'
   []
   #we actually don't need to pass alpha and B
   [push_disp]
       type = MultiAppCopyTransfer
       to_multi_app = sub_app
-      source_variable = 'alpha_in B_old xi_old I2_old mu_old lambda_old gamma_old'
-      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old'
+      source_variable = 'alpha_in B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
+      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
       execute_on = 'TIMESTEP_BEGIN'
   []
 []

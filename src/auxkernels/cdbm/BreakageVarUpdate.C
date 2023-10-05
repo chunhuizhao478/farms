@@ -8,18 +8,21 @@ BreakageVarUpdate::validParams()
   InputParameters params = AuxKernel::validParams();
 
   //constant parameters
-  params.addParam<Real>(        "C_B", 1.0, "coefficient gives positive breakage evolution");
-  params.addParam<Real>(       "C_BH", 1.0, "coefficient of healing for breakage evolution");
-  params.addParam<Real>(         "a0", 1.0, "parameters in granular states");
-  params.addParam<Real>(         "a1", 1.0, "parameters in granular states");
-  params.addParam<Real>(         "a2", 1.0, "parameters in granular states");
-  params.addParam<Real>(         "a3", 1.0, "parameters in granular states");
-  params.addParam<Real>(     "xi_min", 1.0, "strain invariant ratio at minimum value");
-  params.addParam<Real>(     "xi_max", 1.0, "strain invariant ratio at maximum value");
-  params.addParam<Real>(       "xi_d", 1.0, "strain invariant ratio at maximum value");
-  params.addParam<Real>(       "xi_0", 1.0, "strain invariants ratio: onset of damage evolution");
-  params.addParam<Real>(       "xi_1", 1.0, "strain invariants ratio: onset of breakage healing");
-  params.addParam<Real>( "beta_width", 1.0, "coefficient gives width of transitional region");
+  params.addRequiredParam<Real>(   "C_d_min", "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
+  params.addRequiredParam<Real>(       "C_BH", "coefficient of healing for breakage evolution");
+  params.addRequiredParam<Real>(         "a0", "parameters in granular states");
+  params.addRequiredParam<Real>(         "a1", "parameters in granular states");
+  params.addRequiredParam<Real>(         "a2", "parameters in granular states");
+  params.addRequiredParam<Real>(         "a3", "parameters in granular states");
+  params.addRequiredParam<Real>(     "xi_min", "strain invariant ratio at minimum value");
+  params.addRequiredParam<Real>(     "xi_max", "strain invariant ratio at maximum value");
+  params.addRequiredParam<Real>(       "xi_d", "strain invariant ratio at maximum value");
+  params.addRequiredParam<Real>(       "xi_0", "strain invariants ratio: onset of damage evolution");
+  params.addRequiredParam<Real>(       "xi_1", "strain invariants ratio: onset of breakage healing");
+  params.addRequiredParam<Real>( "beta_width", "coefficient gives width of transitional region");
+  params.addRequiredParam<Real>(     "m", "Cd power-law correction index");
+  params.addRequiredParam<Real>("mechanical_strain_rate_threshold", "threshold value for strain rate such that Cd takes constant value Cd_min if strain rate below this value.");
+  params.addRequiredParam<Real>("CdCb_multiplier", "multiplier between Cd and Cb");
 
   //variable parameters
   params.addRequiredCoupledVar(  "alpha_old", "damage variable at previous time step");
@@ -29,13 +32,14 @@ BreakageVarUpdate::validParams()
   params.addRequiredCoupledVar(     "mu_old", "shear modulus at previous time step");
   params.addRequiredCoupledVar( "lambda_old", "first lame constant at previous time step");
   params.addRequiredCoupledVar(  "gamma_old", "damage modulus at previous time step");
+  params.addRequiredCoupledVar("mechanical_strain_rate", "strain rate");
 
   return params;
 }
 
 BreakageVarUpdate::BreakageVarUpdate(const InputParameters & parameters)
   : AuxKernel(parameters),
-  _C_B(getParam<Real>("C_B")),
+  _Cd_min(getParam<Real>("C_d_min")),
   _C_BH(getParam<Real>("C_BH")),
   _a0(getParam<Real>("a0")),
   _a1(getParam<Real>("a1")),
@@ -47,13 +51,17 @@ BreakageVarUpdate::BreakageVarUpdate(const InputParameters & parameters)
   _xi_0(getParam<Real>("xi_0")),
   _xi_1(getParam<Real>("xi_1")),
   _beta_width(getParam<Real>("beta_width")),
+  _m(getParam<Real>("m")),
+  _mechanical_strain_rate_threshold(getParam<Real>("mechanical_strain_rate_threshold")),
+  _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
   _alpha_old(coupledValue("alpha_old")),
   _B_old(coupledValue("B_old")),
   _xi_old(coupledValue("xi_old")),
   _I2_old(coupledValue("I2_old")),
   _mu_old(coupledValue("mu_old")),
   _lambda_old(coupledValue("lambda_old")),
-  _gamma_old(coupledValue("gamma_old"))
+  _gamma_old(coupledValue("gamma_old")),
+  _mechanical_strain_rate(coupledValue("mechanical_strain_rate"))
 {
 }
 
@@ -69,8 +77,23 @@ BreakageVarUpdate::computeValue()
     Real gamma_damaged = _gamma_old[_qp];
     Real lambda = _lambda_old[_qp];
 
+    //Power-law correction
+    //Initialize Cd
+    Real Cd = 0;
+    //power-law correction on coefficient Cd(function of strain rate)
+    if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd remain constant
+    {
+      Cd = _Cd_min;
+    }
+    else{ //Cd follows power-law
+      Cd = pow(10, 1 + _m * log10( _mechanical_strain_rate[_qp] / _mechanical_strain_rate_threshold ) ) * _Cd_min;
+    }
+
+    //Compute C_B
+    Real C_B = _CdCb_multiplier * Cd;
+
     //ode solve
-    Real B_update = OdeIntegrator(alpha,B,I2,xi,mu,gamma_damaged,lambda);
+    Real B_update = OdeIntegrator(alpha,B,I2,xi,mu,gamma_damaged,lambda, C_B);
 
     return B_update;
 }
@@ -84,7 +107,8 @@ BreakageVarUpdate::OdeIntegrator(Real alpha,
                                  Real xi,
                                  Real mu,
                                  Real gamma_damaged,
-                                 Real lambda)
+                                 Real lambda,
+                                 Real C_B)
 {
   Real ynew = 0;
   // //initialize k
@@ -112,7 +136,7 @@ BreakageVarUpdate::OdeIntegrator(Real alpha,
   //ynew = B + y1 * k1 + y3 * k3 + y4 * k4 + y5 * k5 + y6 * k6; 
 
   Real k1 = 0.0;
-  k1 = _dt * computeBreakageEvolution(alpha,B,I2,xi,mu,gamma_damaged,lambda);
+  k1 = _dt * computeBreakageEvolution(alpha,B,I2,xi,mu,gamma_damaged,lambda, C_B);
   ynew = B + k1; //use first-order approx
 
   return ynew;
@@ -125,7 +149,8 @@ BreakageVarUpdate::computeBreakageEvolution(Real alpha,
                                             Real xi,
                                             Real /*mu*/,
                                             Real /*gamma_damaged*/,
-                                            Real /*lambda*/)
+                                            Real /*lambda*/,
+                                            Real C_B)
 { 
   Real Prob = computeGranularStateProb(alpha, xi);
 
@@ -147,7 +172,7 @@ BreakageVarUpdate::computeBreakageEvolution(Real alpha,
 
   //no healing
   if ( xi >= _xi_0 ){
-    return _C_B * Prob * (1-B) * I2 * (xi - _xi_0); //could heal if xi < xi_0
+    return C_B * Prob * (1-B) * I2 * (xi - _xi_0); //could heal if xi < xi_0
     //return _C_B * Prob * (1-B) * I2 * abs(xi - _xi_0);  //forbid any healing
   }
   else{

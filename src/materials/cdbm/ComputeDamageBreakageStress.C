@@ -33,12 +33,6 @@ ComputeDamageBreakageStress::validParams()
   params.addRequiredParam<Real>(            "xi_1", "critical point of three phases");
   params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
   params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
-  params.addRequiredParam<Real>(             "C_1", "coefficient of healing for damage evolution");
-  params.addRequiredParam<Real>(             "C_2", "coefficient of healing for damage evolution");
-  params.addRequiredParam<Real>(             "C_d", "coefficient gives positive damage evolution");
-  params.addRequiredParam<Real>(             "C_B", "coefficient gives positive breakage evolution");
-  params.addRequiredParam<Real>(            "C_BH", "coefficient of healing for breakage evolution");
-  params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
   params.addRequiredParam<Real>(              "a0", "parameters in granular states");
   params.addRequiredParam<Real>(              "a1", "parameters in granular states");
   params.addRequiredParam<Real>(              "a2", "parameters in granular states");
@@ -73,12 +67,6 @@ ComputeDamageBreakageStress::ComputeDamageBreakageStress(const InputParameters &
     _xi_1(getParam<Real>("xi_1")),
     _xi_min(getParam<Real>("xi_min")),
     _xi_max(getParam<Real>("xi_max")),
-    _C_1(getParam<Real>("C_1")),
-    _C_2(getParam<Real>("C_2")),
-    _C_d(getParam<Real>("C_d")),
-    _C_B(getParam<Real>("C_B")),
-    _C_BH(getParam<Real>("C_BH")),
-    _beta_width(getParam<Real>("beta_width")),
     _a0(getParam<Real>("a0")),
     _a1(getParam<Real>("a1")),
     _a2(getParam<Real>("a2")),
@@ -326,6 +314,9 @@ ComputeDamageBreakageStress::computeQpStress()
       eps_e_out(0,1) = eps12e_out;
       eps_e_out(1,0) = eps12e_out;
       _eps_e[_qp] = eps_e_out;
+
+      ///update strain rate
+      _shear_strain[_qp] = eps12e_out;
 
       //total strain
       RankTwoTensor eps_total_out;

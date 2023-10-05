@@ -3,10 +3,10 @@
   [./msh]
     type = GeneratedMeshGenerator
     dim = 2
-    nx = 100
+    nx = 800
     ny = 100
-    xmin = -2500
-    xmax = 2500
+    xmin = -20000
+    xmax = 20000
     ymin = -2500
     ymax = 2500
     elem_type = TRI3
@@ -44,10 +44,19 @@
   xi_min = -1.5
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  C_d = 40e5
+  #under slow strain rate < low strain rate threshold
+  C_d_min = 10
+
+  #power-law correction
+  #index
+  m = 0.85
+
+  #low strain rate threshold
+  mechanical_strain_rate_threshold = 1e-4
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  C_B = 40e7
+  #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
+  CdCb_multiplier = 10
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
   C_BH = 0
@@ -68,7 +77,9 @@
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
   #check struct_param.m
 
+  #--------------------------------------------------------------------------------#
   #Note: "computeAlphaCr" needs to change every time the related parameters changed
+  #--------------------------------------------------------------------------------#
 
   #coefficients
   a0 = 4.9526e9
@@ -140,6 +151,16 @@
     order = CONSTANT
     family = MONOMIAL
   []
+  #mechanical strain rate sub
+  [mechanical_strain_rate_sub]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  #Track Cd
+  [track_Cd]
+    order = CONSTANT
+    family = MONOMIAL
+  []
 []
 
 [Kernels]
@@ -153,6 +174,7 @@
       B_old = B_old
       xi_old = xi_old
       I2_old = I2_old
+      mechanical_strain_rate = mechanical_strain_rate_sub
       variable = alpha_sub
   []
 []
@@ -168,6 +190,7 @@
     mu_old = mu_old
     gamma_old = gamma_old
     lambda_old = lambda_old
+    mechanical_strain_rate = mechanical_strain_rate_sub
     execute_on = 'TIMESTEP_BEGIN'
   []
   [check_alpha]
@@ -195,6 +218,13 @@
    component = y
    gradient_variable = alpha_checked
    execute_on = 'TIMESTEP_END'
+  []
+  #Track Cd
+  [track_Cd_aux]
+    type = TrackCdEvoAux
+    variable = track_Cd
+    mechanical_strain_rate = mechanical_strain_rate_sub
+    execute_on = 'TIMESTEP_END'
   []
 []
 

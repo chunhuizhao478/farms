@@ -55,24 +55,6 @@ protected:
   /// strain invariants ratio: maximum allowable value
   Real _xi_max;
 
-  /// coefficient of healing for damage evolution
-  Real _C_1;
-
-  /// coefficient of healing for damage evolution
-  Real _C_2;
-
-  /// coefficient gives positive damage evolution 
-  Real _C_d;
-
-  /// coefficient gives positive breakage evolution
-  Real _C_B;
-
-  /// coefficient of healing for breakage evolution
-  Real _C_BH;
-
-  /// coefficient gives width of transitional region
-  Real _beta_width;
-
   /// parameters in granular states
   Real _a0;
   Real _a1;
@@ -128,7 +110,7 @@ protected:
   /// diffusion coefficient
   Real _D;
 
-    /// Function: deltaij
+  /// Function: deltaij
   Real deltaij(int i, int j);
 
   /// Function: epsilonij - take component of elastic strain

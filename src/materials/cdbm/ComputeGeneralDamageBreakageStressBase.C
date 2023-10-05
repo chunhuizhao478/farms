@@ -48,6 +48,7 @@ ComputeGeneralDamageBreakageStressBase::ComputeGeneralDamageBreakageStressBase(c
     _shear_wave_speed(declareProperty<Real>("shear_wave_speed")),
     _pressure_wave_speed(declareProperty<Real>("pressure_wave_speed")),
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
+    _shear_strain(declareProperty<Real>("shear_strain")),
     _lambda_o(getParam<Real>("lambda_o")),
     _shear_modulus_o(getParam<Real>("shear_modulus_o"))
 {
