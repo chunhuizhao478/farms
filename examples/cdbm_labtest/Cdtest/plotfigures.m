@@ -1,3 +1,5 @@
+clear all; close all; clc;
+%
 xiCd40e5 = readmatrix("xiCd40e5.txt");
 xiCd40e4 = readmatrix("xiCd40e4.txt");
 xiCd40e3 = readmatrix("xiCd40e3.txt");
@@ -25,6 +27,7 @@ ylabel("damage variable")
 
 % xline(-0.3)
 
+%
 xiCd40e1_eta0dot8 = readmatrix("xiCd40e1eta0dot8.txt");
 alphaCd40e1_eta0dot8 = readmatrix("alphaCd40e1eta0dot8.txt");
 xiCd40e1_eta0dot1 = readmatrix("xiCd40e1eta0dot1.txt");
@@ -41,9 +44,39 @@ title("damage variable vs strain invariant ratio")
 xlabel("strain invariant ratio")
 ylabel("damage variable")
 
+%
 xiCd40e1_xi01dot1 = readmatrix("xiCd40e1xi01dot0.txt");
 alphaCd40e1_xi01dot1 = readmatrix("alphaCd40e1xi01dot0.txt");
 
 figure();
 plot(xiCd40e1_xi01dot1,alphaCd40e1_xi01dot1,'r-'); hold on;
 plot(xiCd40e1,alphaCd40e1,'k-'); hold on;
+
+legend("Cd=40e1,Cb=100Cd,xi_0=-1.0","Cd=40e1,Cb=100Cd,xi_0=-0.8")
+
+title("damage variable vs strain invariant ratio")
+xlabel("strain invariant ratio")
+ylabel("damage variable")
+
+%
+xiCd40e1_xigiven0dot3 = readmatrix("xiCd40e1xigiven0dot3.txt"); alphaCd40e1_xigiven0dot3 = readmatrix("alphaCd40e1xigiven0dot3.txt");
+xiCd40e1_xigiven0dot75 = readmatrix("xiCd40e1xigiven0dot75.txt"); alphaCd40e1_xigiven0dot75 = readmatrix("alphaCd40e1xigiven0dot75.txt");
+xiCd40e1_xigiven1dot0 = readmatrix("xiCd40e1xigiven1dot0.txt"); alphaCd40e1_xigiven1dot0 = readmatrix("alphaCd40e1xigiven1dot0.txt");
+xiCd40e1_xigiven1dot3 = readmatrix("xiCd40e1xigiven1dot3.txt"); alphaCd40e1_xigiven1dot3 = readmatrix("alphaCd40e1xigiven1dot3.txt");
+
+figure();
+plot(xiCd40e1_xi01dot1,alphaCd40e1_xi01dot1,'r-'); hold on;
+plot(xiCd40e1_xigiven0dot3,alphaCd40e1_xigiven0dot3,'b-'); hold on;
+plot(xiCd40e1_xigiven0dot75,alphaCd40e1_xigiven0dot75,'k-'); hold on;
+plot(xiCd40e1_xigiven1dot0,alphaCd40e1_xigiven1dot0,'m-'); hold on;
+plot(xiCd40e1_xigiven1dot3,alphaCd40e1_xigiven1dot3,'g-'); hold on;
+
+legend("Cd=40e1,Cb=100Cd,xi-given=0", ...
+       "Cd=40e1,Cb=100Cd,xi-given=-0.3", ...
+       "Cd=40e1,Cb=100Cd,xi-given=-0.75", ...
+       "Cd=40e1,Cb=100Cd,xi-given=-1.0", ...
+       "Cd=40e1,Cb=100Cd,xi-given=-1.3")
+
+title("damage variable vs strain invariant ratio")
+xlabel("strain invariant ratio")
+ylabel("damage variable")

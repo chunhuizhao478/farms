@@ -22,15 +22,15 @@ while var.t < var.Tmax
 %       %{
       if xi_pre > var.xi
           var.strain_rate = -1e-4;
-          var.dt = 1e-3;
+          var.dt = 1e-1;
           var.depsx = var.strain_rate * var.dt;
       elseif xi_pre < var.xi && var.alpha_ < 0.1
           var.strain_rate = -1e-4;
-          var.dt = 1e-2;
+          var.dt = 1e-1;
           var.depsx = var.strain_rate * var.dt;
       else
           var.strain_rate = -1e-4;
-          var.dt = 1e-2;
+          var.dt = 1e-1;
           var.depsx = var.strain_rate * var.dt;
       end
       %% Compute alpha & B %%

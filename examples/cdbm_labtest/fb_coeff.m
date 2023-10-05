@@ -2,7 +2,7 @@ function[a0_out,a1_out,a2_out,a3_out] = fb_coeff(param)
 %input: param (struct); output: None (change in place "param")
 %Solve for parameters of free energy in granular state 
 %clear all; close all; clc
-xi_given = 0;
+xi_given = param.xi_given;
 %% Intermediate parameters %%
 mu_cr = param.mu_0 + comp_alpha_cr(xi_given,param) * param.xi_0 * param.gamma_r;
 gamma_cr = comp_alpha_cr(xi_given,param) * param.gamma_r;
