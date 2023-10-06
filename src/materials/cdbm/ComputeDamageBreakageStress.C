@@ -316,7 +316,7 @@ ComputeDamageBreakageStress::computeQpStress()
       _eps_e[_qp] = eps_e_out;
 
       ///update strain rate
-      _shear_strain[_qp] = eps12e_out;
+      _principal_strain[_qp] = 0.5 * ( eps11e_out + eps22e_out ) + sqrt( 0.5 * 0.5 * ( eps11e_out - eps22e_out ) * ( eps11e_out - eps22e_out ) + 0.5 * 0.5 * ( 2 * eps12e_out ) * ( 2 * eps12e_out ) );
 
       //total strain
       RankTwoTensor eps_total_out;

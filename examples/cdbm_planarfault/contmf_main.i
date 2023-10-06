@@ -5,13 +5,13 @@
 # mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
 # mu_s = 0.677
 # S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4 ) = 0.514
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.4) * 120e6) = 386m
-# Use mesh size = 50m
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 120e6) = 185m
+# Use mesh size = 25m
 
-# Diffusion Length Scale D = 1e6
-# sqrt(1e6*386/3464) = 333. using 6~7, 50m mesh to resolve it
+# Diffusion Length Scale D = 5e5
+# sqrt(5e5*185/3464) = 163. using 6~7, 25m mesh to resolve it
 
-# Check CFL condition 0.1 * 50 / 6000 ~ 0.001s
+# Check CFL condition 0.1 * 25 / 6000 ~ 0.0001s
 ##########################################################
 
 #sample test geometry
@@ -21,10 +21,10 @@
     dim = 2
     nx = 800
     ny = 100
-    xmin = -20000
-    xmax = 20000
-    ymin = -2500
-    ymax = 2500
+    xmin = -10000
+    xmax = 10000
+    ymin = -1250
+    ymax = 1250
     elem_type = TRI3
   []
   [./new_block]
@@ -107,7 +107,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #self-defined value
-  D = 100
+  D = 1e3
   
 []
 
@@ -376,7 +376,7 @@
   #and compute its rate using "MaterialRateRealAux"
   [get_shear_strain_rate]
       type = MaterialRateRealAux
-      property = shear_strain
+      property = principal_strain
       variable = mechanical_strain_rate
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
@@ -384,7 +384,7 @@
   [fault_len]
       type = ConstantAux
       variable = nodal_area
-      value = 50
+      value = 25
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
 []
@@ -462,7 +462,7 @@
   #mus constant value: 0.7
   [func_static_friction_coeff_mus]
       type = ConstantFunction
-      value = 0.677
+      value = 0.7
   []
   #mud constant value: 0.4
   [func_dynamic_friction_coeff_mud]
@@ -493,7 +493,7 @@
   #This is different from pure tpv205 
   [./func_initial_stress_xx]
     type = ConstantFunction
-    value = -135e6
+    value = -120e6
   []
 []
 
@@ -508,7 +508,7 @@
 
 [Executioner]
   type = Transient
-  dt = 0.0001
+  dt = 1e-4
   end_time = 4.0
   # num_steps = 20
   [TimeIntegrator]

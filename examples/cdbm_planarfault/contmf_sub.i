@@ -1,3 +1,19 @@
+##########################################################
+# Unified Parameter Choice For CBDM Complex Network Problem
+# mu_d = 0.4
+# For Main Fault, 
+# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
+# mu_s = 0.677
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4 ) = 0.514
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 120e6) = 185m
+# Use mesh size = 25m
+
+# Diffusion Length Scale D = 5e5
+# sqrt(5e5*185/3464) = 163. using 6~7, 25m mesh to resolve it
+
+# Check CFL condition 0.1 * 25 / 6000 ~ 0.0001s
+##########################################################
+
 #sample test geometry
 [Mesh]
   [./msh]
@@ -5,10 +21,10 @@
     dim = 2
     nx = 800
     ny = 100
-    xmin = -20000
-    xmax = 20000
-    ymin = -2500
-    ymax = 2500
+    xmin = -10000
+    xmax = 10000
+    ymin = -1250
+    ymax = 1250
     elem_type = TRI3
   []
   [./new_block]
@@ -49,14 +65,14 @@
 
   #power-law correction
   #index
-  m = 0.85
+  m = 0.9
 
   #low strain rate threshold
   mechanical_strain_rate_threshold = 1e-4
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = 10
+  CdCb_multiplier = 100
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
   C_BH = 0
@@ -88,7 +104,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #self-defined value
-  D = 100
+  D = 1e3
   
 []
 
