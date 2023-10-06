@@ -54,72 +54,83 @@
 
 [GlobalParams]
 
-    ##----continuum damage breakage model----##
+  ##----continuum damage breakage model----##
 
-    #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+  #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
+  xi_0 = -0.8
 
-    #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+  #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
+  xi_d = -0.9
 
-    #<strain invariants ratio: maximum allowable value>: set boundary
-    #Xu_etal_P15-2D
-    #may need a bit space, use 1.5 as boundary
-    xi_max = 1.5
+  #<strain invariants ratio: maximum allowable value>: set boundary
+  #Xu_etal_P15-2D
+  #may need a bit space, use 1.5 as boundary
+  xi_max = 1.5
 
-    #<strain invariants ratio: minimum allowable value>: set boundary
-    #Xu_etal_P15-2D
-    xi_min = -1.5
+  #<strain invariants ratio: minimum allowable value>: set boundary
+  #Xu_etal_P15-2D
+  xi_min = -1.5
 
-    #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_d = 108
+  #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+  #under slow strain rate < low strain rate threshold
+  C_d_min = 10
 
-    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_B = 10800
+  #power-law correction
+  #index
+  m = 0.85
 
-    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    C_BH = 0
+  #low strain rate threshold
+  mechanical_strain_rate_threshold = 1e-4
 
-    #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-    C_1 = 0
+  #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+  #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
+  CdCb_multiplier = 10
 
-    #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-    C_2 = 0.05
+  #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
+  C_BH = 0
 
-    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.03 #1e-3
+  #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
+  C_1 = 0
 
-    #critical point of three phases (strain invariants ratio vs damage)
-    xi_1 = 0.8248
+  #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
+  C_2 = 0.05
 
-    ##Compute parameters in granular states
-    #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
-    #check struct_param.m
+  #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+  beta_width = 0.03 #1e-3
 
-    #Note: "computeAlphaCr" needs to change every time the related parameters changed
+  #critical point of three phases (strain invariants ratio vs damage)
+  xi_1 = 0.8248
 
-    #coefficients
-    a0 = 4.9526e9
-    a1 = -1.8888e10
-    a2 = 2.3960e10
-    a3 = -1.0112e10
+  ##Compute parameters in granular states
+  #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
+  #check struct_param.m
 
-    #diffusion coefficient #self-defined value
-    D = 200000
-    
-  []
+  #--------------------------------------------------------------------------------#
+  #Note: "computeAlphaCr" needs to change every time the related parameters changed
+  #--------------------------------------------------------------------------------#
+
+  #coefficients
+  a0 = 4.9526e9
+  a1 = -1.8888e10
+  a2 = 2.3960e10
+  a3 = -1.0112e10
+
+  #diffusion coefficient #self-defined value
+  D = 100
+  
+[]
 
   [Variables]
     [alpha_sub]
-        order = CONSTANT
-        family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
   []
 
   [AuxVariables]
     [alpha_old]
-        order = CONSTANT
-        family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
     [B_old]
         order = CONSTANT
@@ -147,8 +158,8 @@
     []
     #checked
     [alpha_checked]
-        order = CONSTANT
-        family = MONOMIAL
+        order = FIRST
+        family = LAGRANGE
     []
     [B_checked]
         order = CONSTANT
@@ -156,6 +167,25 @@
     []
     #
     [B_sub]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #grad_alpha
+    [alpha_grad_x_sub]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [alpha_grad_y_sub]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #mechanical strain rate sub
+    [mechanical_strain_rate_sub]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #Track Cd
+    [track_Cd]
       order = CONSTANT
       family = MONOMIAL
     []
@@ -167,12 +197,13 @@
         variable = alpha_sub
     []
     [./alpha_forcing_func]
-        type = DamageVarForcingFunc
-        alpha_old = alpha_old
-        B_old = B_old
-        xi_old = xi_old
-        I2_old = I2_old
-        variable = alpha_sub
+      type = DamageVarForcingFunc
+      alpha_old = alpha_old
+      B_old = B_old
+      xi_old = xi_old
+      I2_old = I2_old
+      mechanical_strain_rate = mechanical_strain_rate_sub
+      variable = alpha_sub
     []
   []
 
@@ -187,6 +218,7 @@
       mu_old = mu_old
       gamma_old = gamma_old
       lambda_old = lambda_old
+      mechanical_strain_rate = mechanical_strain_rate_sub
       execute_on = 'TIMESTEP_BEGIN'
     []
     [check_alpha]
@@ -199,6 +231,27 @@
       type = CheckAlphaB
       coupled = B_sub
       variable = B_checked
+      execute_on = 'TIMESTEP_END'
+    []
+    [alpha_grad_x_sub]
+      type = VariableGradientComponent
+      variable = alpha_grad_x_sub
+      component = x
+      gradient_variable = alpha_checked
+      execute_on = 'TIMESTEP_END'
+   []
+   [alpha_grad_y_sub]
+     type = VariableGradientComponent
+     variable = alpha_grad_y_sub
+     component = y
+     gradient_variable = alpha_checked
+     execute_on = 'TIMESTEP_END'
+    []
+    #Track Cd
+    [track_Cd_aux]
+      type = TrackCdEvoAux
+      variable = track_Cd
+      mechanical_strain_rate = mechanical_strain_rate_sub
       execute_on = 'TIMESTEP_END'
     []
   []

@@ -65,7 +65,7 @@
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
     lambda_o = 3.204e10
-    
+      
     #initial shear modulus value (second lame constant) [Pa]
     shear_modulus_o = 3.204e10
 
@@ -76,32 +76,13 @@
     xi_d = -0.9
 
     #<strain invariants ratio: maximum allowable value>: set boundary
+    #Xu_etal_P15-2D
+    #may need a bit space, use 1.5 as boundary
     xi_max = 1.5
 
     #<strain invariants ratio: minimum allowable value>: set boundary
+    #Xu_etal_P15-2D
     xi_min = -1.5
-
-    #<ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
-    #Note: this value is used to determine coefficients: a0 a1 a2 a3
-    #chi = 0.5 
-
-    #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_d = 108
-
-    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_B = 10800
-
-    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    C_BH = 0
-
-    #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-    C_1 = 0
-
-    #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-    C_2 = 0.05
-
-    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.03
 
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -127,13 +108,18 @@
     #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
     #check struct_param.m
 
+    #--------------------------------------------------------------------------------#
     #Note: "computeAlphaCr" needs to change every time the related parameters changed
+    #--------------------------------------------------------------------------------#
 
     #coefficients
     a0 = 4.9526e9
     a1 = -1.8888e10
     a2 = 2.3960e10
     a3 = -1.0112e10
+
+    #diffusion coefficient #self-defined value
+    D = 100
     
   []
 
@@ -179,8 +165,8 @@
         family = MONOMIAL
     []
     [./ini_shear_stress]
-        order = CONSTANT
-        family = MONOMIAL
+        order = FIRST
+        family = LAGRANGE
     []
     [./tangent_jump_rate]
         order = CONSTANT
@@ -195,10 +181,10 @@
         family = LAGRANGE
     [../]
     #obtain parameters from MaterialRealAux, pass parameters to subApp
-    [./alpha_old]
-      order = CONSTANT
-      family = MONOMIAL
-    []
+    # [./alpha_old]
+    #   order = FIRST
+    #   family = LAGRANGE
+    # []
     [./B_old]
         order = CONSTANT
         family = MONOMIAL
@@ -223,20 +209,31 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    [./shear_wave_speed_old]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./pressure_wave_speed_old]
-      order = CONSTANT
-      family = MONOMIAL
-    []
     #updated alpha, B
     [./alpha_in]
+      order = FIRST
+      family = LAGRANGE
+    []
+    [./B_in]
       order = CONSTANT
       family = MONOMIAL
     []
-    [./B_in]
+    #grad_alpha
+    [./alpha_grad_x]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./alpha_grad_y]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #mechanical strain rate
+    [./mechanical_strain_rate]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #track Cd
+    [./track_Cd]
       order = CONSTANT
       family = MONOMIAL
     []
@@ -345,12 +342,12 @@
       execute_on = 'TIMESTEP_BEGIN'
     []
     #obtain parameters from MaterialRealAux
-    [get_alpha_old]
-        type = MaterialRealAux
-        property = alpha_damagedvar
-        variable = alpha_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
+    # [get_alpha_old]
+    #     type = MaterialRealAux
+    #     property = alpha_damagedvar
+    #     variable = alpha_old
+    #     execute_on = 'INITIAL TIMESTEP_BEGIN'
+    # []
     [get_B_old]
         type = MaterialRealAux
         property = B
@@ -387,6 +384,21 @@
         variable = gamma_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #define shear strain material property (elastic) inside damage stress 
+    #and compute its rate using "MaterialRateRealAux"
+    [get_shear_strain_rate]
+        type = MaterialRateRealAux
+        property = shear_strain
+        variable = mechanical_strain_rate
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #fault length
+    [fault_len]
+        type = ConstantAux
+        variable = nodal_area
+        value = 50
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
   []
 
   [Kernels]
@@ -413,14 +425,16 @@
   []
 
   [Materials]
-    #damage breakage model
+  #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStress
-        option = 1
-        alpha_in = alpha_in
-        B_in = B_in
-        output_properties = 'eps_p eps_e eps_total I1'
-        outputs = exodus
+      type = ComputeDamageBreakageStress
+      option = 1
+      alpha_in = alpha_in
+      B_in = B_in
+      alpha_grad_x = alpha_grad_x
+      alpha_grad_y = alpha_grad_y
+      output_properties = 'eps_p eps_e eps_total I1'
+      outputs = exodus
     []
     [density]
         type = GenericConstantMaterial
@@ -499,12 +513,12 @@
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
-    [./nodal_area]
-        type = NodalArea
-        variable = nodal_area
-        boundary = 'czm'
-        execute_on = 'initial TIMESTEP_BEGIN'
-    [../]
+    # [./nodal_area]
+    #     type = NodalArea
+    #     variable = nodal_area
+    #     boundary = 'czm'
+    #     execute_on = 'initial TIMESTEP_BEGIN'
+    # [../]
   []
 
   [Executioner]
@@ -527,7 +541,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 2000
+    interval = 250
     [sample_snapshots]
       type = Exodus
       interval = 2500
@@ -638,17 +652,18 @@
 
 [Transfers]
   [pull_resid]
-      type = MultiAppCopyTransfer
-      from_multi_app = sub_app
-      source_variable = 'alpha_checked B_checked'
-      variable = 'alpha_in B_in'
-      execute_on = 'TIMESTEP_BEGIN'
+    type = MultiAppCopyTransfer
+    from_multi_app = sub_app
+    source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd'
+    variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd'
+    execute_on = 'TIMESTEP_BEGIN'
   []
+  #we actually don't need to pass alpha and B
   [push_disp]
       type = MultiAppCopyTransfer
       to_multi_app = sub_app
-      source_variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old'
-      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old'
+      source_variable = 'alpha_in B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
+      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
       execute_on = 'TIMESTEP_BEGIN'
   []
 []
