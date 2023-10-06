@@ -61,7 +61,7 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 10
+  C_d_min = 100
 
   #power-law correction
   #index

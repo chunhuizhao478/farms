@@ -30,13 +30,20 @@
   [./new_block]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'y<0'
+    combinatorial_geometry = 'x >= -8000 & x <= 8000 & y < 0'
     block_id = 1
+  []
+  [./new_block_2]
+    type = ParsedSubdomainMeshGenerator
+    input = new_block
+    combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > 0'
+    block_id = 2
   []
   [./split]
     type = BreakMeshByBlockGenerator
-    input = new_block
+    input = new_block_2
     split_interface = true
+    block_pairs = '1 2'
   []
 []
   

@@ -61,7 +61,7 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 10
+  C_d_min = 100
 
   #power-law correction
   #index
@@ -185,7 +185,8 @@
       variable = alpha_sub
   []
   [./alpha_forcing_func]
-      type = DamageVarForcingFunc
+      type = DamageVarForcingFuncDev
+      scale = 10
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -197,7 +198,8 @@
 
 [AuxKernels]
   [compute_B]
-    type = BreakageVarUpdate
+    type = BreakageVarUpdateDev
+    scale = 10
     variable = B_sub
     alpha_old = alpha_old
     B_old = B_old
