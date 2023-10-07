@@ -462,7 +462,7 @@
   #mus constant value: 0.7
   [func_static_friction_coeff_mus]
       type = ConstantFunction
-      value = 0.7
+      value = 0.677
   []
   #mud constant value: 0.4
   [func_dynamic_friction_coeff_mud]
