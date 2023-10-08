@@ -17,15 +17,8 @@
 #sample test geometry
 [Mesh]
   [./msh]
-    type = GeneratedMeshGenerator
-    dim = 2
-    nx = 800
-    ny = 50
-    xmin = -5000
-    xmax = 5000
-    ymin = -625
-    ymax = 625
-    elem_type = TRI3
+    type = FileMeshGenerator
+    file =  '../../meshgenerator/cdbm/contmf/tria/contmf.msh'
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
@@ -38,6 +31,15 @@
     input = new_block
     split_interface = true
   []
+  [./sidesets]
+  input = split
+  type = SideSetsFromNormalsGenerator
+  normals = '-1 0 0
+              1 0 0
+              0 -1 0
+              0 1 0'
+  new_boundary = 'left right bottom top'
+[]
 []
   
 [GlobalParams]
@@ -107,7 +109,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #self-defined value
-  D = 1e3
+  D = 1e4
   
 []
 
@@ -174,8 +176,8 @@
   #   family = LAGRANGE
   # []
   [./B_old]
-      order = FIRST
-      family = MONOMIAL
+    order = FIRST
+    family = LAGRANGE
   []
   [./xi_old]
       order = CONSTANT
@@ -200,11 +202,11 @@
   #updated alpha, B
   [./alpha_in]
     order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
   [./B_in]
     order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
   #grad_alpha
   [./alpha_grad_x]
@@ -336,12 +338,12 @@
   #     variable = alpha_old
   #     execute_on = 'INITIAL TIMESTEP_BEGIN'
   # []
-  [get_B_old]
-      type = MaterialRealAux
-      property = B
-      variable = B_old
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-  []
+  # [get_B_old]
+  #     type = MaterialRealAux
+  #     property = B
+  #     variable = B_old
+  #     execute_on = 'INITIAL TIMESTEP_BEGIN'
+  # []
   [get_xi_old]
       type = MaterialRealAux
       property = xi
@@ -641,7 +643,7 @@
   [push_disp]
       type = MultiAppCopyTransfer
       to_multi_app = sub_app
-      source_variable = 'alpha_in B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
+      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
       variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
       execute_on = 'TIMESTEP_BEGIN'
   []

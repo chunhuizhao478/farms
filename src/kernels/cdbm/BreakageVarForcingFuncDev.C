@@ -1,0 +1,185 @@
+/*
+Update Breakage Variable Using Runge-Kutta own solver
+
+- 10/5/2023 Chunhui Zhao
+
+Include power-law correction on Cd (function of strain rate e)
+if (e < 1e-4){ Cd = 10 };
+else{ Cd = pow(10, log10(1+m*log10(e/1e-4)) ) }
+
+Cb = CdCb_multiplier * Cd
+
+*/
+
+#include "BreakageVarForcingFuncDev.h"
+
+registerMooseObject("farmsApp", BreakageVarForcingFuncDev);
+
+InputParameters
+BreakageVarForcingFuncDev::validParams()
+{
+  InputParameters params = Kernel::validParams();
+
+  //constant parameters
+  params.addRequiredParam<Real>(   "C_d_min", "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
+  params.addRequiredParam<Real>(       "C_BH", "coefficient of healing for breakage evolution");
+  params.addRequiredParam<Real>(         "a0", "parameters in granular states");
+  params.addRequiredParam<Real>(         "a1", "parameters in granular states");
+  params.addRequiredParam<Real>(         "a2", "parameters in granular states");
+  params.addRequiredParam<Real>(         "a3", "parameters in granular states");
+  params.addRequiredParam<Real>(     "xi_min", "strain invariant ratio at minimum value");
+  params.addRequiredParam<Real>(     "xi_max", "strain invariant ratio at maximum value");
+  params.addRequiredParam<Real>(       "xi_d", "strain invariant ratio at maximum value");
+  params.addRequiredParam<Real>(       "xi_0", "strain invariants ratio: onset of damage evolution");
+  params.addRequiredParam<Real>(       "xi_1", "strain invariants ratio: onset of breakage healing");
+  params.addRequiredParam<Real>( "beta_width", "coefficient gives width of transitional region");
+  params.addRequiredParam<Real>(     "m", "Cd power-law correction index");
+  params.addRequiredParam<Real>("mechanical_strain_rate_threshold", "threshold value for strain rate such that Cd takes constant value Cd_min if strain rate below this value.");
+  params.addRequiredParam<Real>("CdCb_multiplier", "multiplier between Cd and Cb");
+  params.addParam<Real>( "scale", 1.0, "scale the Cd power-law");
+
+  //variable parameters
+  params.addRequiredCoupledVar(  "alpha_old", "damage variable at previous time step");
+  params.addRequiredCoupledVar(      "B_old", "breakage variable at previous time step");
+  params.addRequiredCoupledVar(     "xi_old", "strain invariant ratio at previous time step");
+  params.addRequiredCoupledVar(     "I2_old", "second strain invariant at previous time step");
+  params.addRequiredCoupledVar(     "mu_old", "shear modulus at previous time step");
+  params.addRequiredCoupledVar( "lambda_old", "first lame constant at previous time step");
+  params.addRequiredCoupledVar(  "gamma_old", "damage modulus at previous time step");
+  params.addRequiredCoupledVar("mechanical_strain_rate", "strain rate");
+
+  //add options
+  params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
+  params.addParam<Real>( "Cd_constant", 0.0, "constant Cd value for option 2 only");
+
+  return params;
+}
+
+BreakageVarForcingFuncDev::BreakageVarForcingFuncDev(const InputParameters & parameters)
+ : Kernel(parameters),
+  _Cd_min(getParam<Real>("C_d_min")),
+  _C_BH(getParam<Real>("C_BH")),
+  _a0(getParam<Real>("a0")),
+  _a1(getParam<Real>("a1")),
+  _a2(getParam<Real>("a2")),
+  _a3(getParam<Real>("a3")),
+  _xi_min(getParam<Real>("xi_min")),
+  _xi_max(getParam<Real>("xi_max")),
+  _xi_d(getParam<Real>("xi_d")),
+  _xi_0(getParam<Real>("xi_0")),
+  _xi_1(getParam<Real>("xi_1")),
+  _beta_width(getParam<Real>("beta_width")),
+  _scale(getParam<Real>("scale")),
+  _m(getParam<Real>("m")),
+  _mechanical_strain_rate_threshold(getParam<Real>("mechanical_strain_rate_threshold")),
+  _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
+  _alpha_old(coupledValue("alpha_old")),
+  _B_old(coupledValue("B_old")),
+  _xi_old(coupledValue("xi_old")),
+  _I2_old(coupledValue("I2_old")),
+  _mu_old(coupledValue("mu_old")),
+  _lambda_old(coupledValue("lambda_old")),
+  _gamma_old(coupledValue("gamma_old")),
+  _mechanical_strain_rate(coupledValue("mechanical_strain_rate")),
+  _option(getParam<int>("option")),
+  _Cd_constant(getParam<Real>("Cd_constant"))
+{
+}
+
+Real
+BreakageVarForcingFuncDev::computeQpResidual()
+{ 
+  
+ //get parameters
+    Real alpha = _alpha_old[_qp];
+    Real B = _B_old[_qp];
+    Real I2 = _I2_old[_qp];
+    Real xi = _xi_old[_qp];
+    // Real mu = _mu_old[_qp];
+    // Real gamma_damaged = _gamma_old[_qp];
+    // Real lambda = _lambda_old[_qp];
+
+    //Power-law correction
+    //Initialize Cd
+    Real Cd = 0;
+    //Check options
+    if ( _option == 1 ){
+
+      //power-law correction on coefficient Cd(function of strain rate)
+      if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd remain constant
+      {
+        Cd = _Cd_min;
+      }
+      else{ //Cd follows power-law
+        Cd = _scale * pow(10, 1 + _m * log10( _mechanical_strain_rate[_qp] / _mechanical_strain_rate_threshold ) ) * _Cd_min;
+      }
+
+    }
+    else if ( _option == 2 ){
+
+      if ( _Cd_constant == 0.0 ){
+        mooseError("For option 2, need to provide nonzero Cd_constant value !");
+      }
+      else{
+        Cd = _Cd_constant;
+      }
+
+    }
+    else{
+      mooseError("Please provide valid option number!");
+    }
+
+    //Compute C_B
+    Real C_B = _CdCb_multiplier * Cd;
+
+    //
+    Real Prob = 0;
+    Real alphacr = computeAlphaCr(xi);
+    Prob = 1.0 / ( exp( (alphacr - alpha) / _beta_width ) + 1.0 );
+
+    //no healing
+    if ( xi >= _xi_0 ){
+        return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+    }
+    else{
+        return 0;
+    }
+}
+
+Real
+BreakageVarForcingFuncDev::computeQpJacobian()
+{
+  return 0.0;
+}
+
+/// Function: Compute alpha_cr based on the current xi
+Real 
+BreakageVarForcingFuncDev::computeAlphaCr(Real xi)
+{
+  Real alphacr;
+  if ( xi < _xi_0 )
+  {
+    alphacr = 1.0;
+  } 
+  else if ( xi > _xi_0 && xi <= _xi_1 )
+  {
+    //lambda_o,shear_modulus_o = 1e11
+    //alphacr = (2.156104221527420*(30*xi - sqrt(25*pow(xi,6) + 300*pow(xi,4) + 560*pow(xi,3) - 2100*pow(xi,2) - 1440*xi + 3576) + 5*pow(xi,3) + 56))/(75*pow(xi,2) + 120*xi - 11);
+    //lambda_o,shear_modulus_o = 32.04e9
+    alphacr = ((xi*2.76e5-7.100521107637101e2*xi*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e+2*pow(xi,3)*1.25e2+pow(xi,3)*4.6e4+sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(xi*(-1.44e3)-pow(xi,2)*2.1e3+pow(xi,3)*5.6e2+pow(xi,4)*3.0e2+pow(xi,6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(xi*3.837588e7-7.100521107637101e2*xi*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*pow(xi,2)*2.76e4+pow(xi,2)*2.3984925e7-3.517789e6);
+  }
+  else if ( xi > _xi_1 && xi <= _xi_max )
+  {
+    //lambda_o,shear_modulus_o = 1e11
+    //alphacr = (1.078052110763710e+03)/(125*(5*xi + 8));
+    //lambda_o,shear_modulus_o = 32.04e9
+    alphacr = 6.408e10/(7.100521107637101e2*1.737762711864407e8+xi*(7.100521107637101e2*1.086101694915254e8-3.996854237288136e10)-6.394966779661017e10);
+  }
+  else
+  {
+    std::cout<<"xi: "<<xi<<std::endl;
+    mooseError("xi exceeds the maximum allowable range!");
+  }
+  return alphacr;
+
+}

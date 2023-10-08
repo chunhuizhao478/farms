@@ -8,3 +8,6 @@ New Objects Created:
 
 1. DamageVarForcingFuncDev
 2. BreakageVarUpdateDev
+
+- Oct 8
+Test FIRST LAGRANGE, D = 1E4, unstructed mesh, Cd Cb depends on strain rate scale 100

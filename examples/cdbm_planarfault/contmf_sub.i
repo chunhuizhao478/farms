@@ -17,15 +17,8 @@
 #sample test geometry
 [Mesh]
   [./msh]
-    type = GeneratedMeshGenerator
-    dim = 2
-    nx = 800
-    ny = 50
-    xmin = -5000
-    xmax = 5000
-    ymin = -625
-    ymax = 625
-    elem_type = TRI3
+    type = FileMeshGenerator
+    file =  '../../meshgenerator/cdbm/contmf/tria/contmf.msh'
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
@@ -37,6 +30,15 @@
     type = BreakMeshByBlockGenerator
     input = new_block
     split_interface = true
+  []
+  [./sidesets]
+    input = split
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0'
+    new_boundary = 'left right bottom top'
   []
 []
   
@@ -104,7 +106,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #self-defined value
-  D = 1e3
+  D = 0
   
 []
 
@@ -112,6 +114,10 @@
   [alpha_sub]
       order = CONSTANT
       family = MONOMIAL
+  []
+  [B_sub]
+    order = CONSTANT
+    family = MONOMIAL
   []
 []
 
@@ -146,15 +152,10 @@
   []
   #checked
   [alpha_checked]
-      order = CONSTANT
-      family = MONOMIAL
+    order = CONSTANT
+    family = MONOMIAL
   []
   [B_checked]
-      order = CONSTANT
-      family = MONOMIAL
-  []
-  #
-  [B_sub]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -185,34 +186,37 @@
       variable = alpha_sub
   []
   [./alpha_forcing_func]
-    type = DamageVarForcingFuncDev
-    option = 2
-    Cd_constant = 8e5
-    alpha_old = alpha_old
-    B_old = B_old
-    xi_old = xi_old
-    I2_old = I2_old
-    mechanical_strain_rate = mechanical_strain_rate_sub
-    variable = alpha_sub
+      type = DamageVarForcingFuncDev
+      option = 2
+      Cd_constant = 1e7
+      alpha_old = alpha_old
+      B_old = B_old
+      xi_old = xi_old
+      I2_old = I2_old
+      mechanical_strain_rate = mechanical_strain_rate_sub
+      variable = alpha_sub
+  []
+  [./timederivative_B]
+    type = TimeDerivative
+    variable = B_sub
+  []
+  [./B_forcing_func]
+      type = BreakageVarForcingFuncDev
+      option = 2
+      Cd_constant = 1e7
+      variable = B_sub
+      alpha_old = alpha_old
+      B_old = B_old
+      xi_old = xi_old
+      I2_old = I2_old
+      mu_old = mu_old
+      gamma_old = gamma_old
+      lambda_old = lambda_old
+      mechanical_strain_rate = mechanical_strain_rate_sub
   []
 []
 
 [AuxKernels]
-  [compute_B]
-    type = BreakageVarUpdateDev
-    option = 2
-    Cd_constant = 8e5
-    variable = B_sub
-    alpha_old = alpha_old
-    B_old = B_old
-    xi_old = xi_old
-    I2_old = I2_old
-    mu_old = mu_old
-    gamma_old = gamma_old
-    lambda_old = lambda_old
-    mechanical_strain_rate = mechanical_strain_rate_sub
-    execute_on = 'TIMESTEP_BEGIN'
-  []
   [check_alpha]
     type = CheckAlphaB
     coupled = alpha_sub
