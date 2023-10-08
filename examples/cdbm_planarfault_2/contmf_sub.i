@@ -106,7 +106,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #self-defined value
-  D = 1e4
+  D = 1e3
   
 []
 
