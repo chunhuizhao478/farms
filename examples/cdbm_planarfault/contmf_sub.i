@@ -20,11 +20,11 @@
     type = GeneratedMeshGenerator
     dim = 2
     nx = 800
-    ny = 200
-    xmin = -10000
-    xmax = 10000
-    ymin = -2500
-    ymax = 2500
+    ny = 50
+    xmin = -5000
+    xmax = 5000
+    ymin = -625
+    ymax = 625
     elem_type = TRI3
   []
   [./new_block]
@@ -61,7 +61,7 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 10
+  C_d_min = 100
 
   #power-law correction
   #index
@@ -110,15 +110,15 @@
 
 [Variables]
   [alpha_sub]
-      order = FIRST
-      family = LAGRANGE
+      order = CONSTANT
+      family = MONOMIAL
   []
 []
 
 [AuxVariables]
   [alpha_old]
-      order = FIRST
-      family = LAGRANGE
+      order = CONSTANT
+      family = MONOMIAL
   []
   [B_old]
       order = CONSTANT
@@ -146,8 +146,8 @@
   []
   #checked
   [alpha_checked]
-      order = FIRST
-      family = LAGRANGE
+      order = CONSTANT
+      family = MONOMIAL
   []
   [B_checked]
       order = CONSTANT
@@ -185,19 +185,23 @@
       variable = alpha_sub
   []
   [./alpha_forcing_func]
-      type = DamageVarForcingFunc
-      alpha_old = alpha_old
-      B_old = B_old
-      xi_old = xi_old
-      I2_old = I2_old
-      mechanical_strain_rate = mechanical_strain_rate_sub
-      variable = alpha_sub
+    type = DamageVarForcingFuncDev
+    option = 2
+    Cd_constant = 8e5
+    alpha_old = alpha_old
+    B_old = B_old
+    xi_old = xi_old
+    I2_old = I2_old
+    mechanical_strain_rate = mechanical_strain_rate_sub
+    variable = alpha_sub
   []
 []
 
 [AuxKernels]
   [compute_B]
-    type = BreakageVarUpdate
+    type = BreakageVarUpdateDev
+    option = 2
+    Cd_constant = 8e5
     variable = B_sub
     alpha_old = alpha_old
     B_old = B_old

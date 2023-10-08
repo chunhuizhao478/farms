@@ -20,11 +20,11 @@
     type = GeneratedMeshGenerator
     dim = 2
     nx = 800
-    ny = 200
-    xmin = -10000
-    xmax = 10000
-    ymin = -2500
-    ymax = 2500
+    ny = 50
+    xmin = -5000
+    xmax = 5000
+    ymin = -625
+    ymax = 625
     elem_type = TRI3
   []
   [./new_block]
@@ -199,8 +199,8 @@
   []
   #updated alpha, B
   [./alpha_in]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   [./B_in]
     order = CONSTANT
