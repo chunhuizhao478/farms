@@ -20,30 +20,23 @@
     type = GeneratedMeshGenerator
     dim = 2
     nx = 800
-    ny = 200
+    ny = 50
     xmin = -10000
     xmax = 10000
-    ymin = -2500
-    ymax = 2500
+    ymin = -625
+    ymax = 625
     elem_type = TRI3
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= -8000 & x <= 8000 & y < 0'
+    combinatorial_geometry = 'y<0'
     block_id = 1
-  []
-  [./new_block_2]
-    type = ParsedSubdomainMeshGenerator
-    input = new_block
-    combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > 0'
-    block_id = 2
   []
   [./split]
     type = BreakMeshByBlockGenerator
-    input = new_block_2
+    input = new_block
     split_interface = true
-    block_pairs = '1 2'
   []
 []
   
@@ -68,7 +61,7 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 10
+  C_d_min = 100
 
   #power-law correction
   #index
@@ -118,17 +111,17 @@
 [Variables]
   [alpha_sub]
       order = FIRST
-      family = LAGRANGE
+      family = MONOMIAL
   []
 []
 
 [AuxVariables]
   [alpha_old]
       order = FIRST
-      family = LAGRANGE
+      family = MONOMIAL
   []
   [B_old]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
   []
   [xi_old]
@@ -154,15 +147,15 @@
   #checked
   [alpha_checked]
       order = FIRST
-      family = LAGRANGE
+      family = MONOMIAL
   []
   [B_checked]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
   []
   #
   [B_sub]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
   []
   #grad_alpha
@@ -192,7 +185,9 @@
       variable = alpha_sub
   []
   [./alpha_forcing_func]
-      type = DamageVarForcingFunc
+      type = DamageVarForcingFuncDev
+      option = 2
+      Cd_constant = 8e5
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -204,7 +199,9 @@
 
 [AuxKernels]
   [compute_B]
-    type = BreakageVarUpdate
+    type = BreakageVarUpdateDev
+    option = 2
+    Cd_constant = 8e5
     variable = B_sub
     alpha_old = alpha_old
     B_old = B_old

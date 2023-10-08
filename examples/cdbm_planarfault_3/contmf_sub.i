@@ -20,11 +20,11 @@
     type = GeneratedMeshGenerator
     dim = 2
     nx = 800
-    ny = 200
-    xmin = -10000
-    xmax = 10000
-    ymin = -2500
-    ymax = 2500
+    ny = 50
+    xmin = -5000
+    xmax = 5000
+    ymin = -625
+    ymax = 625
     elem_type = TRI3
   []
   [./new_block]
@@ -111,17 +111,17 @@
 [Variables]
   [alpha_sub]
       order = FIRST
-      family = LAGRANGE
+      family = MONOMIAL
   []
 []
 
 [AuxVariables]
   [alpha_old]
       order = FIRST
-      family = LAGRANGE
+      family = MONOMIAL
   []
   [B_old]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
   []
   [xi_old]
@@ -147,15 +147,15 @@
   #checked
   [alpha_checked]
       order = FIRST
-      family = LAGRANGE
+      family = MONOMIAL
   []
   [B_checked]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
   []
   #
   [B_sub]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
   []
   #grad_alpha
@@ -186,7 +186,8 @@
   []
   [./alpha_forcing_func]
       type = DamageVarForcingFuncDev
-      scale = 10
+      option = 1
+      scale = 100
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -199,7 +200,8 @@
 [AuxKernels]
   [compute_B]
     type = BreakageVarUpdateDev
-    scale = 10
+    option = 1
+    scale = 100
     variable = B_sub
     alpha_old = alpha_old
     B_old = B_old

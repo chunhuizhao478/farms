@@ -35,6 +35,10 @@ BreakageVarUpdateDev::validParams()
   params.addRequiredCoupledVar(  "gamma_old", "damage modulus at previous time step");
   params.addRequiredCoupledVar("mechanical_strain_rate", "strain rate");
 
+  //add options
+  params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
+  params.addParam<Real>( "Cd_constant", 0.0, "constant Cd value for option 2 only");
+
   return params;
 }
 
@@ -63,7 +67,9 @@ BreakageVarUpdateDev::BreakageVarUpdateDev(const InputParameters & parameters)
   _mu_old(coupledValue("mu_old")),
   _lambda_old(coupledValue("lambda_old")),
   _gamma_old(coupledValue("gamma_old")),
-  _mechanical_strain_rate(coupledValue("mechanical_strain_rate"))
+  _mechanical_strain_rate(coupledValue("mechanical_strain_rate")),
+  _option(getParam<int>("option")),
+  _Cd_constant(getParam<Real>("Cd_constant"))
 {
 }
 
@@ -82,13 +88,31 @@ BreakageVarUpdateDev::computeValue()
     //Power-law correction
     //Initialize Cd
     Real Cd = 0;
-    //power-law correction on coefficient Cd(function of strain rate)
-    if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd remain constant
-    {
-      Cd = _Cd_min;
+    //Check options
+    if ( _option == 1 ){
+
+      //power-law correction on coefficient Cd(function of strain rate)
+      if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd remain constant
+      {
+        Cd = _Cd_min;
+      }
+      else{ //Cd follows power-law
+        Cd = _scale * pow(10, 1 + _m * log10( _mechanical_strain_rate[_qp] / _mechanical_strain_rate_threshold ) ) * _Cd_min;
+      }
+
     }
-    else{ //Cd follows power-law
-      Cd = _scale * pow(10, 1 + _m * log10( _mechanical_strain_rate[_qp] / _mechanical_strain_rate_threshold ) ) * _Cd_min;
+    else if ( _option == 2 ){
+
+      if ( _Cd_constant == 0.0 ){
+        mooseError("For option 2, need to provide nonzero Cd_constant value !");
+      }
+      else{
+        Cd = _Cd_constant;
+      }
+
+    }
+    else{
+      mooseError("Please provide valid option number!");
     }
 
     //Compute C_B

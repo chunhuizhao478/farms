@@ -58,6 +58,10 @@ class BreakageVarUpdateDev : public AuxKernel
     /// mechanical strain rate
     const VariableValue & _mechanical_strain_rate;
 
+    /// add options
+    int _option;
+    Real _Cd_constant;
+
     Real OdeIntegrator(Real alpha,
                        Real B,
                        Real I2,

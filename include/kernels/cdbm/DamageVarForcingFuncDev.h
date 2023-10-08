@@ -59,4 +59,7 @@ private:
   const VariableValue & _I2_old;
   /// mechanical strain rate
   const VariableValue & _mechanical_strain_rate;
+  /// add options
+  int _option;
+  Real _Cd_constant;
 };
