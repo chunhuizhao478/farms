@@ -111,7 +111,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #for structural stress coupling
-  D = 0
+  D = 1e3
   
 []
 
