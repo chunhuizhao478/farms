@@ -18,7 +18,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
+    file =  '../../meshgenerator/cdbm/contmf/tria/contmf.msh'
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
@@ -68,7 +68,7 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 100
+  C_d_min = 10
 
   #power-law correction
   #index
@@ -193,7 +193,7 @@
   [./alpha_forcing_func]
       type = DamageVarForcingFuncDev
       option = 1
-      scale = 100
+      scale = 10
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -208,7 +208,7 @@
   [./B_forcing_func]
       type = BreakageVarForcingFuncDev
       option = 1
-      scale = 100
+      scale = 10
       variable = B_sub
       alpha_old = alpha_old
       B_old = B_old

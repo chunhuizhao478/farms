@@ -18,7 +18,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
+    file =  '../../meshgenerator/cdbm/contmf/tria/contmf.msh'
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
@@ -109,7 +109,7 @@
   a3 = -1.0112e10
 
   #diffusion coefficient #for structural stress coupling
-  D = 1e-3
+  D = 1e3
   
 []
 
@@ -495,7 +495,7 @@
   #This is different from pure tpv205 
   [./func_initial_stress_xx]
     type = ConstantFunction
-    value = -120e6
+    value = -135e6
   []
 []
 
