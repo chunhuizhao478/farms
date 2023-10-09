@@ -53,6 +53,10 @@ DamageVarForcingFuncDev::validParams()
   params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
   params.addParam<Real>( "Cd_constant", 0.0, "constant Cd value for option 2 only");
 
+  //fix diffuison
+  params.addRequiredParam<Real>("shear_modulus_o", "initial shear modulus");
+  params.addRequiredParam<Real>("lambda_o", "initial lame constant");
+
   return params;
 }
 
@@ -74,7 +78,9 @@ DamageVarForcingFuncDev::DamageVarForcingFuncDev(const InputParameters & paramet
   _I2_old(coupledValue("I2_old")),
   _mechanical_strain_rate(coupledValue("mechanical_strain_rate")),
   _option(getParam<int>("option")),
-  _Cd_constant(getParam<Real>("Cd_constant"))
+  _Cd_constant(getParam<Real>("Cd_constant")),
+  _shear_modulus_o(getParam<Real>("shear_modulus_o")),
+  _lambda_o(getParam<Real>("lambda_o"))
 {
 }
 
@@ -112,9 +118,13 @@ DamageVarForcingFuncDev::computeQpResidual()
     mooseError("Please provide valid option number!");
   }
 
+  //Compute Diffusion coefficient
+  Real YoungE = _shear_modulus_o * ( 3 * _lambda_o + 2 * _shear_modulus_o ) / ( _lambda_o + _shear_modulus_o );
+  Real Diffusion_Coeff = _D * Cd / YoungE;
+
   //weak form for damage variable evolution
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    return -1 * (1 - _B_old[_qp]) * ( Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+    return -1 * (1 - _B_old[_qp]) * ( Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + Diffusion_Coeff * _grad_u[_qp] * _grad_test[_i][_qp] );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     //with healing

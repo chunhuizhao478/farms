@@ -18,7 +18,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshgenerator/cdbm/contmf/tria/contmf.msh'
+    file =  '../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
@@ -108,8 +108,8 @@
   a2 = 2.3960e10
   a3 = -1.0112e10
 
-  #diffusion coefficient #self-defined value
-  D = 1e3
+  #diffusion coefficient #for structural stress coupling
+  D = 0
   
 []
 
@@ -510,7 +510,7 @@
 
 [Executioner]
   type = Transient
-  dt = 1e-4
+  dt = 2e-4
   end_time = 4.0
   # num_steps = 20
   [TimeIntegrator]
@@ -522,7 +522,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 500
+  interval = 250
   # [sample_snapshots]
   #   type = Exodus
   #   interval = 5000

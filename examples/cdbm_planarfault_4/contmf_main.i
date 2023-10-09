@@ -106,7 +106,7 @@
   a2 = 2.3960e10
   a3 = -1.0112e10
 
-  #diffusion coefficient #self-defined value
+  #diffusion coefficient #for structural stress coupling
   D = 1e3
   
 []

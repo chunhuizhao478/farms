@@ -62,4 +62,7 @@ private:
   /// add options
   int _option;
   Real _Cd_constant;
+  /// fix diffusion
+  Real _shear_modulus_o;
+  Real _lambda_o;
 };

@@ -18,7 +18,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshgenerator/cdbm/contmf/tria/contmf.msh'
+    file =  '../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
   []
   [./new_block]
     type = ParsedSubdomainMeshGenerator
@@ -45,6 +45,11 @@
 [GlobalParams]
 
   ##----continuum damage breakage model----##
+  #initial lambda value (first lame constant) [Pa]
+  lambda_o = 3.204e10
+    
+  #initial shear modulus value (second lame constant) [Pa]
+  shear_modulus_o = 3.204e10
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
   xi_0 = -0.8
@@ -105,7 +110,7 @@
   a2 = 2.3960e10
   a3 = -1.0112e10
 
-  #diffusion coefficient #self-defined value
+  #diffusion coefficient #for structural stress coupling
   D = 1e3
   
 []
