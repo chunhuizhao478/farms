@@ -203,7 +203,7 @@
   [./alpha_forcing_func]
       type = DamageVarForcingFuncDev
       option = 1
-      scale = 100
+      scale = 10
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -218,7 +218,7 @@
   [./B_forcing_func]
       type = BreakageVarForcingFuncDev
       option = 1
-      scale = 100
+      scale = 10
       variable = B_sub
       alpha_old = alpha_old
       B_old = B_old
