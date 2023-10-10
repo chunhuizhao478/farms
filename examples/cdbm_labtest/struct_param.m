@@ -7,7 +7,7 @@ param.P_c = 10 * 10 ^ 6;   %Pa  <confinement pressure> refer to "Lyak_BZ_JMPS14_
 param.lambda_0 = 3.204e10;  %Pa  <initial 1st lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
 param.mu_0 = 3.204e10;      %Pa  <initial 2nd lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
 param.xi_0 = -0.8;        %--  <strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-param.xi_d = -1.4;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
+param.xi_d = -0.9;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
 param.xi_max = sqrt(3);    %--  <strain invariants ratio: maximum allowable value>: set boundary
 param.xi_min = -sqrt(3);   %--  <strain invariants ratio: minimum allowable value>: set boundary
 param.chi = 0.5;           %--  <ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
@@ -20,7 +20,7 @@ param.C_BH = 10 * param.C_B;  %1/s <coefficient of healing for breakage evolutio
 param.C_g  = 1e-10;         %1/(Pa*s) <material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
 param.m1  = 10;            %--  <coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
 param.m2  = 1;             %--  <coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-param.xi_given = -1.3;     %location where ensure the Fb < Fs
+param.xi_given = 0;        %location where ensure the Fb < Fs
 %% Compute gamma_r, xi_1 %%
 [out_gamma_r,out_xi_1,alpha_out1_func,alpha_out2_func] = hessian(param);
 param.gamma_r = double(out_gamma_r);
