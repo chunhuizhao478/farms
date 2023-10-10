@@ -57,6 +57,9 @@ DamageVarForcingFuncDev::validParams()
   params.addRequiredParam<Real>("shear_modulus_o", "initial shear modulus");
   params.addRequiredParam<Real>("lambda_o", "initial lame constant");
 
+  //add healing
+  params.addParam<bool>("healing", false, "if turn on healing, true = on, false = off, default is false = off");
+
   return params;
 }
 
@@ -80,7 +83,8 @@ DamageVarForcingFuncDev::DamageVarForcingFuncDev(const InputParameters & paramet
   _option(getParam<int>("option")),
   _Cd_constant(getParam<Real>("Cd_constant")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
-  _lambda_o(getParam<Real>("lambda_o"))
+  _lambda_o(getParam<Real>("lambda_o")),
+  _healing(getParam<bool>("healing"))
 {
 }
 
@@ -128,9 +132,13 @@ DamageVarForcingFuncDev::computeQpResidual()
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     //with healing
-    //return -1 * (1 - _B_old[_qp]) * ( _C1 * exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+    if ( _healing == true ){
+      return -1 * (1 - _B_old[_qp]) * ( _C1 * exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + Diffusion_Coeff * _grad_u[_qp] * _grad_test[_i][_qp] );
+    }
     //no healing
-    return 0.0;
+    else{
+      return 0.0;
+    }
   }
   else{
     mooseError("xi_old is OUT-OF-RANGE!.");

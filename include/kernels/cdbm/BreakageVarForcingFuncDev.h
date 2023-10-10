@@ -30,7 +30,8 @@ protected:
 private:
     /// constant parameters
     Real _Cd_min; //minimum Cd value for small strain (e < 1e-4)
-    Real _C_BH;
+    /// multiplier between Cb and Cbh
+    Real _CBCBH_multiplier;
     Real _a0;
     Real _a1;
     Real _a2;
@@ -63,6 +64,9 @@ private:
     /// add options
     int _option;
     Real _Cd_constant;
+
+    /// add healing option
+    bool _healing;
 
     Real computeAlphaCr(Real xi);
 };

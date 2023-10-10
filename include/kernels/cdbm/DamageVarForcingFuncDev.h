@@ -65,4 +65,6 @@ private:
   /// fix diffusion
   Real _shear_modulus_o;
   Real _lambda_o;
+  /// add healing option
+  bool _healing;
 };

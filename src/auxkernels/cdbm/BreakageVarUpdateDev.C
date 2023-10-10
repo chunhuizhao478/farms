@@ -9,7 +9,7 @@ BreakageVarUpdateDev::validParams()
 
   //constant parameters
   params.addRequiredParam<Real>(   "C_d_min", "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
-  params.addRequiredParam<Real>(       "C_BH", "coefficient of healing for breakage evolution");
+  params.addRequiredParam<Real>(  "CBCBH_multiplier", "coefficient of healing for breakage evolution");
   params.addRequiredParam<Real>(         "a0", "parameters in granular states");
   params.addRequiredParam<Real>(         "a1", "parameters in granular states");
   params.addRequiredParam<Real>(         "a2", "parameters in granular states");
@@ -39,13 +39,16 @@ BreakageVarUpdateDev::validParams()
   params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
   params.addParam<Real>( "Cd_constant", 0.0, "constant Cd value for option 2 only");
 
+  //add healing
+  params.addParam<bool>("healing", false, "if turn on healing, true = on, false = off, default is false = off");
+
   return params;
 }
 
 BreakageVarUpdateDev::BreakageVarUpdateDev(const InputParameters & parameters)
   : AuxKernel(parameters),
   _Cd_min(getParam<Real>("C_d_min")),
-  _C_BH(getParam<Real>("C_BH")),
+  _CBCBH_multiplier(getParam<Real>("CBCBH_multiplier")),
   _a0(getParam<Real>("a0")),
   _a1(getParam<Real>("a1")),
   _a2(getParam<Real>("a2")),
@@ -69,7 +72,8 @@ BreakageVarUpdateDev::BreakageVarUpdateDev(const InputParameters & parameters)
   _gamma_old(coupledValue("gamma_old")),
   _mechanical_strain_rate(coupledValue("mechanical_strain_rate")),
   _option(getParam<int>("option")),
-  _Cd_constant(getParam<Real>("Cd_constant"))
+  _Cd_constant(getParam<Real>("Cd_constant")),
+  _healing(getParam<bool>("healing"))
 {
 }
 
@@ -118,8 +122,11 @@ BreakageVarUpdateDev::computeValue()
     //Compute C_B
     Real C_B = _CdCb_multiplier * Cd;
 
+    //Compute C_BH
+    Real C_BH = _CBCBH_multiplier * C_B;
+
     //ode solve
-    Real B_update = OdeIntegrator(alpha,B,I2,xi,mu,gamma_damaged,lambda, C_B);
+    Real B_update = OdeIntegrator(alpha,B,I2,xi,mu,gamma_damaged,lambda, C_B, C_BH);
 
     return B_update;
 }
@@ -134,35 +141,12 @@ BreakageVarUpdateDev::OdeIntegrator(Real alpha,
                                  Real mu,
                                  Real gamma_damaged,
                                  Real lambda,
-                                 Real C_B)
+                                 Real C_B,
+                                 Real C_BH)
 {
   Real ynew = 0;
-  // //initialize k
-  // Real k1 = 0.0; Real k2 = 0.0; Real k3 = 0.0;
-  // Real k4 = 0.0; Real k5 = 0.0; Real k6 = 0.0; Real k7 = 0.0;
-  // //parameters
-  // Real a1 = 1.0/5.0;
-  // Real b1 = 3.0/40.0;       Real b2 = 9.0/40.0; 
-  // Real c1 = 44.0/45.0;      Real c2 = -56.0/15.0;      Real c3 = 32.0/9.0; 
-  // Real d1 = 19372.0/6561.0; Real d2 = -25360.0/2187.0; Real d3 = 64448.0/6561.0;  Real d4 = -212.0/729.0; 
-  // Real e1 = 9017.0/3168.0;  Real e2 = -355.0/33.0;     Real e3 = 46732.0/5247.0;  Real e4 = 49.0/176.0;     Real e5 = -5103.0/18656.0; 
-  // Real f1 = 35.0/384.0;     Real f3 = 500.0/1113.0;    Real f4 = 125.0/192.0;     Real f5 = -2187.0/6784.0; Real f6 = 11.0/84.0;
-  // //
-  // Real y1 = 35.0/384.0; Real y3 = 500.0/1113.0; Real y4 = 125.0/192.0;
-  // Real y5 = -2187.0/6784.0; Real y6 = 11.0/84.0;
-
-  // k1 = _dt * computeBreakageEvolution(alpha                                                  ,B                                                  ,I2,xi,mu,gamma_damaged,lambda);
-  // k2 = _dt * computeBreakageEvolution(alpha + a1 * k1                                        ,B + a1 * k1                                        ,I2,xi,mu,gamma_damaged,lambda);
-  // k3 = _dt * computeBreakageEvolution(alpha + b1 * k1 + b2 * k2                              ,B + b1 * k1 + b2 * k2                              ,I2,xi,mu,gamma_damaged,lambda);
-  // k4 = _dt * computeBreakageEvolution(alpha + c1 * k1 + c2 * k2 + c3 * k3                    ,B + c1 * k1 + c2 * k2 + c3 * k3                    ,I2,xi,mu,gamma_damaged,lambda);
-  // k5 = _dt * computeBreakageEvolution(alpha + d1 * k1 + d2 * k2 + d3 * k3 + d4 * k4          ,B + d1 * k1 + d2 * k2 + d3 * k3 + d4 * k4          ,I2,xi,mu,gamma_damaged,lambda);
-  // k6 = _dt * computeBreakageEvolution(alpha + e1 * k1 + e2 * k2 + e3 * k3 + e4 * k4 + e5 * k5,B + e1 * k1 + e2 * k2 + e3 * k3 + e4 * k4 + e5 * k5,I2,xi,mu,gamma_damaged,lambda);
-  // k7 = _dt * computeBreakageEvolution(alpha + f1 * k1 + f3 * k3 + f4 * k4 + f5 * k5 + f6 * k6,B + f1 * k1 + f3 * k3 + f4 * k4 + f5 * k5 + f6 * k6,I2,xi,mu,gamma_damaged,lambda);
-  
-  //ynew = B + y1 * k1 + y3 * k3 + y4 * k4 + y5 * k5 + y6 * k6; 
-
   Real k1 = 0.0;
-  k1 = _dt * computeBreakageEvolution(alpha,B,I2,xi,mu,gamma_damaged,lambda, C_B);
+  k1 = _dt * computeBreakageEvolution(alpha,B,I2,xi,mu,gamma_damaged,lambda, C_B, C_BH);
   ynew = B + k1; //use first-order approx
 
   return ynew;
@@ -173,36 +157,40 @@ BreakageVarUpdateDev::computeBreakageEvolution(Real alpha,
                                             Real B,
                                             Real I2,
                                             Real xi,
-                                            Real /*mu*/,
-                                            Real /*gamma_damaged*/,
-                                            Real /*lambda*/,
-                                            Real C_B)
+                                            Real mu,
+                                            Real gamma_damaged,
+                                            Real lambda,
+                                            Real C_B,
+                                            Real C_BH)
 { 
   Real Prob = computeGranularStateProb(alpha, xi);
 
-  // //with healing
-  // if ( xi >= _xi_d && xi <= _xi_max ){
-  //   return _C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) );
-  // }
-  // else if ( xi < _xi_d && xi >= _xi_min ){
-  //   //with healing
-  //   //return _C_BH * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) );
-  //   //no healing
-  //   return 0.0;
-  // }
-  // else{
-  //   std::cout<<"xi: "<<xi<<std::endl;
-  //   mooseError("xi_old is OUT-OF-RANGE!.");
-  //   return 0;
-  // }
-
-  //no healing
-  if ( xi >= _xi_0 ){
-    return C_B * Prob * (1-B) * I2 * (xi - _xi_0); //could heal if xi < xi_0
-    //return _C_B * Prob * (1-B) * I2 * abs(xi - _xi_0);  //forbid any healing
+  if ( _healing == true ){
+    //with healing
+    if ( xi >= _xi_d && xi <= _xi_max ){
+      return C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) );
+    }
+    else if ( xi < _xi_d && xi >= _xi_min ){
+      //with healing
+      return C_BH * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) );
+      //no healing
+      return 0.0;
+    }
+    else{
+      std::cout<<"xi: "<<xi<<std::endl;
+      mooseError("xi_old is OUT-OF-RANGE!.");
+      return 0;
+    }
   }
   else{
-    return 0;
+    //no healing
+    if ( xi >= _xi_0 ){
+      return C_B * Prob * (1-B) * I2 * (xi - _xi_0); //could heal if xi < xi_0
+      //return _C_B * Prob * (1-B) * I2 * abs(xi - _xi_0);  //forbid any healing
+    }
+    else{
+      return 0;
+    }
   }
 }
 

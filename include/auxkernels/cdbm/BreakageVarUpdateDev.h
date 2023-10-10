@@ -28,7 +28,7 @@ class BreakageVarUpdateDev : public AuxKernel
 
     /// constant parameters
     Real _Cd_min; //minimum Cd value for small strain (e < 1e-4)
-    Real _C_BH;
+    Real _CBCBH_multiplier;
     Real _a0;
     Real _a1;
     Real _a2;
@@ -62,6 +62,9 @@ class BreakageVarUpdateDev : public AuxKernel
     int _option;
     Real _Cd_constant;
 
+    /// add healing option
+    bool _healing;
+
     Real OdeIntegrator(Real alpha,
                        Real B,
                        Real I2,
@@ -69,7 +72,8 @@ class BreakageVarUpdateDev : public AuxKernel
                        Real mu,
                        Real gamma_damaged,
                        Real lambda,
-                       Real C_B);
+                       Real C_B,
+                       Real C_BH);
     Real computeBreakageEvolution(Real alpha,
                                   Real B,
                                   Real I2,
@@ -77,7 +81,8 @@ class BreakageVarUpdateDev : public AuxKernel
                                   Real mu,
                                   Real gamma_damaged,
                                   Real lambda,
-                                  Real C_B);
+                                  Real C_B,
+                                  Real C_BH);
     Real computeGranularStateProb(Real alpha, Real xi);
     Real computeAlphaCr(Real xi);
 

@@ -22,7 +22,7 @@ BreakageVarForcingFuncDev::validParams()
 
   //constant parameters
   params.addRequiredParam<Real>(   "C_d_min", "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
-  params.addRequiredParam<Real>(       "C_BH", "coefficient of healing for breakage evolution");
+  params.addRequiredParam<Real>(  "CBCBH_multiplier", "coefficient of healing for breakage evolution");
   params.addRequiredParam<Real>(         "a0", "parameters in granular states");
   params.addRequiredParam<Real>(         "a1", "parameters in granular states");
   params.addRequiredParam<Real>(         "a2", "parameters in granular states");
@@ -52,13 +52,16 @@ BreakageVarForcingFuncDev::validParams()
   params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
   params.addParam<Real>( "Cd_constant", 0.0, "constant Cd value for option 2 only");
 
+  //add healing
+  params.addParam<bool>("healing", false, "if turn on healing, true = on, false = off, default is false = off");
+
   return params;
 }
 
 BreakageVarForcingFuncDev::BreakageVarForcingFuncDev(const InputParameters & parameters)
  : Kernel(parameters),
   _Cd_min(getParam<Real>("C_d_min")),
-  _C_BH(getParam<Real>("C_BH")),
+  _CBCBH_multiplier(getParam<Real>("CBCBH_multiplier")),
   _a0(getParam<Real>("a0")),
   _a1(getParam<Real>("a1")),
   _a2(getParam<Real>("a2")),
@@ -82,7 +85,8 @@ BreakageVarForcingFuncDev::BreakageVarForcingFuncDev(const InputParameters & par
   _gamma_old(coupledValue("gamma_old")),
   _mechanical_strain_rate(coupledValue("mechanical_strain_rate")),
   _option(getParam<int>("option")),
-  _Cd_constant(getParam<Real>("Cd_constant"))
+  _Cd_constant(getParam<Real>("Cd_constant")),
+  _healing(getParam<bool>("healing"))
 {
 }
 
@@ -95,9 +99,9 @@ BreakageVarForcingFuncDev::computeQpResidual()
     Real B = _B_old[_qp];
     Real I2 = _I2_old[_qp];
     Real xi = _xi_old[_qp];
-    // Real mu = _mu_old[_qp];
-    // Real gamma_damaged = _gamma_old[_qp];
-    // Real lambda = _lambda_old[_qp];
+    Real mu = _mu_old[_qp];
+    Real gamma_damaged = _gamma_old[_qp];
+    Real lambda = _lambda_old[_qp];
 
     //Power-law correction
     //Initialize Cd
@@ -132,17 +136,36 @@ BreakageVarForcingFuncDev::computeQpResidual()
     //Compute C_B
     Real C_B = _CdCb_multiplier * Cd;
 
+    //Compute C_BH
+    Real C_BH = _CBCBH_multiplier * C_B;
+
     //
     Real Prob = 0;
     Real alphacr = computeAlphaCr(xi);
     Prob = 1.0 / ( exp( (alphacr - alpha) / _beta_width ) + 1.0 );
 
-    //no healing
-    if ( xi >= _xi_0 ){
-        return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+    //no healing //this formulation is used in the splitstrain article
+    if ( _healing == false ){
+      if ( xi >= _xi_0 ){
+          return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+      }
+      else{
+          return 0;
+      }
     }
-    else{
+    else{ //with healing
+      //add pre-check to the value (cause problem if encountered large values)
+      if ( xi >= _xi_d && xi <= _xi_max ){
+        return -1.0 * C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
+      }
+      else if ( xi < _xi_d && xi >= _xi_min ){
+        return -1.0 * C_BH * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
+      }
+      else{
+        std::cout<<"xi: "<<xi<<std::endl;
+        mooseError("xi_old is OUT-OF-RANGE!.");
         return 0;
+      }
     }
 }
 
