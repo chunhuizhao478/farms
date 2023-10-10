@@ -6,25 +6,25 @@
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -7000 & x<= 3000 & y<=100 & y>=0'
+      combinatorial_geometry = 'x >= -3000 & x<= 3000 & y<=100 & y>=0'
       block_id = 1
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -7000 & x<= 3000 & y<=0 & y>=-100'
+      combinatorial_geometry = 'x >= -3000 & x<= 3000 & y<=0 & y>=-100'
       block_id = 2
   []
   [./new_block_3]
       type = ParsedSubdomainMeshGenerator
       input = new_block_2
-      combinatorial_geometry = 'x >= 0 & x<= 10000 & y<=-900 & y>=-1000'
+      combinatorial_geometry = 'x >= -1000 & x<= 6000 & y<=-900 & y>=-1000'
       block_id = 3
   []
   [./new_block_4]
       type = ParsedSubdomainMeshGenerator
       input = new_block_3
-      combinatorial_geometry = 'x >= 0 & x<= 10000 & y<=-1000 & y>=-1100'
+      combinatorial_geometry = 'x >= -1000 & x<= 6000 & y<=-1000 & y>=-1100'
       block_id = 4
   []
   [./split]
@@ -178,8 +178,8 @@
   #   family = LAGRANGE
   # []
   [./B_old]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   [./xi_old]
       order = CONSTANT
@@ -207,8 +207,8 @@
     family = LAGRANGE
   []
   [./B_in]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   #grad_alpha
   [./alpha_grad_x]
