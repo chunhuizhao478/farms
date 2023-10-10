@@ -78,7 +78,7 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 100
+  C_d_min = 10
 
   #power-law correction
   #index
@@ -89,15 +89,15 @@
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = 100
+  CdCb_multiplier = 10
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-  C_BH = 0
+  CBCBH_multiplier = 10
 
-  #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
-  C_1 = 0
+  #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
+  C_1 = 300
 
-  #<coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4
+  #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
   C_2 = 0.05
 
   #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -131,8 +131,8 @@
     family = LAGRANGE
   []
   [B_sub]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
 []
 
@@ -142,8 +142,8 @@
     family = LAGRANGE
   []
   [B_old]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   [xi_old]
       order = CONSTANT
@@ -171,8 +171,8 @@
     family = LAGRANGE
   []
   [B_checked]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   #grad_alpha
   [alpha_grad_x_sub]
@@ -197,8 +197,8 @@
 
 [Kernels]
   [./timederivative_alpha]
-    type = TimeDerivative
-    variable = alpha_sub
+      type = TimeDerivative
+      variable = alpha_sub
   []
   [./alpha_forcing_func]
       type = DamageVarForcingFuncDev
@@ -210,6 +210,7 @@
       I2_old = I2_old
       mechanical_strain_rate = mechanical_strain_rate_sub
       variable = alpha_sub
+      healing = true
   []
   [./timederivative_B]
     type = TimeDerivative
@@ -228,6 +229,7 @@
       gamma_old = gamma_old
       lambda_old = lambda_old
       mechanical_strain_rate = mechanical_strain_rate_sub
+      healing = true
   []
 []
 

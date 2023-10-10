@@ -186,8 +186,8 @@
   #   family = LAGRANGE
   # []
   [./B_old]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   [./xi_old]
       order = CONSTANT
@@ -215,8 +215,8 @@
     family = LAGRANGE
   []
   [./B_in]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   #grad_alpha
   [./alpha_grad_x]
