@@ -174,7 +174,7 @@ BreakageVarUpdateDev::computeBreakageEvolution(Real alpha,
       //with healing
       return C_BH * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) );
       //no healing
-      return 0.0;
+      //return 0.0;
     }
     else{
       std::cout<<"xi: "<<xi<<std::endl;

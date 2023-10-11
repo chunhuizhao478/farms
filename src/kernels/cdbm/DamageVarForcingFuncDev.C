@@ -99,11 +99,11 @@ DamageVarForcingFuncDev::computeQpResidual()
   if ( _option == 1 ){
 
     //power-law correction on coefficient Cd(function of strain rate)
-    if ( _mechanical_strain_rate[_qp] > _mechanical_strain_rate_threshold && _mechanical_strain_rate[_qp] > 0 ) //Cd follows power-law
+    if ( _mechanical_strain_rate[_qp] > _mechanical_strain_rate_threshold ) //Cd follows power-law
     {
       Cd = _scale * pow(10, 1 + _m * log10( _mechanical_strain_rate[_qp] / _mechanical_strain_rate_threshold ) ) * _Cd_min;
     }
-    else{ //Cd remains constant
+    else if ( _mechanical_strain_rate[_qp] > 0 ){ //Cd remains constant
       Cd = _Cd_min;
     }
 

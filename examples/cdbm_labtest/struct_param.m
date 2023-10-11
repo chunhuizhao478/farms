@@ -10,7 +10,7 @@ param.xi_0 = -0.8;        %--  <strain invariants ratio: onset of damage evoluti
 param.xi_d = -0.9;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
 param.xi_max = sqrt(3);    %--  <strain invariants ratio: maximum allowable value>: set boundary
 param.xi_min = -sqrt(3);   %--  <strain invariants ratio: minimum allowable value>: set boundary
-param.chi = 0.5;           %--  <ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
+param.chi = 0.9;          %--  <ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
 param.C_d = 40e1;          %1/s <coefficient gives positive damage   evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
 param.C_1 = 300;           %1/s <coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4 %%1e-14 %%300
 param.C_2 = 0.05;          %1/s <coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4 %%0.1 %%0.05
