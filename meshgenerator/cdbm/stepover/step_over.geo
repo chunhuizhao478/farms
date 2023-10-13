@@ -1,12 +1,12 @@
 // Gmsh project created on Sun Nov  6 10:46:12 2022
 // Step-over embedded fault mesh 
 
-lc = 400;
+lc = 200;
 
-Point(1) = {     7000,   -2000, 0.0, lc};
-Point(2) = {     7000,    1000, 0.0, lc};
-Point(3) = {    -4000,    1000, 0.0, lc};
-Point(4) = {    -4000,   -2000, 0.0, lc};
+Point(1) = {     15000,   -6000, 0.0, lc};
+Point(2) = {     15000,    5000, 0.0, lc};
+Point(3) = {    -12000,    5000, 0.0, lc};
+Point(4) = {    -12000,   -6000, 0.0, lc};
 Point(5) = {    -3000,       0, 0.0, lc};
 Point(6) = {     3000,       0, 0.0, lc};
 Point(7) = {        0,   -1000, 0.0, lc};
@@ -26,12 +26,12 @@ Line{5} In Surface{1};
 Line{6} In Surface{1};
 
 Field[1] = Box;
-Field[1].VIn = lc / 16;
+Field[1].VIn = lc / 8;
 Field[1].VOut = lc;
 Field[1].XMin =  -8000;
 Field[1].XMax =  11000;
-Field[1].YMin =  -2000;
-Field[1].YMax =   1000;
+Field[1].YMin =  -4000;
+Field[1].YMax =   3000;
 Field[1].Thickness = lc;
 
 Background Field = 1;

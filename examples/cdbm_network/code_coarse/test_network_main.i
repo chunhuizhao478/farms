@@ -112,11 +112,29 @@
   #Note: "computeAlphaCr" needs to change every time the related parameters changed
   #--------------------------------------------------------------------------------#
 
-  #coefficients
-  a0 = 4.9526e9
-  a1 = -1.8888e10
-  a2 = 2.3960e10
-  a3 = -1.0112e10
+  # #coefficients
+  # a0 = 4.9526e9
+  # a1 = -1.8888e10
+  # a2 = 2.3960e10
+  # a3 = -1.0112e10
+
+  #chi = 0.95
+  # a0 = 9.410e9
+  # a1 = -2.474e10
+  # a2 = 1.850e10
+  # a3 = -2.832e9
+
+  # #ggw183.pdf
+  # a0 = 7.414e9
+  # a1 = -2.1344e10
+  # a2 = 1.9058e10
+  # a3 = -4.946e9
+
+  # chi = 0.75
+  a0 = 7.4289e9
+  a1 = -2.214e10
+  a2 = 2.0929e10
+  a3 = -6.0672e9
 
   #diffusion coefficient #for structural stress coupling
   D = 1e3
@@ -186,8 +204,8 @@
   #   family = LAGRANGE
   # []
   [./B_old]
-    order = CONSTANT
-    family = MONOMIAL
+    order = FIRST
+    family = LAGRANGE
   []
   [./xi_old]
       order = CONSTANT
@@ -211,11 +229,20 @@
   []
   #updated alpha, B
   [./alpha_in]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   [./B_in]
     order = CONSTANT
+    family = MONOMIAL
+  []
+  #high-order-dummy
+  [./alpha_in_dummy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [./B_in_dummy]
+    order = FIRST
     family = MONOMIAL
   []
   #grad_alpha
@@ -227,8 +254,16 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  #mechanical strain rate
+  #mechanical strain and its rate
+  [./mechanical_strain]
+    order = CONSTANT
+    family = MONOMIAL
+  []
   [./mechanical_strain_rate]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [./mechanical_strain_rate_FD]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -341,6 +376,12 @@
     coupled = tangent_jump
     execute_on = 'TIMESTEP_BEGIN'
   []
+  [Principal_Strain_Rate]
+    type = FDCompVarRate
+    variable = mechanical_strain_rate_FD
+    coupled = mechanical_strain
+    execute_on = 'TIMESTEP_END'
+  []
   #obtain parameters from MaterialRealAux
   # [get_alpha_old]
   #     type = MaterialRealAux
@@ -392,6 +433,12 @@
       variable = mechanical_strain_rate
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
+  [get_shear_strain]
+    type = MaterialRealAux
+    property = principal_strain
+    variable = mechanical_strain
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
   #fault length
   [fault_len]
       type = ConstantAux
@@ -429,8 +476,8 @@
   [stress_medium]
       type = ComputeDamageBreakageStress
       option = 1
-      alpha_in = alpha_in
-      B_in = B_in
+      alpha_in = alpha_in_dummy
+      B_in = B_in_dummy
       alpha_grad_x = alpha_grad_x
       alpha_grad_y = alpha_grad_y
       output_properties = 'eps_p eps_e eps_total I1'
@@ -520,7 +567,7 @@
 
 [Executioner]
   type = Transient
-  dt = 2e-4
+  dt = 5e-4
   end_time = 8.0
   # num_steps = 20
   [TimeIntegrator]
@@ -532,7 +579,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 250
+  interval = 125
   # [sample_snapshots]
   #   type = Exodus
   #   interval = 5000
@@ -637,7 +684,7 @@
       type = TransientMultiApp
       positions = '0 0 0'
       input_files = 'test_network_sub.i'
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
   [../]
 []
 
@@ -645,16 +692,16 @@
   [pull_resid]
       type = MultiAppCopyTransfer
       from_multi_app = sub_app
-      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd'
-      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd'
+      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd alpha_checked_dummy B_checked_dummy'
+      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd alpha_in_dummy B_in_dummy'
       execute_on = 'TIMESTEP_BEGIN'
   []
   #we actually don't need to pass alpha and B
   [push_disp]
       type = MultiAppCopyTransfer
       to_multi_app = sub_app
-      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
-      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
-      execute_on = 'TIMESTEP_BEGIN'
+      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_FD alpha_in_dummy B_in_dummy'
+      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub alpha_old_dummy B_old_dummy'
+      execute_on = 'TIMESTEP_END'
   []
 []
