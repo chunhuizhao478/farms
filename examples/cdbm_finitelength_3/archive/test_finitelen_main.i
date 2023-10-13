@@ -203,21 +203,12 @@
   []
   #updated alpha, B
   [./alpha_in]
-    order = CONSTANT
-    family = MONOMIAL
+    order = FIRST
+    family = LAGRANGE
   []
   [./B_in]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  #high-order-dummy
-  [./alpha_in_dummy]
     order = FIRST
-    family = MONOMIAL
-  []
-  [./B_in_dummy]
-    order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
   #grad_alpha
   [./alpha_grad_x]
@@ -405,7 +396,7 @@
       type = MaterialRateRealAux
       property = principal_strain
       variable = mechanical_strain_rate
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+      execute_on = 'INITIAL TIMESTEP_END'
   []
   [get_shear_strain]
     type = MaterialRealAux
@@ -542,7 +533,7 @@
 [Executioner]
   type = Transient
   dt = 5e-4
-  end_time = 4.0
+  end_time = 8.0
   # num_steps = 20
   [TimeIntegrator]
     type = CentralDifference
@@ -553,7 +544,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 125
+  interval = 250
   # [sample_snapshots]
   #   type = Exodus
   #   interval = 5000
@@ -666,16 +657,16 @@
   [pull_resid]
       type = MultiAppCopyTransfer
       from_multi_app = sub_app
-      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd alpha_checked_dummy B_checked_dummy'
-      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd alpha_in_dummy B_in_dummy'
+      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd'
+      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd'
       execute_on = 'TIMESTEP_BEGIN'
   []
   #we actually don't need to pass alpha and B
   [push_disp]
       type = MultiAppCopyTransfer
       to_multi_app = sub_app
-      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_FD alpha_in_dummy B_in_dummy'
-      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub alpha_old_dummy B_old_dummy'
+      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
+      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
       execute_on = 'TIMESTEP_END'
   []
 []

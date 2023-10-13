@@ -58,10 +58,12 @@
 
   #<coefficient gives positive damage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #under slow strain rate < low strain rate threshold
-  C_d_min = 1
+  C_d_min = 10
+
+  #note:scale C_d_min has the same effect on increasing the scaling parameter
 
   #if option 2, use Cd_constant
-  # Cd_constant = 40e5
+  Cd_constant = 40e5
 
   #power-law correction
   #index
@@ -72,7 +74,7 @@
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = 100
+  CdCb_multiplier = 10
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
   CBCBH_multiplier = 10
@@ -122,43 +124,24 @@
 
 [Variables]
   [alpha_sub]
-    order = CONSTANT
-    family = MONOMIAL
+    order = FIRST
+    family = LAGRANGE
   []
   [B_sub]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  #-high-order-dummy-#
-  [alpha_sub_dummy]
     order = FIRST
-    family = MONOMIAL
-  []
-  [B_sub_dummy]
-    order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
 []
 
 [AuxVariables]
   [alpha_old]
-    order = CONSTANT
-    family = MONOMIAL
+    order = FIRST
+    family = LAGRANGE
   []
   [B_old]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  #-high-order-dummy-#
-  [alpha_old_dummy]
     order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
-  [B_old_dummy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  #
   [xi_old]
       order = CONSTANT
       family = MONOMIAL
@@ -181,21 +164,12 @@
   []
   #checked
   [alpha_checked]
-    order = CONSTANT
-    family = MONOMIAL
+    order = FIRST
+    family = LAGRANGE
   []
   [B_checked]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  #high-order-dummy
-  [alpha_checked_dummy]
     order = FIRST
-    family = MONOMIAL
-  []
-  [B_checked_dummy]
-    order = FIRST
-    family = MONOMIAL
+    family = LAGRANGE
   []
   #grad_alpha
   [alpha_grad_x_sub]
@@ -225,7 +199,7 @@
   []
   [./alpha_forcing_func]
       type = DamageVarForcingFuncDev
-      option = 1
+      option = 2
       scale = 200
       alpha_old = alpha_old
       B_old = B_old
@@ -233,7 +207,7 @@
       I2_old = I2_old
       mechanical_strain_rate = mechanical_strain_rate_sub
       variable = alpha_sub
-      healing = true
+      healing = false
   []
   [./timederivative_B]
     type = TimeDerivative
@@ -241,7 +215,7 @@
   []
   [./B_forcing_func]
       type = BreakageVarForcingFuncDev
-      option = 1
+      option = 2
       scale = 200
       variable = B_sub
       alpha_old = alpha_old
@@ -252,43 +226,7 @@
       gamma_old = gamma_old
       lambda_old = lambda_old
       mechanical_strain_rate = mechanical_strain_rate_sub
-      healing = true
-  []
-  #-high-order-dummy-#
-  [./timederivative_alpha_dummy]
-    type = TimeDerivative
-    variable = alpha_sub_dummy
-  []
-  [./alpha_forcing_func_dummy]
-      type = DamageVarForcingFuncDev
-      option = 1
-      scale = 1
-      alpha_old = alpha_old
-      B_old = B_old
-      xi_old = xi_old
-      I2_old = I2_old
-      mechanical_strain_rate = mechanical_strain_rate_sub
-      variable = alpha_sub_dummy
-      healing = true
-  []
-  [./timederivative_B_dummy]
-    type = TimeDerivative
-    variable = B_sub_dummy
-  []
-  [./B_forcing_func_dummy]
-      type = BreakageVarForcingFuncDev
-      option = 1
-      scale = 1
-      variable = B_sub_dummy
-      alpha_old = alpha_old
-      B_old = B_old
-      xi_old = xi_old
-      I2_old = I2_old
-      mu_old = mu_old
-      gamma_old = gamma_old
-      lambda_old = lambda_old
-      mechanical_strain_rate = mechanical_strain_rate_sub
-      healing = true
+      healing = false
   []
 []
 
@@ -305,39 +243,25 @@
     variable = B_checked
     execute_on = 'TIMESTEP_END'
   []
-  #-high-order-dummy-#
-  [check_alpha_dummy]
-    type = CheckAlphaB
-    coupled = alpha_sub_dummy
-    variable = alpha_checked_dummy
-    execute_on = 'TIMESTEP_END'
-  []
-  [check_B_dummy]
-    type = CheckAlphaB
-    coupled = B_sub_dummy
-    variable = B_checked_dummy
-    execute_on = 'TIMESTEP_END'
-  []
-  #
   [alpha_grad_x_sub]
     type = VariableGradientComponent
     variable = alpha_grad_x_sub
     component = x
-    gradient_variable = alpha_checked_dummy
+    gradient_variable = alpha_checked
     execute_on = 'TIMESTEP_END'
  []
  [alpha_grad_y_sub]
    type = VariableGradientComponent
    variable = alpha_grad_y_sub
    component = y
-   gradient_variable = alpha_checked_dummy
+   gradient_variable = alpha_checked
    execute_on = 'TIMESTEP_END'
   []
   #Track Cd
   [track_Cd_aux]
     type = TrackCdEvoAux
-    option = 1
     variable = track_Cd
+    option = 1
     mechanical_strain_rate = mechanical_strain_rate_sub
     execute_on = 'TIMESTEP_END'
   []

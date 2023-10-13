@@ -68,7 +68,7 @@
   m = 0.9
 
   #low strain rate threshold
-  mechanical_strain_rate_threshold = 1e-4
+  mechanical_strain_rate_threshold = -1e-4
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
