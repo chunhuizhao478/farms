@@ -72,10 +72,10 @@
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = 1e-2
+  CdCb_multiplier = 1e-4
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-  CBCBH_multiplier = 10
+  CBCBH_multiplier = 1e-4
 
   #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
   C_1 = 300

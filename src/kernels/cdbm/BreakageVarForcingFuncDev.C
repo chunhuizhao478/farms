@@ -160,7 +160,7 @@ BreakageVarForcingFuncDev::computeQpResidual()
         return -1.0 * C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
       }
       else if ( xi < _xi_d && xi >= _xi_min ){
-        if ( B != 1.0 ){
+        if ( B != 1.0 ){ //no healing until B reaches its maximum
           return 0.0 * _test[_i][_qp];
         }
         else{

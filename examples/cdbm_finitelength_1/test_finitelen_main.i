@@ -6,13 +6,13 @@
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -1500 & x<= 1000 & y<=100 & y>=0'
+      combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=100 & y>=0'
       block_id = 1
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -1500 & x<= 1000 & y<=0 & y>=-100'
+      combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=0 & y>=-100'
       block_id = 2
   []
   [./split]
@@ -111,7 +111,7 @@
   a3 = -4.946e9
 
   #diffusion coefficient #for structural stress coupling
-  D = 0
+  D = 1e3
   
 []
 
@@ -203,12 +203,21 @@
   []
   #updated alpha, B
   [./alpha_in]
-    order = FIRST
-    family = LAGRANGE
+    order = CONSTANT
+    family = MONOMIAL
   []
   [./B_in]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  #high-order-dummy
+  [./alpha_in_dummy]
     order = FIRST
-    family = LAGRANGE
+    family = MONOMIAL
+  []
+  [./B_in_dummy]
+    order = FIRST
+    family = MONOMIAL
   []
   #grad_alpha
   [./alpha_grad_x]
@@ -221,10 +230,6 @@
   []
   #mechanical strain rate
   [./mechanical_strain_rate]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-  [./mechanical_strain]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -388,12 +393,6 @@
       variable = mechanical_strain_rate
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
-  [get_shear_strain]
-    type = MaterialRealAux
-    property = principal_strain
-    variable = mechanical_strain
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
-[]
   #fault length
   [fault_len]
       type = ConstantAux
@@ -639,7 +638,7 @@
       type = TransientMultiApp
       positions = '0 0 0'
       input_files = 'test_finitelen_sub.i'
-      execute_on = 'TIMESTEP_END'
+      execute_on = 'TIMESTEP_BEGIN'
   [../]
 []
 
@@ -647,16 +646,16 @@
   [pull_resid]
       type = MultiAppCopyTransfer
       from_multi_app = sub_app
-      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd'
-      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd'
+      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd alpha_checked_dummy B_checked_dummy'
+      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd alpha_in_dummy B_in_dummy'
       execute_on = 'TIMESTEP_BEGIN'
   []
   #we actually don't need to pass alpha and B
   [push_disp]
       type = MultiAppCopyTransfer
       to_multi_app = sub_app
-      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
-      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
-      execute_on = 'TIMESTEP_END'
+      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate alpha_in_dummy B_in_dummy'
+      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub alpha_old_dummy B_old_dummy'
+      execute_on = 'TIMESTEP_BEGIN'
   []
 []
