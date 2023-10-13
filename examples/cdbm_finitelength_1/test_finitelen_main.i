@@ -6,13 +6,13 @@
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -1500 & x<= 3000 & y<=100 & y>=0'
+      combinatorial_geometry = 'x >= -1500 & x<= 1000 & y<=100 & y>=0'
       block_id = 1
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -1500 & x<= 3000 & y<=0 & y>=-100'
+      combinatorial_geometry = 'x >= -1500 & x<= 1000 & y<=0 & y>=-100'
       block_id = 2
   []
   [./split]
@@ -224,6 +224,10 @@
     order = CONSTANT
     family = MONOMIAL
   []
+  [./mechanical_strain]
+    order = CONSTANT
+    family = MONOMIAL
+  []
   #track Cd
   [./track_Cd]
     order = CONSTANT
@@ -384,6 +388,12 @@
       variable = mechanical_strain_rate
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
+  [get_shear_strain]
+    type = MaterialRealAux
+    property = principal_strain
+    variable = mechanical_strain
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+[]
   #fault length
   [fault_len]
       type = ConstantAux
@@ -629,7 +639,7 @@
       type = TransientMultiApp
       positions = '0 0 0'
       input_files = 'test_finitelen_sub.i'
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
   [../]
 []
 
@@ -647,6 +657,6 @@
       to_multi_app = sub_app
       source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
       variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
   []
 []

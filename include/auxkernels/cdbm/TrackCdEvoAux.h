@@ -24,5 +24,8 @@ class TrackCdEvoAux : public AuxKernel
     const VariableValue & _mechanical_strain_rate;
     /// power index
     Real _m;
+    Real _scale;
+    int _option;
+    Real _Cd_constant;
 
 };

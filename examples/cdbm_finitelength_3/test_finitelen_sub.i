@@ -6,13 +6,13 @@
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -1500 & x<= 3000 & y<=100 & y>=0'
+      combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=100 & y>=0'
       block_id = 1
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -1500 & x<= 3000 & y<=0 & y>=-100'
+      combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=0 & y>=-100'
       block_id = 2
   []
   [./split]
@@ -60,15 +60,17 @@
   #under slow strain rate < low strain rate threshold
   C_d_min = 10
 
+  #note:scale C_d_min has the same effect on increasing the scaling parameter
+
   #if option 2, use Cd_constant
-  # Cd_constant = 40e5
+  Cd_constant = 40e5
 
   #power-law correction
   #index
   m = 0.9
 
   #low strain rate threshold
-  mechanical_strain_rate_threshold = 1e-4
+  mechanical_strain_rate_threshold = -1e-4
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -197,8 +199,8 @@
   []
   [./alpha_forcing_func]
       type = DamageVarForcingFuncDev
-      option = 1
-      scale = 10
+      option = 2
+      scale = 200
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -213,8 +215,8 @@
   []
   [./B_forcing_func]
       type = BreakageVarForcingFuncDev
-      option = 1
-      scale = 10
+      option = 2
+      scale = 200
       variable = B_sub
       alpha_old = alpha_old
       B_old = B_old
@@ -259,6 +261,7 @@
   [track_Cd_aux]
     type = TrackCdEvoAux
     variable = track_Cd
+    option = 1
     mechanical_strain_rate = mechanical_strain_rate_sub
     execute_on = 'TIMESTEP_END'
   []

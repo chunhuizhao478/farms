@@ -8,3 +8,6 @@ diffusion - true;
 constant Cd - false; 
 power-law Cd - true;
 healing - false;
+
+
+nobreakage - scale 10. 

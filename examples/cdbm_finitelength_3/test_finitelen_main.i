@@ -6,13 +6,13 @@
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -1500 & x<= 3000 & y<=100 & y>=0'
+      combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=100 & y>=0'
       block_id = 1
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -1500 & x<= 3000 & y<=0 & y>=-100'
+      combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=0 & y>=-100'
       block_id = 2
   []
   [./split]
@@ -219,8 +219,16 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  #mechanical strain rate
+  #mechanical strain and its rate
+  [./mechanical_strain]
+    order = CONSTANT
+    family = MONOMIAL
+  []
   [./mechanical_strain_rate]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [./mechanical_strain_rate_FD]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -333,6 +341,12 @@
     coupled = tangent_jump
     execute_on = 'TIMESTEP_BEGIN'
   []
+  [Principal_Strain_Rate]
+    type = FDCompVarRate
+    variable = mechanical_strain_rate_FD
+    coupled = mechanical_strain
+    execute_on = 'TIMESTEP_END'
+  []
   #obtain parameters from MaterialRealAux
   # [get_alpha_old]
   #     type = MaterialRealAux
@@ -382,7 +396,13 @@
       type = MaterialRateRealAux
       property = principal_strain
       variable = mechanical_strain_rate
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [get_shear_strain]
+    type = MaterialRealAux
+    property = principal_strain
+    variable = mechanical_strain
+    execute_on = 'INITIAL TIMESTEP_END'
   []
   #fault length
   [fault_len]
@@ -513,7 +533,7 @@
 [Executioner]
   type = Transient
   dt = 5e-4
-  end_time = 4.0
+  end_time = 8.0
   # num_steps = 20
   [TimeIntegrator]
     type = CentralDifference
@@ -524,7 +544,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 125
+  interval = 250
   # [sample_snapshots]
   #   type = Exodus
   #   interval = 5000
@@ -629,7 +649,7 @@
       type = TransientMultiApp
       positions = '0 0 0'
       input_files = 'test_finitelen_sub.i'
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
   [../]
 []
 
@@ -647,6 +667,6 @@
       to_multi_app = sub_app
       source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate'
       variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub'
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
   []
 []

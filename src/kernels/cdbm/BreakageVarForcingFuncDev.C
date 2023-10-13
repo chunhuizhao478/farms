@@ -110,11 +110,11 @@ BreakageVarForcingFuncDev::computeQpResidual()
     if ( _option == 1 ){
 
       //power-law correction on coefficient Cd(function of strain rate)
-      if ( _mechanical_strain_rate[_qp] > _mechanical_strain_rate_threshold ) //Cd follows power-law
+      if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd follows power-law
       {
         Cd = _scale * pow(10, 1 + _m * log10( _mechanical_strain_rate[_qp] / _mechanical_strain_rate_threshold ) ) * _Cd_min;
       }
-      else if ( _mechanical_strain_rate[_qp] > 0 ){ //Cd remains constant
+      else if ( _mechanical_strain_rate[_qp] < 0 ){ //Cd remains constant
         Cd = _Cd_min;
       }
 
@@ -148,6 +148,7 @@ BreakageVarForcingFuncDev::computeQpResidual()
     if ( _healing == false ){
       if ( xi >= _xi_0 ){
           return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+          //return -1.0 * C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
       }
       else{
           return 0;

@@ -7,4 +7,6 @@ First LAG Cd Cb - true;
 diffusion - true;
 constant Cd - true; 
 power-law Cd - false;
-healing - false;
+healing - true;
+
+works using First Monomial. Save Res ...
