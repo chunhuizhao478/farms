@@ -109,11 +109,17 @@
   # a2 = 1.850e10
   # a3 = -2.832e9
 
-  #ggw183.pdf
-  a0 = 7.414e9
-  a1 = -2.1344e10
-  a2 = 1.9058e10
-  a3 = -4.946e9
+  # #ggw183.pdf
+  # a0 = 7.414e9
+  # a1 = -2.1344e10
+  # a2 = 1.9058e10
+  # a3 = -4.946e9
+
+  # chi = 0.75
+  a0 = 7.4289e9
+  a1 = -2.214e10
+  a2 = 2.0929e10
+  a3 = -6.0672e9
 
   #diffusion coefficient #for structural stress coupling
   D = 1e3
