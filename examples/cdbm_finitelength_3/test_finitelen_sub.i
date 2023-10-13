@@ -72,7 +72,7 @@
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = 100
+  CdCb_multiplier = 1e-2
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
   CBCBH_multiplier = 10
@@ -262,7 +262,7 @@
   [./alpha_forcing_func_dummy]
       type = DamageVarForcingFuncDev
       option = 1
-      scale = 1
+      scale = 200
       alpha_old = alpha_old
       B_old = B_old
       xi_old = xi_old
@@ -278,7 +278,7 @@
   [./B_forcing_func_dummy]
       type = BreakageVarForcingFuncDev
       option = 1
-      scale = 1
+      scale = 200
       variable = B_sub_dummy
       alpha_old = alpha_old
       B_old = B_old
