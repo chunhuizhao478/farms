@@ -76,7 +76,7 @@
   # CdCb_multiplier = 100 #without healing
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-  CBCBH_multiplier = 1e-4
+  CBCBH_multiplier = 10
 
   #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
   C_1 = 300
