@@ -72,8 +72,8 @@
 
   #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = 1e-4 #with healing
-  # CdCb_multiplier = 100 #without healing
+  # CdCb_multiplier = 1e-4 #with healing
+  CdCb_multiplier = 10 #without healing
 
   #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
   CBCBH_multiplier = 10
@@ -253,7 +253,7 @@
       gamma_old = gamma_old
       lambda_old = lambda_old
       mechanical_strain_rate = mechanical_strain_rate_sub
-      healing = true
+      healing = false
   []
   #-high-order-dummy-#
   [./timederivative_alpha_dummy]
@@ -289,7 +289,7 @@
       gamma_old = gamma_old
       lambda_old = lambda_old
       mechanical_strain_rate = mechanical_strain_rate_sub
-      healing = true
+      healing = false
   []
 []
 
