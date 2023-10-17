@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/contmf/tria/contmfsmall2.msh'
+        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -61,7 +61,7 @@
     # C_d_min = 10
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e6
   
     #power-law correction
     #index

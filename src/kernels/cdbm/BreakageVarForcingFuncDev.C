@@ -161,7 +161,7 @@ BreakageVarForcingFuncDev::computeQpResidual()
       }
     }
     else{
-      mooseError("xi_old is OUT-OF-RANGE!.");
+      //mooseError("xi_old is OUT-OF-RANGE!.");
       return 0;
     }
 

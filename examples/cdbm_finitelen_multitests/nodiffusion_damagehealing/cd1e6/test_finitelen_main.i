@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/contmf/tria/contmfsmall2.msh'
+        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -65,7 +65,7 @@
     xi_min = -1.5
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-5
+    C_g = 1e-10
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -511,7 +511,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 4.0
+    end_time = 1.0
     # num_steps = 20
     [TimeIntegrator]
       type = CentralDifference
