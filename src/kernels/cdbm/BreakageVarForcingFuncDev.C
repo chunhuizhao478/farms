@@ -21,7 +21,7 @@ BreakageVarForcingFuncDev::validParams()
   InputParameters params = Kernel::validParams();
 
   //constant parameters
-  params.addRequiredParam<Real>(   "C_d_min", "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
+  params.addParam<Real>(   "C_d_min", 10.0, "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
   params.addRequiredParam<Real>(  "CBCBH_multiplier", "coefficient of healing for breakage evolution");
   params.addRequiredParam<Real>(         "a0", "parameters in granular states");
   params.addRequiredParam<Real>(         "a1", "parameters in granular states");
@@ -34,7 +34,7 @@ BreakageVarForcingFuncDev::validParams()
   params.addRequiredParam<Real>(       "xi_1", "strain invariants ratio: onset of breakage healing");
   params.addRequiredParam<Real>( "beta_width", "coefficient gives width of transitional region");
   params.addRequiredParam<Real>(     "m", "Cd power-law correction index");
-  params.addRequiredParam<Real>("mechanical_strain_rate_threshold", "threshold value for strain rate such that Cd takes constant value Cd_min if strain rate below this value.");
+  params.addParam<Real>("mechanical_strain_rate_threshold", 0, "threshold value for strain rate such that Cd takes constant value Cd_min if strain rate below this value.");
   params.addRequiredParam<Real>("CdCb_multiplier", "multiplier between Cd and Cb");
   params.addParam<Real>( "scale", 1.0, "scale the Cd power-law");
 
@@ -46,7 +46,7 @@ BreakageVarForcingFuncDev::validParams()
   params.addRequiredCoupledVar(     "mu_old", "shear modulus at previous time step");
   params.addRequiredCoupledVar( "lambda_old", "first lame constant at previous time step");
   params.addRequiredCoupledVar(  "gamma_old", "damage modulus at previous time step");
-  params.addRequiredCoupledVar("mechanical_strain_rate", "strain rate");
+  params.addCoupledVar("mechanical_strain_rate", 0.0, "strain rate");
 
   //add options
   params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
@@ -99,15 +99,18 @@ BreakageVarForcingFuncDev::computeQpResidual()
     Real B = _B_old[_qp];
     Real I2 = _I2_old[_qp];
     Real xi = _xi_old[_qp];
-    Real mu = _mu_old[_qp];
-    Real gamma_damaged = _gamma_old[_qp];
-    Real lambda = _lambda_old[_qp];
+    // Real mu = _mu_old[_qp];
+    // Real gamma_damaged = _gamma_old[_qp];
+    // Real lambda = _lambda_old[_qp];
 
     //Power-law correction
     //Initialize Cd
     Real Cd = 0;
     //Check options
     if ( _option == 1 ){
+
+      //close _option == 1
+      mooseError("Option 1 is NOT available!");
 
       //power-law correction on coefficient Cd(function of strain rate)
       if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd follows power-law
@@ -145,34 +148,42 @@ BreakageVarForcingFuncDev::computeQpResidual()
     Prob = 1.0 / ( exp( (alphacr - alpha) / _beta_width ) + 1.0 );
 
     //no healing //this formulation is used in the splitstrain article
-    if ( _healing == false ){
-      if ( xi >= _xi_0 ){
-          return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
-          //return -1.0 * C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
+    if ( xi >= _xi_0 && xi <= _xi_max ){
+        return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+    }
+    else if ( xi < _xi_0 && xi >= _xi_min ){
+      
+      if ( _healing == true ){
+        return -1.0 * C_BH * I2 * ( xi - _xi_0 ) * _test[_i][_qp];
       }
       else{
-          return 0;
+        return 0.0;
       }
     }
-    else{ //with healing
-      //add pre-check to the value (cause problem if encountered large values)
-      if ( xi >= _xi_d && xi <= _xi_max ){
-        return -1.0 * C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
-      }
-      else if ( xi < _xi_d && xi >= _xi_min ){
-        if ( B != 1.0 ){ //no healing until B reaches its maximum
-          return 0.0 * _test[_i][_qp];
-        }
-        else{
-          return -1.0 * C_BH * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
-        }
-      }
-      else{
-        std::cout<<"xi: "<<xi<<std::endl;
-        mooseError("xi_old is OUT-OF-RANGE!.");
-        return 0;
-      }
+    else{
+      mooseError("xi_old is OUT-OF-RANGE!.");
+      return 0;
     }
+
+    // else{ //with healing
+    //   //add pre-check to the value (cause problem if encountered large values)
+    //   if ( xi >= _xi_d && xi <= _xi_max ){
+    //     return -1.0 * C_B * Prob * (1-B) * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
+    //   }
+    //   else if ( xi < _xi_d && xi >= _xi_min ){
+    //     if ( B != 1.0 ){ //no healing until B reaches its maximum
+    //       return 0.0 * _test[_i][_qp];
+    //     }
+    //     else{
+    //       return -1.0 * C_BH * I2 * ( ( mu - gamma_damaged * xi + 0.5 * lambda * pow(xi,2) ) -  ( _a0 + _a1 * xi + _a2 * pow(xi,2) + _a3 * pow(xi,3) ) ) * _test[_i][_qp];
+    //     }
+    //   }
+    //   else{
+    //     std::cout<<"xi: "<<xi<<std::endl;
+    //     mooseError("xi_old is OUT-OF-RANGE!.");
+    //     return 0;
+    //   }
+    // }
 }
 
 Real

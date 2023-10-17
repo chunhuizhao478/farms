@@ -31,7 +31,7 @@ DamageVarForcingFuncDev::validParams()
   InputParameters params = Kernel::validParams();
 
   //constant parameters
-  params.addRequiredParam<Real>(   "C_d_min", "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
+  params.addParam<Real>(   "C_d_min", 10.0, "coefficient gives positive damage evolution (small strain e < 1e-4 threshold value)");
   params.addRequiredParam<Real>(     "D", "coefficient gives diffusion magnitude of damage evolution");
   params.addRequiredParam<Real>(   "C_1", "coefficient of healing for damage evolution");
   params.addRequiredParam<Real>(   "C_2", "coefficient of healing for damage evolution");
@@ -39,7 +39,7 @@ DamageVarForcingFuncDev::validParams()
   params.addRequiredParam<Real>("xi_min", "strain invariant ratio at minimum value");
   params.addRequiredParam<Real>("xi_max", "strain invariant ratio at maximum value");
   params.addRequiredParam<Real>(     "m", "Cd power-law correction index");
-  params.addRequiredParam<Real>("mechanical_strain_rate_threshold", "threshold value for strain rate such that Cd takes constant value Cd_min if strain rate below this value.");
+  params.addParam<Real>("mechanical_strain_rate_threshold", 0, "threshold value for strain rate such that Cd takes constant value Cd_min if strain rate below this value.");
   params.addParam<Real>( "scale", 1.0, "scale the Cd power-law");
 
   //variable parameters
@@ -47,7 +47,7 @@ DamageVarForcingFuncDev::validParams()
   params.addRequiredCoupledVar(    "B_old", "breakage variable at previous time step");
   params.addRequiredCoupledVar(   "xi_old", "strain invariant ratio at previous time step");
   params.addRequiredCoupledVar(   "I2_old", "second strain invariant at previous time step");
-  params.addRequiredCoupledVar("mechanical_strain_rate", "strain rate");
+  params.addCoupledVar("mechanical_strain_rate", 0.0, "strain rate");
 
   //add options
   params.addRequiredParam<int>( "option", "option 1 : Cd power-law; option 2 : use constant Cd");
@@ -97,6 +97,9 @@ DamageVarForcingFuncDev::computeQpResidual()
   Real Cd = 0;
   //Check options
   if ( _option == 1 ){
+
+    //close _option == 1
+    mooseError("Option 1 is NOT available!");
 
     //power-law correction on coefficient Cd(function of strain rate)
     if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd follows power-law
