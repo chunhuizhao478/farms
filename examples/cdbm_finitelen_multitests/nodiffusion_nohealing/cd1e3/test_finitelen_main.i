@@ -1,18 +1,25 @@
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall2.msh'
+        type = GeneratedMeshGenerator
+        dim = 2
+        nx = 800
+        ny = 400
+        xmin = -10000
+        xmax = 10000
+        ymin = -5000
+        ymax = 5000
+        elem_type = TRI3
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
         input = msh
-        combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=100 & y>=0'
+        combinatorial_geometry = 'x >= -5000 & x<= 5000 & y<=100 & y>=0'
         block_id = 1
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=0 & y>=-100'
+        combinatorial_geometry = 'x >= -5000 & x<= 5000 & y<=0 & y>=-100'
         block_id = 2
     []
     [./split]
@@ -511,7 +518,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 20.0
+    end_time = 6.0
     # num_steps = 20
     [TimeIntegrator]
       type = CentralDifference

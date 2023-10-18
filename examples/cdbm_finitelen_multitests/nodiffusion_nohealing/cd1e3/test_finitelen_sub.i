@@ -1,18 +1,17 @@
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall2.msh'
+
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
         input = msh
-        combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=100 & y>=0'
+        combinatorial_geometry = 'x >= -5000 & x<= 5000 & y<=100 & y>=0'
         block_id = 1
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -1500 & x<= 1500 & y<=0 & y>=-100'
+        combinatorial_geometry = 'x >= -5000 & x<= 5000 & y<=0 & y>=-100'
         block_id = 2
     []
     [./split]

@@ -1,6 +1,6 @@
 ##########################################################
 # Unified Parameter Choice For CBDM Complex Network Problem
-# mu_d = 0.4
+# mu_d = 0.1
 # For Main Fault, 
 # mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
 # mu_s = 0.677

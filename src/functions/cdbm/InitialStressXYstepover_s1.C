@@ -28,7 +28,7 @@ InitialStressXYstepover_s1::value(Real /*t*/, const Point & p) const
   Real x_coord = p(0);
   Real y_coord = p(1);
   Real T1_o = 0.0;
-  if ((x_coord<=(-1000+250))&&(x_coord>=(-1000-250))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+  if ((x_coord<=(-4000+100))&&(x_coord>=(-4000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
   {
     T1_o = 81.6e6;
   }
