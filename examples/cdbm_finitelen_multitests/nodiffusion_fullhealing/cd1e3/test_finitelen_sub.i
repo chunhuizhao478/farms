@@ -1,14 +1,7 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 800
-        ny = 400
-        xmin = -10000
-        xmax = 10000
-        ymin = -5000
-        ymax = 5000
-        elem_type = TRI3
+        type = FileMeshGenerator
+        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -227,7 +220,7 @@
         xi_old = xi_old
         I2_old = I2_old
         variable = alpha_sub
-        healing = false
+        healing = true
     []
     [./timederivative_B]
       type = TimeDerivative
@@ -244,7 +237,7 @@
         mu_old = mu_old
         gamma_old = gamma_old
         lambda_old = lambda_old
-        healing = false
+        healing = true
     []
     #-high-order-dummy-#
     [./timederivative_alpha_dummy]
@@ -259,7 +252,7 @@
         xi_old = xi_old
         I2_old = I2_old
         variable = alpha_sub_dummy
-        healing = false
+        healing = true
     []
     [./timederivative_B_dummy]
       type = TimeDerivative
@@ -276,7 +269,7 @@
         mu_old = mu_old
         gamma_old = gamma_old
         lambda_old = lambda_old
-        healing = false
+        healing = true
     []
   []
   

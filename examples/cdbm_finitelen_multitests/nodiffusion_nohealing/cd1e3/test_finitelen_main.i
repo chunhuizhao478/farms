@@ -1,14 +1,7 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 800
-        ny = 400
-        xmin = -10000
-        xmax = 10000
-        ymin = -5000
-        ymax = 5000
-        elem_type = TRI3
+      type = FileMeshGenerator
+      file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -518,8 +511,8 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 6.0
-    # num_steps = 20
+    end_time = 30.0
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -529,7 +522,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 125
+    interval = 1
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 5000
