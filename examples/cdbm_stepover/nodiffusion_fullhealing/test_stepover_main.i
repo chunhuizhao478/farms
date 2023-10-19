@@ -537,6 +537,16 @@
       type = Exodus
       interval = 2000
     []
+    [snapshots]
+      type = Exodus
+      interval = 2000
+      overwrite = true
+    []
+    [checkpoints]
+      type = Checkpoint
+      interval = 2000
+      num_files = 2
+    []
   []
   
   [BCs]
