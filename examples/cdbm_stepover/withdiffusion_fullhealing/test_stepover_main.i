@@ -128,7 +128,7 @@
     a3 = -6.0672e9
   
     #diffusion coefficient #for structural stress coupling
-    D = 5e5
+    D = 1e13
     
   []
   
@@ -537,7 +537,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 30.0
+    end_time = 40.0
     # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
