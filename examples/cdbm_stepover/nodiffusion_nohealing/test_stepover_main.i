@@ -533,6 +533,10 @@
   [Outputs]
     exodus = true
     interval = 200
+    [sample_snapshots]
+      type = Exodus
+      interval = 2000
+    []
   []
   
   [BCs]

@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
+      type = FileMeshGenerator
+      file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall_local.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator

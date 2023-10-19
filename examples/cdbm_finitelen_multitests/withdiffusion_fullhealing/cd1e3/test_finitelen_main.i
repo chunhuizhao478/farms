@@ -539,10 +539,10 @@
   [Outputs]
     exodus = true
     interval = 200
-    # [sample_snapshots]
-    #   type = Exodus
-    #   interval = 5000
-    # []
+    [sample_snapshots]
+      type = Exodus
+      interval = 2000
+    []
     # [snapshots]
     #   type = Exodus
     #   interval = 10000
