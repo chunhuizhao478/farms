@@ -128,15 +128,16 @@ DamageVarForcingFuncDev::computeQpResidual()
   //Compute Diffusion coefficient
   Real YoungE = _shear_modulus_o * ( 3 * _lambda_o + 2 * _shear_modulus_o ) / ( _lambda_o + _shear_modulus_o );
   Real Diffusion_Coeff = _D * Cd / YoungE;
+  // Real Diffusion_Coeff = 1e5;
 
   //weak form for damage variable evolution
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    return -1 * (1 - _B_old[_qp]) * ( Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + Diffusion_Coeff * _grad_u[_qp] * _grad_test[_i][_qp] );
+    return -1 * (1 - _B_old[_qp]) * ( Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] - Diffusion_Coeff * _grad_u[_qp] * _grad_test[_i][_qp] );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     //with healing
-    if ( _healing == true ){
-      return -1 * (1 - _B_old[_qp]) * ( _C1 * exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + Diffusion_Coeff * _grad_u[_qp] * _grad_test[_i][_qp] );
+    if ( _healing == true ){ //avoid code crash
+      return -1 * (1 - _B_old[_qp]) * ( _C1 * exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] - Diffusion_Coeff * _grad_u[_qp] * _grad_test[_i][_qp] );
     }
     //no healing
     else{
