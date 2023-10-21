@@ -1,23 +1,7 @@
-##########################################################
-# Unified Parameter Choice For CBDM Complex Network Problem
-# mu_d = 0.1
-# For Main Fault, 
-# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
-# mu_s = 0.677
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4 ) = 0.514
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 120e6) = 185m
-# Use mesh size = 25m
-
-# Diffusion Length Scale D = 5e5
-# sqrt(5e5*185/3464) = 163. using 6~7, 25m mesh to resolve it
-
-# Check CFL condition 0.1 * 25 / 6000 ~ 0.0001s
-##########################################################
-
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/contmf/tria/contmfsmall_local.msh'
+        file =  '../../../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -485,7 +469,7 @@
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
         type = ConstantFunction
-        value = 0.4
+        value = 0.1
     []
     #Note:restrict stress variation along the fault only
     #this function is used in czm only
