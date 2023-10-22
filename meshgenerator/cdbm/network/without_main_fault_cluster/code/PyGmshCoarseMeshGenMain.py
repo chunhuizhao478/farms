@@ -20,18 +20,18 @@ import PyGmshBuildExplodeFunc as efunc
 lc1 = 2000
 
 # Meshing Coarse Mesh Size
-lc2 = 400 #for outer domain
+lc2 = 800 #for outer domain
 lc3 = 25  #for inner network region
 
 #list_cornerptrs: list of corner ptrs coordinates [x1, y1, x2, y2, x3, y3, x4, y4]
-list_cornerptrs = [-8000.0,-8000.0,
-                    8000.0,-8000.0,
-                    8000.0,8000.0,
-                   -8000.0,8000.0]
+list_cornerptrs = [-16000.0,-16000.0,
+                    16000.0,-16000.0,
+                    16000.0,16000.0,
+                   -16000.0,16000.0]
 
 # Region of Multifaults
-dist_verticalbc = 5000
-dist_lateralbc = 5000
+dist_verticalbc = 6500
+dist_lateralbc = 6500
 
 # Meshing Algorithm
 num_alg_meshing = 5

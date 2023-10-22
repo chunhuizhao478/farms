@@ -21,23 +21,23 @@ lc1 = 1000
 
 # Meshing Coarse Mesh Size
 lc2 = 800 #for outer domain, use 50 for inner network region
-lc3 = 50  #for inner network region
+lc3 = 25  #for inner network region
 
 #list_cornerptrs: list of corner ptrs coordinates [x1, y1, x2, y2, x3, y3, x4, y4]
-list_cornerptrs = [-15000.0,-15000.0,
-                    15000.0,-15000.0,
-                    15000.0,15000.0,
-                   -15000.0,15000.0]
+list_cornerptrs = [-16000.0,-16000.0,
+                    16000.0,-16000.0,
+                    16000.0,16000.0,
+                   -16000.0,16000.0]
 
 # Region of Multifaults
-dist_verticalbc = 5000
-dist_lateralbc = 5000
+dist_verticalbc = 6500
+dist_lateralbc = 6500
 
 # Meshing Algorithm
 num_alg_meshing = 5
 
 # global path
-global_path = "/Users/andyz/projects/farms_cbdm/meshgenerator/network/without_main_fault_cluster"
+global_path = "/Users/andyz/projects/farms/meshgenerator/cdbm/network/without_main_fault_cluster"
 
 ##file path
 #file saving fine mesh
