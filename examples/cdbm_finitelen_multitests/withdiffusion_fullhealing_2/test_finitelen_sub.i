@@ -1,36 +1,43 @@
 [Mesh]
-    [./msh]
-        type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/contmf/tria/contmfsmall.msh'
-    []
-    [./new_block_1]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'x >= -5000 & x<= 5000 & y<=100 & y>=0'
-        block_id = 1
-    []
-    [./new_block_2]
-        type = ParsedSubdomainMeshGenerator
-        input = new_block_1
-        combinatorial_geometry = 'x >= -5000 & x<= 5000 & y<=0 & y>=-100'
-        block_id = 2
-    []
-    [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block_2
-        split_interface = true
-        block_pairs = '1 2'
-    []
-    [./sidesets]
-      input = split
-      type = SideSetsFromNormalsGenerator
-      normals = '-1 0 0
-                  1 0 0
-                  0 -1 0
-                  0 1 0'
-      new_boundary = 'left right bottom top'
-    []
+  [./msh]
+    type = GeneratedMeshGenerator
+    dim = 2
+    nx = 360
+    ny = 160
+    xmin = -7000
+    xmax = 2000
+    ymin = -2000
+    ymax = 2000
+    elem_type = TRI3
   []
+  [./new_block_1]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'x >= -5000 & x<= 0 & y<=100 & y>=0'
+      block_id = 1
+  []
+  [./new_block_2]
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'x >= -5000 & x<= 0 & y<=0 & y>=-100'
+      block_id = 2
+  []
+  [./split]
+      type = BreakMeshByBlockGenerator
+      input = new_block_2
+      split_interface = true
+      block_pairs = '1 2'
+  []
+  [./sidesets]
+    input = split
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0'
+    new_boundary = 'left right bottom top'
+  []
+[]
   
   [GlobalParams]
   
