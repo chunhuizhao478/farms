@@ -138,7 +138,7 @@
 [Executioner]
     type = Transient
     dt = 0.005
-    end_time = 3
+    end_time = 1
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
