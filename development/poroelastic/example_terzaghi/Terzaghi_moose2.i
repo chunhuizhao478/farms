@@ -20,37 +20,41 @@
   []
   [disp_y]
   []
+  [disp_z]
+  []
   [porepressure]
   []
 []
 
-[GlobalParams]
-  volumetric_locking_correction=true
-[]
-
 [BCs]
-  [confinex]
+  [roller_xmin]
     type = DirichletBC
     variable = disp_x
     value = 0
-    boundary = 'left right'
+    boundary = 'left'
   []
-  [basefixed]
+  [roller_ymin]
     type = DirichletBC
     variable = disp_y
     value = 0
-    boundary = bottom
+    boundary = 'bottom'
   []
-  [topdrained]
+  [plane_strain]
+    type = DirichletBC
+    variable = disp_z
+    value = 0
+    boundary = 'back front'
+  []
+  [xmax_drained]
     type = DirichletBC
     variable = porepressure
     value = 0
-    boundary = top
+    boundary = right
   []
-  [topload]
-    type = NeumannBC
+  [top_velocity]
+    type = FunctionDirichletBC
     variable = disp_y
-    value = -1
+    function = top_velocity
     boundary = top
   []
 []
