@@ -46,15 +46,14 @@
 
 [Mesh]
   type = GeneratedMesh
-  dim = 2
-  nx = 1
-  ny = 10
-  xmin = -1
-  xmax = 1
-  ymin = 0
-  ymax = 10
+    dim = 2
+    xmin = -0.05
+    xmax = 0.05
+    ymin = 0
+    ymax = 1
+    nx = 20
+    ny = 100
 []
-
 [GlobalParams]
   displacements = 'disp_x disp_y '
   PorousFlowDictator = dictator
@@ -69,9 +68,7 @@
     number_fluid_components = 1
   []
   [pc]
-    type = PorousFlowCapillaryPressureVG
-    m = 0.8
-    alpha = 1
+    type = PorousFlowCapillaryPressureConst
   []
 []
 
@@ -101,12 +98,12 @@
     type = DirichletBC
     variable = porepressure
     value = 0
-    boundary = front
+    boundary = top
   []
   [topload]
     type = NeumannBC
     variable = disp_y
-    value = -1
+    value = -1e+7
     boundary = top
   []
 []
@@ -146,7 +143,7 @@
   [flux]
     type = PorousFlowAdvectiveFlux
     variable = porepressure
-    gravity = '0 0'
+    gravity = '0 0 0'
     fluid_component = 0
   []
 []
@@ -154,10 +151,10 @@
 [FluidProperties]
   [simple_fluid]
     type = SimpleFluidProperties
-    bulk_modulus = 8
+    bulk_modulus = 1
     density0 = 1
     thermal_expansion = 0
-    viscosity = 0.96
+    viscosity = 1
   []
 []
 
@@ -167,7 +164,7 @@
   []
   [elasticity_tensor]
     type = ComputeElasticityTensor
-    C_ijkl = '2 3'
+    C_ijkl = '2e+7 5e+7'
     # bulk modulus is lambda + 2*mu/3 = 2 + 2*3/3 = 4
     fill_method = symmetric_isotropic
   []
@@ -197,16 +194,18 @@
     phase = 0
   []
   [porosity]
-    type = PorousFlowPorosityHMBiotModulus
-    porosity_zero = 0.1
-    biot_coefficient = 0.6
-    solid_bulk = 4
-    constant_fluid_bulk_modulus = 8
-    constant_biot_modulus = 16
+    type = PorousFlowPorosityConst # only the initial value of this is ever used
+    porosity = 0
+  []
+  [biot_modulus]
+    type = PorousFlowConstantBiotModulus
+    biot_coefficient = 1
+    solid_bulk_compliance = 1
+    fluid_bulk_modulus = 8
   []
   [permeability]
     type = PorousFlowPermeabilityConst
-    permeability = '1.5 0    0 1.5'
+    permeability = '1e-12 0 0   0 1e-12 0  0 0 1e-12'
   []
   [relperm]
     type = PorousFlowRelativePermeabilityCorey
@@ -219,91 +218,86 @@
   [p0]
     type = PointValue
     outputs = csv
-    point = '0 0'
+    point = '0 0 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p1]
     type = PointValue
     outputs = csv
-    point = '0 1'
+    point = '0 0.1 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p2]
     type = PointValue
     outputs = csv
-    point = '0 2'
+    point = '0 0.2 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p3]
     type = PointValue
     outputs = csv
-    point = '0 3'
+    point = '0 0.3 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p4]
     type = PointValue
     outputs = csv
-    point = '0 4'
+    point = '0 0.4 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p5]
     type = PointValue
     outputs = csv
-    point = '0 5'
+    point = '0 0.5 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p6]
     type = PointValue
     outputs = csv
-    point = '0 6'
+    point = '0 0.6 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p7]
     type = PointValue
     outputs = csv
-    point = '0 7'
+    point = '0 0.7 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p8]
     type = PointValue
     outputs = csv
-    point = '0 8'
+    point = '0 0.8 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p9]
     type = PointValue
     outputs = csv
-    point = '0 9'
+    point = '0 0.9 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [p99]
     type = PointValue
     outputs = csv
-    point = '0 10'
+    point = '0 1 0'
     variable = porepressure
     use_displaced_mesh = false
   []
   [ydisp]
     type = PointValue
     outputs = csv
-    point = '0 10'
+    point = '0 1 0'
     variable = disp_y
     use_displaced_mesh = false
-  []
-  [dt]
-    type = FunctionValuePostprocessor
-    outputs = console
-    function = if(0.5*t<0.1,0.5*t,0.1)
   []
 []
 
@@ -315,21 +309,19 @@
 []
 
 [Executioner]
-  type = Transient
-  solve_type = Newton
-  start_time = 0
-  end_time = 10
-  [TimeStepper]
-    type = PostprocessorDT
-    postprocessor = dt
-    dt = 0.0001
+    type = Transient
+    dt = 0.005
+    start_time= 0
+    end_time = 10
+    [TimeIntegrator]
+      type = CrankNicolson
+    []
   []
-[]
 
 [Outputs]
   execute_on = 'timestep_end'
-  file_base = terzaghi_constM
   [csv]
     type = CSV
   []
+  exodus = true
 []
