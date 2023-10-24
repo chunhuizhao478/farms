@@ -2,24 +2,24 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2
-      nx = 360
-      ny = 160
-      xmin = -7000
-      xmax = 2000
-      ymin = -2000
-      ymax = 2000
+      nx = 160
+      ny = 80
+      xmin = -6000
+      xmax = -2000
+      ymin = -1000
+      ymax = 1000
       elem_type = TRI3
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
         input = msh
-        combinatorial_geometry = 'x >= -5000 & x<= 0 & y<=100 & y>=0'
+        combinatorial_geometry = 'x >= -5500 & x<= -2500 & y<=100 & y>=0'
         block_id = 1
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -5000 & x<= 0 & y<=0 & y>=-100'
+        combinatorial_geometry = 'x >= -5500 & x<= -2500 & y<=0 & y>=-100'
         block_id = 2
     []
     [./split]
@@ -107,7 +107,7 @@
     a3 = -6.0672e9
   
     #diffusion coefficient #for structural stress coupling
-    D = 1e13
+    D = 0
     
   []
   
@@ -481,6 +481,7 @@
     #Note:restrict stress variation along the fault only
     #this function is used in czm only
     [func_initial_strike_shear_stress]
+      # type = InitialStressXYfinitelen_wdiffusion
       type = InitialStressXYstepover_s1
       # type = ConstantFunction
       # value = 70e6
@@ -517,7 +518,7 @@
   
   [Executioner]
     type = Transient
-    dt = 5e-5
+    dt = 5e-4
     end_time = 30.0
     # num_steps = 10
     [TimeIntegrator]
@@ -529,7 +530,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 2000
+    interval = 200
     [sample_snapshots]
       type = Exodus
       interval = 20000

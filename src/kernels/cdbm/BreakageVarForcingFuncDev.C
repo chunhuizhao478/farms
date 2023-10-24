@@ -110,7 +110,7 @@ BreakageVarForcingFuncDev::computeQpResidual()
     if ( _option == 1 ){
 
       //close _option == 1
-      mooseError("Option 1 is NOT available!");
+      //mooseError("Option 1 is NOT available!");
 
       //power-law correction on coefficient Cd(function of strain rate)
       if ( _mechanical_strain_rate[_qp] < _mechanical_strain_rate_threshold ) //Cd follows power-law

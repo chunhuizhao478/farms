@@ -44,9 +44,9 @@ InitialStressXYfinitelen_multiactivation::value(Real t, const Point & p) const
     {
       T1_o = 81.6e6;
     }
-    else if ((x_coord<=(-2500+100))&&(x_coord>=(-2500-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    else if ((x_coord<=(-5000+100))&&(x_coord>=(-5000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
-      T1_o = 81.6e6;
+      T1_o = 82e6;
     }
     else
     {
@@ -58,13 +58,13 @@ InitialStressXYfinitelen_multiactivation::value(Real t, const Point & p) const
     {
       T1_o = 81.6e6;
     }
+    else if ((x_coord<=(-5000+100))&&(x_coord>=(-5000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    {
+      T1_o = 82e6;
+    }
     else if ((x_coord<=(-3000+100))&&(x_coord>=(-3000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
-      T1_o = 81.6e6;
-    }
-    else if ((x_coord<=(-2000+100))&&(x_coord>=(-2000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
-    {
-      T1_o = 81.6e6;
+      T1_o = 82e6;
     }
     else
     {
