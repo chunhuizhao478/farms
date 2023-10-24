@@ -2,24 +2,24 @@
   [./msh]
     type = GeneratedMeshGenerator
     dim = 2
-    nx = 280
-    ny = 120
-    xmin = -7000
-    xmax = 0
-    ymin = -1500
-    ymax = 1500
+    nx = 640
+    ny = 160
+    xmin = -8000
+    xmax =  8000
+    ymin = -2000
+    ymax = 2000
     elem_type = TRI3
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -6000 & x<= -1000 & y<=100 & y>=0'
+      combinatorial_geometry = 'x >= -6000 & x<= 6000 & y<=100 & y>=0'
       block_id = 1
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -6000 & x<= -1000 & y<=0 & y>=-100'
+      combinatorial_geometry = 'x >= -6000 & x<= 6000 & y<=0 & y>=-100'
       block_id = 2
   []
   [./split]

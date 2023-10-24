@@ -29,8 +29,12 @@ InitialStressXYfinitelen_multiactivation::value(Real t, const Point & p) const
   Real y_coord = p(1);
   Real T1_o = 0.0;
 
+  Real activated_center_1 = 0;
+  Real activated_center_2 = -3000;
+  Real activated_center_3 = 3000;
+
   if ( t >= 0.0 && t <= 2.0 ){
-    if ((x_coord<=(-4000+100))&&(x_coord>=(-4000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    if ((x_coord<=(activated_center_1+100))&&(x_coord>=(activated_center_1-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
       T1_o = 81.6e6;
     }
@@ -40,13 +44,13 @@ InitialStressXYfinitelen_multiactivation::value(Real t, const Point & p) const
     }
   }
   else if ( t > 2.0 && t <= 4.0 ){
-    if ((x_coord<=(-4000+100))&&(x_coord>=(-4000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    if ((x_coord<=(activated_center_1+100))&&(x_coord>=(activated_center_1-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
       T1_o = 81.6e6;
     }
-    else if ((x_coord<=(-5000+100))&&(x_coord>=(-5000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    else if ((x_coord<=(activated_center_2+100))&&(x_coord>=(activated_center_2-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
-      T1_o = 82e6;
+      T1_o = 81.6e6;
     }
     else
     {
@@ -54,17 +58,17 @@ InitialStressXYfinitelen_multiactivation::value(Real t, const Point & p) const
     }
   }
   else{
-    if ((x_coord<=(-4000+100))&&(x_coord>=(-4000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    if ((x_coord<=(activated_center_1+100))&&(x_coord>=(activated_center_1-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
       T1_o = 81.6e6;
     }
-    else if ((x_coord<=(-5000+100))&&(x_coord>=(-5000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    else if ((x_coord<=(activated_center_2+100))&&(x_coord>=(activated_center_2-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
-      T1_o = 82e6;
+      T1_o = 81.6e6;
     }
-    else if ((x_coord<=(-3000+100))&&(x_coord>=(-3000-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
+    else if ((x_coord<=(activated_center_3+100))&&(x_coord>=(activated_center_3-100))&&(y_coord<=(0.0+100))&&(y_coord>=(0.0-100)))
     {
-      T1_o = 82e6;
+      T1_o = 81.6e6;
     }
     else
     {
