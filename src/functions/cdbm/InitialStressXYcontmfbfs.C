@@ -43,7 +43,7 @@ InitialStressXYcontmfbfs::value(Real /*t*/, const Point & p) const
 
   Real T1_o = 0;
 
-  if (x_coord >= -400 and x_coord <= 400 and y_coord >= -400 and y_coord <= 400)
+  if (x_coord >= -100 and x_coord <= 100 and y_coord >= -100 and y_coord <= 100)
   {
     T1_o = 81.6e6;
   }
