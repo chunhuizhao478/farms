@@ -30,8 +30,8 @@ list_cornerptrs = [-8000.0,-8000.0,
                    -8000.0,8000.0]
 
 # Region of Multifaults
-dist_verticalbc = 3500
-dist_lateralbc = 3500
+dist_verticalbc = 3000
+dist_lateralbc = 3000
 
 # Meshing Algorithm
 num_alg_meshing = 5

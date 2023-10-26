@@ -140,7 +140,7 @@ BreakageVarForcingFuncDev::computeQpResidual()
     Real C_B = _CdCb_multiplier * Cd;
 
     //Compute C_BH
-    Real C_BH = _CBCBH_multiplier * C_B;
+    Real C_BH = 1e4;
 
     //
     Real Prob = 0;
