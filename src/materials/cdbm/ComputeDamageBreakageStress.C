@@ -257,7 +257,7 @@ ComputeDamageBreakageStress::computeQpStress()
           //Represent deviatoric stress
           Real sigma_d11 = sigma11_t - 1/3 * (sigma11_t + sigma22_t + sigma33_t);
           Real sigma_d22 = sigma22_t - 1/3 * (sigma11_t + sigma22_t + sigma33_t);
-          Real sigma_d12 = sigma12_t - 1/3 * (sigma11_t + sigma22_t + sigma33_t);
+          Real sigma_d12 = sigma12_t;
 
           //Setup equations
           ///residual

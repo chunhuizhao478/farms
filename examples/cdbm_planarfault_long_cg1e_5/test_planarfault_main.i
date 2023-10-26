@@ -411,7 +411,7 @@
   [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStress
+        type = ComputeDamageBreakageStressv2
         option = 1
         alpha_in = alpha_in_dummy
         B_in = B_in_dummy
@@ -506,7 +506,7 @@
     type = Transient
     dt = 1e-5
     end_time = 30.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -516,7 +516,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 2000
+    interval = 1
     [sample_snapshots]
       type = Exodus
       interval = 20000
