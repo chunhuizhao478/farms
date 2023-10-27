@@ -1,0 +1,1 @@
+20km (-10km, 10km), use xi_0 = -0.98 parameters
