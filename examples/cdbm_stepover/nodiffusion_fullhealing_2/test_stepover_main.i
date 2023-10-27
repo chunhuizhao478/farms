@@ -1,3 +1,19 @@
+##########################################################
+# Unified Parameter Choice For CBDM Complex Network Problem
+# mu_d = 0.1
+# For Main Fault, 
+# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
+# mu_s = 0.677
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.49 ) = 1.0
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.49) * 120e6) = 571m
+# Use mesh size = 25m
+
+# Diffusion Length Scale D = 5e5
+# sqrt(5e5*185/3464) = 163. using 6~7, 25m mesh to resolve it
+
+# Check CFL condition 0.1 * 25 / 6000 ~ 0.0001s
+##########################################################
+
 [Mesh]
     [./msh]
         type = FileMeshGenerator
@@ -62,10 +78,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+    xi_0 = -0.98
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -1.08
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -91,10 +107,10 @@
     #check struct_param.m 
   
     #coefficient of damage solid modulus
-    gamma_damaged_r = 3.7150e10
+    gamma_damaged_r = 3.5085e10
   
     #critical point of three phases (strain invariants ratio vs damage)
-    xi_1 = 0.8248
+    xi_1 = 0.7406
   
     ##Compute parameters in granular states
     #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -106,10 +122,10 @@
   
     # #coefficients
     # chi = 0.75
-    a0 = 7.4289e9
-    a1 = -2.214e10
-    a2 = 2.0929e10
-    a3 = -6.0672e9
+    a0 = 6.0209e9
+    a1 = -1.8995e10
+    a2 = 1.8363e10
+    a3 = -4.9859e9
   
     #diffusion coefficient #for structural stress coupling
     D = 0
@@ -429,7 +445,7 @@
   [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStress
+        type = ComputeDamageBreakageStressv2
         option = 1
         alpha_in = alpha_in_dummy
         B_in = B_in_dummy
@@ -481,7 +497,7 @@
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
         type = ConstantFunction
-        value = 0.1
+        value = 0.49
     []
     #Note:restrict stress variation along the fault only
     #this function is used in czm only
@@ -521,7 +537,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 30.0
+    end_time = 40.0
     # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
