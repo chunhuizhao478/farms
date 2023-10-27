@@ -47,10 +47,10 @@ xline(-0.98,'k-.'); hold on;
 xline(-sqrt(2),'k-.'); hold on;
 xline(sqrt(2),'k-.'); hold on;
 xline(0.7406,'k-.'); hold on;
-legend("Convexity loss : condition 1", "Convexity loss : condition 2","","","","",'Fontsize',15);
-title("Phase Diagram : \fontsize{15}{0}\selectfont$\xi$ vs \fontsize{15}{0}\selectfont$\alpha$ ",Interpreter="latex");
-ylabel("Damage Variable \fontsize{15}{0}\selectfont$\alpha$",Interpreter="latex",FontSize=25);
-xlabel("Strain Invariant Ratio \fontsize{15}{0}\selectfont$\xi$",Interpreter="latex",FontSize=25);
+legend("Convexity loss : condition 1", "Convexity loss : condition 1","","","","",'Fontsize',15);
+title("Phase Diagram : \fontsize{12}{0}\selectfont$\xi$ vs \fontsize{20}{0}\selectfont$\alpha$ ",'\fontsize{12}{0}\selectfont$\xi$\fontsize{8}{0}\selectfont$\alpha$',Interpreter="latex");
+ylabel("Damage Variable $\alpha$",Interpreter="latex",FontSize=25);
+xlabel("Strain Invariant Ratio $\xi$",Interpreter="latex",FontSize=25);
 ylim([0,1])
 xlim([-1.5,1.5])
 ax = gca;
