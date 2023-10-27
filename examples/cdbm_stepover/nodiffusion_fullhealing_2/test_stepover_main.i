@@ -521,7 +521,7 @@
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
       type = ConstantFunction
-      value = -135e6
+      value = -240e6
     []
   []
   
