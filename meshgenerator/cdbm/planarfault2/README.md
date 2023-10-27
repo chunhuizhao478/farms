@@ -1,0 +1,1 @@
+20km (-10km, 10km) planar fault
