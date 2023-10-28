@@ -81,17 +81,7 @@ SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
     Real T1_o = -traction_local(1); 
     Real T2_o = -traction_local(0); 
 
-   //Predefined Local Background Stress
-//    Real T1_o = _sts_init[_qp](0,1);
-//    Real T2_o = -_sts_init[_qp](1,1);
-
-  //  Real area = _nodal_area[_qp];
-  //  Real area = 50; 
-   //Real area = 12.5;
    Real area = _nodal_area[_qp];
-
-  //  Real x_coord = _q_point[_qp](0);
-  //  Real y_coord = _q_point[_qp](1);
 
    //Reaction force in local coordinate
    RealVectorValue R_plus_global(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], 0);
@@ -105,19 +95,7 @@ SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
    Real R_minus_local_x = R_minus_local(1);
    Real R_minus_local_y = R_minus_local(0);
 
-    //  Explicit Compute node mass
-    //  Real M = _density[_qp] * area * area / 2; 
-    //  Real M = _density[_qp] * sqrt(3) / 4 * area * area / 3;
-    //  Real M_plus = _density[_qp] * _tria_area[_qp];
-    //  Real M_minus = _density[_qp] * _tria_area_neighbor[_qp];
-
-    //  //Compute sticking stress
-    //  Real T1 =  (1/_dt)*M_plus*M_minus*displacement_jump_rate(1)/(area*(M_plus + M_minus)) + (M_minus * R_plus_local_x - M_plus * R_minus_local_x)/(area*(M_plus + M_minus)) + T1_o;
-    
-    //  Real T2 =  -(1/_dt)*M_plus*M_minus*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(area*(M_plus + M_minus)) + ( (M_plus*R_minus_local_y - M_minus*R_plus_local_y) / (area*(M_plus + M_minus)) ) - T2_o ;
-
     //Compute node mass
-    //Real M = _density[_qp] * area * area / 2; 
     Real M = _density[_qp] * sqrt(3) / 4 * area * area / 3;
 
     //Compute sticking stress
@@ -132,12 +110,6 @@ SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
     }else{
     T2 = 0;
     }
-
-//    if (T2<-2e6)
-//    {    
-//    }else{
-//     T2 = -2e6;
-//    }
 
    //Compute friction strength
    if ( T1 > 0 ){
@@ -174,33 +146,6 @@ SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
         T1 = -1 * tau_f*T1/std::abs(T1);
      }
    }
-
-  //  //output - main fault
-  //  if ( (x_coord > -100) && (x_coord < 100) && (y_coord > -100) && (y_coord < 100) ){
-  //  //if ( (x_coord > -20) && (x_coord < 20) && (y_coord > -1) && (y_coord < 1) ){
-  //       if (abs(T1_o) > abs(T2_o * mu_s)){
-  //         //std::cout<<"main fault point"<<std::endl;
-  //         std::cout<<"xcoord: "<<x_coord<<" "<<"ycoord: "<<y_coord<<std::endl;
-  //         //std::cout<<"_normals: "<<_normals[_qp]<<std::endl;
-  //         std::cout<<"T2_o: "<<T2_o<<std::endl;
-  //         std::cout<<"T1_o: "<<T1_o<<std::endl;
-  //         std::cout<<"T2_o * mu_s: "<<T2_o * mu_s<<std::endl;
-  //         //std::cout<<"sts_init_local: "<<sts_init_local<<std::endl;
-  //         //std::cout<<_rot[_qp]<<std::endl;
-  //         //std::cout<<"displacement_jump: "<<displacement_jump<<std::endl;
-  //       }
-  //  }
-
-  //  //output - branch
-  //  if ( (x_coord > 10000-25) && (x_coord < 10000+25) && (y_coord < 0) ){
-  //       std::cout<<"branch point"<<std::endl;
-  //       std::cout<<"xcoord: "<<x_coord<<" "<<"ycoord: "<<y_coord<<std::endl;
-  //       std::cout<<"T1_o: "<<T1_o<<" "<<"T2_o: "<<T2_o<<std::endl;
-  //       std::cout<<"T1: "<<T1<<" "<<"T2: "<<T2<<std::endl;
-  //       std::cout<<"_rot: "<<_rot[_qp]<<std::endl;
-  //       std::cout<<"_normals: "<<_normals[_qp]<<std::endl;
-  //       //std::cout<<"sts_init_local: "<<sts_init_local<<std::endl;
-  //  }
 
    //Assign back traction in CZM
    RealVectorValue traction;

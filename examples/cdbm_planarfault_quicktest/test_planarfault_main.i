@@ -44,10 +44,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.98
+    xi_0 = -0.8
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -1.08
+    xi_d = -0.9
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -73,10 +73,10 @@
     #check struct_param.m 
   
     #coefficient of damage solid modulus
-    gamma_damaged_r = 3.5085e10
+    gamma_damaged_r = 3.7150e10
   
     #critical point of three phases (strain invariants ratio vs damage)
-    xi_1 = 0.7406
+    xi_1 = 0.8248
   
     ##Compute parameters in granular states
     #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -88,10 +88,10 @@
   
     # #coefficients
     # chi = 0.75
-    a0 = 6.0209e9
-    a1 = -1.8995e10
-    a2 = 1.8363e10
-    a3 = -4.9859e9
+    a0 = 7.4289e9
+    a1 = -2.214e10
+    a2 = 2.0929e10
+    a3 = -6.0672e9
   
     #diffusion coefficient #for structural stress coupling
     D = 0
@@ -489,7 +489,7 @@
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
       type = ConstantFunction
-      value = -240e6
+      value = -135e6
     []
   []
   
@@ -505,7 +505,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 30.0
+    end_time = 3.0
     # num_steps = 1
     [TimeIntegrator]
       type = CentralDifference

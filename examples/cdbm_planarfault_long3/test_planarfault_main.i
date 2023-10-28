@@ -441,9 +441,9 @@
     [./static_initial_stress_tensor_slipweakening]
         type = GenericFunctionRankTwoTensor
         tensor_name = static_initial_stress_tensor_slipweakening
-        tensor_functions = 'func_initial_stress_xx         func_initial_strike_shear_stress           func_initial_stress_00 
-        func_initial_strike_shear_stress         func_initial_stress_yy           func_initial_stress_00
-                            func_initial_stress_00         func_initial_stress_00           func_initial_stress_00'
+        tensor_functions = 'func_initial_stress_xx                func_initial_strike_shear_stress      func_initial_stress_00 
+                            func_initial_strike_shear_stress      func_initial_stress_yy                func_initial_stress_00
+                            func_initial_stress_00                func_initial_stress_00                func_initial_stress_00'
     [../]
     [./static_initial_stress_tensor]
         type = GenericFunctionRankTwoTensor
