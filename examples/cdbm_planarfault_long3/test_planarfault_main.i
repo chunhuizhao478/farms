@@ -59,7 +59,7 @@
     xi_min = -1.5
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-5
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -504,7 +504,7 @@
   
   [Executioner]
     type = Transient
-    dt = 5e-4
+    dt = 1e-5
     end_time = 30.0
     # num_steps = 10
     [TimeIntegrator]
@@ -516,19 +516,19 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 200
+    interval = 10000
     [sample_snapshots]
       type = Exodus
-      interval = 2000
+      interval = 100000
     []
     [snapshots]
       type = Exodus
-      interval = 2000
+      interval = 100000
       overwrite = true
     []
     [checkpoints]
       type = Checkpoint
-      interval = 2000
+      interval = 100000
       num_files = 2
     []
   []
