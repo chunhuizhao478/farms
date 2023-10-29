@@ -1,0 +1,1 @@
+long domain - 80km (-40km, 40km) planar fault
