@@ -526,7 +526,7 @@
   
   [Executioner]
     type = Transient
-    dt = 5e-4
+    dt = 1e-4
     end_time = 0.5
     # num_steps = 1
     [TimeIntegrator]
