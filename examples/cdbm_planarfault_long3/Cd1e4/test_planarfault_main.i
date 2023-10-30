@@ -516,19 +516,19 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 2000
+    interval = 200
     [sample_snapshots]
       type = Exodus
-      interval = 20000
+      interval = 2000
     []
     [snapshots]
       type = Exodus
-      interval = 20000
+      interval = 2000
       overwrite = true
     []
     [checkpoints]
       type = Checkpoint
-      interval = 20000
+      interval = 2000
       num_files = 2
     []
   []
