@@ -1437,31 +1437,37 @@ if __name__ == "__main__":
                         dict_ini_normal_sts=dict_ini_normal_sts)
 
 
-    # ##
-    # #calculate front position vs time
-    # plotfront = False
-    # calcfront = False
-    # if plotfront == True:
-    #     if calcfront == True:
-    #         LinePlotParamVal2D(exodus_file_path=exodus_file_path,
-    #                         plot_var_name=plot_var_name,
-    #                         save_folder_output_file_path=dict_save_folder_output_file_path[fault_name],
-    #                         save_folder_output_png_file_path=dict_save_folder_output_png_file_path[fault_name],
-    #                         fault_name=fault_name,
-    #                         additional_files=additional_files,
-    #                         additional_flags=additional_flags)
-    #     else:
-    #         # print front position vs time ##
-    #         datatime1s05 = np.loadtxt(dict_save_folder_output_file_path[fault_name] + "/front_time0.txt")
-    #         datapos1s05 = np.loadtxt(dict_save_folder_output_file_path[fault_name] + "/front_xcoord0.txt")
-    #         plt.figure()
-    #         plt.plot(datatime1s05,datapos1s05,'r-')
-    #         if fault_name == "bf30":
-    #             plt.title("splay fault front position vs time (junction point dir)")
-    #             plt.xlim([0,20])
-    #         elif fault_name == "mf180":
-    #             plt.title("main fault front position vs time (right rupture dir)")
-    #         plt.xlabel("time")
-    #         plt.ylabel("front position")
-    #         plt.legend()
-    #         plt.show()
+    ##
+    #calculate front position vs time
+    additional_flags = "front_position"
+    plotfront = True
+    calcfront = True
+
+    if calcfront == True:
+        LinePlotParamVal2D(exodus_file_path=exodus_file_path,
+                        plot_var_name=plot_var_name,
+                        save_folder_output_file_path=dict_save_folder_output_file_path[fault_name],
+                        save_folder_output_png_file_path=dict_save_folder_output_png_file_path[fault_name],
+                        fault_name=fault_name,
+                        additional_files=additional_files,
+                        additional_flags=additional_flags)
+    if plotfront == True:
+        # print front position vs time ##
+        # 1
+        datatime1s05 = np.loadtxt(dict_save_folder_output_file_path[fault_name] + "/front_time0.txt")
+        datapos1s05 = np.loadtxt(dict_save_folder_output_file_path[fault_name] + "/front_xcoord0.txt")
+        # 2
+        datatime1s052 = np.loadtxt(dict_save_folder_output_file_path[fault_name] + "/front_time1.txt")
+        datapos1s052 = np.loadtxt(dict_save_folder_output_file_path[fault_name] + "/front_xcoord1.txt")
+        plt.figure()
+        plt.plot(datatime1s05,datapos1s05,'r-')
+        plt.plot(datatime1s052,datapos1s052,'r-')
+        if fault_name == "bf30":
+            plt.title("splay fault front position vs time (junction point dir)")
+            plt.xlim([0,20])
+        elif fault_name == "mf180":
+            plt.title("main fault front position vs time (right rupture dir)")
+        plt.xlabel("time")
+        plt.ylabel("front position")
+        plt.legend()
+        plt.show()
