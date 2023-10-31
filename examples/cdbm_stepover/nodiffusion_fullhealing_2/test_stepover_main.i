@@ -4,8 +4,8 @@
 # For Main Fault, 
 # mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
 # mu_s = 0.677
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.49 ) = 1.0
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.49) * 120e6) = 571m
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.1 ) = 0.2
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 120e6) = 185m
 # Use mesh size = 25m
 
 # Diffusion Length Scale D = 5e5
