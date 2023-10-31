@@ -1,17 +1,22 @@
 ##########################################################
 # Unified Parameter Choice For CBDM Complex Network Problem
-# mu_d = 0.1
+# mu_d = 0.49 [Check!]
 # For Main Fault, 
 # mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
 # mu_s = 0.677
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4 ) = 0.514
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.4) * 120e6) = 386m
-# Use mesh size = 50m
 
-# Diffusion Length Scale D = 5e5
-# sqrt(5e5*185/3464) = 163. using 6~7, 25m mesh to resolve it
+# under the stress state, 
+# -135MPa 70MPa; 70MPa -120e6
+# the principal stress is 198e6 
 
-# Check CFL condition 0.1 * 25 / 6000 ~ 0.0001s
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.49 ) = 1.0
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.49) * 198e6) = 346m
+
+# Use mesh size = 50m, resolved by 7 elements [Check!]
+
+# Use 1% overstress
+
+# Use dt = 2e-4
 ##########################################################
 
 [Mesh]
@@ -486,7 +491,7 @@
   #mud constant value: 0.4
   [func_dynamic_friction_coeff_mud]
       type = ConstantFunction
-      value = 0.4
+      value = 0.49
   []
   #Note:restrict stress variation along the fault only
   #this function is used in czm only
@@ -525,7 +530,7 @@
 
 [Executioner]
   type = Transient
-  dt = 1e-4
+  dt = 2e-4
   end_time = 30.0
   # num_steps = 10
   [TimeIntegrator]
