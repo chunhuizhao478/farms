@@ -29,7 +29,7 @@ InitialStressXYnetwork_old::value(Real /*t*/, const Point & p) const
 
   Real T1_o = 0;
 
-  if (x_coord >= -400 and x_coord <= 400 and y_coord >= -400 and y_coord <= 400)
+  if (x_coord >= -200 and x_coord <= 200 and y_coord >= -200 and y_coord <= 200)
   {
     T1_o = 81.6e6;
   }
