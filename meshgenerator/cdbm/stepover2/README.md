@@ -1,0 +1,1 @@
+use 50m, mu_d = 0.4, L_fric = 385m, overstress 1% 

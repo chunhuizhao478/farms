@@ -29,10 +29,11 @@ InitialStressXYstepover3mud049::value(Real /*t*/, const Point & p) const
   Real y_coord = p(1);
   Real regiondx = 300; //mu_d=0.49 //Real regiondx = 100; //mu_d=0.1
   Real T1_o = 0.0;
-  if ((x_coord<=(-1000+regiondx))&&(x_coord>=(-1000-regiondx))&&(y_coord<=(0.0+regiondx))&&(y_coord>=(0.0-regiondx)))
+  if ((x_coord<=(-4000+regiondx))&&(x_coord>=(-4000-regiondx))&&(y_coord<=(0.0+regiondx))&&(y_coord>=(0.0-regiondx)))
   {
     //T1_o = 81.6e6;
-    T1_o = 84.5e6; //0.04
+    //T1_o = 84.5e6; //0.04
+    T1_o = 82.0524e6; //0.01
   }
   else
   {
