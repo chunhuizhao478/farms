@@ -497,12 +497,12 @@
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
         type = ConstantFunction
-        value = 0.1
+        value = 0.49
     []
     #Note:restrict stress variation along the fault only
     #this function is used in czm only
     [func_initial_strike_shear_stress]
-      type = InitialStressXYstepover3
+      type = InitialStressXYstepover3mud049
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
