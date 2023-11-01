@@ -80,11 +80,11 @@
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
   #may need a bit space, use 1.5 as boundary
-  xi_max = 1.5
+  xi_max = 1.8
 
   #<strain invariants ratio: minimum allowable value>: set boundary
   #Xu_etal_P15-2D
-  xi_min = -1.5
+  xi_min = -1.8
 
   #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
   C_g = 1e-10
