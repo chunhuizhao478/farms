@@ -7,20 +7,20 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ComputeDamageBreakageStressv2.h"
+#include "ComputeDamageBreakageStressv3.h"
 #include "NestedSolve.h"
 #include "FEProblem.h"
 
 /*
 
-v2: Modify the stress computation to include alpha, B computed from subApp
+sigmazz = 0.5 * (sigmaxx + sigmayy)
 
 */
 
-registerMooseObject("farmsApp", ComputeDamageBreakageStressv2);
+registerMooseObject("farmsApp", ComputeDamageBreakageStressv3);
 
 InputParameters
-ComputeDamageBreakageStressv2::validParams()
+ComputeDamageBreakageStressv3::validParams()
 { 
   //Note: lambda_o, shear_modulus_o is defined in "ComputeGeneralDamageBreakageStressBase"
   //to initialize _lambda, _shear_modulus material properties
@@ -59,7 +59,7 @@ ComputeDamageBreakageStressv2::validParams()
   return params;
 }
 
-ComputeDamageBreakageStressv2::ComputeDamageBreakageStressv2(const InputParameters & parameters)
+ComputeDamageBreakageStressv3::ComputeDamageBreakageStressv3(const InputParameters & parameters)
   : ComputeDamageBreakageStressBase(parameters),
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
     _xi_0(getParam<Real>("xi_0")),
@@ -101,7 +101,7 @@ ComputeDamageBreakageStressv2::ComputeDamageBreakageStressv2(const InputParamete
 }
 
 void
-ComputeDamageBreakageStressv2::initialSetup()
+ComputeDamageBreakageStressv3::initialSetup()
 {
   // _base_name + "unstabilized_deformation_gradient" is only declared if we're
   // using the Lagrangian kernels.  It's okay to invoke this small strain
@@ -120,7 +120,7 @@ ComputeDamageBreakageStressv2::initialSetup()
 }
 
 void
-ComputeDamageBreakageStressv2::computeQpStress()
+ComputeDamageBreakageStressv3::computeQpStress()
 { 
 
   if (_t == 0.0)
@@ -406,7 +406,7 @@ ComputeDamageBreakageStressv2::computeQpStress()
 
 ///Function: deltaij
 Real 
-ComputeDamageBreakageStressv2::deltaij(int i, int j)
+ComputeDamageBreakageStressv3::deltaij(int i, int j)
 {
   Real deltaij_out = 0.0;
   if ( i == j )
@@ -422,7 +422,7 @@ ComputeDamageBreakageStressv2::deltaij(int i, int j)
 
 /// Function: epsilonij - take component of elastic strain
 Real 
-ComputeDamageBreakageStressv2::epsilonij(int i, 
+ComputeDamageBreakageStressv3::epsilonij(int i, 
                                        int j,
                                        Real eps11e_in,
                                        Real eps22e_in,
@@ -447,7 +447,7 @@ ComputeDamageBreakageStressv2::epsilonij(int i,
 
 /// Function: grad_alpha
 Real 
-ComputeDamageBreakageStressv2::grad_alpha(int i, 
+ComputeDamageBreakageStressv3::grad_alpha(int i, 
                                           Real alpha_grad_x,
                                           Real alpha_grad_y)
 { 
@@ -466,7 +466,7 @@ ComputeDamageBreakageStressv2::grad_alpha(int i,
 
 /// Function: compute stress components
 Real 
-ComputeDamageBreakageStressv2::computeStressComps(int i, 
+ComputeDamageBreakageStressv3::computeStressComps(int i, 
                                                 int j,
                                                 Real xi_in,
                                                 Real I1_in,
@@ -506,7 +506,7 @@ ComputeDamageBreakageStressv2::computeStressComps(int i,
 
 ///Function to compute initial strain based on initial stress 
 void
-ComputeDamageBreakageStressv2::setupInitial()
+ComputeDamageBreakageStressv3::setupInitial()
 {
   ///For isotropic material with all components of stress subject to small strain we consider 
   ///tensile/compressive stress leads to only tensile/compressive strain, shear stress produce
@@ -543,9 +543,11 @@ ComputeDamageBreakageStressv2::setupInitial()
   Real sts11_init = stress_initial(0,0);
   Real sts12_init = stress_initial(0,1);
   Real sts22_init = stress_initial(1,1);
+  Real sts33_init = stress_initial(2,2);
   
   //Note the presence of sts33 in plane strain problem
-  Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init );
+  // sts33_init = poisson_ratio_o * ( sts11_init + sts22_init );
+  // Real sts33_init = 0.5 * ( sts11_init + sts22_init );
 
   //In https://www.fracturemechanics.org/plane.html it is given:
   //eps11 = 1 / youngs_modulus_o ( ( 1 - poisson_ratio_o ^ 2) sigma_xx - poisson_ratio_o * ( 1 + poisson_ratio_o ) * sigma_yy ) (1)
@@ -557,9 +559,13 @@ ComputeDamageBreakageStressv2::setupInitial()
   //Now we want to use sts33_init = 0.5 * ( sts11_init + sts22_init ), so we should use equation (1) instead
 
   //Compute strain components
-  Real eps11_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts11_init - poisson_ratio_o * ( sts11_init + sts22_init + sts33_init ) );
-  Real eps22_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts22_init - poisson_ratio_o * ( sts11_init + sts22_init + sts33_init ) );
-  Real eps12_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts12_init                                                              );
+  //Real eps11_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts11_init - poisson_ratio_o * ( sts11_init + sts22_init + sts33_init ) );
+  //Real eps22_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts22_init - poisson_ratio_o * ( sts11_init + sts22_init + sts33_init ) );
+  //Real eps12_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts12_init                                                              );
+
+  Real eps11_init = 1 / youngs_modulus_o * ( ( 1 - poisson_ratio_o * poisson_ratio_o ) * sts11_init - poisson_ratio_o * ( 1 + poisson_ratio_o ) * sts22_init ) ;
+  Real eps22_init = 1 / youngs_modulus_o * ( ( 1 - poisson_ratio_o * poisson_ratio_o ) * sts22_init - poisson_ratio_o * ( 1 + poisson_ratio_o ) * sts11_init ) ;
+  Real eps12_init = 1 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts12_init );
 
   //-------------------------------------------------------------------------------------------------------------------------------//
   //Initially we are at elastic region, eps33_init = eps_elastic = - eps_plastic = 0                                               //
