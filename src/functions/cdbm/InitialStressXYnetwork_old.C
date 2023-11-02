@@ -34,7 +34,8 @@ InitialStressXYnetwork_old::value(Real /*t*/, const Point & p) const
 
   if (x_coord >= origin_x-200 and x_coord <= origin_x+200 and y_coord >= origin_y-200 and y_coord <= origin_y+200)
   {
-    T1_o = 88.2e6; //1% overstress
+    //T1_o = 88.2e6; //1% overstress
+    T1_o = 96e6;
   }
   else{
     T1_o = 70e6;
