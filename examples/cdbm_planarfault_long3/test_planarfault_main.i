@@ -1,3 +1,19 @@
+##########################################################
+# Unified Parameter Choice For CBDM Complex Network Problem
+# mu_d = 0.1
+# For Main Fault, 
+# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
+# mu_s = 0.677
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4 ) = 0.514
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.4) * 120e6) = 386m
+# Use mesh size = 25m
+
+# Diffusion Length Scale D = 5e5
+# sqrt(5e5*185/3464) = 163. using 6~7, 25m mesh to resolve it
+
+# Check CFL condition 0.1 * 25 / 6000 ~ 0.0001s
+##########################################################
+
 [Mesh]
     [./msh]
         type = FileMeshGenerator
@@ -411,7 +427,7 @@
   [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStressv2
+        type = ComputeDamageBreakageStressv3
         option = 1
         alpha_in = alpha_in_dummy
         B_in = B_in_dummy
@@ -450,7 +466,7 @@
         tensor_name = static_initial_stress_tensor
         tensor_functions = 'func_initial_stress_xx             func_initial_stress_xy_const        func_initial_stress_00 
                             func_initial_stress_xy_const       func_initial_stress_yy              func_initial_stress_00
-                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_00'
+                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_zz'
     [../]
   []
   
@@ -485,6 +501,10 @@
       type = ConstantFunction
       value = -120e6
     []
+    [./func_initial_stress_zz]
+      type = ConstantFunction
+      value = -127.5e6
+    []
     #In problems with inelasticity, the sigma11 is important
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
@@ -506,7 +526,7 @@
     type = Transient
     dt = 5e-4
     end_time = 30.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -516,19 +536,19 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 2000
+    interval = 1
     [sample_snapshots]
       type = Exodus
-      interval = 20000
+      interval = 2000
     []
     [snapshots]
       type = Exodus
-      interval = 20000
+      interval = 2000
       overwrite = true
     []
     [checkpoints]
       type = Checkpoint
-      interval = 20000
+      interval = 2000
       num_files = 2
     []
   []

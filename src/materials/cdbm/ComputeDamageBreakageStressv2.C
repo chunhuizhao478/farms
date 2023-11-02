@@ -88,6 +88,7 @@ ComputeDamageBreakageStressv2::ComputeDamageBreakageStressv2(const InputParamete
     _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
     _eqv_plastic_strain_old(getMaterialPropertyOldByName<Real>("eqv_plastic_strain")),
+    _plastic_work_old(getMaterialPropertyOldByName<Real>("plastic_work")),
     _alpha_in(coupledValue("alpha_in")),
     _B_in(coupledValue("B_in")),
     _alpha_grad_x(coupledValue("alpha_grad_x")),
@@ -313,6 +314,7 @@ ComputeDamageBreakageStressv2::computeQpStress()
       Real eps33p_inc = solution(3);
 
       //Compute eqv plastic strain
+      //-----------------------------------------------------------------------------------//
       //1. Approximate the plastic strain rate: eps_p_dot_ij = eps_p_inc_ij / dt
       //2. Adopt the formulation: gamma_dot_eq = sqrt( 2 * eps_p_dot_ij * eps_p_dot_ij )
       //3. Compute the increment eqv plastic strain: gamma_eq_inc = gamma_dot_eq * dt
@@ -332,6 +334,7 @@ ComputeDamageBreakageStressv2::computeQpStress()
 
       //4.
       _eqv_plastic_strain[_qp] = _eqv_plastic_strain_old[_qp] + gamma_eq_inc;
+      //-----------------------------------------------------------------------------------//
 
       //save data
       //viscoelastic strain
@@ -400,6 +403,26 @@ ComputeDamageBreakageStressv2::computeQpStress()
       }
 
       _sts_total[_qp] = stress_total_out;
+
+      //Compute plastic work 
+      // W_dot = sigma_ij * eps_p_dot_ij
+      // W = W_old + W_dot * dt
+      // Summation of all elements
+      //-----------------------------------------------------------------------------------//
+
+      //1.Compute sigma_ij
+      Real sigma_11 = computeStressComps(1, 1, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
+      Real sigma_22 = computeStressComps(2, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
+      Real sigma_12 = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
+      Real sigma_33 = nu * ( sigma_11 + sigma_22 );
+
+      //2.Compute W_dot
+      Real W_dot = sigma_11 * eps11p_inc_rate + 2 * sigma_12 * eps12p_inc_rate + sigma_22 * eps22p_inc_rate + sigma_33 * eps33p_inc_rate;
+
+      //3.Update W
+      _plastic_work[_qp] = _plastic_work_old[_qp] + W_dot * _dt;
+
+      //-----------------------------------------------------------------------------------//
 
       //feed stress change (relative to initial condition) to system
       RankTwoTensor stress_out;

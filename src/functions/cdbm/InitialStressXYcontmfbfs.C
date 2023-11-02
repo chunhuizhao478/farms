@@ -25,6 +25,7 @@ InitialStressXYcontmfbfs::value(Real /*t*/, const Point & p) const
 
   if (x_coord >= -100 and x_coord <= 100 and y_coord >= -100 and y_coord <= 100)
   {
+    //T1_o = 82.0524e6; //1% overstress
     T1_o = 81.6e6;
   }
   else{

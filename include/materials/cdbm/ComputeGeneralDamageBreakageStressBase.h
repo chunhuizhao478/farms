@@ -98,6 +98,8 @@ protected:
   MaterialProperty<Real> & _principal_strain;
   /// eqv plastic strain
   MaterialProperty<Real> & _eqv_plastic_strain;
+  /// plastic work
+  MaterialProperty<Real> & _plastic_work;
 
   /// take initial value 
   /// lambda (first lame const)

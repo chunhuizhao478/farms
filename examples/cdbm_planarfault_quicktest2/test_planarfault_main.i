@@ -59,7 +59,7 @@
     xi_min = -1.5
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-10
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -411,7 +411,7 @@
   [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStressv2
+        type = ComputeDamageBreakageStressv3
         option = 1
         alpha_in = alpha_in_dummy
         B_in = B_in_dummy
@@ -443,14 +443,14 @@
         tensor_name = static_initial_stress_tensor_slipweakening
         tensor_functions = 'func_initial_stress_xx                   func_initial_strike_shear_stress         func_initial_stress_00 
                             func_initial_strike_shear_stress         func_initial_stress_yy                   func_initial_stress_00
-                            func_initial_stress_00                   func_initial_stress_00                   func_initial_stress_00'
+                            func_initial_stress_00                   func_initial_stress_00                   func_initial_stress_zz_const'
     [../]
     [./static_initial_stress_tensor]
         type = GenericFunctionRankTwoTensor
         tensor_name = static_initial_stress_tensor
         tensor_functions = 'func_initial_stress_xx             func_initial_stress_xy_const        func_initial_stress_00 
                             func_initial_stress_xy_const       func_initial_stress_yy              func_initial_stress_00
-                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_00'
+                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_zz_const'
     [../]
   []
   
@@ -476,6 +476,11 @@
     [func_initial_stress_xy_const]
       type = ConstantFunction
       value = 70e6
+    []
+    [func_initial_stress_zz_const]
+      type = ConstantFunction
+      value = -127.5e6
+      # value = 0.0
     []
     [./func_initial_stress_00]
       type = ConstantFunction
@@ -506,7 +511,7 @@
     type = Transient
     dt = 1e-4
     end_time = 3.0
-    # num_steps = 1
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -516,7 +521,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 200
+    interval = 1
     [sample_snapshots]
       type = Exodus
       interval = 2000

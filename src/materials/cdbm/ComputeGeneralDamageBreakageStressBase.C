@@ -50,6 +50,7 @@ ComputeGeneralDamageBreakageStressBase::ComputeGeneralDamageBreakageStressBase(c
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
     _principal_strain(declareProperty<Real>("principal_strain")),
     _eqv_plastic_strain(declareProperty<Real>("eqv_plastic_strain")),
+    _plastic_work(declareProperty<Real>("plastic_work")),
     _lambda_o(getParam<Real>("lambda_o")),
     _shear_modulus_o(getParam<Real>("shear_modulus_o"))
 {
