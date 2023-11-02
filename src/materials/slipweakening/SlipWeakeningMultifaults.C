@@ -147,6 +147,15 @@ SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
      }
    }
 
+  //  Real x_coord = _q_point[_qp](0);
+  //  Real y_coord = _q_point[_qp](1);
+  //  Real origin_x = 637.6135;
+  //  Real origin_y = -1346.25;
+  //  if (x_coord >= origin_x-200 and x_coord <= origin_x+200 and y_coord >= origin_y-200 and y_coord <= origin_y+200)
+  //  {
+  //   std::cout<<T2_o<<" "<<T1_o<<std::endl;
+  //  }
+
    //Assign back traction in CZM
    RealVectorValue traction;
 

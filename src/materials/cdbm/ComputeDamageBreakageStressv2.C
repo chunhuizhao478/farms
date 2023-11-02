@@ -87,6 +87,7 @@ ComputeDamageBreakageStressv2::ComputeDamageBreakageStressv2(const InputParamete
     _mechanical_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("mechanical_strain")),
     _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
+    _eqv_plastic_strain_old(getMaterialPropertyOldByName<Real>("eqv_plastic_strain")),
     _alpha_in(coupledValue("alpha_in")),
     _B_in(coupledValue("B_in")),
     _alpha_grad_x(coupledValue("alpha_grad_x")),
@@ -310,6 +311,27 @@ ComputeDamageBreakageStressv2::computeQpStress()
       Real eps22p_inc = solution(1);
       Real eps12p_inc = solution(2);
       Real eps33p_inc = solution(3);
+
+      //Compute eqv plastic strain
+      //1. Approximate the plastic strain rate: eps_p_dot_ij = eps_p_inc_ij / dt
+      //2. Adopt the formulation: gamma_dot_eq = sqrt( 2 * eps_p_dot_ij * eps_p_dot_ij )
+      //3. Compute the increment eqv plastic strain: gamma_eq_inc = gamma_dot_eq * dt
+      //4. Add the increment to the previous value: gamma_eq = gamma_eq_old + gamma_eq_inc
+
+      //1.
+      Real eps11p_inc_rate = eps11p_inc / _dt;
+      Real eps22p_inc_rate = eps22p_inc / _dt;
+      Real eps12p_inc_rate = eps12p_inc / _dt;
+      Real eps33p_inc_rate = eps33p_inc / _dt;
+
+      //2.
+      Real gamma_dot_eq = sqrt( 2 * ( eps11p_inc_rate * eps11p_inc_rate + 2 * eps12p_inc_rate * eps12p_inc_rate + eps22p_inc_rate * eps22p_inc_rate + eps33p_inc_rate * eps33p_inc_rate ) );
+
+      //3.
+      Real gamma_eq_inc = gamma_dot_eq * _dt;
+
+      //4.
+      _eqv_plastic_strain[_qp] = _eqv_plastic_strain_old[_qp] + gamma_eq_inc;
 
       //save data
       //viscoelastic strain

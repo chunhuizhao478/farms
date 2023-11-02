@@ -543,7 +543,7 @@ ComputeDamageBreakageStressv3::setupInitial()
   Real sts11_init = stress_initial(0,0);
   Real sts12_init = stress_initial(0,1);
   Real sts22_init = stress_initial(1,1);
-  Real sts33_init = stress_initial(2,2);
+  //Real sts33_init = stress_initial(2,2);
   
   //Note the presence of sts33 in plane strain problem
   // sts33_init = poisson_ratio_o * ( sts11_init + sts22_init );
