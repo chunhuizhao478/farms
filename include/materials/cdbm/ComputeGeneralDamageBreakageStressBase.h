@@ -96,6 +96,8 @@ protected:
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
   /// shear strain rate 
   MaterialProperty<Real> & _principal_strain;
+  /// eqv plastic strain
+  MaterialProperty<Real> & _eqv_plastic_strain;
 
   /// take initial value 
   /// lambda (first lame const)

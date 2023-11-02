@@ -86,6 +86,7 @@ protected:
   const MaterialProperty<RankTwoTensor> & _mechanical_strain_old;
   const MaterialProperty<RankTwoTensor> & _eps_p_old;
   const MaterialProperty<RankTwoTensor> & _eps_e_old;
+  const MaterialProperty<Real> & _eqv_plastic_strain_old; //old eqv plastic strain
 
   /// updated damage and breakage parameters computed from subApp
   //Note: pass reference(&) instead of value, otherwise it may occur segmentation fault 11 error
