@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
       type = FileMeshGenerator
-      file =  '../../../../meshgenerator/cdbm/stepover2/step_over2.msh'
+      file =  '../../../../meshgenerator/cdbm/stepover2extend/step_over2extend.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -73,7 +73,7 @@
   # C_d_min = 10
 
   #if option 2, use Cd_constant
-  Cd_constant = 1e6
+  Cd_constant = 1e4
 
   #power-law correction
   #index

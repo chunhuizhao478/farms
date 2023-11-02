@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../../meshgenerator/cdbm/stepover2/step_over2.msh'
+        file =  '../../../../meshgenerator/cdbm/stepover2extend/step_over2extend.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator

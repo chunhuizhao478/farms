@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../../meshgenerator/cdbm/stepover2/step_over2.msh'
+        file =  '../../../../meshgenerator/cdbm/stepover2extend/step_over2extend.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -533,7 +533,7 @@
     type = Transient
     dt = 5e-4
     end_time = 40.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -543,7 +543,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 200
+    interval = 1
     [sample_snapshots]
       type = Exodus
       interval = 2000
