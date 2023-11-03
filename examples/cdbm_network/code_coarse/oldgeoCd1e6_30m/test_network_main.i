@@ -526,7 +526,7 @@
 
 [Executioner]
   type = Transient
-  dt = 0.001
+  dt = 2e-4
   end_time = 30.0
   # num_steps = 10
   [TimeIntegrator]
@@ -538,7 +538,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 100
+  interval = 200
   [sample_snapshots]
     type = Exodus
     interval = 2000
