@@ -1,0 +1,1 @@
+same geometry with planarfault, but use uniform mesh
