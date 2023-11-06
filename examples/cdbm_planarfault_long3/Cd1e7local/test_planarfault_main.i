@@ -237,52 +237,64 @@
       order = CONSTANT
       family = MONOMIAL
     [] 
-    #plastic work
-    [./plastic_work]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    #plastic work rate
-    [./plastic_work_rate]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    #resolved total stress
-    [./resolved_sigma_11]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./resolved_sigma_12]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./resolved_sigma_22]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./resolved_sigma_33]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    #resolved plastic strain rate
-    [./resolved_epsp_rate_11]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./resolved_epsp_rate_12]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./resolved_epsp_rate_22]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./resolved_epsp_rate_33]
-      order = CONSTANT
-      family = MONOMIAL
-    []
     #total stress
     [./total_stress]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #inelastic strain components
+    [./eps_p_11_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_p_12_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_p_22_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_p_33_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #stress change components
+    [./sts_change_11_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./sts_change_12_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./sts_change_22_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./sts_change_33_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #plastic work rate qp
+    [./plastic_work_rate_qp]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #initial sts
+    [./sts_initial_11_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./sts_initial_12_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./sts_initial_22_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./sts_initial_33_aux]
       order = CONSTANT
       family = MONOMIAL
     []
@@ -448,76 +460,121 @@
         variable = eqv_plastic_strain
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
-    #get plastic work
-    [plastic_work]
-        type = MaterialRealAux
-        property = plastic_work
-        variable = plastic_work
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    #get plastic strain components
+    [inelastic_11]
+        type = MaterialRankTwoTensorAux
+        property = eps_p
+        i = 0
+        j = 0
+        variable = eps_p_11_aux
+        execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    #get plastic work rate
-    [plastic_work_rate]
-      type = MaterialRealAux
-      property = plastic_work_rate
-      variable = plastic_work_rate
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [inelastic_12]
+      type = MaterialRankTwoTensorAux
+      property = eps_p
+      i = 0
+      j = 1
+      variable = eps_p_12_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    #get resolved total stress
-    [resolved_sigma_11]
-      type = MaterialRealAux
-      property = resolved_sigma_11
-      variable = resolved_sigma_11
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [inelastic_22]
+      type = MaterialRankTwoTensorAux
+      property = eps_p
+      i = 1
+      j = 1
+      variable = eps_p_22_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    [resolved_sigma_12]
-      type = MaterialRealAux
-      property = resolved_sigma_12
-      variable = resolved_sigma_12
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [inelastic_33]
+      type = MaterialRankTwoTensorAux
+      property = eps_p
+      i = 2
+      j = 2
+      variable = eps_p_33_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    [resolved_sigma_22]
-      type = MaterialRealAux
-      property = resolved_sigma_22
-      variable = resolved_sigma_22
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    #get elastic strain components
+    [sts_change_11]
+      type = MaterialRankTwoTensorAux
+      property = stress
+      i = 0
+      j = 0
+      variable = sts_change_11_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    [resolved_sigma_33]
-      type = MaterialRealAux
-      property = resolved_sigma_33
-      variable = resolved_sigma_33
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [sts_change_12]
+      type = MaterialRankTwoTensorAux
+      property = stress
+      i = 0
+      j = 1
+      variable = sts_change_12_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    #get resolved plastic strain rate
-    [resolved_epsp_rate_11]
-      type = MaterialRealAux
-      property = resolved_epsp_rate_11
-      variable = resolved_epsp_rate_11
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [sts_change_22]
+      type = MaterialRankTwoTensorAux
+      property = stress
+      i = 1
+      j = 1
+      variable = sts_change_22_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    [resolved_epsp_rate_12]
-      type = MaterialRealAux
-      property = resolved_epsp_rate_12
-      variable = resolved_epsp_rate_12
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [sts_change_33]
+      type = MaterialRankTwoTensorAux
+      property = stress
+      i = 2
+      j = 2
+      variable = sts_change_33_aux
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
-    [resolved_epsp_rate_22]
-      type = MaterialRealAux
-      property = resolved_epsp_rate_22
-      variable = resolved_epsp_rate_22
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    #compute plastic work rate qp
+    [plastic_work_qp]
+      type = ComputePlasticWorkRate
+      variable = plastic_work_rate_qp
+      eps_p_11_aux = eps_p_11_aux
+      eps_p_12_aux = eps_p_12_aux
+      eps_p_22_aux = eps_p_22_aux
+      eps_p_33_aux = eps_p_33_aux
+      sts_change_11_aux = sts_change_11_aux
+      sts_change_12_aux = sts_change_11_aux
+      sts_change_22_aux = sts_change_11_aux
+      sts_change_33_aux = sts_change_11_aux
+      sts_initial_11_aux = sts_initial_11_aux
+      sts_initial_12_aux = sts_initial_12_aux
+      sts_initial_22_aux = sts_initial_22_aux
+      sts_initial_33_aux = sts_initial_33_aux
+      execute_on = 'TIMESTEP_END'
     []
-    [resolved_epsp_rate_33]
-      type = MaterialRealAux
-      property = resolved_epsp_rate_33
-      variable = resolved_epsp_rate_33
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    #convert initial stress to aux
+    [sts_initial_11]
+      type = FunctionAux
+      variable = sts_initial_11_aux
+      function = func_initial_stress_xx
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
+    [sts_initial_12]
+      type = FunctionAux
+      variable = sts_initial_12_aux
+      function = func_initial_stress_xy_const
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
+    [sts_initial_22]
+      type = FunctionAux
+      variable = sts_initial_22_aux
+      function = func_initial_stress_yy
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
+    [sts_initial_33]
+      type = FunctionAux
+      variable = sts_initial_33_aux
+      function = func_initial_stress_zz
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
     #fault length
     [fault_len]
-        type = ConstantAux
-        variable = nodal_area
-        value = 25
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+      type = ConstantAux
+      variable = nodal_area
+      value = 25
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
   []
   
@@ -553,8 +610,8 @@
         B_in = B_in_dummy
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
-        output_properties = 'eps_p eps_e eps_total I1 sts_total'
-        outputs = exodus
+        # output_properties = 'eps_p eps_e eps_total I1 sts_total'
+        # outputs = exodus
     []
     [density]
         type = GenericConstantMaterial
@@ -646,38 +703,38 @@
     type = Transient
     dt = 5e-4
     end_time = 2.0
-    #num_steps = 10
+    # num_steps = 20
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
     []
   []
 
-  # [Postprocessors]
-  #   [plastic_work]
-  #     type = ElementIntegralMaterialProperty
-  #     mat_prop = plastic_work
-  #   []
-  # []
+  [Postprocessors]
+    [plastic_work_rate]
+      type = ElementIntegralVariablePostprocessor
+      variable = plastic_work_rate_qp
+    []
+  []
   
   #for cluster run
   [Outputs]
-    exodus = true
-    # csv = true
-    interval = 200
-    [sample_snapshots]
-      type = Exodus
-      interval = 2000
-    []
-    [snapshots]
-      type = Exodus
-      interval = 2000
-      overwrite = true
-    []
+    exodus = false
+    csv = true
+    interval = 1
+    # [sample_snapshots]
+    #   type = Exodus
+    #   interval = 2000
+    # []
+    # [snapshots]
+    #   type = Exodus
+    #   interval = 2000
+    #   overwrite = true
+    # []
     [checkpoints]
       type = Checkpoint
       interval = 2000
-      num_files = 2
+      num_files = 6
     []
   []
   
