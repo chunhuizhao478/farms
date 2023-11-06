@@ -98,8 +98,20 @@ protected:
   MaterialProperty<Real> & _principal_strain;
   /// eqv plastic strain
   MaterialProperty<Real> & _eqv_plastic_strain;
-  /// plastic work rate
+  /// plastic work
   MaterialProperty<Real> & _plastic_work;
+  /// plastic work rate
+  MaterialProperty<Real> & _plastic_work_rate;
+  /// resolved total stress components
+  MaterialProperty<Real> & _resolved_sigma_11;
+  MaterialProperty<Real> & _resolved_sigma_12;
+  MaterialProperty<Real> & _resolved_sigma_22;
+  MaterialProperty<Real> & _resolved_sigma_33;
+  /// resolved plastic strain rate
+  MaterialProperty<Real> & _resolved_epsp_rate_11;
+  MaterialProperty<Real> & _resolved_epsp_rate_12;
+  MaterialProperty<Real> & _resolved_epsp_rate_22;
+  MaterialProperty<Real> & _resolved_epsp_rate_33;
 
   /// take initial value 
   /// lambda (first lame const)

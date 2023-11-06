@@ -418,12 +418,27 @@ ComputeDamageBreakageStressv2::computeQpStress()
       // std::cout<<sigma_11<<" "<<sigma_22<<" "<<sigma_12<<" "<<sigma_33<<" "<<std::endl;
 
       //2.Compute W_dot
-      //Real detJ = 541; //assume 25m triangle with equal length //hardcode!!
-      //Real W = 1.0; //assume constant value inside each element, the weight is 1. 
-      Real W_dot = ( sigma_11 * eps11p_inc_rate + 2 * sigma_12 * eps12p_inc_rate + sigma_22 * eps22p_inc_rate + sigma_33 * eps33p_inc_rate ); //* detJ * W;
+      Real detJ = 541; //assume 25m triangle with equal length //hardcode!!
+      Real W = 1.0; //assume constant value inside each element, the weight is 1. 
+      Real W_dot = ( sigma_11 * eps11p_inc_rate + 2 * sigma_12 * eps12p_inc_rate + sigma_22 * eps22p_inc_rate + sigma_33 * eps33p_inc_rate ) * detJ * W;
 
       //3.Update W
       _plastic_work[_qp] = W_dot * _dt;
+
+      //save plastic work rate
+      _plastic_work_rate[_qp] = W_dot;
+
+      //save resolved total stress
+      _resolved_sigma_11[_qp] = sigma_11;
+      _resolved_sigma_12[_qp] = sigma_12;
+      _resolved_sigma_22[_qp] = sigma_22;
+      _resolved_sigma_33[_qp] = sigma_33;
+
+      //save resolved plastic strain rate
+      _resolved_epsp_rate_11[_qp] = eps11p_inc_rate;
+      _resolved_epsp_rate_12[_qp] = eps12p_inc_rate;
+      _resolved_epsp_rate_22[_qp] = eps22p_inc_rate;
+      _resolved_epsp_rate_33[_qp] = eps33p_inc_rate;
 
       //-----------------------------------------------------------------------------------//
 

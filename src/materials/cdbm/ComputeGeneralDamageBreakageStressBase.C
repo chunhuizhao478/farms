@@ -51,6 +51,15 @@ ComputeGeneralDamageBreakageStressBase::ComputeGeneralDamageBreakageStressBase(c
     _principal_strain(declareProperty<Real>("principal_strain")),
     _eqv_plastic_strain(declareProperty<Real>("eqv_plastic_strain")),
     _plastic_work(declareProperty<Real>("plastic_work")),
+    _plastic_work_rate(declareProperty<Real>("plastic_work_rate")),
+    _resolved_sigma_11(declareProperty<Real>("resolved_sigma_11")),
+    _resolved_sigma_12(declareProperty<Real>("resolved_sigma_12")),
+    _resolved_sigma_22(declareProperty<Real>("resolved_sigma_22")),
+    _resolved_sigma_33(declareProperty<Real>("resolved_sigma_33")),
+    _resolved_epsp_rate_11(declareProperty<Real>("resolved_epsp_rate_11")),
+    _resolved_epsp_rate_12(declareProperty<Real>("resolved_epsp_rate_12")),
+    _resolved_epsp_rate_22(declareProperty<Real>("resolved_epsp_rate_22")),
+    _resolved_epsp_rate_33(declareProperty<Real>("resolved_epsp_rate_33")),
     _lambda_o(getParam<Real>("lambda_o")),
     _shear_modulus_o(getParam<Real>("shear_modulus_o"))
 {

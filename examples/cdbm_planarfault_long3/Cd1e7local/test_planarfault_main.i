@@ -242,6 +242,45 @@
       order = CONSTANT
       family = MONOMIAL
     []
+    #plastic work rate
+    [./plastic_work_rate]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #resolved total stress
+    [./resolved_sigma_11]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./resolved_sigma_12]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./resolved_sigma_22]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./resolved_sigma_33]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #resolved plastic strain rate
+    [./resolved_epsp_rate_11]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./resolved_epsp_rate_12]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./resolved_epsp_rate_22]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./resolved_epsp_rate_33]
+      order = CONSTANT
+      family = MONOMIAL
+    []
     #total stress
     [./total_stress]
       order = CONSTANT
@@ -416,6 +455,63 @@
         variable = plastic_work
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #get plastic work rate
+    [plastic_work_rate]
+      type = MaterialRealAux
+      property = plastic_work_rate
+      variable = plastic_work_rate
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #get resolved total stress
+    [resolved_sigma_11]
+      type = MaterialRealAux
+      property = resolved_sigma_11
+      variable = resolved_sigma_11
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [resolved_sigma_12]
+      type = MaterialRealAux
+      property = resolved_sigma_12
+      variable = resolved_sigma_12
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [resolved_sigma_22]
+      type = MaterialRealAux
+      property = resolved_sigma_22
+      variable = resolved_sigma_22
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [resolved_sigma_33]
+      type = MaterialRealAux
+      property = resolved_sigma_33
+      variable = resolved_sigma_33
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #get resolved plastic strain rate
+    [resolved_epsp_rate_11]
+      type = MaterialRealAux
+      property = resolved_epsp_rate_11
+      variable = resolved_epsp_rate_11
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [resolved_epsp_rate_12]
+      type = MaterialRealAux
+      property = resolved_epsp_rate_12
+      variable = resolved_epsp_rate_12
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [resolved_epsp_rate_22]
+      type = MaterialRealAux
+      property = resolved_epsp_rate_22
+      variable = resolved_epsp_rate_22
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [resolved_epsp_rate_33]
+      type = MaterialRealAux
+      property = resolved_epsp_rate_33
+      variable = resolved_epsp_rate_33
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
     #fault length
     [fault_len]
         type = ConstantAux
@@ -457,8 +553,8 @@
         B_in = B_in_dummy
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
-        # output_properties = 'eps_p eps_e eps_total I1 sts_total'
-        # outputs = exodus
+        output_properties = 'eps_p eps_e eps_total I1 sts_total'
+        outputs = exodus
     []
     [density]
         type = GenericConstantMaterial
@@ -550,39 +646,39 @@
     type = Transient
     dt = 5e-4
     end_time = 2.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
     []
   []
 
-  [Postprocessors]
-    [plastic_work]
-      type = ElementIntegralMaterialProperty
-      mat_prop = plastic_work
-    []
-  []
+  # [Postprocessors]
+  #   [plastic_work]
+  #     type = ElementIntegralMaterialProperty
+  #     mat_prop = plastic_work
+  #   []
+  # []
   
   #for cluster run
   [Outputs]
-    exodus = false
-    csv = true
-    interval = 1
-    # [sample_snapshots]
-    #   type = Exodus
-    #   interval = 2000
-    # []
-    # [snapshots]
-    #   type = Exodus
-    #   interval = 2000
-    #   overwrite = true
-    # []
-    # [checkpoints]
-    #   type = Checkpoint
-    #   interval = 2000
-    #   num_files = 2
-    # []
+    exodus = true
+    # csv = true
+    interval = 200
+    [sample_snapshots]
+      type = Exodus
+      interval = 2000
+    []
+    [snapshots]
+      type = Exodus
+      interval = 2000
+      overwrite = true
+    []
+    [checkpoints]
+      type = Checkpoint
+      interval = 2000
+      num_files = 2
+    []
   []
   
   [BCs]
