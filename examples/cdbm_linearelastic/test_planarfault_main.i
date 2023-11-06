@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
+        file =  '../../meshgenerator/cdbm/planarfault2_uniform/planarfault2_uniform.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -558,7 +558,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 2.0
+    end_time = 3.0
     # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
