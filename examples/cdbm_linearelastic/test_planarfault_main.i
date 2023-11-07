@@ -142,6 +142,14 @@
         order = FIRST
         family = LAGRANGE
     []
+    [./accel_slipweakening_x]
+      order = FIRST
+      family = LAGRANGE
+    []
+    [./accel_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    []
     [./mu_s]
         order = CONSTANT
         family = MONOMIAL
@@ -350,6 +358,18 @@
       variable = tangent_jump_rate
       coupled = tangent_jump
       execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Accel_x]
+      type = FDCompVarRate2
+      variable = vel_slipweakening_x
+      coupled = accel_slipweakening_x
+      execute_on = 'TIMESTEP_END'
+    []
+    [Accel_y]
+      type = FDCompVarRate2
+      variable = vel_slipweakening_y
+      coupled = accel_slipweakening_y
+      execute_on = 'TIMESTEP_END'
     []
     #obtain parameters from MaterialRealAux
     # [get_alpha_old]

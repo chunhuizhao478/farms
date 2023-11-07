@@ -33,5 +33,9 @@ class ComputePlasticWorkRate : public AuxKernel
     const VariableValue & _sts_initial_12;
     const VariableValue & _sts_initial_22;
     const VariableValue & _sts_initial_33;
+    const VariableValue & _B;
+    Real _C_g;
+    Real _m1;
+    Real _m2;
 
 };

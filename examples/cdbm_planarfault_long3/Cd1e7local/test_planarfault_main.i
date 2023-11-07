@@ -559,6 +559,7 @@
       sts_initial_12_aux = sts_initial_12_aux
       sts_initial_22_aux = sts_initial_22_aux
       sts_initial_33_aux = sts_initial_33_aux
+      B = B_in_dummy
       execute_on = 'TIMESTEP_END'
     []
     #compute inelastic strain rate
