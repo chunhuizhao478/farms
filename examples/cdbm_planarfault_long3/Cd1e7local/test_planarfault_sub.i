@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault_quicktest2/planarfault_quicktest2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator

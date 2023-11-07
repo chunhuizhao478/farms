@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault_quicktest2/planarfault_quicktest2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -256,6 +256,23 @@
       family = MONOMIAL
     []
     [./eps_p_33_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #inelastic strain rate
+    [./eps_p_11_rate_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_p_12_rate_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_p_22_rate_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_p_33_rate_aux]
       order = CONSTANT
       family = MONOMIAL
     []
@@ -543,6 +560,27 @@
       sts_initial_22_aux = sts_initial_22_aux
       sts_initial_33_aux = sts_initial_33_aux
       execute_on = 'TIMESTEP_END'
+    []
+    #compute inelastic strain rate
+    [inelastic_strain_rate_11]
+      type = FDCompVarRate2
+      coupled = eps_p_11_aux
+      variable = eps_p_11_rate_aux
+    []
+    [inelastic_strain_rate_12]
+      type = FDCompVarRate2
+      coupled = eps_p_12_aux
+      variable = eps_p_12_rate_aux
+    []
+    [inelastic_strain_rate_22]
+      type = FDCompVarRate2
+      coupled = eps_p_22_aux
+      variable = eps_p_22_rate_aux
+    []
+    [inelastic_strain_rate_33]
+      type = FDCompVarRate2
+      coupled = eps_p_33_aux
+      variable = eps_p_33_rate_aux
     []
     #convert initial stress to aux
     [sts_initial_11]
