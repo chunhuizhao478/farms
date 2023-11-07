@@ -361,14 +361,14 @@
     []
     [Accel_x]
       type = FDCompVarRate2
-      variable = vel_slipweakening_x
-      coupled = accel_slipweakening_x
+      variable = accel_slipweakening_x
+      coupled = vel_slipweakening_x
       execute_on = 'TIMESTEP_END'
     []
     [Accel_y]
       type = FDCompVarRate2
-      variable = vel_slipweakening_y
-      coupled = accel_slipweakening_y
+      variable = accel_slipweakening_y
+      coupled = vel_slipweakening_y
       execute_on = 'TIMESTEP_END'
     []
     #obtain parameters from MaterialRealAux
@@ -597,7 +597,7 @@
   [Outputs]
     exodus = true
     # csv = true
-    interval = 200
+    interval = 100
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 2000
