@@ -722,10 +722,10 @@
     exodus = false
     csv = true
     interval = 1
-    # [sample_snapshots]
-    #   type = Exodus
-    #   interval = 2000
-    # []
+    [sample_snapshots]
+      type = Exodus
+      interval = 200
+    []
     # [snapshots]
     #   type = Exodus
     #   interval = 2000
