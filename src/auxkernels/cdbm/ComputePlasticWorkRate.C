@@ -67,10 +67,10 @@ ComputePlasticWorkRate::computeValue()
 
   //Compute deviatroic stress components
   Real sts_total_tr = sts_total_11 + sts_total_22 + sts_total_33;
-  Real sts_d_11 = sts_total_11 - 1/3 * sts_total_tr;
+  Real sts_d_11 = sts_total_11 - 1.0/3.0 * sts_total_tr;
   Real sts_d_12 = sts_total_12;
-  Real sts_d_22 = sts_total_22 - 1/3 * sts_total_tr;
-  Real sts_d_33 = sts_total_33 - 1/3 * sts_total_tr;
+  Real sts_d_22 = sts_total_22 - 1.0/3.0 * sts_total_tr;
+  Real sts_d_33 = sts_total_33 - 1.0/3.0 * sts_total_tr;
  
   //Compute Inelastic Strain Rate
   Real eps_p_11_rate = _C_g * pow( _B[_qp], _m1 ) * pow( sts_d_11 , _m2 );

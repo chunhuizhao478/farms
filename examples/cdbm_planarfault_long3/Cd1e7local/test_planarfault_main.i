@@ -315,6 +315,23 @@
       order = CONSTANT
       family = MONOMIAL
     []
+    #sts_d
+    [sts_d_11_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [sts_d_12_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [sts_d_22_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [sts_d_33_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
   []
   
   [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -559,7 +576,7 @@
       sts_initial_12_aux = sts_initial_12_aux
       sts_initial_22_aux = sts_initial_22_aux
       sts_initial_33_aux = sts_initial_33_aux
-      B = B_in_dummy
+      B = B_in
       execute_on = 'TIMESTEP_END'
     []
     #compute inelastic strain rate
@@ -753,6 +770,7 @@
     [plastic_work_rate]
       type = ElementIntegralVariablePostprocessor
       variable = plastic_work_rate_qp
+      use_displaced_mesh = false
     []
   []
   
