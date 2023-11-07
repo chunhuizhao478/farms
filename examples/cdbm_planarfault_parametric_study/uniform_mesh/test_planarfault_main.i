@@ -142,6 +142,14 @@
         order = FIRST
         family = LAGRANGE
     []
+    [./accel_slipweakening_x]
+      order = FIRST
+      family = LAGRANGE
+    []
+    [./accel_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    []
     [./mu_s]
         order = CONSTANT
         family = MONOMIAL
@@ -346,6 +354,18 @@
       coupled = tangent_jump
       execute_on = 'TIMESTEP_BEGIN'
     []
+    [Accel_x]
+      type = FDCompVarRate2
+      variable = vel_slipweakening_x
+      coupled = accel_slipweakening_x
+      execute_on = 'TIMESTEP_END'
+    []
+    [Accel_y]
+      type = FDCompVarRate2
+      variable = vel_slipweakening_y
+      coupled = accel_slipweakening_y
+      execute_on = 'TIMESTEP_END'
+    []
     #obtain parameters from MaterialRealAux
     # [get_alpha_old]
     #     type = MaterialRealAux
@@ -540,7 +560,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 30.0
+    end_time = 3.0
     # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
@@ -551,7 +571,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 200
+    interval = 100
     [sample_snapshots]
       type = Exodus
       interval = 2000
