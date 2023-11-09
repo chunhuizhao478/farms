@@ -1343,12 +1343,108 @@ def closest(lst, K):
     lst = lst.tolist()
     return lst[min(range(len(lst)), key = lambda i: abs(lst[i]-K))]
 
+def CalcPlasticWork(save_folder_output_file_path):
+
+    ##
+    #Initialize dict storing elem var name / index pair
+    dict_evn_index = {}
+
+    #Read Elem Var Name
+    evn = np.loadtxt(save_folder_output_file_path + "/list_name_elem_var.txt",dtype=str)
+
+    #fill in dict_evn_index
+    for evn_ind in range(len(evn)):
+        evn_i = evn[evn_ind]
+        # start from 1
+        dict_evn_index[evn_i] = evn_ind + 1
+
+    ##
+    #Read Exodus File
+    nc = netCDF4.Dataset(exodus_file_path)
+
+    #Obtain Time Series
+    timeseries = nc.variables['time_whole']
+
+    plot_snapshot = False
+
+    block_num = 2 #1 or 2
+    B_in_data = nc.variables['vals_elem_var'+str(dict_evn_index["B_in"])+'eb'+str(block_num)][:]
+    sts_change_11_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_change_11_aux"])+'eb'+str(block_num)][:]
+    sts_change_12_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_change_12_aux"])+'eb'+str(block_num)][:] 
+    sts_change_22_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_change_22_aux"])+'eb'+str(block_num)][:]
+    sts_change_33_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_change_33_aux"])+'eb'+str(block_num)][:]
+    sts_initial_11_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_initial_11_aux"])+'eb'+str(block_num)][:] 
+    sts_initial_12_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_initial_12_aux"])+'eb'+str(block_num)][:]
+    sts_initial_22_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_initial_22_aux"])+'eb'+str(block_num)][:]
+    sts_initial_33_aux_data = nc.variables['vals_elem_var'+str(dict_evn_index["sts_initial_33_aux"])+'eb'+str(block_num)][:]
+
+    #get t = 1.4s
+    if plot_snapshot == True:
+        time_slice = 14
+        B_in_data = B_in_data[time_slice,:]
+        sts_change_11_aux_data = sts_change_11_aux_data[time_slice,:]
+        sts_change_12_aux_data = sts_change_12_aux_data[time_slice,:]
+        sts_change_22_aux_data = sts_change_22_aux_data[time_slice,:]
+        sts_change_33_aux_data = sts_change_33_aux_data[time_slice,:]
+        sts_initial_11_aux_data = sts_initial_11_aux_data[time_slice,:]
+        sts_initial_12_aux_data = sts_initial_12_aux_data[time_slice,:]
+        sts_initial_22_aux_data = sts_initial_22_aux_data[time_slice,:]
+        sts_initial_33_aux_data = sts_initial_33_aux_data[time_slice,:]
+
+    #compute total stress components
+    sts_total_11_aux = sts_change_11_aux_data + sts_initial_11_aux_data
+    sts_total_12_aux = sts_change_12_aux_data + sts_initial_12_aux_data
+    sts_total_22_aux = sts_change_22_aux_data + sts_initial_22_aux_data
+    sts_total_33_aux = sts_change_33_aux_data + sts_initial_33_aux_data
+
+    #compute trace of total stress
+    sts_total_trace = sts_total_11_aux + sts_total_22_aux + sts_total_33_aux
+
+    #compute deviatroic stress components
+    sts_d_11 = sts_total_11_aux - 1.0/3.0 * sts_total_trace
+    sts_d_12 = sts_total_12_aux
+    sts_d_22 = sts_total_22_aux - 1.0/3.0 * sts_total_trace
+    sts_d_33 = sts_total_33_aux - 1.0/3.0 * sts_total_trace
+
+    #compute plastic strain rate
+    Cg = 1e-10
+    m1 = 10
+    eps_p_rate_11 = Cg * B_in_data ** m1 * sts_d_11
+    eps_p_rate_12 = Cg * B_in_data ** m1 * sts_d_12
+    eps_p_rate_22 = Cg * B_in_data ** m1 * sts_d_22
+    eps_p_rate_33 = Cg * B_in_data ** m1 * sts_d_33
+
+    print(np.max(eps_p_rate_11))
+
+    #compute plastic work rate
+    plastic_work_rate = eps_p_rate_11 * sts_total_11_aux + 2 * eps_p_rate_12 * sts_total_12_aux + eps_p_rate_22 * sts_total_22_aux + eps_p_rate_33 * sts_total_33_aux
+
+    print(np.shape(plastic_work_rate))
+
+    if plot_snapshot == False:
+        plastic_work_rate_t_list = np.sum(plastic_work_rate, axis=1)
+        plastic_work_rate_append_list = []
+        for i in range(len(plastic_work_rate_t_list)):
+            plastic_work_rate_append_list.append(plastic_work_rate_t_list[i] + sum(plastic_work_rate_t_list[:i]))
+        for j in range(len(plastic_work_rate_append_list)):
+            plastic_work_rate_append_list[j] = plastic_work_rate_append_list[j] * 0.01 * 2 * 540
+
+    #save res
+    np.savetxt(save_folder_output_file_path+"/plastic_work/timeseries.txt",timeseries,fmt='%.5f',newline=" ")
+    np.savetxt(save_folder_output_file_path+"/plastic_work/plastic_work.txt",plastic_work_rate_append_list,fmt='%.5f',newline=" ")
+
+    plt.figure()
+    plt.plot(plastic_work_rate_append_list)
+    plt.show()
+
+    exit()
+
 if __name__ == "__main__":
 
     #file path (read)
     mf180_ptrs_data_file_path = "./ptrsdata/mf180_ptrs_data.txt"
 
-    exodus_file_path = "./files/test_planarfault_main_out_Cd1e7.e"
+    exodus_file_path = "/Users/andyz/projects/farms/examples/cdbm_planarfault_long3/Cd1e7local/restart_planarfault_main_out.e"
 
     #file path (save)
     mf180_save_folder_output_file_path = "./outputs"
@@ -1394,7 +1490,7 @@ if __name__ == "__main__":
 
     dict_master_locs = {"mf180" : master_locs_mf180}
 
-    run_decode_retrieve_flag = True
+    run_decode_retrieve_flag = False
 
     if run_decode_retrieve_flag == True:
         for fault_name_index in range(len(list_fault_name)):
@@ -1426,6 +1522,10 @@ if __name__ == "__main__":
     #initial normal stress
     dict_ini_normal_sts = {"mf180" : 120}
 
+    #plastic work
+    CalcPlasticWork(save_folder_output_file_path=dict_save_folder_output_file_path[fault_name])
+
+    exit()
     LinePlotParamVal2D(exodus_file_path=exodus_file_path,
                         plot_var_name=plot_var_name,
                         save_folder_output_file_path=dict_save_folder_output_file_path[fault_name],
