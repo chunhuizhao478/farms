@@ -7,6 +7,9 @@ data_0 = readmatrix("outputs/tangent_jump_rate/tangent_jump_rate_0.txt");
 %save data
 arr_sliprate = zeros(size(data_0,1),num_steps);
 arr_slip = zeros(size(data_0,1),num_steps);
+%save data refinement
+arr_sliprate_refine = zeros(size(data_0,1),num_steps);
+arr_slip_refine = zeros(size(data_0,1),num_steps);
 %% xcoord
 arr_xcoord = readmatrix("outputs/tangent_jump_rate/xcoord.txt");
 %% sliprate
@@ -16,6 +19,10 @@ for i = 1 : num_steps
     data_i = readmatrix("outputs/tangent_jump_rate/tangent_jump_rate_"+string(i)+".txt");
     %save
     arr_sliprate(:,i) = data_i;
+    %read file fine
+    data_i_refine = readmatrix("../cdbm_planarfault/outputs/tangent_jump_rate/tangent_jump_rate_"+string(i)+".txt");
+    %save fine
+    arr_sliprate_refine(:,i) = data_i_refine;
 end
 %add time
 tplot=0:0.1:2;
@@ -28,9 +35,11 @@ figure(1);
 % end
 for i = 1 : num_steps
     plot(arr_xcoord./10^3,arr_sliprate(:,i),'r-','LineWidth',1.5); hold on;
+%     plot(arr_xcoord./10^3,arr_sliprate_refine(:,i),'b-','LineWidth',1.5); hold on;
 end
 xlabel("Distance along fault, x(km)",'FontSize',15)
 ylabel("Slip rate (m/s)",'FontSize',15)
+legend("Refine","Uniform")
 xlim([-10,10])
 ylim([0,50])
 
@@ -50,6 +59,10 @@ for i = 1 : num_steps
     data_i = readmatrix("outputs/tangent_jump/tangent_jump_"+string(i)+".txt");
     %save
     arr_slip(:,i) = data_i;
+    %read file
+    data_i_refine = readmatrix("../cdbm_planarfault/outputs/tangent_jump/tangent_jump_"+string(i)+".txt");
+    %save
+    arr_slip_refine(:,i) = data_i_refine;
 end
 %add time
 tplot=0:0.1:2;
@@ -59,9 +72,11 @@ tplot=0:0.1:2;
 figure(2);
 for i = 1 : num_steps
     plot(arr_xcoord./10^3,arr_slip(:,i),'r-','LineWidth',1.5); hold on;
+%     plot(arr_xcoord./10^3,arr_slip_refine(:,i),'b-','LineWidth',1.5); hold on;
 end
 xlabel("Distance along fault, x(km)",'FontSize',15)
 ylabel("Slip (m)",'FontSize',15)
+legend("Refine","Uniform")
 xlim([-10,10])
 ylim([0,10])
 
@@ -114,17 +129,14 @@ set(gcf, 'PaperUnits', 'inches');
 x_width=4 ;y_width=2.5;
 set(gcf, 'PaperPosition', [0 0 x_width y_width]); 
 %% plastic work
-time = importdata("./outputs/plastic_work/timeseries.txt");
-work = importdata("./outputs/plastic_work/plastic_work.txt");
+data = readmatrix("/Users/andyz/projects/farms/postprocess/cdbm_planarfault/outputs/plastic_work/plastic_work.txt");
+time = 0:0.1:2;
 figure();
-plot(time,work/1e6,'-m', 'linewidth', 1); hold on;
-plot([0,1.2],[0,0],'-m', 'linewidth', 1)
+plot(time,data,'-m', 'linewidth', 1);
 xlabel('Time (s)')
-ylabel('CDBM Plastic Work (MN-m)')
+ylabel('CDBM Plastic Work (N-m)')
 set(gca, 'fontsize', 10)
-set(gcf, 'PaperUnits', 'inches');
+ set(gcf, 'PaperUnits', 'inches');
 x_width=4 ;y_width=3;
 set(gcf, 'PaperPosition', [0 0 x_width y_width]); 
 xlim([0,2.5])
-saveas(gcf, './outputs/pngs/PlasticDissipation');
-saveas(gcf, './outputs/pngs/PlasticDissipation.png');
