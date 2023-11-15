@@ -6,8 +6,8 @@ function [param] = struct_param()
 param.P_c = 10 * 10 ^ 6;   %Pa  <confinement pressure> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1
 param.lambda_0 = 3.204e10; %Pa  <initial 1st lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
 param.mu_0 = 3.204e10;     %Pa  <initial 2nd lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
-param.xi_0 = -0.98;        %--  <strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-param.xi_d = -1.08;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
+param.xi_0 = -0.8;        %--  <strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
+param.xi_d = -0.9;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
 param.xi_max = sqrt(3);    %--  <strain invariants ratio: maximum allowable value>: set boundary
 param.xi_min = -sqrt(3);   %--  <strain invariants ratio: minimum allowable value>: set boundary
 param.chi = 0.75;          %--  <ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
@@ -39,20 +39,20 @@ param.a3 = double(a3_out); %--  <coefficient of F_B energy>: refer to "fb_coeff"
 %"note_mar25": in 'Self Note' folder 
 
 %% Plot the phase diagram
-xi = -1.5:0.01:1.5;
+xi = -1:0.01:sqrt(3);
 figure();
 plot(xi,param.alpha_out2_func(xi),'b-'); hold on;
 plot(xi,param.alpha_out1_func(xi),'r-'); hold on;
-xline(-0.98,'k-.'); hold on;
-xline(-sqrt(2),'k-.'); hold on;
-xline(sqrt(2),'k-.'); hold on;
-xline(0.7406,'k-.'); hold on;
+xline(-0.8,'k-.'); hold on;
+xline(-sqrt(3),'k-.'); hold on;
+xline(sqrt(3),'k-.'); hold on;
+xline(0.8248,'k-.'); hold on;
 legend("Convexity loss : condition 1", "Convexity loss : condition 2","","","","",'Fontsize',15);
 title("Phase Diagram : \fontsize{15}{0}\selectfont$\xi$ vs \fontsize{15}{0}\selectfont$\alpha$ ",Interpreter="latex");
 ylabel("Damage Variable \fontsize{15}{0}\selectfont$\alpha$",Interpreter="latex",FontSize=25);
 xlabel("Strain Invariant Ratio \fontsize{15}{0}\selectfont$\xi$",Interpreter="latex",FontSize=25);
 ylim([0,1])
-xlim([-1.5,1.5])
+xlim([-1.8,1.8])
 ax = gca;
 ax.FontSize = 15;
 end

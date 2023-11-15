@@ -737,7 +737,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 1.2
+    end_time = 2.0
     # num_steps = 20
     [TimeIntegrator]
       type = CentralDifference
@@ -757,7 +757,7 @@
   [Outputs]
     exodus = true
     # csv = true
-    interval = 200
+    interval = 20
     [checkpoints]
       type = Checkpoint
       interval = 200
@@ -852,7 +852,7 @@
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'test_planarfault_sub.i'
+        input_files = 'restart_planarfault_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
     [../]
   []
@@ -874,3 +874,7 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
   []
+  
+  [Problem]
+    restart_file_base = test_planarfault_main_checkpoints_cp/2400
+  []  
