@@ -1,7 +1,19 @@
+##########################################################
+# Unified Parameter Choice For CBDM Complex Network Problem
+# mu_d = 0.1
+# For Main Fault, 
+# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
+# mu_s = 0.677
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.1) = 0.2
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 120e6) = 185m
+# Use mesh size = 25m
+##########################################################
+# Strain Dependency Cd
+
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault_quicktest2/planarfault_quicktest2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -44,19 +56,19 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.98
+    xi_0 = -0.8
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -1.08
+    xi_d = -0.9
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
     #may need a bit space, use 1.5 as boundary
-    xi_max = 1.5
+    xi_max = 1.8
   
     #<strain invariants ratio: minimum allowable value>: set boundary
     #Xu_etal_P15-2D
-    xi_min = -1.5
+    xi_min = -1.8
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -73,10 +85,10 @@
     #check struct_param.m 
   
     #coefficient of damage solid modulus
-    gamma_damaged_r = 3.5085e10
+    gamma_damaged_r = 3.7150e10
   
     #critical point of three phases (strain invariants ratio vs damage)
-    xi_1 = 0.7406
+    xi_1 = 0.8248
   
     ##Compute parameters in granular states
     #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -88,10 +100,10 @@
   
     # #coefficients
     # chi = 0.75
-    a0 = 6.0209e9
-    a1 = -1.8995e10
-    a2 = 1.8363e10
-    a3 = -4.9859e9
+    a0 = 7.4289e9
+    a1 = -2.214e10
+    a2 = 2.0929e10
+    a3 = -6.0672e9
   
     #diffusion coefficient #for structural stress coupling
     D = 0
@@ -155,11 +167,6 @@
         order = FIRST
         family = LAGRANGE
     [../]
-    #obtain parameters from MaterialRealAux, pass parameters to subApp
-    # [./alpha_old]
-    #   order = FIRST
-    #   family = LAGRANGE
-    # []
     [./B_old]
       order = FIRST
       family = LAGRANGE
@@ -216,8 +223,21 @@
       order = CONSTANT
       family = MONOMIAL
     []
-    #track Cd
-    [./track_Cd]
+    #total stress
+    [./total_stress]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    #total strain components
+    [./eps_t_11_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_t_12_aux]
+      order = CONSTANT
+      family = MONOMIAL
+    []
+    [./eps_t_22_aux]
       order = CONSTANT
       family = MONOMIAL
     []
@@ -251,6 +271,7 @@
   []
   
   [AuxKernels]
+    #slip weakening
     [Displacment_x]
       type = ProjectionAux
       variable = disp_slipweakening_x
@@ -264,16 +285,16 @@
       execute_on = 'TIMESTEP_BEGIN'
     []
     [Vel_x]
-        type = CompVarRate
-        variable = vel_slipweakening_x
-        coupled = disp_x
-        execute_on = 'TIMESTEP_BEGIN'
+      type = CompVarRate
+      variable = vel_slipweakening_x
+      coupled = disp_x
+      execute_on = 'TIMESTEP_BEGIN'
     []
     [Vel_y]
-        type = CompVarRate
-        variable = vel_slipweakening_y
-        coupled = disp_y
-        execute_on = 'TIMESTEP_BEGIN'
+      type = CompVarRate
+      variable = vel_slipweakening_y
+      coupled = disp_y
+      execute_on = 'TIMESTEP_BEGIN'
     []
     [Residual_x]
       type = ProjectionAux
@@ -325,19 +346,7 @@
       coupled = tangent_jump
       execute_on = 'TIMESTEP_BEGIN'
     []
-    #obtain parameters from MaterialRealAux
-    # [get_alpha_old]
-    #     type = MaterialRealAux
-    #     property = alpha_damagedvar
-    #     variable = alpha_old
-    #     execute_on = 'INITIAL TIMESTEP_BEGIN'
-    # []
-    # [get_B_old]
-    #     type = MaterialRealAux
-    #     property = B
-    #     variable = B_old
-    #     execute_on = 'INITIAL TIMESTEP_BEGIN'
-    # []
+    #damage model
     [get_xi_old]
         type = MaterialRealAux
         property = xi
@@ -368,21 +377,48 @@
         variable = gamma_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
-    #define shear strain material property (elastic) inside damage stress 
-    #and compute its rate using "MaterialRateRealAux"
-    [get_shear_strain_rate]
-        type = MaterialRateRealAux
-        property = principal_strain
-        variable = mechanical_strain_rate
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    #get total strain components
+    [straintotal_11]
+      type = MaterialRankTwoTensorAux
+      property = eps_total
+      i = 0
+      j = 0
+      variable = eps_t_11_aux
+      execute_on = 'TIMESTEP_END'
     []
+    [straintotal_12]
+      type = MaterialRankTwoTensorAux
+      property = eps_total
+      i = 0
+      j = 1
+      variable = eps_t_12_aux
+      execute_on = 'TIMESTEP_END'
+    []
+    [straintotal_22]
+      type = MaterialRankTwoTensorAux
+      property = eps_total
+      i = 1
+      j = 1
+      variable = eps_t_22_aux
+      execute_on = 'TIMESTEP_END'
+    []
+    [compute_principal_strain_rate]
+      type = PrincipalStrainCalc
+      eps_total_11 = eps_t_11_aux
+      eps_total_12 = eps_t_12_aux
+      eps_total_22 = eps_t_22_aux
+      variable = mechanical_strain_rate
+      execute_on = 'TIMESTEP_END'
+    []
+    ########################################
     #fault length
     [fault_len]
-        type = ConstantAux
-        variable = nodal_area
-        value = 25
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+      type = ConstantAux
+      variable = nodal_area
+      value = 25
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    ########################################
   []
   
   [Kernels]
@@ -417,7 +453,7 @@
         B_in = B_in_dummy
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
-        output_properties = 'eps_p eps_e eps_total I1'
+        output_properties = 'eps_p eps_e eps_total I1 sts_total'
         outputs = exodus
     []
     [density]
@@ -441,16 +477,16 @@
     [./static_initial_stress_tensor_slipweakening]
         type = GenericFunctionRankTwoTensor
         tensor_name = static_initial_stress_tensor_slipweakening
-        tensor_functions = 'func_initial_stress_xx         func_initial_strike_shear_stress           func_initial_stress_00 
-        func_initial_strike_shear_stress         func_initial_stress_yy           func_initial_stress_00
-                            func_initial_stress_00         func_initial_stress_00           func_initial_stress_00'
+        tensor_functions = 'func_initial_stress_xx                func_initial_strike_shear_stress      func_initial_stress_00 
+                            func_initial_strike_shear_stress      func_initial_stress_yy                func_initial_stress_00
+                            func_initial_stress_00                func_initial_stress_00                func_initial_stress_00'
     [../]
     [./static_initial_stress_tensor]
         type = GenericFunctionRankTwoTensor
         tensor_name = static_initial_stress_tensor
         tensor_functions = 'func_initial_stress_xx             func_initial_stress_xy_const        func_initial_stress_00 
                             func_initial_stress_xy_const       func_initial_stress_yy              func_initial_stress_00
-                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_00'
+                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_zz'
     [../]
   []
   
@@ -489,7 +525,11 @@
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
       type = ConstantFunction
-      value = -240e6
+      value = -135e6
+    []
+    [./func_initial_stress_zz]
+      type = ConstantFunction
+      value = -63.75e6
     []
   []
   
@@ -505,32 +545,18 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 30.0
-    # num_steps = 10
+    end_time = 2.0
+    # num_steps = 20
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
     []
   []
-  
+
   #for cluster run
   [Outputs]
     exodus = true
     interval = 200
-    [sample_snapshots]
-      type = Exodus
-      interval = 2000
-    []
-    [snapshots]
-      type = Exodus
-      interval = 2000
-      overwrite = true
-    []
-    [checkpoints]
-      type = Checkpoint
-      interval = 2000
-      num_files = 2
-    []
   []
   
   [BCs]
@@ -621,7 +647,7 @@
         type = TransientMultiApp
         positions = '0 0 0'
         input_files = 'test_planarfault_sub.i'
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     [../]
   []
   
@@ -629,9 +655,9 @@
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub track_Cd alpha_checked_dummy B_checked_dummy'
-        variable = 'alpha_in B_in alpha_grad_x alpha_grad_y track_Cd alpha_in_dummy B_in_dummy'
-        execute_on = 'TIMESTEP_BEGIN'
+        source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub alpha_checked_dummy B_checked_dummy'
+        variable = 'alpha_in B_in alpha_grad_x alpha_grad_y alpha_in_dummy B_in_dummy'
+        execute_on = 'TIMESTEP_END'
     []
     #we actually don't need to pass alpha and B
     [push_disp]
@@ -639,6 +665,6 @@
         to_multi_app = sub_app
         source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate alpha_in_dummy B_in_dummy'
         variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old mechanical_strain_rate_sub alpha_old_dummy B_old_dummy'
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
   []

@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault_quicktest2/planarfault_quicktest2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -36,10 +36,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.98
+    xi_0 = -0.8
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -1.08
+    xi_d = -0.9
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -55,21 +55,25 @@
     # C_d_min = 10
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e7
   
     #power-law correction
     #index
     m = 0.9
   
     #low strain rate threshold
-    # mechanical_strain_rate_threshold = -1e-4
+    mechanical_strain_rate_threshold = -1e-4
+
+    scale = 5e3
+
+    C_d_min = 10
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
     CdCb_multiplier = 10 
   
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    CBCBH_multiplier = 10 #C_BH keep constant 10^4
+    CBCBH_multiplier = 10
   
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_1 = 300
@@ -81,7 +85,7 @@
     beta_width = 0.03 #1e-3
   
     #critical point of three phases (strain invariants ratio vs damage)
-    xi_1 = 0.7406
+    xi_1 = 0.8248
   
     ##Compute parameters in granular states
     #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -93,10 +97,10 @@
   
     #coefficients
     # chi = 0.75
-    a0 = 6.0209e9
-    a1 = -1.8995e10
-    a2 = 1.8363e10
-    a3 = -4.9859e9
+    a0 = 7.4289e9
+    a1 = -2.214e10
+    a2 = 2.0929e10
+    a3 = -6.0672e9
   
     #diffusion coefficient #for structural stress coupling
     D = 0
@@ -221,7 +225,7 @@
       variable = B_sub
     []
     [./B_forcing_func]
-        type = BreakageVarForcingFuncDev
+        type = BreakageVarForcingFuncDevOld
         option = 2
         variable = B_sub
         alpha_old = alpha_old
@@ -253,7 +257,7 @@
       variable = B_sub_dummy
     []
     [./B_forcing_func_dummy]
-        type = BreakageVarForcingFuncDev
+        type = BreakageVarForcingFuncDevOld
         option = 2
         variable = B_sub_dummy
         alpha_old = alpha_old
