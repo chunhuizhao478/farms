@@ -61,7 +61,7 @@
     # C_d_min = 10
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e7
+    #Cd_constant = 1e7
   
     #power-law correction
     #index
@@ -218,7 +218,7 @@
     []
     [./alpha_forcing_func]
         type = DamageVarForcingFuncDev
-        option = 2
+        option = 1
         alpha_old = alpha_old
         B_old = B_old
         xi_old = xi_old
@@ -232,7 +232,7 @@
     []
     [./B_forcing_func]
         type = BreakageVarForcingFuncDevOld
-        option = 2
+        option = 1
         variable = B_sub
         alpha_old = alpha_old
         B_old = B_old
@@ -250,7 +250,7 @@
     []
     [./alpha_forcing_func_dummy]
         type = DamageVarForcingFuncDev
-        option = 2
+        option = 1
         alpha_old = alpha_old
         B_old = B_old
         xi_old = xi_old
@@ -264,7 +264,7 @@
     []
     [./B_forcing_func_dummy]
         type = BreakageVarForcingFuncDevOld
-        option = 2
+        option = 1
         variable = B_sub_dummy
         alpha_old = alpha_old
         B_old = B_old
