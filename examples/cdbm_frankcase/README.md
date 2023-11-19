@@ -1,0 +1,1 @@
+Setup stepover case same as Frank's phase field 
