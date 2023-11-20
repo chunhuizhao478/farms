@@ -70,7 +70,7 @@
     #low strain rate threshold
     mechanical_strain_rate_threshold = -1e-4
 
-    scale = 100
+    scale = 1000
 
     C_d_min = 10
   
