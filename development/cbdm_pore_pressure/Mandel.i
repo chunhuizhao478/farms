@@ -18,15 +18,6 @@
   block = 0
 []
 
-[UserObjects]
-  [dictator]
-    type = PorousFlowDictator
-    porous_flow_vars = 'porepressure disp_x disp_y disp_z'
-    number_fluid_phases = 1
-    number_fluid_components = 1
-  []
-[]
-
 [Variables]
   [disp_x]
   []
@@ -80,10 +71,6 @@
 []
 
 [AuxVariables]
-  [stress_yy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [tot_force]
     order = CONSTANT
     family = MONOMIAL
@@ -91,13 +78,6 @@
 []
 
 [AuxKernels]
-  [stress_yy]
-    type = RankTwoAux
-    rank_two_tensor = stress
-    variable = stress_yy
-    index_i = 1
-    index_j = 1
-  []
   [tot_force]
     type = ParsedAux
     coupled_variables = 'stress_yy porepressure'
@@ -107,90 +87,27 @@
   []
 []
 
-[Kernels]
-  [grad_stress_x]
-    type = StressDivergenceTensors
-    variable = disp_x
-    component = 0
-    implicit=false
-  []
-  [grad_stress_y]
-    type = StressDivergenceTensors
-    variable = disp_y
-    component = 1
-    implicit=false
-  []
-  [grad_stress_z]
-    type = StressDivergenceTensors
-    variable = disp_z
-    component = 2
-    implicit=false
-  []
-  [poro_x]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.6
-    variable = disp_x
-    component = 0
-    implicit=false
-  []
-  [poro_y]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.6
-    variable = disp_y
-    component = 1
-    implicit=false
-  []
-  [poro_z]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.6
-    component = 2
-    variable = disp_z
-    implicit=false
-  []
-  [expansion_x]
-    type = PorousFlowFullySaturatedVolumetricExpansion
-    biot_coefficient = 0.6
-    variable = disp_x
-    
-  []
-  [expansion_y]
-    type = PorousFlowFullySaturatedVolumetricExpansion
-    biot_coefficient = 0.6
-    variable = disp_y
-    
-  []
-  [expansion_z]
-    type = PorousFlowFullySaturatedVolumetricExpansion
-    biot_coefficient = 0.6
-    variable = disp_z
-    
-  []
-  [mass0]
-    type = PorousFlowFullySaturatedMassTimeDerivative
-    variable = porepressure   
-  []
-  [flux]
-    type = PorousFlowFullySaturatedDarcyBase
-    variable = porepressure
-    gravity = '0 0 0'
-    implicit=false
+[FluidProperties]
+  [the_simple_fluid]
+    type = SimpleFluidProperties
+    thermal_expansion = 0.0
+    bulk_modulus = 8.0
+    viscosity = 1.0
+    density0 = 1.0
   []
 []
 
-[FluidProperties]
-  [simple_fluid]
-    type = SimpleFluidProperties
-    bulk_modulus = 8
-    density0 = 1
-    thermal_expansion = 0
-    viscosity = 1
-  []
+[PorousFlowBasicTHM]
+  coupling_type = HydroMechanical
+  displacements = 'disp_x disp_y disp_z'
+  multiply_by_density = false
+  porepressure = porepressure
+  biot_coefficient = 0.6
+  gravity = '0 0 0'
+  fp = the_simple_fluid
 []
 
 [Materials]
-  [temperature]
-    type = PorousFlowTemperature
-  []
   [elasticity_tensor]
     type = ComputeElasticityTensor
     C_ijkl = '0.5 0.75'
@@ -202,24 +119,6 @@
   []
   [stress]
     type = ComputeLinearElasticStress
-  []
-  [eff_fluid_pressure_qp]
-    type = PorousFlowEffectiveFluidPressure
-  []
-  [vol_strain]
-    type = PorousFlowVolumetricStrain
-  []
-  [ppss]
-    type = PorousFlow1PhaseFullySaturated
-    porepressure = porepressure
-  []
-  [massfrac]
-    type = PorousFlowMassFraction
-  []
-  [simple_fluid_qp]
-    type = PorousFlowSingleComponentFluid
-    fp = simple_fluid
-    phase = 0
   []
   [porosity]
     type = PorousFlowPorosityConst # only the initial value of this is ever used
@@ -328,31 +227,24 @@
   []
 []
 
-[Preconditioning]
-  [andy]
-    type = SMP
-    full = true
-    petsc_options_iname = '-ksp_type -pc_type -sub_pc_type -snes_atol -snes_rtol -snes_max_it'
-    petsc_options_value = 'gmres asm lu 1E-14 1E-10 10000'
-  []
-[]
 
 [Executioner]
   type = Transient
-  solve_type = 'LINEAR'
   start_time = 0
   end_time = 0.7
     dt = 0.001
     [TimeIntegrator]
-      type = ExplicitEuler
+      type = ExplicitSSPRungeKutta
+      order = 1
     []
 []
 
+
 [Outputs]
   execute_on = 'timestep_end'
-  file_base = mandel_fully_saturated
   [csv]
     interval = 3
     type = CSV
   []
+   exodus = true
 []
