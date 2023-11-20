@@ -521,7 +521,7 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 30.0
+    end_time = 120.0
     # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
@@ -532,19 +532,19 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 200
+    interval = 2000
     [sample_snapshots]
       type = Exodus
-      interval = 2000
+      interval = 4000
     []
     [snapshots]
       type = Exodus
-      interval = 2000
+      interval = 4000
       overwrite = true
     []
     [checkpoints]
       type = Checkpoint
-      interval = 2000
+      interval = 4000
       num_files = 2
     []
   []

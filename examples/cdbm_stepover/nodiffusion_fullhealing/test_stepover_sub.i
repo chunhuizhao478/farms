@@ -239,7 +239,7 @@
       variable = B_sub
     []
     [./B_forcing_func]
-        type = BreakageVarForcingFuncDev
+        type = BreakageVarForcingFuncDevOld
         option = 2
         variable = B_sub
         alpha_old = alpha_old
@@ -271,7 +271,7 @@
       variable = B_sub_dummy
     []
     [./B_forcing_func_dummy]
-        type = BreakageVarForcingFuncDev
+        type = BreakageVarForcingFuncDevOld
         option = 2
         variable = B_sub_dummy
         alpha_old = alpha_old
