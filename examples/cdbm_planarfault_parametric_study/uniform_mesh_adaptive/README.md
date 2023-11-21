@@ -1,0 +1,1 @@
+adaptive mesh, mu_d = 0.1, S = 0.2
