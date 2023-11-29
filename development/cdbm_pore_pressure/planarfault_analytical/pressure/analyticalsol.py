@@ -22,10 +22,10 @@ injection_x = 0.0
 injection_y = 0.0
 
 #geometry
-nx = 480
+nx = 800
 ny = 160
-xmin = -6000
-xmax = 6000
+xmin = -10000
+xmax = 10000
 ymin = -2000
 ymax = 2000
 
