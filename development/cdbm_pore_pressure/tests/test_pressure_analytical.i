@@ -3,12 +3,13 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2
-      nx = 100
-      ny = 100
+      nx = 200
+      ny = 200
       xmin = -2500
       xmax = 2500
       ymin = -2500
       ymax = 2500
+      elem_type = QUAD4
     []
 []
 
@@ -98,7 +99,7 @@
 [Executioner]
     type = Transient
     dt = 0.1
-    end_time = 10.0
+    end_time = 20.0
     # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference

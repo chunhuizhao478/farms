@@ -1050,55 +1050,58 @@ def LinePlotParamVal2D(exodus_file_path,
                     plt.xticks(fontsize=15)
                     plt.yticks(fontsize=15)
                 elif plot_var_name_i == "traction_x" and additional_flags == None:
-                    if fault_name == "bf30":
-                        #nucleation region #hardcode #this is wrong, need care!!!
-                        nucleate_xstart = -26119.881 #hardcode
-                        nucleate_ystart = -16321.513 #hardcode
-                        nucleate_xend = -24763.005   #hardcode
-                        nucleate_yend = -15473.643   #hardcode
-                        nucleate_arclenstart = -1 * np.sqrt(nucleate_xstart**2 + nucleate_ystart**2) #hardcode
-                        nucleate_arclenend = -1 * np.sqrt(nucleate_xend**2 + nucleate_yend**2)       #hardcode
-                        nucleate_shear_sts = 24.7
-                        #find index
-                        range_index = np.where(np.logical_and(sorted_arr_czm_elem_arclength_i_all > nucleate_arclenstart, sorted_arr_czm_elem_arclength_i_all < nucleate_arclenend))[0]
-                        # print(range_index)
-                        #generate initial shear stress
-                        list_ini_shear_sts = [dict_ini_shear_sts[fault_name]] * len(sorted_arr_czm_elem_arclength_i_all)
-                        # print(sorted_arr_czm_param_i_all[46:55]/1e6)
-                        #fit in list with nucleate shear stress
-                        # minindex = min(range_index); maxindex = max(range_index)
-                        # print(minindex,maxindex)
-                        # print(sorted_arr_czm_param_i_all[46:55]/1e6)
-                        for index in [46,47,48,49,50,51,52,53,54]:
-                            list_ini_shear_sts[index] = nucleate_shear_sts
-                        #hardcode
-                        list_ini_shear_sts[46] = nucleate_shear_sts - 3.198
-                        list_ini_shear_sts[54] = nucleate_shear_sts - 3.198
-                        # print(sorted_arr_czm_param_i_all[46:55]/1e6 + list_ini_shear_sts[46:55])
-                        plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + list_ini_shear_sts ,'b*-',linewidth=3.0)
-                        # plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
-                        plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
-                        plt.axhline(y=23.723)
-                        plt.axhline(y=11.082)
-                    elif fault_name == "mf180":
-                        plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
-                        plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
-                    else:
-                        plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
-                        plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
-                        plt.axhline(y=22.541)
-                        plt.axhline(y=9.60)
-                    plt.xlabel("Arc Length (m)",fontsize=20)
-                    plt.ylabel("Tragent Traction (MPa)",fontsize=20)
-                    if fault_name == "mf180":
-                        plt.title("Main Fault Tangent Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
-                    elif fault_name == "mf30":
-                        plt.title("Fault Beyond Kink Tangent Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
-                    else:
-                        plt.title("Splay Fault Tangent Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
-                    plt.savefig(save_folder_output_png_file_path + "/tangtraction_"+str(time_ind)+".png",bbox_inches = 'tight')
-                    plt.xticks(fontsize=15)
-                    plt.yticks(fontsize=15)
+                    # if fault_name == "bf30":
+                    #     #nucleation region #hardcode #this is wrong, need care!!!
+                    #     nucleate_xstart = -26119.881 #hardcode
+                    #     nucleate_ystart = -16321.513 #hardcode
+                    #     nucleate_xend = -24763.005   #hardcode
+                    #     nucleate_yend = -15473.643   #hardcode
+                    #     nucleate_arclenstart = -1 * np.sqrt(nucleate_xstart**2 + nucleate_ystart**2) #hardcode
+                    #     nucleate_arclenend = -1 * np.sqrt(nucleate_xend**2 + nucleate_yend**2)       #hardcode
+                    #     nucleate_shear_sts = 24.7
+                    #     #find index
+                    #     range_index = np.where(np.logical_and(sorted_arr_czm_elem_arclength_i_all > nucleate_arclenstart, sorted_arr_czm_elem_arclength_i_all < nucleate_arclenend))[0]
+                    #     # print(range_index)
+                    #     #generate initial shear stress
+                    #     list_ini_shear_sts = [dict_ini_shear_sts[fault_name]] * len(sorted_arr_czm_elem_arclength_i_all)
+                    #     # print(sorted_arr_czm_param_i_all[46:55]/1e6)
+                    #     #fit in list with nucleate shear stress
+                    #     # minindex = min(range_index); maxindex = max(range_index)
+                    #     # print(minindex,maxindex)
+                    #     # print(sorted_arr_czm_param_i_all[46:55]/1e6)
+                    #     for index in [46,47,48,49,50,51,52,53,54]:
+                    #         list_ini_shear_sts[index] = nucleate_shear_sts
+                    #     #hardcode
+                    #     list_ini_shear_sts[46] = nucleate_shear_sts - 3.198
+                    #     list_ini_shear_sts[54] = nucleate_shear_sts - 3.198
+                    #     # print(sorted_arr_czm_param_i_all[46:55]/1e6 + list_ini_shear_sts[46:55])
+                    #     plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + list_ini_shear_sts ,'b*-',linewidth=3.0)
+                    #     # plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
+                    #     plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
+                    #     plt.axhline(y=23.723)
+                    #     plt.axhline(y=11.082)
+                    # elif fault_name == "mf180":
+                    #     plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
+                    #     plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
+                    # else:
+                    #     plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
+                    #     plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
+                    #     plt.axhline(y=22.541)
+                    #     plt.axhline(y=9.60)
+                    # plt.xlabel("Arc Length (m)",fontsize=20)
+                    # plt.ylabel("Tragent Traction (MPa)",fontsize=20)
+                    # if fault_name == "mf180":
+                    #     plt.title("Main Fault Tangent Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
+                    # elif fault_name == "mf30":
+                    #     plt.title("Fault Beyond Kink Tangent Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
+                    # else:
+                    #     plt.title("Splay Fault Tangent Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
+                    # plt.savefig(save_folder_output_png_file_path + "/tangtraction_"+str(time_ind)+".png",bbox_inches = 'tight')
+                    # plt.xticks(fontsize=15)
+                    # plt.yticks(fontsize=15)
+
+                    np.savetxt("./outputs/traction_x/xcoord.txt",sorted_arr_czm_elem_arclength_i_all)
+                    np.savetxt("./outputs/traction_x/traction_x_"+str(time_ind)+".txt",sorted_arr_czm_param_i_all/1e6)
                 elif plot_var_name_i == "traction_x" and additional_flags == "stress_and_strength":
                     if fault_name == "mf180":
                         plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
@@ -1398,7 +1401,7 @@ if __name__ == "__main__":
     mf180_ptrs_data_file_path = "./ptrsdata/mf180_ptrs_data.txt"
 
     # exodus_file_path = "./files/test_planarfault_main_out_Cd1e7.e"
-    exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/test_planarfault_main_out_uniform.e"
+    exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/test_planarfault_main_out_linearelastic.e"
 
     #file path (save)
     mf180_save_folder_output_file_path = "./outputs"
@@ -1422,7 +1425,7 @@ if __name__ == "__main__":
     # plot_var_name = ["jump_x"]
     # plot_var_name = ["traction_x"]
     # plot_var_name = ["traction_y"]
-    plot_var_name = ["tangent_jump_rate", "tangent_jump"]
+    plot_var_name = ["traction_x"]
     additional_files = {"mf180" : [(0,0),(10000,0),(0,0),(-10000,0)]}
     
     # additional_flags = "front_position"
@@ -1490,7 +1493,7 @@ if __name__ == "__main__":
                         dict_ini_shear_sts=dict_ini_shear_sts,
                         dict_ini_normal_sts=dict_ini_normal_sts)
 
-
+    exit()
     ##
     #calculate front position vs time
     additional_flags = "front_position"

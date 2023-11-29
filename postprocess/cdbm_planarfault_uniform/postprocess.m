@@ -10,8 +10,21 @@ arr_slip = zeros(size(data_0,1),num_steps);
 %save data refinement
 arr_sliprate_refine = zeros(size(data_0,1),num_steps);
 arr_slip_refine = zeros(size(data_0,1),num_steps);
+%save traction
+arr_traction = zeros(size(data_0,1),num_steps);
 %% xcoord
 arr_xcoord = readmatrix("outputs/tangent_jump_rate/xcoord.txt");
+%% traction
+for i = 1 : num_steps
+    %read file
+    data_i = readmatrix("outputs/traction_x/traction_x_"+string(i)+".txt");
+    %save
+    arr_traction(:,i) = data_i;
+end
+figure();
+for i = 21 : num_steps
+    plot(arr_xcoord./10^3,arr_traction(:,i),'r-','LineWidth',1.5); hold on;
+end
 %% sliprate
 %loop over data files
 for i = 1 : num_steps

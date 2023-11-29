@@ -1,4 +1,5 @@
 #Analytical Solution of Fluid Injection
+#Reference: RUDNICKI, FLUID MASS SOURCES AND POINT FORCES IN LINEAR ELASTIC DIFFUSIVE SOLIDS 
 #Import packages
 import numpy as np
 from scipy.special import exp1
@@ -7,7 +8,7 @@ import json
 
 #---------------------------------#
 #Define parameters
-flux_q = 10; #kg/s
+flux_q = 1000; #kg/s
 density_rho_0 = 1e3; #kg/m^3
 permeability_k = 3e-12; #m^2
 viscosity_eta = 0.4e-3; #Pa s
@@ -21,8 +22,8 @@ injection_x = 0.0
 injection_y = 0.0
 
 #geometry
-nx = 100
-ny = 100
+nx = 200
+ny = 200
 xmin = -2500
 xmax = 2500
 ymin = -2500
@@ -31,7 +32,7 @@ ymax = 2500
 #time
 dt = 0.1
 tmin = 0.0
-tmax = 10.0
+tmax = 20.0
 nt = int( ( tmax - tmin ) / dt )
 #---------------------------------#
 
