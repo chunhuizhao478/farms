@@ -36,9 +36,19 @@ Real
 InitialStressXYPressure::value(Real t, const Point & p) const
 {
 
+  //Parameters
+  //Define pi
+  Real pi = 3.14159265358979323846;
+  //Define tolerance
+  Real epsilon = 1e-12;
+  //Define num_intervals
+  int numofintervals = 1000;
+
   //compute R
-  Real x_coord = p(0); //along the strike direction
-  Real y_coord = p(1); //along the normal direction
+  Real x_center = 0;
+  Real y_center = 0;
+  Real x_coord = p(0) - x_center; //along the strike direction
+  Real y_coord = p(1) - y_center; //along the normal direction
   Real R = sqrt(x_coord*x_coord+y_coord*y_coord); //assume injection location is (0,0)
 
   //initialize pressure
@@ -51,14 +61,52 @@ InitialStressXYPressure::value(Real t, const Point & p) const
   //hydraulic diffusivity
   Real c = ( _permeability_k * ( undrained_lambda - drained_lambda ) * ( drained_lambda + 2 * _shear_modulus_mu ) ) / ( _viscosity_eta * _biotcoeff_alpha * _biotcoeff_alpha * ( undrained_lambda + 2 * _shear_modulus_mu ) );
 
-  //Euler's constant
-  Real gamma = 0.57721;
+  //Define z
+  Real z = R * R / ( 4 * c * t );
 
-  //Define pi
-  Real pi = 3.14159265358979323846;
+  Real expIntz = 0.0;
+
+  // Check if the argument is zero or negative
+  if (z <= 0)
+  {
+    // Return an error message
+    expIntz = 0.9 * 120e6;
+  }
+  else{
+
+    // Set the upper limit of the integral to a large value
+    double b = 10000;
+
+    // Set the number of subintervals for the trapezoidal rule
+    int n = 1000;
+
+    // Compute the step size
+    double h = (b - z) / n;
+
+    // Initialize the sum
+    double sum = 0;
+
+    // Loop over the subintervals
+    for (int i = 0; i < n; i++)
+    {
+      // Compute the endpoints of the subinterval
+      double x1 = z + i * h;
+      double x2 = z + (i + 1) * h;
+
+      // Compute the function values at the endpoints
+      double f1 = exp(-x1) / x1;
+      double f2 = exp(-x2) / x2;
+
+      // Add the area of the trapezoid to the sum
+      sum += (f1 + f2) * h / 2;
+    }
+
+    expIntz = sum;
+
+  }
 
   //compute pressure
-  pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k ) * ( -1 * gamma - log( R * R / ( 4 * c * t ) ) );
+  pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k ) * expIntz;
 
   return pressure;
 

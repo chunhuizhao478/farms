@@ -1,1 +1,0 @@
-solve diffusion equation to obtain pressure

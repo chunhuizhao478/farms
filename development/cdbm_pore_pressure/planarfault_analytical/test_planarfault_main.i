@@ -115,6 +115,17 @@
   
     #diffusion coefficient #for structural stress coupling
     D = 0
+
+    #pressure analytical solution
+    #Reference: Injection-induced seismicity: Poroelastic and earthquake nucleation effects (P. Segall1 and S. Lu2)
+    flux_q = 1e4 #kg/s
+    density_rho_0 = 1e3 #kg/m^3
+    permeability_k = 3e-12 #m^2
+    viscosity_eta = 0.4e-3 #Pa s
+    biotcoeff_alpha = 0.31 #-
+    undrained_nu_u = 0.3  #-
+    shear_modulus_mu = 32.04e9 #Pa
+    drained_nu = 0.25 #-
     
   []
   
@@ -570,10 +581,11 @@
     []
     #pressure
     [func_pressure]
-      type = PiecewiseMultilinear
-      data_file = ./pressure/analyticalsol.txt
-      # type = InitialPorePressureGaussian
-      # value = 0
+      # type = PiecewiseMultilinear
+      # data_file = ./pressure/analyticalsol.txt
+      # # type = InitialPorePressureGaussian
+      # # value = 0
+      type = InitialStressXYPressure
     []
   []
   
@@ -590,7 +602,7 @@
     type = Transient
     dt = 5e-4
     end_time = 5.0
-    num_steps = 10000
+    # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
