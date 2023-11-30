@@ -1,6 +1,12 @@
 /* Reference: John W. RUDNICKI : FLUID MASS SOURCES AND POINT FORCES IN LINEAR ELASTIC DIFFUSIVE SOLIDS */
 
 #include "InitialStressXYPressure.h"
+#include <cmath>
+
+#define EULER 0.5772156649	/* Euler's constant gamma */
+#define MAXIT 1000		/* Maximum allowed Real of iterations. */
+#define FPMIN 1.0e-30	/* close to the smallest representable floting-point Real. */
+#define EPS 6.0e-8		/* Desired relative error, not smaller than the machine precision. */
 
 registerMooseObject("farmsApp", InitialStressXYPressure);
 
@@ -32,6 +38,109 @@ InitialStressXYPressure::InitialStressXYPressure(const InputParameters & paramet
 {
 }
 
+/*********************************************************************
+   Returns the exponential integral function
+   E_n(x) = int_1^infinity e^{-x*t}/t^n dt,     for x > 0.
+   C.A. Bertulani        May/15/2000
+*********************************************************************/
+Real expint(int n, Real x)
+{
+	int i,ii,nm1;
+	Real a,b,c,d,del,fact,h,psi,ans;
+
+	nm1=n-1;
+	if (n < 0 || x < 0.0 || (x==0.0 && (n==0 || n==1)))
+	//err << "\n Bad arguments in expint";
+	return 120e6 * 0.9;
+  else {
+		if (n == 0) ans=exp(-x)/x;   /* Special case */
+		else {
+			if (x == 0.0) ans=1.0/nm1;  /* Another special case */
+
+			else {
+				if (x > 1.0) {		/* Lentz's algorithm */
+					b=x+n;
+					c=1.0/FPMIN;
+					d=1.0/b;
+					h=d;
+					for (i=1;i<=MAXIT;i++) {
+						a = -i*(nm1+i);
+						b += 2.0;
+						d=1.0/(a*d+b);	/* Denominators cannot be zero */
+						c=b+a/c;
+						del=c*d;
+						h *= del;
+						if (fabs(del-1.0) < EPS) {
+							ans=h*exp(-x);
+							return ans;
+						}
+					}
+					err << "\n Continued fraction failed in expint";
+				} else {
+					ans = (nm1!=0 ? 1.0/nm1 : -log(x)-EULER);	/* Set first term */
+					fact=1.0;
+					for (i=1;i<=MAXIT;i++) {
+						fact *= -x/i;
+						if (i != nm1) del = -fact/(i-nm1);
+						else {
+							psi = -EULER;  /* Compute psi(n) */
+							for (ii=1;ii<=nm1;ii++) psi += 1.0/ii;
+							del=fact*(-log(x)+psi);
+						}
+						ans += del;
+						if (fabs(del) < fabs(ans)*EPS) return ans;
+					}
+					err << "\n series failed in expint";
+				}
+			}
+		}
+	}
+	return ans;
+}
+
+/************************************************************************
+   Returns the exponential integral function
+   E_i(x) = - int_x^infinity e^{-t}/t dt = int_(-infinity)^x e^{-t}/t dt,     
+   for x > 0.
+   C.A. Bertulani        May/15/2000
+************************************************************************/
+Real ei(Real x)
+{
+	int k;
+	Real fact,prev,sum,term;
+
+	if (x <= 0.0) err << "\n Bad argument in ei";
+	if (x < FPMIN) return log(x)+EULER;	/* Special case: avoid failure of convergence */
+	if (x <= -log(EPS)) {				/* test because of underflow.  */ 
+		sum=0.0;				/* Use poer series  */
+		fact=1.0;
+		for (k=1;k<=MAXIT;k++) {
+			fact *= x/k;
+			term=fact/k;
+			sum += term;
+			if (term < EPS*sum) break;
+		}
+		if (k > MAXIT) err << "\n Series failed in ei";
+		return sum+log(x)+EULER;
+	} else {			/* Use asymptotic series. */
+		sum=0.0;		/* Start with second term. */
+		term=1.0;
+		for (k=1;k<=MAXIT;k++) {
+			prev=term;
+			term *= k/x;
+			if (term < EPS) break;
+			/* Since final sum is greater than one, term itself approximates the */
+			/* relative error. */
+			if (term < prev) sum += term;		/* Still converging: add new term. */
+			else {
+				sum -= prev;		/* Diverging: subtract previous term and exit. */
+				break;
+			}
+		}
+		return exp(x)*(1.0+sum)/x;
+	}
+}
+
 Real
 InitialStressXYPressure::value(Real t, const Point & p) const
 {
@@ -39,10 +148,6 @@ InitialStressXYPressure::value(Real t, const Point & p) const
   //Parameters
   //Define pi
   Real pi = 3.14159265358979323846;
-  //Define tolerance
-  Real epsilon = 1e-12;
-  //Define num_intervals
-  int numofintervals = 1000;
 
   //compute R
   Real x_center = 0;
@@ -64,46 +169,8 @@ InitialStressXYPressure::value(Real t, const Point & p) const
   //Define z
   Real z = R * R / ( 4 * c * t );
 
-  Real expIntz = 0.0;
-
-  // Check if the argument is zero or negative
-  if (z <= 0)
-  {
-    // Return an error message
-    expIntz = 0.9 * 120e6;
-  }
-  else{
-
-    // Set the upper limit of the integral to a large value
-    double b = 10000;
-
-    // Set the number of subintervals for the trapezoidal rule
-    int n = 1000;
-
-    // Compute the step size
-    double h = (b - z) / n;
-
-    // Initialize the sum
-    double sum = 0;
-
-    // Loop over the subintervals
-    for (int i = 0; i < n; i++)
-    {
-      // Compute the endpoints of the subinterval
-      double x1 = z + i * h;
-      double x2 = z + (i + 1) * h;
-
-      // Compute the function values at the endpoints
-      double f1 = exp(-x1) / x1;
-      double f2 = exp(-x2) / x2;
-
-      // Add the area of the trapezoid to the sum
-      sum += (f1 + f2) * h / 2;
-    }
-
-    expIntz = sum;
-
-  }
+  //Compute exp integral
+  Real expIntz = expint(1, z);
 
   //compute pressure
   pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k ) * expIntz;
@@ -111,3 +178,8 @@ InitialStressXYPressure::value(Real t, const Point & p) const
   return pressure;
 
 }
+
+#undef EPS
+#undef EULER
+#undef MAXIT
+#undef FPMIN
