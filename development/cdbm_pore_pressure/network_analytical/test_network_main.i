@@ -126,7 +126,7 @@
 
   #pressure analytical solution
   #Reference: Injection-induced seismicity: Poroelastic and earthquake nucleation effects (P. Segall1 and S. Lu2)
-  flux_q = 1e4 #kg/s
+  flux_q = 5e4 #kg/s
   density_rho_0 = 1e3 #kg/m^3
   permeability_k = 3e-12 #m^2
   viscosity_eta = 0.4e-3 #Pa s
@@ -519,7 +519,9 @@
   #Note:restrict stress variation along the fault only
   #this function is used in czm only
   [func_initial_strike_shear_stress]
-    type = InitialStressXYnetwork_old
+    # type = InitialStressXYnetwork_old
+    type = ConstantFunction
+    value = 70e6
   []
   #this function is used in medimum
   [func_initial_stress_xy_const]
