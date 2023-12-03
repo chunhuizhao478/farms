@@ -50,7 +50,7 @@ ComputeDamageBreakageStressv3pressure::validParams()
   params.addRequiredCoupledVar("alpha_grad_y", "damage variable gradient component in y computed from subApp");
   
   //add pore pressure
-  params.addParam<Real>("effec_sts_coeff", 0.0, "effective stress coefficient (along with pore pressure)");
+  params.addRequiredParam<Real>("effec_sts_coeff", "effective stress coefficient (along with pore pressure)");
   params.addRequiredCoupledVar("pressure", "pore pressure");
 
   return params;
