@@ -660,5 +660,5 @@
   []
 
   [Problem]
-    restart_file_base = ./test_stepover_main_checkpoints_cp/LATEST
+    restart_file_base = ./restart_stepover_main_checkpoints_cp/LATEST
   []
