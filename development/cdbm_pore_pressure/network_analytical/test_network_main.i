@@ -127,7 +127,7 @@
   #pressure analytical solution
   #Reference: Injection-induced seismicity: Poroelastic and earthquake nucleation effects (P. Segall1 and S. Lu2)
   effec_sts_coeff = 0.31 #
-  flux_q = 5e4 #kg/s
+  flux_q = 5e2 #kg/s
   density_rho_0 = 1e3 #kg/m^3
   permeability_k = 3e-12 #m^2
   viscosity_eta = 0.4e-3 #Pa s
@@ -561,7 +561,7 @@
 [Executioner]
   type = Transient
   dt = 2e-4
-  end_time = 10.0
+  end_time = 20.0
   # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
@@ -572,7 +572,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 200
+  interval = 400
   [sample_snapshots]
     type = Exodus
     interval = 2000
