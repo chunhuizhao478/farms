@@ -180,8 +180,8 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       RankTwoTensor eps_total_change_inc = eps_total_change - eps_total_change_old;
 
       //-----------------------------------DEBUG-----------------------------------//
-      Real x_coord = _q_point[_qp](0);
-      Real y_coord = _q_point[_qp](1);
+      // Real x_coord = _q_point[_qp](0);
+      // Real y_coord = _q_point[_qp](1);
       // if ( x_coord > -12.0 && x_coord < 12.0 && y_coord > -11.0 && y_coord < 28.0 )
       // {
       //   std::cout<<_fe_problem.getCurrentExecuteOnFlag()<<std::endl;
@@ -390,12 +390,12 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       stress_total_out(2,2) = stress_total_out(2,2) - _effec_sts_coeff * _pressure_pos;
 
       //-----------------------------------DEBUG-----------------------------------//
-      if ( x_coord > -3.26158-1.0 && x_coord < -3.26158+1.0 && y_coord > 6.89017-1.0 && y_coord < 6.89017+1.0 )
-      {
-        std::cout<<" x_coord, y_coord: "<<x_coord<<" "<<y_coord<<std::endl;
-        std::cout<<" I1_out, eps11e_out: "<<I1_out<<" "<<eps11e_out<<std::endl;
-        std::cout<<" stress_total_out: "<<stress_total_out<<std::endl;
-      }
+      // if ( x_coord > -3.26158-1.0 && x_coord < -3.26158+1.0 && y_coord > 6.89017-1.0 && y_coord < 6.89017+1.0 )
+      // {
+      //   std::cout<<" x_coord, y_coord: "<<x_coord<<" "<<y_coord<<std::endl;
+      //   std::cout<<" I1_out, eps11e_out: "<<I1_out<<" "<<eps11e_out<<std::endl;
+      //   std::cout<<" stress_total_out: "<<stress_total_out<<std::endl;
+      // }
       //-----------------------------------DEBUG-----------------------------------//
 
       _sts_total[_qp] = stress_total_out;
