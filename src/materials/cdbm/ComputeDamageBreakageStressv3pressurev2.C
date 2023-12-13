@@ -180,8 +180,8 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       RankTwoTensor eps_total_change_inc = eps_total_change - eps_total_change_old;
 
       //-----------------------------------DEBUG-----------------------------------//
-      // Real x_coord = _q_point[_qp](0);
-      // Real y_coord = _q_point[_qp](1);
+      Real x_coord = _q_point[_qp](0);
+      Real y_coord = _q_point[_qp](1);
       // if ( x_coord > -12.0 && x_coord < 12.0 && y_coord > -11.0 && y_coord < 28.0 )
       // {
       //   std::cout<<_fe_problem.getCurrentExecuteOnFlag()<<std::endl;
@@ -212,8 +212,11 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       Real eps12t = eps_total(0,1);
       Real eps33t = 0.0; //assume plane strain condition
 
-      //pressure taken as negative values (increment)
-      Real _pressure_neg = 1 * ( _pressure[_qp] );
+      //pressure taken as positive values
+      //https://ar5iv.labs.arxiv.org/html/1607.04274 poroelasticity book
+      //It defines the "total stress" = "effective stress" - "biot coeff" * "pressure" * I
+      //stress is positive for tensile, pressure is positive for compression
+      Real _pressure_pos = 1 * ( _pressure[_qp] );
 
       auto compute = [&](const NestedSolve::Value<> & guess,
                           NestedSolve::Value<> & residual,
@@ -253,9 +256,9 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
           Real sigma12_b = ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps12e;
 
           //Represent total stress
-          Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b - _effec_sts_coeff * _pressure_neg;
-          Real sigma22_t = (1 - B) * sigma22_s + B * sigma22_b - _effec_sts_coeff * _pressure_neg;
-          Real sigma33_t = (1 - B) * sigma33_s + B * sigma33_b - _effec_sts_coeff * _pressure_neg;
+          Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b - _effec_sts_coeff * _pressure_pos;
+          Real sigma22_t = (1 - B) * sigma22_s + B * sigma22_b - _effec_sts_coeff * _pressure_pos;
+          Real sigma33_t = (1 - B) * sigma33_s + B * sigma33_b - _effec_sts_coeff * _pressure_pos;
           Real sigma12_t = (1 - B) * sigma12_s + B * sigma12_b;
           
           // //Compute sigma33_t
@@ -378,19 +381,21 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       // if ( x_coord > -12.0 && x_coord < 12.0 && y_coord > -11.0 && y_coord < 28.0 )
       // {
       //   std::cout<<" stress_total_out: "<<stress_total_out(0,0)<<std::endl;
-      //   std::cout<<" - _effec_sts_coeff * _pressure_neg: "<<- _effec_sts_coeff * _pressure_neg<<std::endl;
+      //   std::cout<<" - _effec_sts_coeff * _pressure_pos: "<<- _effec_sts_coeff * _pressure_pos<<std::endl;
       // }
       //-----------------------------------DEBUG-----------------------------------//
 
-      stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * _pressure_neg;
-      stress_total_out(1,1) = stress_total_out(1,1) - _effec_sts_coeff * _pressure_neg;
-      stress_total_out(2,2) = stress_total_out(2,2) - _effec_sts_coeff * _pressure_neg;
+      stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * _pressure_pos;
+      stress_total_out(1,1) = stress_total_out(1,1) - _effec_sts_coeff * _pressure_pos;
+      stress_total_out(2,2) = stress_total_out(2,2) - _effec_sts_coeff * _pressure_pos;
 
       //-----------------------------------DEBUG-----------------------------------//
-      // if ( x_coord > -12.0 && x_coord < 12.0 && y_coord > -11.0 && y_coord < 28.0 )
-      // {
-      //   std::cout<<" stress_total_out: "<<stress_total_out(0,0)<<std::endl;
-      // }
+      if ( x_coord > -3.26158-1.0 && x_coord < -3.26158+1.0 && y_coord > 6.89017-1.0 && y_coord < 6.89017+1.0 )
+      {
+        std::cout<<" x_coord, y_coord: "<<x_coord<<" "<<y_coord<<std::endl;
+        std::cout<<" I1_out, eps11e_out: "<<I1_out<<" "<<eps11e_out<<std::endl;
+        std::cout<<" stress_total_out: "<<stress_total_out<<std::endl;
+      }
       //-----------------------------------DEBUG-----------------------------------//
 
       _sts_total[_qp] = stress_total_out;

@@ -293,7 +293,7 @@
           strain = SMALL
           add_variables = true
           planar_formulation = PLANE_STRAIN
-          generate_output = 'stress_xx stress_yy stress_xy strain_xx strain_xy strain_yy'
+          generate_output = 'stress_xx stress_yy stress_xy stress_zz strain_xx strain_xy strain_yy strain_zz'
           extra_vector_tags = 'restore_tag'
         [../]
       [../]
