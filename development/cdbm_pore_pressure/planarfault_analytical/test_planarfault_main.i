@@ -118,7 +118,7 @@
 
     #pressure analytical solution
     #Reference: Injection-induced seismicity: Poroelastic and earthquake nucleation effects (P. Segall1 and S. Lu2)
-    flux_q = 5e3 #kg/s
+    flux_q = 5e2 #kg/s
     density_rho_0 = 1e3 #kg/m^3
     permeability_k = 3e-12 #m^2
     viscosity_eta = 0.4e-3 #Pa s
@@ -498,7 +498,7 @@
   [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStressv3pressure
+        type = ComputeDamageBreakageStressv3pressurev2
         alpha_in = alpha_in_dummy
         B_in = B_in_dummy
         alpha_grad_x = alpha_grad_x
@@ -530,14 +530,14 @@
         tensor_name = static_initial_stress_tensor_slipweakening
         tensor_functions = 'func_initial_stress_xx                func_initial_strike_shear_stress      func_initial_stress_00 
                             func_initial_strike_shear_stress      func_initial_stress_yy                func_initial_stress_00
-                            func_initial_stress_00                func_initial_stress_00                func_initial_stress_00'
+                            func_initial_stress_00                func_initial_stress_00                func_initial_stress_zz'
     [../]
     [./static_initial_stress_tensor]
         type = GenericFunctionRankTwoTensor
         tensor_name = static_initial_stress_tensor
         tensor_functions = 'func_initial_stress_xx             func_initial_stress_xy_const        func_initial_stress_00 
                             func_initial_stress_xy_const       func_initial_stress_yy              func_initial_stress_00
-                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_00'
+                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_zz'
     [../]
   []
   
@@ -579,6 +579,11 @@
       type = ConstantFunction
       value = -135e6
     []
+    #
+    [./func_initial_stress_zz]
+      type = ConstantFunction
+      value = -63.75e6
+    []
     #pressure
     [func_pressure]
       # type = PiecewiseMultilinear
@@ -601,8 +606,8 @@
   [Executioner]
     type = Transient
     dt = 5e-4
-    end_time = 10.0
-    # num_steps = 10
+    end_time = 60.0
+    # num_steps = 1000
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped

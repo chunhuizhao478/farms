@@ -356,10 +356,12 @@ ComputeDamageBreakageStressv3pressure::computeQpStress()
       stress_total_out(1,0) = computeStressComps(1, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D);
       
       Real nu = lambda / ( 2 * ( lambda + shear_modulus ));
-      stress_total_out(2,2) = nu * ( computeStressComps(1, 1, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D) + computeStressComps(2, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D) );
+      // stress_total_out(2,2) = nu * ( computeStressComps(1, 1, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D) + computeStressComps(2, 2, xi_out, I1_out, B_out, lambda_out, gamma_damaged_out, shear_modulus_out, eps11e_out, eps22e_out, eps12e_out, alpha_grad_x, alpha_grad_y, D) );
 
       stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * _pressure_neg;
       stress_total_out(1,1) = stress_total_out(1,1) - _effec_sts_coeff * _pressure_neg;
+
+      stress_total_out(2,2) = nu * ( stress_total_out(0,0) + stress_total_out(1,1) );
 
       _sts_total[_qp] = stress_total_out;
 

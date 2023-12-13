@@ -24,14 +24,17 @@ sigma22_s = ( lambda - gamma_damaged / xi ) * I1 ...
           + ( 2 * shear_modulus - gamma_damaged * xi ) * eps22e;
 sigma22_b = ( 2 * a2 + a1 / xi + 3 * a3 * xi ) * I1 ...
           + ( 2 * a0 + a1 * xi - a3 * xi ^ 3 ) * eps22e;
+sigma33_s = ( lambda - gamma_damaged / xi ) * I1 ...
+          + ( 2 * shear_modulus - gamma_damaged * xi ) * eps33e;
+sigma33_b = ( 2 * a2 + a1 / xi + 3 * a3 * xi ) * I1 ...
+          + ( 2 * a0 + a1 * xi - a3 * xi ^ 3 ) * eps33e;
 sigma12_s = ( 2 * shear_modulus - gamma_damaged * xi ) * eps12e;
 sigma12_b = ( 2 * a0 + a1 * xi - a3 * xi ^ 3 ) * eps12e;
 %Represent total stress
 sigma11_t = (1 - B) * sigma11_s + B * sigma11_b - effec_sts_coeff * pressure;
 sigma22_t = (1 - B) * sigma22_s + B * sigma22_b - effec_sts_coeff * pressure;
+sigma33_t = (1 - B) * sigma33_s + B * sigma33_b - effec_sts_coeff * pressure;
 sigma12_t = (1 - B) * sigma12_s + B * sigma12_b;
-%Compute sigma33_t using sigma11_t and sigma22_t
-sigma33_t = nu * ( sigma11_t + sigma22_t );
 %Represent deviatroic stress
 sigma_d11 = sigma11_t - 1/3 * (sigma11_t + sigma22_t + sigma33_t);
 sigma_d22 = sigma22_t - 1/3 * (sigma11_t + sigma22_t + sigma33_t);

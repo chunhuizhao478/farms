@@ -54,7 +54,7 @@ for num = 1:length(nums)/2
     v = replace(v,string_m2,'_m2');
     v = replace(v,string_m1,'_m1');
     v = replace(v,string_coeff,'_effec_sts_coeff');
-    v = replace(v,string_p,'_pressure[_qp]');
+    v = replace(v,string_p,'_pressure_neg');
     
     %replace power
     string_power_1 = '(minus_epse_I2)^(3/2)';
