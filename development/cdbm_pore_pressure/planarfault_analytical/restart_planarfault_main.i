@@ -743,3 +743,7 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
   []
+
+  [Problem]
+    restart_file_base = ./test_planarfault_main_checkpoints_cp/LATEST
+  []
