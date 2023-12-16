@@ -256,7 +256,7 @@
     [./czm_ik]
       boundary = 'Block0_Block1'
       strain = SMALL
-      generate_output='tangent_jump traction_x traction_y jump_x jump_y'
+      generate_output='tangent_jump traction_x traction_y jump_x jump_y tangent_traction'
     [../]
   []
   

@@ -514,7 +514,7 @@
     []
     #SlipWeakeningMultifaults ONLY supports TRIA currently!
     [./czm_mat]
-        type = SlipWeakeningMultifaults
+        type = SlipWeakeningMultifaultsPressure
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         reaction_slipweakening_x = resid_slipweakening_x
@@ -523,6 +523,7 @@
         mu_d = mu_d
         mu_s = mu_s
         tria_area = tria_area_aux
+        pressure = pressure
         boundary = 'Block0_Block1'
     [../]
     [./static_initial_stress_tensor_slipweakening]
