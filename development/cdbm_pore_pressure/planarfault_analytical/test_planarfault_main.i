@@ -618,7 +618,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 10
+    interval = 500
     [sample_snapshots]
       type = Exodus
       interval = 2000
