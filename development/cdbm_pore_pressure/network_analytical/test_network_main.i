@@ -463,7 +463,7 @@
 [Materials]
   #damage breakage model
   [stress_medium]
-    type = ComputeDamageBreakageStressv3pressure
+    type = ComputeDamageBreakageStressv3pressurev2
     alpha_in = alpha_in_dummy
     B_in = B_in_dummy
     alpha_grad_x = alpha_grad_x
@@ -479,7 +479,7 @@
   []
   #SlipWeakeningMultifaults ONLY supports TRIA currently!
   [./czm_mat]
-      type = SlipWeakeningMultifaults
+      type = SlipWeakeningMultifaultsPressure
       disp_slipweakening_x     = disp_slipweakening_x
       disp_slipweakening_y     = disp_slipweakening_y
       reaction_slipweakening_x = resid_slipweakening_x
@@ -488,6 +488,7 @@
       mu_d = mu_d
       mu_s = mu_s
       tria_area = tria_area_aux
+      pressure = pressure
       boundary = 'czm'
   [../]
   [./static_initial_stress_tensor_slipweakening]
@@ -561,8 +562,8 @@
 [Executioner]
   type = Transient
   dt = 2e-4
-  end_time = 20.0
-  # num_steps = 10
+  end_time = 40.0
+  num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -572,7 +573,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 400
+  interval = 1
   [sample_snapshots]
     type = Exodus
     interval = 2000
