@@ -50,7 +50,7 @@ ComputeDamageBreakageStressv3pressurev2::validParams()
   params.addRequiredCoupledVar("alpha_grad_y", "damage variable gradient component in y computed from subApp");
   
   //add pore pressure
-  params.addRequiredParam<Real>("effec_sts_coeff", "effective stress coefficient (along with pore pressure)");
+  params.addRequiredParam<Real>("biotcoeff_alpha", "effective stress coefficient (along with pore pressure)");
   params.addRequiredCoupledVar("pressure", "pore pressure");
 
   return params;
@@ -89,7 +89,7 @@ ComputeDamageBreakageStressv3pressurev2::ComputeDamageBreakageStressv3pressurev2
     _B_in(coupledValue("B_in")),
     _alpha_grad_x(coupledValue("alpha_grad_x")),
     _alpha_grad_y(coupledValue("alpha_grad_y")),
-    _effec_sts_coeff(isParamValid("effec_sts_coeff") ? getParam<Real>("effec_sts_coeff") : 0.0),
+    _effec_sts_coeff(getParam<Real>("biotcoeff_alpha")),
     _pressure(coupledValue("pressure")),
     _pressure_old(coupledValueOld("pressure")),
     _density(getMaterialPropertyByName<Real>("density")),

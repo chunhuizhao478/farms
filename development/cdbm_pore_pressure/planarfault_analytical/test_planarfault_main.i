@@ -54,7 +54,7 @@
 
     ##------------fluid injection------------##
     #biot effective stress coefficient alpha
-    effec_sts_coeff = 0.31
+    effec_sts_coeff = 1.0
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]

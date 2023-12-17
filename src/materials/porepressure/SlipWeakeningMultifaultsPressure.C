@@ -19,7 +19,7 @@ SlipWeakeningMultifaultsPressure::validParams()
   params.addRequiredCoupledVar("mu_s","static friction coefficient spatial distribution");
   params.addRequiredCoupledVar("mu_d","dynamic friction coefficient spatial distribution");
   params.addRequiredCoupledVar("tria_area","area of triangle element along the faults");
-  params.addRequiredParam<Real>("biotcoeff_alpha", "biot coefficient");
+  params.addRequiredParam<Real>("effec_sts_coeff", "biot coefficient");
   params.addRequiredCoupledVar("pressure","pressure");
   return params;
 }
@@ -47,7 +47,7 @@ SlipWeakeningMultifaultsPressure::SlipWeakeningMultifaultsPressure(const InputPa
     _sts_init(getMaterialPropertyByName<RankTwoTensor>(_base_name + "static_initial_stress_tensor_slipweakening")),
     _tria_area(coupledValue("tria_area")),
     _tria_area_neighbor(coupledNeighborValue("tria_area")),
-    _alpha(getParam<Real>("biotcoeff_alpha")),
+    _alpha(getParam<Real>("effec_sts_coeff")),
     _pressure(coupledValue("pressure"))
 {
 }
