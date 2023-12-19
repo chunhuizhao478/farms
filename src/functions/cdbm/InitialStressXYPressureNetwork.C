@@ -150,8 +150,8 @@ InitialStressXYPressureNetwork::value(Real t, const Point & p) const
   Real pi = 3.14159265358979323846;
 
   //compute R
-  Real x_center = 208.7;
-  Real y_center = -1200;
+  Real x_center = -1432.3; //208.7;
+  Real y_center = 1481;    //-1200;
   Real x_coord = p(0) - x_center; //along the strike direction
   Real y_coord = p(1) - y_center; //along the normal direction
   Real R = sqrt(x_coord*x_coord+y_coord*y_coord); //assume injection location is (0,0)

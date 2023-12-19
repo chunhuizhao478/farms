@@ -25,6 +25,7 @@ figure();
 for i = 21 : num_steps
     plot(arr_xcoord./10^3,arr_traction(:,i),'r-','LineWidth',1.5); hold on;
 end
+ylim([10,130])
 %% sliprate
 %loop over data files
 for i = 1 : num_steps

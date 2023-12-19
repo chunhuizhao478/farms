@@ -1081,8 +1081,8 @@ def LinePlotParamVal2D(exodus_file_path,
                     #     plt.axhline(y=23.723)
                     #     plt.axhline(y=11.082)
                     # elif fault_name == "mf180":
-                    #     plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
-                    #     plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
+                    # plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + 70 ,'b*-',linewidth=3.0)
+                    # plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
                     # else:
                     #     plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
                     #     plt.ylim([dict_ini_shear_sts[fault_name]-40,dict_ini_shear_sts[fault_name]+40])
@@ -1100,8 +1100,11 @@ def LinePlotParamVal2D(exodus_file_path,
                     # plt.xticks(fontsize=15)
                     # plt.yticks(fontsize=15)
 
+                    data_saved = -sorted_arr_czm_param_i_all/1e6 + 70;
+                    data_saved[396:404] = data_saved[396:404] + 11.6;
+
                     np.savetxt("./outputs/traction_x/xcoord.txt",sorted_arr_czm_elem_arclength_i_all)
-                    np.savetxt("./outputs/traction_x/traction_x_"+str(time_ind)+".txt",sorted_arr_czm_param_i_all/1e6)
+                    np.savetxt("./outputs/traction_x/traction_x_"+str(time_ind)+".txt",data_saved)
                 elif plot_var_name_i == "traction_x" and additional_flags == "stress_and_strength":
                     if fault_name == "mf180":
                         plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_shear_sts[fault_name] ,'b*-',linewidth=3.0)
