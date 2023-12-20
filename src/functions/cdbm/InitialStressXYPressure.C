@@ -151,7 +151,7 @@ InitialStressXYPressure::value(Real t, const Point & p) const
 
   //compute R
   Real x_center = 0;
-  Real y_center = 0;
+  Real y_center = -50;
   Real x_coord = p(0) - x_center; //along the strike direction
   Real y_coord = p(1) - y_center; //along the normal direction
   Real R = sqrt(x_coord*x_coord+y_coord*y_coord); //assume injection location is (0,0)

@@ -2,10 +2,10 @@ clear all; close all; clc;
 %Unified Parameter Choice For CBDM Complex Network Problem
 %% Input Parameters
 mu_s = 0.7;
-mu_d = 0.5;
+mu_d = 0.55;
 Dc = 0.1;
-tau_S = 70e6;
-sigma_N = 120e6;
+tau_S = 50e6;
+sigma_N = 80e6;
 G = 32.04e9;
 %% Main Fault
 tau_strength = mu_s * sigma_N;

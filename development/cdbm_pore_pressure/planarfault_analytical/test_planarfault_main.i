@@ -1,16 +1,16 @@
 ##########################################################
 # Unified Parameter Choice For CBDM Complex Network Problem
-# mu_s = 0.6
-# mu_d = 0.5
-# Dc = 0.1
-# tau_S = 70e6
-# sigma_N = 120e6
-# For Main Fault, 
-# frictional strength tau_strength = mu_s sigma_N = 0.6 * 120e6 = 72e6
-# diff = tau_strength - tau_S = 72e6 - 70e6 = 2e6
-# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.6 - 0.583 ) / ( 0.583 - 0.5) = 0.2
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.1 / (( 0.6 - 0.5) * 120e6) = 267m
+# Use "params_calcs.m" for evaluation
+# mu_s (-): 0.700 
+# mu_d (-): 0.550 
+# D_c (-): 0.100 
+# tau_S (MPa): 50.000 
+# sigma_N (MPa): 80.000 
+# tau_strength (MPa): 56.000 
+# pressure P needed to reach initial shear stress (MPa): 8.571 
+# mu (-): 0.625 
+# S (-): 1.000 
+# L (m): 267.000
 # Use mesh size = 25m
 ##########################################################
 
@@ -118,7 +118,7 @@
 
     #pressure analytical solution
     #Reference: Injection-induced seismicity: Poroelastic and earthquake nucleation effects (P. Segall1 and S. Lu2)
-    flux_q = 5e2 #kg/s
+    flux_q = 1e3 #kg/s
     density_rho_0 = 1e3 #kg/m^3
     permeability_k = 3e-12 #m^2
     viscosity_eta = 0.4e-3 #Pa s
@@ -546,12 +546,12 @@
     #mus constant value: 0.7
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.6
+        value = 0.7
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
         type = ConstantFunction
-        value = 0.5
+        value = 0.55
     []
     #Note:restrict stress variation along the fault only
     #this function is used in czm only
@@ -559,12 +559,12 @@
     [func_initial_strike_shear_stress]
       # type = InitialStressXYcontmfbfs_mud049
       type = ConstantFunction
-      value = 70e6
+      value = 50e6
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
       type = ConstantFunction
-      value = 70e6
+      value = 50e6
     []
     [./func_initial_stress_00]
       type = ConstantFunction
@@ -572,18 +572,18 @@
     []
     [./func_initial_stress_yy]
       type = ConstantFunction
-      value = -120e6
+      value = -80e6
     []
     #In problems with inelasticity, the sigma11 is important
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
       type = ConstantFunction
-      value = -135e6
+      value = -80e6
     []
     #
     [./func_initial_stress_zz]
       type = ConstantFunction
-      value = -63.75e6
+      value = -40e6
     []
     #pressure
     [func_pressure]
@@ -608,7 +608,7 @@
     type = Transient
     dt = 5e-4
     end_time = 60.0
-    # num_steps = 1000
+    # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -618,7 +618,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 500
+    interval = 200
     [sample_snapshots]
       type = Exodus
       interval = 2000
