@@ -114,8 +114,8 @@ set(gcf, 'PaperUnits', 'inches');
 x_width=4 ;y_width=2.5;
 set(gcf, 'PaperPosition', [0 0 x_width y_width]); 
 %% plastic work
-time = importdata("./outputs/plastic_work/timeseries.txt");
-work = importdata("./outputs/plastic_work/plastic_work.txt");
+time = importdata("/Users/andyz/projects/farms/postprocess/cdbm_planarfault/outputs/plastic_work/timeseries.txt");
+work = importdata("/Users/andyz/projects/farms/postprocess/cdbm_planarfault/outputs/plastic_work/plastic_work.txt");
 figure();
 plot(time,work/1e6,'-m', 'linewidth', 1); hold on;
 plot([0,1.2],[0,0],'-m', 'linewidth', 1)
