@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/planarfault2_uniform/planarfault2_uniform.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault2_uniform_extend/planarfault2_uniform_extend.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator

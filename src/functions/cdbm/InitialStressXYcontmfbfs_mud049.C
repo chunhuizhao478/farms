@@ -27,7 +27,9 @@ InitialStressXYcontmfbfs_mud049::value(Real /*t*/, const Point & p) const
   {
     //T1_o = 81.6e6;
     //raise overstress to 1%
-    T1_o = 82.0524e6;
+    //T1_o = 82.0524e6;
+    //raise overstress to 5%
+    T1_o = 85.302e6;
   }
   else{
     T1_o = 70e6;
