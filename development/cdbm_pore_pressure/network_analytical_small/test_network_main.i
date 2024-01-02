@@ -546,7 +546,7 @@
   []
   #pressure
   [func_pressure]
-    type = InitialStressXYPressureNetwork_small
+    type = InitialStressXYPressureBorehole
   []
 []
 
@@ -563,7 +563,7 @@
   type = Transient
   dt = 2e-4
   end_time = 40.0
-  # num_steps = 10
+  num_steps = 20
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -573,7 +573,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 400
+  interval = 1
   [sample_snapshots]
     type = Exodus
     interval = 2000

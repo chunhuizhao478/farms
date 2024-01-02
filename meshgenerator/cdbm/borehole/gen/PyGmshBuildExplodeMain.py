@@ -100,6 +100,7 @@ elif case_flag == "2D-Cluster-Well":
     txt_elems_path = global_path + "/elemdata/elem_ind_well.txt"
     txt_ids_path = global_path + "/elemdata/elem_ids_well.txt"
     txt_surround_path = global_path + "/elemdata/elem_surroundingblocks_well.txt"
+    txt_global_path = global_path + "/elemdata/"
 
 csv_file_path = global_path + "/elemdata/area.csv"
 
@@ -224,4 +225,11 @@ efunc.meshio_generate_subdomainID(file_path2=file_path2,
                                   txt_ids_path=txt_ids_path,
                                   txt_surround_path=txt_surround_path,
                                   mat_surf_triacoordall=mat_surf_triacoordall)
+
+#return boundary subdomainIDs & elementIDs
+efunc.meshio_find_physical_groups(file_path2=file_path2,
+                                  txt_global_path=txt_global_path,
+                                  array_coord=array_coord,
+                                  radius_2nd=radius_2nd,
+                                  lc2=lc2)
 
