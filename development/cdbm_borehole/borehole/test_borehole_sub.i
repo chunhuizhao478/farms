@@ -17,7 +17,7 @@
 [Mesh]
   [./msh]
       type = FileMeshGenerator
-      file =  '../../../meshgenerator/cdbm/borehole/mshfiles/network_well.msh'
+      file =  '../../meshgenerator/cdbm/borehole/mshfiles/network_well.msh'
   []
   [./subdomain_id] 
   input = msh
