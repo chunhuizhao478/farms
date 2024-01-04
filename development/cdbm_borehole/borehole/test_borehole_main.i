@@ -22,7 +22,7 @@
 [Mesh]
   [./msh]
       type = FileMeshGenerator
-      file =  '../../meshgenerator/cdbm/borehole/mshfiles/network_well.msh'
+      file =  '../../../meshgenerator/cdbm/borehole/mshfiles/network_well.msh'
   []
   [./subdomain_id] 
   input = msh
@@ -152,7 +152,7 @@
 
   #pressure analytical solution
   #Reference: Injection-induced seismicity: Poroelastic and earthquake nucleation effects (P. Segall1 and S. Lu2)
-  effec_sts_coeff = 0.31 #
+  # effec_sts_coeff = 0.31 #
   # flux_q = 5e2 #kg/s
   # density_rho_0 = 1e3 #kg/m^3
   # permeability_k = 3e-12 #m^2
@@ -298,7 +298,7 @@
   [./czm_ik]
     boundary = 'czm'
     strain = SMALL
-    generate_output='tangent_jump'
+    generate_output='tangent_jump normal_jump'
   [../]
 []
 
@@ -505,7 +505,7 @@
   []
   #SlipWeakeningMultifaults ONLY supports TRIA currently!
   [./czm_mat]
-      type = SlipWeakeningMultifaultsPressure
+      type = SlipWeakeningMultifaults
       disp_slipweakening_x     = disp_slipweakening_x
       disp_slipweakening_y     = disp_slipweakening_y
       reaction_slipweakening_x = resid_slipweakening_x
@@ -514,7 +514,6 @@
       mu_d = mu_d
       mu_s = mu_s
       tria_area = tria_area_aux
-      pressure = pressure
       boundary = 'czm'
   [../]
   [./static_initial_stress_tensor_slipweakening]
@@ -572,10 +571,10 @@
   []
   #pressure
   [func_pressure_x]
-    type = InitialStressXYPressureBorehole_x
+    type = InitialStressXYPressureBorehole_x_fast
   []
   [func_pressure_y]
-    type = InitialStressXYPressureBorehole_y
+    type = InitialStressXYPressureBorehole_y_fast
   []
 []
 
@@ -592,7 +591,7 @@
   type = Transient
   dt = 2e-4
   end_time = 40.0
-  # num_steps = 10
+  num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -602,7 +601,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 200
+  interval = 1
   [sample_snapshots]
     type = Exodus
     interval = 2000

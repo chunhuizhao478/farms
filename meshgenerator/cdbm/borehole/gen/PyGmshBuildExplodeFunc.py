@@ -697,7 +697,11 @@ def meshio_save_network_info(file_path1,
         plt.plot([mat_surf_connect_all[i,0],mat_surf_connect_all[i,2]],[mat_surf_connect_all[i,1],mat_surf_connect_all[i,3]],'k-')
     for i in range(np.shape(mat_surf_ptr_all)[0]):
         plt.plot(mat_surf_ptr_all[i,0],mat_surf_ptr_all[i,1],'b*')
+    for k in range(np.shape(mat_connect_additional["pseudo_circle"])[0]):
+        plt.plot([mat_connect_additional["pseudo_circle"][k,0],mat_connect_additional["pseudo_circle"][k,2]],[mat_connect_additional["pseudo_circle"][k,1],mat_connect_additional["pseudo_circle"][k,3]],'r-')
     plt.show()
+
+    # exit()
 
     return mat_surf_ptr_all, mat_surf_connect_all, mat_surf_triacoordall, mat_surf_trialinesegmentall, mat_ptrs_additional, mat_connect_additional
 
@@ -962,7 +966,8 @@ def gmsh_add_elems_2nd(mat_connect_corner,
                        mat_connect_surf, 
                        mat_connect_lineendptrs,
                        additional_mats,
-                       case_flag):
+                       case_flag,
+                       lc2):
 
     """
     [inputs]
@@ -1018,8 +1023,13 @@ def gmsh_add_elems_2nd(mat_connect_corner,
     arr_elem_surf = np.zeros((np.shape(mat_connect_surf)[0],1),dtype=int)
     arr_elem_trialoop = np.zeros((np.shape(mat_connect_lineendptrs)[0],3),dtype=int)
 
+    #additional surface loop (other than line)
+    mat_surface_additional_lineloop = {}
+    
     #additional elems type
     arr_elem_additional = {}
+
+    arr_elem_additional["pseudo_circle_gmshlines_connect"] = np.zeros((np.shape(additional_mats["pseudo_circle_gmshptrs_connect"])[0],1))
 
     #add edge elements 
     for corner_elem_ind in range(np.shape(mat_connect_corner)[0]):
@@ -1028,25 +1038,28 @@ def gmsh_add_elems_2nd(mat_connect_corner,
         elem_k = gmsh.model.occ.addLine(ptr_i,ptr_j)
         arr_elem_corner[corner_elem_ind] = elem_k
 
-    print("finish adding " + str(np.shape(mat_connect_corner)[0]) + " edge elements")
+    #add outer square surfacce
+    mat_surface_lineloop = np.zeros((4,1),dtype=int)
 
-    #add circle arcs
-    if case_flag == "2D-Cluster-Well":
-        arr_elem_additional["circle"] = np.zeros((np.shape(additional_mats["circle"])[0],1),dtype=int)
-        for arc_elem_ind in range(np.shape(additional_mats["circle"])[0]):
-            ptr_start = additional_mats["circle"][arc_elem_ind,0]
-            ptr_center = additional_mats["circle"][arc_elem_ind,1]
-            ptr_end = additional_mats["circle"][arc_elem_ind,2]
-            circlearc_k = gmsh.model.occ.addCircleArc(ptr_start,ptr_center,ptr_end)
-            
-            #add physical group
-            gmsh.model.addPhysicalGroup(dim=1,tags=[circlearc_k],name="arc")
+    ## first surface
+    mat_surface_lineloop[0,0] = arr_elem_corner[0];
+    mat_surface_lineloop[1,0] = arr_elem_corner[1];
+    mat_surface_lineloop[2,0] = arr_elem_corner[2];
+    mat_surface_lineloop[3,0] = arr_elem_corner[3];
 
-            arr_elem_additional["circle"][arc_elem_ind] = circlearc_k
+    loop1 = gmsh.model.occ.addCurveLoop([mat_surface_lineloop[0,0],
+                                         mat_surface_lineloop[1,0],       
+                                         mat_surface_lineloop[2,0],
+                                         mat_surface_lineloop[3,0]])
+    
+    surf1 = gmsh.model.occ.addPlaneSurface([loop1],tag=10)
 
-    if case_flag == "2D-Cluster-Well":
-        arr_elem_additional["pseudo_circle_gmshlines_connect"] = np.zeros((np.shape(additional_mats["pseudo_circle_gmshptrs_connect"])[0],1))
-        # arr_elem_additional["faults_outerbc_gmshlines_connect"] = np.zeros((np.shape(additional_mats["faults_outerbc_gmshptrs_connect"])[0],1))
+    print("finish adding " + str(np.shape(mat_connect_corner)[0]) + " edge elements & surface")
+
+    track_tags = []
+
+    #if it is a circle arc element, do not use addLine, use addCircleArc
+    ptr_center = gmsh.model.occ.addPoint(0.0,0.0,0.0,lc2) #always be the center point (0,0)
 
     #add elem
     for tria_elem_ind in range(np.shape(mat_connect_lineendptrs)[0]):
@@ -1055,104 +1068,88 @@ def gmsh_add_elems_2nd(mat_connect_corner,
 
         tria_elem_data = mat_connect_lineendptrs[tria_elem_ind,:]
 
-        elem_k1 = gmsh.model.occ.addLine(tria_elem_data[0],tria_elem_data[1])
-        elem_k2 = gmsh.model.occ.addLine(tria_elem_data[2],tria_elem_data[3])
-        elem_k3 = gmsh.model.occ.addLine(tria_elem_data[4],tria_elem_data[5])
+        if tria_elem_data[0] in additional_mats["pseudo_circle_gmshptrs_connect"] and tria_elem_data[1] in additional_mats["pseudo_circle_gmshptrs_connect"]:
+            continue
+        else:
+            elem_k1 = gmsh.model.occ.addLine(tria_elem_data[0],tria_elem_data[1])
+
+        if tria_elem_data[2] in additional_mats["pseudo_circle_gmshptrs_connect"] and tria_elem_data[3] in additional_mats["pseudo_circle_gmshptrs_connect"]:
+            continue
+        else:
+            elem_k2 = gmsh.model.occ.addLine(tria_elem_data[2],tria_elem_data[3])
+
+        if tria_elem_data[4] in additional_mats["pseudo_circle_gmshptrs_connect"] and tria_elem_data[5] in additional_mats["pseudo_circle_gmshptrs_connect"]:
+            continue
+        else:
+            elem_k3 = gmsh.model.occ.addLine(tria_elem_data[4],tria_elem_data[5])
 
         arr_elem_trialoop[tria_elem_ind, 0] = elem_k1
         arr_elem_trialoop[tria_elem_ind, 1] = elem_k2
         arr_elem_trialoop[tria_elem_ind, 2] = elem_k3
 
-        print(elem_k1,elem_k2,elem_k3)
+        track_tags.append([tria_elem_data[0],tria_elem_data[1],elem_k1])
+        track_tags.append([tria_elem_data[2],tria_elem_data[3],elem_k2])
+        track_tags.append([tria_elem_data[4],tria_elem_data[5],elem_k3])
 
-        if case_flag == "2D-Cluster-Well":
-            #find gmsh id ptrs for inner circle boundary
-            # [:,1],[:,0] may cause problem (not fully understand the sequence)
-            addsuitable_pos_ind_1 = np.where(tria_elem_data[0] == additional_mats["pseudo_circle_gmshptrs_connect"][:,1])[0] #0 - x
-            addsuitable_pos_ind_2 = np.where(tria_elem_data[1] == additional_mats["pseudo_circle_gmshptrs_connect"][:,0])[0] #1 - y
-            addcommon_flag_ptr_i = np.intersect1d(addsuitable_pos_ind_1,addsuitable_pos_ind_2)
-            if addcommon_flag_ptr_i.size > 0:
-                for addflag_ind_i in range(len(addcommon_flag_ptr_i)):
-                    addflag_i = addcommon_flag_ptr_i[addflag_ind_i]
-                    # print(addflag_i,elem_k1)
-                    arr_elem_additional["pseudo_circle_gmshlines_connect"][addflag_i] = elem_k1
-            addsuitable_pos_ind_3 = np.where(tria_elem_data[2] == additional_mats["pseudo_circle_gmshptrs_connect"][:,1])[0] #0 - x
-            addsuitable_pos_ind_4 = np.where(tria_elem_data[3] == additional_mats["pseudo_circle_gmshptrs_connect"][:,0])[0] #1 - y
-            addcommon_flag_ptr_i = np.intersect1d(addsuitable_pos_ind_3,addsuitable_pos_ind_4)
-            if addcommon_flag_ptr_i.size > 0:
-                for addflag_ind_i in range(len(addcommon_flag_ptr_i)):
-                    addflag_i = addcommon_flag_ptr_i[addflag_ind_i]
-                    # print(addflag_i,elem_k2)
-                    arr_elem_additional["pseudo_circle_gmshlines_connect"][addflag_i] = elem_k2
-            addsuitable_pos_ind_5 = np.where(tria_elem_data[4] == additional_mats["pseudo_circle_gmshptrs_connect"][:,1])[0] #0 - x
-            addsuitable_pos_ind_6 = np.where(tria_elem_data[5] == additional_mats["pseudo_circle_gmshptrs_connect"][:,0])[0] #1 - y
-            addcommon_flag_ptr_i = np.intersect1d(addsuitable_pos_ind_5,addsuitable_pos_ind_6)
-            if addcommon_flag_ptr_i.size > 0:
-                for addflag_ind_i in range(len(addcommon_flag_ptr_i)):
-                    addflag_i = addcommon_flag_ptr_i[addflag_ind_i]
-                    # print(addflag_i,elem_k3)
-                    arr_elem_additional["pseudo_circle_gmshlines_connect"][addflag_i] = elem_k3
 
-            # #find gmsh id ptrs for outer faults bc
-            # addsuitable_pos_ind_1 = np.where(tria_elem_data[0] == additional_mats["faults_outerbc_gmshptrs_connect"][:,0])[0] #0 - x
-            # addsuitable_pos_ind_2 = np.where(tria_elem_data[1] == additional_mats["faults_outerbc_gmshptrs_connect"][:,1])[0] #1 - y
-            # addcommon_flag_ptr_i = np.intersect1d(addsuitable_pos_ind_1,addsuitable_pos_ind_2)
-            # if addcommon_flag_ptr_i.size > 0:
-            #     for addflag_ind_i in range(len(addcommon_flag_ptr_i)):
-            #         addflag_i = addcommon_flag_ptr_i[addflag_ind_i]
-            #         print(addflag_i,elem_k1)
-            #         arr_elem_additional["faults_outerbc_gmshlines_connect"][addflag_i] = elem_k1
-            # addsuitable_pos_ind_3 = np.where(tria_elem_data[2] == additional_mats["faults_outerbc_gmshptrs_connect"][:,0])[0] #0 - x
-            # addsuitable_pos_ind_4 = np.where(tria_elem_data[3] == additional_mats["faults_outerbc_gmshptrs_connect"][:,1])[0] #1 - y
-            # addcommon_flag_ptr_i = np.intersect1d(addsuitable_pos_ind_3,addsuitable_pos_ind_4)
-            # if addcommon_flag_ptr_i.size > 0:
-            #     for addflag_ind_i in range(len(addcommon_flag_ptr_i)):
-            #         addflag_i = addcommon_flag_ptr_i[addflag_ind_i]
-            #         print(addflag_i,elem_k2)
-            #         arr_elem_additional["faults_outerbc_gmshlines_connect"][addflag_i] = elem_k2
-            # addsuitable_pos_ind_5 = np.where(tria_elem_data[4] == additional_mats["faults_outerbc_gmshptrs_connect"][:,0])[0] #0 - x
-            # addsuitable_pos_ind_6 = np.where(tria_elem_data[5] == additional_mats["faults_outerbc_gmshptrs_connect"][:,1])[0] #1 - y
-            # addcommon_flag_ptr_i = np.intersect1d(addsuitable_pos_ind_5,addsuitable_pos_ind_6)
-            # if addcommon_flag_ptr_i.size > 0:
-            #     for addflag_ind_i in range(len(addcommon_flag_ptr_i)):
-            #         addflag_i = addcommon_flag_ptr_i[addflag_ind_i]
-            #         print(addflag_i,elem_k3)
-            #         arr_elem_additional["faults_outerbc_gmshlines_connect"][addflag_i] = elem_k3
+    #circle channel
+    pseudocircle_list = []
+    for elem_ind in range(np.shape(mat_surface_additional_lineloop["pseudocircle"])[0]):
+        pseudocircle_list.append(mat_surface_additional_lineloop["pseudocircle"][elem_ind,0])
 
-    # print(np.shape(mat_connect_lineendptrs))
-    # print(additional_mats["faults_outerbc_gmshptrs_connect"])
-    # print(arr_elem_additional["faults_outerbc_gmshlines_connect"])
+    #inner pseudo circle loop
+    loop3 = gmsh.model.occ.addCurveLoop(pseudocircle_list) 
+
+    surf3 = gmsh.model.occ.addPlaneSurface([loop3],tag=12)
+
+    #cut
+    diff1 = gmsh.model.occ.cut([(2,surf1)], [(2, surf3)],removeObject=True)
+
+    gmsh.model.occ.removeAllDuplicates()
+    gmsh.model.occ.synchronize()
+    gmsh.fltk.run()
     # exit()
 
-    ##->may need to implement physical segment identification process (remove duplicates)
+    #------------------------------------------------------------------------------------------------------------#
+    loop0 = gmsh.model.occ.addCurveLoop([arr_elem_trialoop[0,0],
+                                         arr_elem_trialoop[0,1],       
+                                         arr_elem_trialoop[0,2]])
 
-    #additional surface loop (other than line)
-    mat_surface_additional_lineloop = {}
+    surf0 = gmsh.model.occ.addPlaneSurface([loop0])
 
-    #add mat_surface_lineloop
-    if case_flag == "2D-Cluster" or "2D-Cluster-Well" :
-        mat_surface_lineloop = np.zeros((4,1),dtype=int)
+    #frag
+    fragi = gmsh.model.occ.fragment([(2,surf1)],[(2,surf0)])
 
-        ## first surface
-        mat_surface_lineloop[0,0] = arr_elem_corner[0];
-        mat_surface_lineloop[1,0] = arr_elem_corner[1];
-        mat_surface_lineloop[2,0] = arr_elem_corner[2];
-        mat_surface_lineloop[3,0] = arr_elem_corner[3];
+    #interior
+    num_of_surfaces_nw = np.shape(arr_elem_trialoop)[0]
+    for surface_ind in range(1,num_of_surfaces_nw): #43
 
-    if case_flag == "2D-Cluster-Well":
-        mat_surface_additional_lineloop["circle"] = np.zeros((2,1),dtype=int)
-        ## only one pseudo scircle
-        mat_surface_additional_lineloop["circle"][0,0] = arr_elem_additional["circle"][0]
-        mat_surface_additional_lineloop["circle"][1,0] = arr_elem_additional["circle"][1]
+        # print(surface_ind,num_of_surfaces_nw)
+        
+        loopi = gmsh.model.occ.addCurveLoop([arr_elem_trialoop[surface_ind,0],
+                                             arr_elem_trialoop[surface_ind,1],       
+                                             arr_elem_trialoop[surface_ind,2]])
 
-        ## add outer pseudocircle line loop
-        mat_surface_additional_lineloop["pseudocircle"] = arr_elem_additional["pseudo_circle_gmshlines_connect"]
+        surfi = gmsh.model.occ.addPlaneSurface([loopi])
+
+        #frag
+        fragi = gmsh.model.occ.fragment(fragi[1][0],[(2,surfi)])
+    #------------------------------------------------------------------------------------------------------------#
 
     # entitydim1 = gmsh.model.occ.get_entities(1)
     # print(entitydim1)
-    # exit()
+    gmsh.model.occ.removeAllDuplicates()
+    gmsh.model.occ.synchronize()
+    gmsh.fltk.run()
+    exit()
 
     return mat_surface_lineloop, arr_elem_corner, arr_elem_surf, arr_elem_trialoop, mat_surface_additional_lineloop, arr_elem_additional
+
+def find_row_index(array, target_row):
+    for index in range(np.shape(array)[0]):
+        if array[index,:].all() == target_row.all():
+            return index
+    return -1  # Return -1 if the target row is not found
 
 def gmsh_add_surfaces_2nd(mat_surface_lineloop, 
                           arr_elem_trialoop,
@@ -1226,8 +1223,7 @@ def gmsh_add_surfaces_2nd(mat_surface_lineloop,
         
         # line loops #
         #inner circle
-        circle_loopi = gmsh.model.occ.addCurveLoop([mat_surface_additional_lineloop["circle"][0,0],
-                                                    mat_surface_additional_lineloop["circle"][1,0]])
+        # circle_loopi = gmsh.model.occ.addCurveLoop()
 
         #store inner boundary (circle-pseudo circle)
         pseudocircle_list = []
@@ -1242,7 +1238,7 @@ def gmsh_add_surfaces_2nd(mat_surface_lineloop,
         # circle_surface = gmsh.model.occ.addPlaneSurface([loopi,circle_loopi],101) #one surface, one circle, hardcode
         # arr_additional_surface["circle"][0] = circle_surface
 
-        pseudo_circle_surface = gmsh.model.occ.addPlaneSurface([circle_loopi]) #one surface, one circle, hardcode
+        pseudo_circle_surface = gmsh.model.occ.addPlaneSurface([pseudo_circle_loopi]) #one surface, one circle, hardcode
 
         # surface #   
         circle_surface = gmsh.model.occ.addPlaneSurface([loopi]) #one surface, one circle, hardcode
@@ -1273,7 +1269,7 @@ def gmsh_add_surfaces_occ(mat_surface_lineloop,
                           case_flag):
     
     entitydim1 = gmsh.model.occ.get_entities(1)
-    print(entitydim1)
+    # print(entitydim1)
     
     #outer square
     loop1 = gmsh.model.occ.addCurveLoop([mat_surface_lineloop[0,0],
@@ -1283,10 +1279,10 @@ def gmsh_add_surfaces_occ(mat_surface_lineloop,
     surf1 = gmsh.model.occ.addPlaneSurface([loop1],tag=10)
     
     #inner circle
-    loop2 = gmsh.model.occ.addCurveLoop([mat_surface_additional_lineloop["circle"][0,0],
-                                         mat_surface_additional_lineloop["circle"][1,0]])
+    # loop2 = gmsh.model.occ.addCurveLoop([mat_surface_additional_lineloop["circle"][0,0],
+    #                                      mat_surface_additional_lineloop["circle"][1,0]])
     
-    surf2 = gmsh.model.occ.addPlaneSurface([loop2],tag=11)
+    # surf2 = gmsh.model.occ.addPlaneSurface([loop2],tag=11)
     
 
     #circle channel
@@ -1297,17 +1293,17 @@ def gmsh_add_surfaces_occ(mat_surface_lineloop,
     #inner pseudo circle loop
     loop3 = gmsh.model.occ.addCurveLoop(pseudocircle_list) 
 
-    surf3 = gmsh.model.occ.addPlaneSurface([loop3,loop2],tag=12)
+    surf3 = gmsh.model.occ.addPlaneSurface([loop3],tag=12)
 
     #cut
-    diff1 = gmsh.model.occ.cut([(2,surf1)], [(2, surf2)],removeObject=True)
+    diff1 = gmsh.model.occ.cut([(2,surf1)], [(2, surf3)],removeObject=True)
 
     # #frag
     # # frag1 = gmsh.model.occ.fragment(diff1[1][0], [(2,surf3)])
 
     entitydim1 = gmsh.model.occ.get_entities(1)
     # print(entitydim1)
-    print(np.shape(entitydim1))
+    # print(np.shape(entitydim1))
     # exit()
 
     loop0 = gmsh.model.occ.addCurveLoop([arr_elem_trialoop[0,0],
@@ -1322,6 +1318,8 @@ def gmsh_add_surfaces_occ(mat_surface_lineloop,
     #interior
     num_of_surfaces_nw = np.shape(arr_elem_trialoop)[0]
     for surface_ind in range(1,num_of_surfaces_nw): #43
+
+        # print(surface_ind,num_of_surfaces_nw)
         
         loopi = gmsh.model.occ.addCurveLoop([arr_elem_trialoop[surface_ind,0],
                                              arr_elem_trialoop[surface_ind,1],       

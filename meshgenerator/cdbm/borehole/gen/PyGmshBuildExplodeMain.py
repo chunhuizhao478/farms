@@ -62,7 +62,7 @@ elif case_flag == "2D-Cluster-Well":
     #well center coordinates
     center_x = 0.0; center_y = 0.0
     #well center radius
-    radius = 800.; radius_2nd = 750;
+    radius = 750.; radius_2nd = 750;
     ##generate points defines a circle (follow the sequence):  
     #Circle(1) = {ptr1 start on circle, center of circle, ptr2 end on circle}
     list_circleptrs = [ center_x - radius, center_y -   0,
@@ -161,9 +161,9 @@ mat_surf_ptr_all, mat_surf_connect_all, mat_surf_triacoordall, mat_surf_trialine
 
 ##------Mesh on Fine Grid------##
 
-array_coord = efunc.helper_modify_array_coord(array_coord=array_coord,
-                                              list_circleptrs_2nd=list_circleptrs_2nd,
-                                              case_flag=case_flag)
+# array_coord = efunc.helper_modify_array_coord(array_coord=array_coord,
+#                                               list_circleptrs_2nd=list_circleptrs_2nd,
+#                                               case_flag=case_flag)
 
 #return 
 #mat_connect_corner : connectivity matrix for corner points [ptr_i, ptr_j] : ptr_i -> ptr_j (arrow indicates the direction)
@@ -187,7 +187,8 @@ mat_surface_lineloop, arr_elem_corner, arr_elem_surf, arr_elem_trialoop, mat_sur
                                                                                                                                                          mat_connect_surf=mat_connect_surf, 
                                                                                                                                                          mat_connect_lineendptrs=mat_connect_lineendptrs,
                                                                                                                                                          additional_mats=additional_mats,
-                                                                                                                                                         case_flag=case_flag)
+                                                                                                                                                         case_flag=case_flag,
+                                                                                                                                                         lc2=lc2)
 
 #return
 #arr_surface :  array stores GMSH id of surface
@@ -199,22 +200,22 @@ mat_surface_lineloop, arr_elem_corner, arr_elem_surf, arr_elem_trialoop, mat_sur
 #                                                                                   case_flag=case_flag)
 
 # #Test
-efunc.gmsh_add_surfaces_occ(mat_surface_lineloop=mat_surface_lineloop, 
-                            arr_elem_trialoop=arr_elem_trialoop,
-                            mat_surface_additional_lineloop=mat_surface_additional_lineloop,
-                            case_flag=case_flag)
+# efunc.gmsh_add_surfaces_occ(mat_surface_lineloop=mat_surface_lineloop, 
+#                             arr_elem_trialoop=arr_elem_trialoop,
+#                             mat_surface_additional_lineloop=mat_surface_additional_lineloop,
+#                             case_flag=case_flag)
 
 
 #return
 #arr_elem_corner : array stores GMSH element id for edge elements   [elem_k]
 #arr_elem_surf : array stores GMSH element id for network elements [elem_k]
 #arr_surface : array stores GMSH id of surface
-mat_egelem_phyname, mat_nwelem_phyname, mat_surf_phyname, mat_egelem_phyname_additional, mat_surface_phyname_additional = efunc.gmsh_add_physical_entities_2nd(arr_elem_corner=arr_elem_corner, 
-                                                                                                                                                                arr_elem_surf=arr_elem_surf, 
-                                                                                                                                                                arr_surface=arr_surface,
-                                                                                                                                                                arr_elem_additional=arr_elem_additional,
-                                                                                                                                                                arr_additional_surface=arr_additional_surface,
-                                                                                                                                                                case_flag=case_flag)
+# mat_egelem_phyname, mat_nwelem_phyname, mat_surf_phyname, mat_egelem_phyname_additional, mat_surface_phyname_additional = efunc.gmsh_add_physical_entities_2nd(arr_elem_corner=arr_elem_corner, 
+#                                                                                                                                                                 arr_elem_surf=arr_elem_surf, 
+#                                                                                                                                                                 arr_surface=arr_surface,
+#                                                                                                                                                                 arr_elem_additional=arr_elem_additional,
+#                                                                                                                                                                 arr_additional_surface=arr_additional_surface,
+#                                                                                                                                                                 case_flag=case_flag)
 
 #return final mesh file 
 efunc.gmsh_meshing(num_alg_meshing, file_path2)
