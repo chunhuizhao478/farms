@@ -146,7 +146,7 @@ InitialStressXYPressureNetwork::value(Real t, const Point & p) const
 {
 
   //Start time
-  Real t_start = 26;
+  Real t_start = 0;
 
   //Parameters
   //Define pi

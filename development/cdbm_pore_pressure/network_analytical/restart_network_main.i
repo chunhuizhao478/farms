@@ -574,10 +574,6 @@
 [Outputs]
   exodus = true
   interval = 500
-  [sample_snapshots]
-    type = Exodus
-    interval = 2000
-  []
   [snapshots]
     type = Exodus
     interval = 2000
@@ -585,8 +581,8 @@
   []
   [checkpoints]
     type = Checkpoint
-    interval = 2000
-    num_files = 2
+    interval = 8000
+    num_files = 8
   []
 []
 
