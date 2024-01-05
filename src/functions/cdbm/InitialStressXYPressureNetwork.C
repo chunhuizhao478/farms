@@ -145,6 +145,9 @@ Real
 InitialStressXYPressureNetwork::value(Real t, const Point & p) const
 {
 
+  //Start time
+  Real t_start = 26;
+
   //Parameters
   //Define pi
   Real pi = 3.14159265358979323846;
@@ -167,7 +170,7 @@ InitialStressXYPressureNetwork::value(Real t, const Point & p) const
   Real c = ( _permeability_k * ( undrained_lambda - drained_lambda ) * ( drained_lambda + 2 * _shear_modulus_mu ) ) / ( _viscosity_eta * _biotcoeff_alpha * _biotcoeff_alpha * ( undrained_lambda + 2 * _shear_modulus_mu ) );
 
   //Define z
-  Real z = R * R / ( 4 * c * t );
+  Real z = R * R / ( 4 * c * ( t_start + t ) );
 
   //Compute exp integral
   Real expIntz = expint_network(1, z);
