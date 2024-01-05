@@ -697,5 +697,5 @@
 []
 
 [Problem]
-  restart_file_base = ./test_network_main_checkpoints_cp/LATEST
+  restart_file_base = ./test_network_main_checkpoints_cp/92000
 []
