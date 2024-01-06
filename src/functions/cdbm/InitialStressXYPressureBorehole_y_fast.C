@@ -35,7 +35,7 @@ InitialStressXYPressureBorehole_y_fast::value(Real t, const Point & p) const
 
   //pressure magnitude as function of time
   Real p_l = 0.0;
-  Real rate = 1e12;
+  Real rate = 1e7;
   
   //assume linearly ramp up
   p_l = rate * t;
