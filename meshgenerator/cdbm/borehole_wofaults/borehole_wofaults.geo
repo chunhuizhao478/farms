@@ -29,9 +29,9 @@ Plane Surface(4) = {3,1};
 
 Mesh.Algorithm = 5;
 
-Physical Curve("borehole") = {5,6};
-Physical Curve("top") = {3};
 Physical Curve("bottom") = {1};
+Physical Curve("borehole") = {5,6};
+Physical Surface("domain") = {4};
+Physical Curve("top") = {3};
 Physical Curve("right") = {2};
 Physical Curve("left") = {4};
-Physical Surface("domain") = {4};

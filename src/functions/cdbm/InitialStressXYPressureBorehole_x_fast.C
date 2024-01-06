@@ -41,7 +41,7 @@ InitialStressXYPressureBorehole_x_fast::value(Real t, const Point & p) const
   p_l = rate * t;
 
   //set & check threshold 
-  Real threshold = 17e6; //10% of mean stress maximum
+  Real threshold = 8.3e6; //10% of mean stress maximum
   
   if ( p_l > threshold ){
     p_l = threshold;
