@@ -71,25 +71,25 @@
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '-2000   -2000  0'
+    coord = '0  -2000  0'
     new_boundary = corner_ptr1
     input = sidesets_boreholebc
   []
   [./extranodeset2]
       type = ExtraNodesetGenerator
-      coord = '2000  -2000  0'
+      coord = '2000  0  0'
       new_boundary = corner_ptr2
       input = extranodeset1
   []
   [./extranodeset3]
       type = ExtraNodesetGenerator
-      coord = '2000   2000  0'
+      coord = '0   2000  0'
       new_boundary = corner_ptr3
       input = extranodeset2
   []
   [./extranodeset4]
       type = ExtraNodesetGenerator
-      coord = '-2000  2000  0'
+      coord = '-2000  0  0'
       new_boundary = corner_ptr4
       input = extranodeset3
   []
@@ -712,18 +712,18 @@
     boundary = corner_ptr1
     value = 0
   []
-  [./fix_cptr1_y]
-      type = DirichletBC
-      variable = disp_y
-      boundary = corner_ptr1
-      value = 0
-  []
-  [./fix_cptr2_x]
-      type = DirichletBC
-      variable = disp_x
-      boundary = corner_ptr2
-      value = 0
-  []
+  # [./fix_cptr1_y]
+  #     type = DirichletBC
+  #     variable = disp_y
+  #     boundary = corner_ptr1
+  #     value = 0
+  # []
+  # [./fix_cptr2_x]
+  #     type = DirichletBC
+  #     variable = disp_x
+  #     boundary = corner_ptr2
+  #     value = 0
+  # []
   [./fix_cptr2_y]
       type = DirichletBC
       variable = disp_y
@@ -736,18 +736,18 @@
       boundary = corner_ptr3
       value = 0
   []
-  [./fix_cptr3_y]
-      type = DirichletBC
-      variable = disp_y
-      boundary = corner_ptr3
-      value = 0
-  []
-  [./fix_cptr4_x]
-      type = DirichletBC
-      variable = disp_x
-      boundary = corner_ptr4
-      value = 0
-  []
+  # [./fix_cptr3_y]
+  #     type = DirichletBC
+  #     variable = disp_y
+  #     boundary = corner_ptr3
+  #     value = 0
+  # []
+  # [./fix_cptr4_x]
+  #     type = DirichletBC
+  #     variable = disp_x
+  #     boundary = corner_ptr4
+  #     value = 0
+  # []
   [./fix_cptr4_y]
       type = DirichletBC
       variable = disp_y
