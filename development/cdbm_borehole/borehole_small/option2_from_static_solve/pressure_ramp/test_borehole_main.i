@@ -408,6 +408,18 @@
 []
 
 [AuxKernels]
+  [Vel_x]
+    type = CompVarRate
+    variable = vel_slipweakening_x
+    coupled = disp_x
+    execute_on = 'TIMESTEP_BEGIN'
+  []
+  [Vel_y]
+      type = CompVarRate
+      variable = vel_slipweakening_y
+      coupled = disp_y
+      execute_on = 'TIMESTEP_BEGIN'
+  [] 
   [get_xi_old]
       type = MaterialRealAux
       property = xi
