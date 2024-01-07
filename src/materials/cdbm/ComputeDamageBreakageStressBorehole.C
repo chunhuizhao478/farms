@@ -54,9 +54,9 @@ ComputeDamageBreakageStressBorehole::validParams()
   params.addRequiredCoupledVar("pressure", "pore pressure");
 
   //initial stress tensor
-  params.addRequiredCoupledVar("initial_stress_xx", "stress tensor component passed from solution file");
-  params.addRequiredCoupledVar("initial_stress_xy", "stress tensor component passed from solution file");
-  params.addRequiredCoupledVar("initial_stress_yy", "stress tensor component passed from solution file");
+  params.addCoupledVar("initial_stress_xx", 0, "stress tensor component passed from solution file");
+  params.addCoupledVar("initial_stress_xy", 0, "stress tensor component passed from solution file");
+  params.addCoupledVar("initial_stress_yy", 0, "stress tensor component passed from solution file");
 
   return params;
 }
@@ -134,8 +134,10 @@ ComputeDamageBreakageStressBorehole::computeQpStress()
   else{
 
     //execute before system solve
-    if (_fe_problem.getCurrentExecuteOnFlag()=="LINEAR"){
+    //if (_fe_problem.getCurrentExecuteOnFlag()=="LINEAR" or _fe_problem.getCurrentExecuteOnFlag()=="NONLINEAR"){
       
+      // std::cout<<_fe_problem.getCurrentExecuteOnFlag()<<std::endl;
+
       /* 
       compute alpha and B parameters
       */
@@ -435,7 +437,7 @@ ComputeDamageBreakageStressBorehole::computeQpStress()
       // }
       //-----------------------------------DEBUG-----------------------------------//
     
-    }
+    //}
 
   }
 }
@@ -587,6 +589,10 @@ ComputeDamageBreakageStressBorehole::setupInitial()
   Real sts12_init = stress_initial(0,1);
   Real sts22_init = stress_initial(1,1);
 
+  // Real sts11_init = _initial_stress_xx[_qp];
+  // Real sts12_init = _initial_stress_xy[_qp];
+  // Real sts22_init = _initial_stress_yy[_qp];
+
   //std::cout<<_initial_stress_xx[_qp]<<" "<<_initial_stress_xy[_qp]<<" "<<_initial_stress_yy[_qp]<<std::endl;
   
   //Note the presence of sts33 in plane strain problem
@@ -628,8 +634,9 @@ ComputeDamageBreakageStressBorehole::setupInitial()
   _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init;
   _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init;
   //sts_total
-  _sts_total[_qp](0,0) = sts11_init; _sts_total[_qp](0,1) = sts12_init;
-  _sts_total[_qp](1,0) = sts12_init; _sts_total[_qp](1,1) = sts22_init;
+  _sts_total[_qp] = 0.0;
+  // _sts_total[_qp](0,0) = sts11_init; _sts_total[_qp](0,1) = sts12_init;
+  // _sts_total[_qp](1,0) = sts12_init; _sts_total[_qp](1,1) = sts22_init;
 
   //I1
   _I1[_qp] = I1_init;

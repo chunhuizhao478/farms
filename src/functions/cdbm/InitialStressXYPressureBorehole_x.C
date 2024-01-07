@@ -35,13 +35,13 @@ InitialStressXYPressureBorehole_x::value(Real t, const Point & p) const
 
   //pressure magnitude as function of time
   Real p_l = 0.0;
-  Real rate = 1e6;
+  Real rate = 10e6;
   
   //assume linearly ramp up
-  p_l = rate * t;
+  p_l = 100e6 + rate * t;
 
   //set & check threshold 
-  Real threshold = 10e6; //10% of mean stress maximum
+  Real threshold = 200e6; 
   
   if ( p_l > threshold ){
     p_l = threshold;
