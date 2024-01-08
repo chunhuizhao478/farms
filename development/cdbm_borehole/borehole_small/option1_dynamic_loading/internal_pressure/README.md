@@ -1,0 +1,1 @@
+dynamic simulation - apply internal pressure, define initial eigenstrain field

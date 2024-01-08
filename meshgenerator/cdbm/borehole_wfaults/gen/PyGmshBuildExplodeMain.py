@@ -41,10 +41,10 @@ case_flag = "2D-Cluster-Well"
 radius = None
 
 # First Step Mesh Size 
-lc1 = 400
+lc1 = 150
 
 # Second Step Mesh Size
-lc2 = 25
+lc2 = 10
 
 if case_flag == "2D-Cluster":
     #list_cornerptrs: list of corner ptrs coordinates [x1, y1, x2, y2, x3, y3, x4, y4]
@@ -55,14 +55,14 @@ if case_flag == "2D-Cluster":
     list_circleptrs_2nd = None
 
 elif case_flag == "2D-Cluster-Well":
-    list_cornerptrs = [-2500.0,-2500.0,
-                        2500.0,-2500.0,
-                        2500.0,2500.0,
-                       -2500.0,2500.0]
+    list_cornerptrs = [-1000.0,-1000.0,
+                        1000.0,-1000.0,
+                        1000.0,1000.0,
+                       -1000.0,1000.0]
     #well center coordinates
     center_x = 0.0; center_y = 0.0
     #well center radius
-    radius = 750.; radius_2nd = 750;
+    radius = 150.; radius_2nd = 150;
     ##generate points defines a circle (follow the sequence):  
     #Circle(1) = {ptr1 start on circle, center of circle, ptr2 end on circle}
     list_circleptrs = [ center_x - radius, center_y -   0,
@@ -77,8 +77,8 @@ elif case_flag == "2D-Cluster-Well":
                             center_x + radius_2nd, center_y +   0]
 
 # Region of Multifaults
-dist_verticalbc = 2000
-dist_lateralbc = 2000
+dist_verticalbc = 800
+dist_lateralbc = 800
 
 # Meshing Algorithm
 num_alg_meshing = 5

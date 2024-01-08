@@ -540,6 +540,8 @@ def meshio_save_network_info(file_path1,
 
                     #update count
                     mat_surf1_connect_count += 1
+                
+                #hardcode
 
                 #save this element all coordinates
                 mat_surf1_triacoordall[mat_surf1_tria_count, 0] = coord_x_i[0]
@@ -633,6 +635,9 @@ def meshio_save_network_info(file_path1,
 
         #save points
         mat_ptrs_additional["pseudo_circle"] = arr_circlebe
+
+        #check and remove elements that will be arc (not line)
+        # mat_surf_triacoordall[:,0:2]
 
         # ## for outer faults boundary ##
         # # Computing the alpha shape
@@ -1056,7 +1061,9 @@ def gmsh_add_elems_2nd(mat_connect_corner,
 
     print("finish adding " + str(np.shape(mat_connect_corner)[0]) + " edge elements & surface")
 
-    track_tags = []
+    #-----------------------------------------------------------------------------------------------------------------------------------------#
+
+    track_arc_related_inds = []
 
     #if it is a circle arc element, do not use addLine, use addCircleArc
     ptr_center = gmsh.model.occ.addPoint(0.0,0.0,0.0,lc2) #always be the center point (0,0)
@@ -1066,48 +1073,56 @@ def gmsh_add_elems_2nd(mat_connect_corner,
 
         #need to find duplicates in this part ......
 
+        flag_arc_related = False
+
         tria_elem_data = mat_connect_lineendptrs[tria_elem_ind,:]
 
         if tria_elem_data[0] in additional_mats["pseudo_circle_gmshptrs_connect"] and tria_elem_data[1] in additional_mats["pseudo_circle_gmshptrs_connect"]:
-            continue
-        else:
-            elem_k1 = gmsh.model.occ.addLine(tria_elem_data[0],tria_elem_data[1])
+            flag_arc_related = True
 
         if tria_elem_data[2] in additional_mats["pseudo_circle_gmshptrs_connect"] and tria_elem_data[3] in additional_mats["pseudo_circle_gmshptrs_connect"]:
-            continue
-        else:
-            elem_k2 = gmsh.model.occ.addLine(tria_elem_data[2],tria_elem_data[3])
+            flag_arc_related = True
 
         if tria_elem_data[4] in additional_mats["pseudo_circle_gmshptrs_connect"] and tria_elem_data[5] in additional_mats["pseudo_circle_gmshptrs_connect"]:
-            continue
-        else:
+            flag_arc_related = True
+        
+        if flag_arc_related == False:
+
+            elem_k1 = gmsh.model.occ.addLine(tria_elem_data[0],tria_elem_data[1])
+            elem_k2 = gmsh.model.occ.addLine(tria_elem_data[2],tria_elem_data[3])
             elem_k3 = gmsh.model.occ.addLine(tria_elem_data[4],tria_elem_data[5])
 
-        arr_elem_trialoop[tria_elem_ind, 0] = elem_k1
-        arr_elem_trialoop[tria_elem_ind, 1] = elem_k2
-        arr_elem_trialoop[tria_elem_ind, 2] = elem_k3
+            arr_elem_trialoop[tria_elem_ind, 0] = elem_k1
+            arr_elem_trialoop[tria_elem_ind, 1] = elem_k2
+            arr_elem_trialoop[tria_elem_ind, 2] = elem_k3
+        
+    #arc list
+    arc_looplist = []
 
-        track_tags.append([tria_elem_data[0],tria_elem_data[1],elem_k1])
-        track_tags.append([tria_elem_data[2],tria_elem_data[3],elem_k2])
-        track_tags.append([tria_elem_data[4],tria_elem_data[5],elem_k3])
+    #add arc
+    for arc_i in range(np.shape(additional_mats["pseudo_circle_gmshptrs_connect"])[0]):
 
+        #get ptr_index
+        ptr_i = additional_mats["pseudo_circle_gmshptrs_connect"][arc_i, 0]
+        ptr_j = additional_mats["pseudo_circle_gmshptrs_connect"][arc_i, 1]
 
-    #circle channel
-    pseudocircle_list = []
-    for elem_ind in range(np.shape(mat_surface_additional_lineloop["pseudocircle"])[0]):
-        pseudocircle_list.append(mat_surface_additional_lineloop["pseudocircle"][elem_ind,0])
+        #add arc
+        arc_k1 = gmsh.model.occ.addCircleArc(int(ptr_i),ptr_center,int(ptr_j))
 
+        #save
+        arc_looplist.append(arc_k1)
+    
     #inner pseudo circle loop
-    loop3 = gmsh.model.occ.addCurveLoop(pseudocircle_list) 
+    loop2 = gmsh.model.occ.addCurveLoop(arc_looplist) 
 
-    surf3 = gmsh.model.occ.addPlaneSurface([loop3],tag=12)
+    surf2 = gmsh.model.occ.addPlaneSurface([loop2],tag=12)
 
     #cut
-    diff1 = gmsh.model.occ.cut([(2,surf1)], [(2, surf3)],removeObject=True)
+    diff1 = gmsh.model.occ.cut([(2,surf1)], [(2, surf2)],removeObject=True)
 
-    gmsh.model.occ.removeAllDuplicates()
-    gmsh.model.occ.synchronize()
-    gmsh.fltk.run()
+    # gmsh.model.occ.removeAllDuplicates()
+    # gmsh.model.occ.synchronize()
+    # gmsh.fltk.run()
     # exit()
 
     #------------------------------------------------------------------------------------------------------------#
@@ -1124,16 +1139,17 @@ def gmsh_add_elems_2nd(mat_connect_corner,
     num_of_surfaces_nw = np.shape(arr_elem_trialoop)[0]
     for surface_ind in range(1,num_of_surfaces_nw): #43
 
-        # print(surface_ind,num_of_surfaces_nw)
-        
-        loopi = gmsh.model.occ.addCurveLoop([arr_elem_trialoop[surface_ind,0],
-                                             arr_elem_trialoop[surface_ind,1],       
-                                             arr_elem_trialoop[surface_ind,2]])
+        if np.sum(arr_elem_trialoop[surface_ind,:]) == 0:
+            continue
+        else:
+            loopi = gmsh.model.occ.addCurveLoop([arr_elem_trialoop[surface_ind,0],
+                                                arr_elem_trialoop[surface_ind,1],       
+                                                arr_elem_trialoop[surface_ind,2]])
 
-        surfi = gmsh.model.occ.addPlaneSurface([loopi])
+            surfi = gmsh.model.occ.addPlaneSurface([loopi])
 
-        #frag
-        fragi = gmsh.model.occ.fragment(fragi[1][0],[(2,surfi)])
+            #frag
+            fragi = gmsh.model.occ.fragment(fragi[1][0],[(2,surfi)])
     #------------------------------------------------------------------------------------------------------------#
 
     # entitydim1 = gmsh.model.occ.get_entities(1)
@@ -1141,7 +1157,7 @@ def gmsh_add_elems_2nd(mat_connect_corner,
     gmsh.model.occ.removeAllDuplicates()
     gmsh.model.occ.synchronize()
     gmsh.fltk.run()
-    exit()
+    # exit()
 
     return mat_surface_lineloop, arr_elem_corner, arr_elem_surf, arr_elem_trialoop, mat_surface_additional_lineloop, arr_elem_additional
 
