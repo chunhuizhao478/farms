@@ -21,6 +21,13 @@ SlipWeakeningMultifaultsBorehole::validParams()
   params.addRequiredCoupledVar("tria_area","area of triangle element along the faults");
   params.addRequiredParam<Real>("effec_sts_coeff", "biot coefficient");
   params.addRequiredCoupledVar("pressure","pressure");
+
+
+  //initial stress tensor
+  params.addCoupledVar("initial_stress_xx", 0, "stress tensor component passed from solution file");
+  params.addCoupledVar("initial_stress_xy", 0, "stress tensor component passed from solution file");
+  params.addCoupledVar("initial_stress_yy", 0, "stress tensor component passed from solution file");
+
   return params;
 }
 
@@ -48,7 +55,10 @@ SlipWeakeningMultifaultsBorehole::SlipWeakeningMultifaultsBorehole(const InputPa
     _tria_area(coupledValue("tria_area")),
     _tria_area_neighbor(coupledNeighborValue("tria_area")),
     _alpha(getParam<Real>("effec_sts_coeff")),
-    _pressure(coupledValue("pressure"))
+    _pressure(coupledValue("pressure")),
+    _initial_stress_xx(coupledValue("initial_stress_xx")),
+    _initial_stress_xy(coupledValue("initial_stress_xy")),
+    _initial_stress_yy(coupledValue("initial_stress_yy"))
 {
 }
 
@@ -169,6 +179,8 @@ SlipWeakeningMultifaultsBorehole::computeInterfaceTractionAndDerivatives()
 
    //Assign back traction in CZM
    RealVectorValue traction;
+
+   std::cout<<T2_o<<" "<<T1_o<<std::endl;
 
    traction(0) = T2+T2_o; 
    traction(1) = -T1+T1_o; 

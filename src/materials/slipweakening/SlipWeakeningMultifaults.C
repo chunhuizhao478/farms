@@ -51,6 +51,9 @@ SlipWeakeningMultifaults::SlipWeakeningMultifaults(const InputParameters & param
 void
 SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
 {   
+
+   std::cout<<"pass"<<std::endl;
+
    //Global Displacement Jump
    RealVectorValue displacement_jump_global(_disp_slipweakening_x[_qp]-_disp_slipweakening_neighbor_x[_qp],_disp_slipweakening_y[_qp]-_disp_slipweakening_neighbor_y[_qp]);
    

@@ -46,5 +46,10 @@ protected:
 
   Real _alpha;
   const VariableValue & _pressure;
+
+  //initial stress tensor
+  const VariableValue & _initial_stress_xx;
+  const VariableValue & _initial_stress_xy;
+  const VariableValue & _initial_stress_yy; 
  
 };

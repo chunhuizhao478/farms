@@ -589,6 +589,17 @@ ComputeDamageBreakageStressBorehole::setupInitial()
   Real sts12_init = stress_initial(0,1);
   Real sts22_init = stress_initial(1,1);
 
+  if ( _initial_stress_xx[_qp] != 0.0 && _initial_stress_xy[_qp] != 0.0 && _initial_stress_yy[_qp] != 0.0 ){
+    sts11_init = _initial_stress_xx[_qp];
+    sts12_init = _initial_stress_xy[_qp];
+    sts22_init = _initial_stress_yy[_qp];    
+  }
+  else{
+    sts11_init = stress_initial(0,0);
+    sts12_init = stress_initial(0,1);
+    sts22_init = stress_initial(1,1);
+  }
+
   // Real sts11_init = _initial_stress_xx[_qp];
   // Real sts12_init = _initial_stress_xy[_qp];
   // Real sts22_init = _initial_stress_yy[_qp];

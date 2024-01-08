@@ -126,7 +126,7 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
   else{
 
     //execute before system solve
-    if (_fe_problem.getCurrentExecuteOnFlag()=="LINEAR"){
+    //if (_fe_problem.getCurrentExecuteOnFlag()=="LINEAR"){
       
       /* 
       compute alpha and B parameters
@@ -427,7 +427,7 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       // }
       //-----------------------------------DEBUG-----------------------------------//
     
-    }
+    //}
 
   }
 }

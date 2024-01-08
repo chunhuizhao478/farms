@@ -52,6 +52,8 @@
               0 1 0'
   new_boundary = 'left right bottom top'
 []
+use_displaced_mesh = true
+displacements = 'disp_x disp_y'
 []
 
 [GlobalParams]
@@ -440,12 +442,12 @@
 [Kernels]
   [./inertia_x]
     type = InertialForce
-    use_displaced_mesh = false
+    use_displaced_mesh = true
     variable = disp_x
   []
   [./inertia_y]
     type = InertialForce
-    use_displaced_mesh = false
+    use_displaced_mesh = true
     variable = disp_y
   []
   [./Reactionx]
@@ -546,7 +548,7 @@
   []
   #pressure
   [func_pressure]
-    type = InitialStressXYPressureBorehole
+    type = InitialStressXYPressure
   []
 []
 
