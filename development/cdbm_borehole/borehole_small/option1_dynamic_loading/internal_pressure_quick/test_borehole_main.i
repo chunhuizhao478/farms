@@ -320,10 +320,10 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  #
-  [arctanyx]
+  #arctanyx
+  [./arctanyx]
     order = FIRST
-    family = LAGRANGE
+    family = LAGRANGE    
   []
 []
 
@@ -341,11 +341,23 @@
 []
 
 [AuxKernels]
-  [arctanyx]
-      type = CompArctanyx
-      variable = arctanyx
-      execute_on = 'INITIAL'
+  [Arctanyx]
+    type = CompArctanyx
+    variable = arctanyx
+    execute_on = 'INITIAL'
   []
+  [Vel_x]
+    type = CompVarRate
+    variable = vel_slipweakening_x
+    coupled = disp_x
+    execute_on = 'TIMESTEP_BEGIN'
+  []
+  [Vel_y]
+      type = CompVarRate
+      variable = vel_slipweakening_y
+      coupled = disp_y
+      execute_on = 'TIMESTEP_BEGIN'
+  [] 
   [get_xi_old]
       type = MaterialRealAux
       property = xi
@@ -376,21 +388,13 @@
       variable = gamma_old
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
-  #define shear strain material property (elastic) inside damage stress 
-  #and compute its rate using "MaterialRateRealAux"
-  [get_shear_strain_rate]
-      type = MaterialRateRealAux
-      property = principal_strain
-      variable = mechanical_strain_rate
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-  []
-  #fault length
-  [fault_len]
-      type = ConstantAux
-      variable = nodal_area
-      value = 25
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-  []
+  # #fault length
+  # [fault_len]
+  #     type = ConstantAux
+  #     variable = nodal_area
+  #     value = 10
+  #     execute_on = 'INITIAL TIMESTEP_BEGIN'
+  # []
 []
 
 [Kernels]
@@ -445,10 +449,10 @@
 [Functions]
   #pressure
   [func_pressure_x]
-    type = InitialStressXYPressureBorehole_x
+    type = InitialStressXYPressureBorehole_x_fast
   []
   [func_pressure_y]
-    type = InitialStressXYPressureBorehole_y
+    type = InitialStressXYPressureBorehole_y_fast
   []
   [func_stress_xx]
     type = ConstantFunction
@@ -460,7 +464,7 @@
   [../]
   [func_stress_yy]
     type = ConstantFunction
-    value = -100e6
+    value = -40e6
   [../]
   [func_initial_stress_00]
     type = ConstantFunction
@@ -500,27 +504,15 @@
 []
 
 [BCs]
-  [Pressure_left_x]
+  [Pressure_borehole_x]
     type = Pressure
-    boundary = left
+    boundary = borehole
     function = func_pressure_x
     variable = disp_x
   []
-  [Pressure_right_x]
+  [Pressure_borehole_y]
     type = Pressure
-    boundary = right
-    function = func_pressure_x
-    variable = disp_x
-  []
-  [Pressure_top_y]
-    type = Pressure
-    boundary = top
-    function = func_pressure_y
-    variable = disp_y
-  []
-  [Pressure_bottom_y]
-    type = Pressure
-    boundary = bottom
+    boundary = borehole
     function = func_pressure_y
     variable = disp_y
   []

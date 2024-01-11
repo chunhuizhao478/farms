@@ -462,7 +462,7 @@
   [../]
   [func_stress_yy]
     type = ConstantFunction
-    value = -40e6
+    value = -100e6
   [../]
   [func_initial_stress_00]
     type = ConstantFunction
