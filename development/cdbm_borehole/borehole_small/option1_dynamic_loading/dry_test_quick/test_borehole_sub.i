@@ -92,7 +92,7 @@
 
 [GlobalParams]
   
-  ##----continuum damage breakage model----##
+    ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
   lambda_o = 3.204e10
     
@@ -100,10 +100,10 @@
   shear_modulus_o = 3.204e10
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.8
+  xi_0 = -0.6
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.9
+  xi_d = -0.6
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -119,7 +119,7 @@
   # C_d_min = 10
 
   #if option 2, use Cd_constant
-  Cd_constant = 1e6
+  Cd_constant = 1e4
 
   #power-law correction
   #index
@@ -145,7 +145,7 @@
   beta_width = 0.03 #1e-3
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.8248
+  xi_1 = 0.936229
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -155,12 +155,12 @@
   #Note: "computeAlphaCr" needs to change every time the related parameters changed
   #--------------------------------------------------------------------------------#
 
-  #coefficients
+  # #coefficients
   # chi = 0.75
-  a0 = 7.4289e9
-  a1 = -2.214e10
-  a2 = 2.0929e10
-  a3 = -6.0672e9
+  a0 = 6.37464e+09
+  a1 = -2.63965e+10
+  a2 = 3.45711e+10
+  a3 = -1.45789e+10
 
   #diffusion coefficient #for structural stress coupling
   D = 0

@@ -101,7 +101,7 @@
   
   #damping ratio
   q = 0.2
-  
+
   #characteristic length (m)
   # Dc = 0.4
 
@@ -113,10 +113,10 @@
   shear_modulus_o = 3.204e10
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.8
+  xi_0 = -0.6
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.9
+  xi_d = -0.6
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -142,10 +142,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 3.7150e10
+  gamma_damaged_r = 4.0464e+10
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.8248
+  xi_1 = 0.936229
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -157,10 +157,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 7.4289e9
-  a1 = -2.214e10
-  a2 = 2.0929e10
-  a3 = -6.0672e9
+  a0 = 6.37464e+09
+  a1 = -2.63965e+10
+  a2 = 3.45711e+10
+  a3 = -1.45789e+10
 
   #diffusion coefficient #for structural stress coupling
   D = 0
@@ -341,6 +341,30 @@
 []
 
 [AuxKernels]
+  [Displacment_x]
+    type = ProjectionAux
+    variable = disp_slipweakening_x
+    v = disp_x
+    execute_on = 'TIMESTEP_BEGIN'
+  []
+  [Displacement_y]
+    type = ProjectionAux
+    variable = disp_slipweakening_y
+    v = disp_y
+    execute_on = 'TIMESTEP_BEGIN'
+  []
+  [Vel_x]
+      type = CompVarRate
+      variable = vel_slipweakening_x
+      coupled = disp_x
+      execute_on = 'TIMESTEP_BEGIN'
+  []
+  [Vel_y]
+      type = CompVarRate
+      variable = vel_slipweakening_y
+      coupled = disp_y
+      execute_on = 'TIMESTEP_BEGIN'
+  []
   [arctanyx]
       type = CompArctanyx
       variable = arctanyx
@@ -451,16 +475,19 @@
     type = InitialStressXYPressureBorehole_y
   []
   [func_stress_xx]
-    type = ConstantFunction
-    value = -200e6
+    type = SolutionFunction
+    solution = load_stress_xx
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
   [../]
   [func_stress_xy]
-    type = ConstantFunction
-    value = 0
+    type = SolutionFunction
+    solution = load_stress_xy
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
   [../]
   [func_stress_yy]
-    type = ConstantFunction
-    value = -100e6
+    type = SolutionFunction
+    solution = load_stress_yy
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
   [../]
   [func_initial_stress_00]
     type = ConstantFunction
@@ -499,19 +526,46 @@
   []
 []
 
+[UserObjects]
+  [load_stress_xx]
+    type = SolutionUserObject
+    mesh = ./static_solve/borehole_static_solve_out.e
+    system_variables = stress_xx_saved
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    timestep = LATEST
+    force_preaux = true
+  []
+  [load_stress_xy]
+    type = SolutionUserObject
+    mesh = ./static_solve/borehole_static_solve_out.e
+    system_variables = stress_xy_saved
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    timestep = LATEST
+    force_preaux = true
+  []
+  [load_stress_yy]
+    type = SolutionUserObject
+    mesh = ./static_solve/borehole_static_solve_out.e
+    system_variables = stress_yy_saved
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    timestep = LATEST
+    force_preaux = true
+  []
+[]
+
 [BCs]
-  [Pressure_left_x]
-    type = Pressure
-    boundary = left
-    function = func_pressure_x
-    variable = disp_x
-  []
-  [Pressure_right_x]
-    type = Pressure
-    boundary = right
-    function = func_pressure_x
-    variable = disp_x
-  []
+  # [Pressure_left_x]
+  #   type = Pressure
+  #   boundary = left
+  #   function = func_pressure_x
+  #   variable = disp_x
+  # []
+  # [Pressure_right_x]
+  #   type = Pressure
+  #   boundary = right
+  #   function = func_pressure_x
+  #   variable = disp_x
+  # []
   [Pressure_top_y]
     type = Pressure
     boundary = top
