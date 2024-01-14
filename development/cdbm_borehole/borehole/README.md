@@ -1,1 +1,0 @@
-borehole problem, use Rudinick analytical solution for pressure distribution

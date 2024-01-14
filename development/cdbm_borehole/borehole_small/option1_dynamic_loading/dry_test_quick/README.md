@@ -1,0 +1,1 @@
+Acoustic Emission during Borehole Breakout, Choens, R. C.; Ingraham, M. D.; Lee, M. Y.; Yoon, H.; and Dewers, T. A.
