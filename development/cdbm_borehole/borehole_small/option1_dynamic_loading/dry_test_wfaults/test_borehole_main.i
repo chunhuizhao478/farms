@@ -521,6 +521,14 @@
   [func_pressure_y]
     type = InitialStressXYPressureBorehole_y
   []
+  [func_disp_top]
+    type = ParsedFunction
+    expression = '-3.33e-6 * t'
+  []
+  [func_disp_bot]
+    type = ParsedFunction
+    expression = '3.33e-6 * t'
+  []
   [func_stress_xx]
     type = SolutionFunction
     solution = load_stress_xx
@@ -540,9 +548,6 @@
     type = ConstantFunction
     value = 0
   []
-  [func_frank_case]
-    type = InitialStressXYfrankcase
-  []
 []
 
 [Executioner]
@@ -559,7 +564,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 200
+  interval = 2000
   [sample_snapshots]
     type = Exodus
     interval = 2000
@@ -622,16 +627,28 @@
   #   function = func_pressure_x
   #   variable = disp_x
   # []
-  [Pressure_top_y]
-    type = Pressure
+  # [Pressure_top_y]
+  #   type = Pressure
+  #   boundary = top
+  #   function = func_pressure_y
+  #   variable = disp_y
+  # []
+  # [Pressure_bottom_y]
+  #   type = Pressure
+  #   boundary = bottom
+  #   function = func_pressure_y
+  #   variable = disp_y
+  # []
+  [disp_top_y]
+    type = FunctionDirichletBC
+    function = func_disp_top
     boundary = top
-    function = func_pressure_y
     variable = disp_y
   []
-  [Pressure_bottom_y]
-    type = Pressure
+  [disp_bot_y]
+    type = FunctionDirichletBC
+    function = func_disp_bot
     boundary = bottom
-    function = func_pressure_y
     variable = disp_y
   []
   [./dashpot_top_x]
