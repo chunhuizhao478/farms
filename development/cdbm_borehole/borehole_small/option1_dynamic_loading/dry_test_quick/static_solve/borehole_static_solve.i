@@ -725,25 +725,25 @@
     type = Pressure
     boundary = top
     variable = disp_y
-    factor = 17.2e6
+    factor = 1e6
   []
   [Pressure_bottom]
     type = Pressure
     boundary = bottom
     variable = disp_y
-    factor = 17.2e6
+    factor = 1e6
   []
   [Pressure_left]
     type = Pressure
     boundary = left
     variable = disp_x
-    factor = 17.2e6
+    factor = 1e6
   []
   [Pressure_right]
     type = Pressure
     boundary = right
     variable = disp_x
-    factor = 17.2e6
+    factor = 1e6
   []
   [./fix_cptr1_x]
     type = DirichletBC

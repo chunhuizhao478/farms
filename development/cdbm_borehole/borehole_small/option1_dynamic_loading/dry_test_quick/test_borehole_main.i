@@ -469,7 +469,7 @@
 [Functions]
   #pressure
   [func_pressure_x]
-    type = InitialStressXYPressureBorehole_x
+    type = InitialStressXYPressureLateralBC
   []
   [func_pressure_y]
     type = InitialStressXYPressureVerticalBC
@@ -517,7 +517,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 2000
+  interval = 400
   [sample_snapshots]
     type = Exodus
     interval = 2000
@@ -562,18 +562,18 @@
 []
 
 [BCs]
-  # [Pressure_left_x]
-  #   type = Pressure
-  #   boundary = left
-  #   function = func_pressure_x
-  #   variable = disp_x
-  # []
-  # [Pressure_right_x]
-  #   type = Pressure
-  #   boundary = right
-  #   function = func_pressure_x
-  #   variable = disp_x
-  # []
+  [Pressure_left_x]
+    type = Pressure
+    boundary = left
+    function = func_pressure_x
+    variable = disp_x
+  []
+  [Pressure_right_x]
+    type = Pressure
+    boundary = right
+    function = func_pressure_x
+    variable = disp_x
+  []
   [Pressure_top_y]
     type = Pressure
     boundary = top
