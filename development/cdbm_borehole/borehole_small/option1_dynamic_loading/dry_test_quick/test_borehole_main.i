@@ -472,16 +472,16 @@
     type = InitialStressXYPressureBorehole_x
   []
   [func_pressure_y]
-    type = InitialStressXYPressureBorehole_y
+    type = InitialStressXYPressureVerticalBC
   []
-  [func_disp_top]
-    type = ParsedFunction
-    expression = '-3.33e-6 * t'
-  []
-  [func_disp_bot]
-    type = ParsedFunction
-    expression = '3.33e-6 * t'
-  []
+  # [func_disp_top]
+  #   type = ParsedFunction
+  #   expression = '-3.33e-6 * t'
+  # []
+  # [func_disp_bot]
+  #   type = ParsedFunction
+  #   expression = '3.33e-6 * t'
+  # []
   [func_stress_xx]
     type = SolutionFunction
     solution = load_stress_xx
@@ -574,30 +574,30 @@
   #   function = func_pressure_x
   #   variable = disp_x
   # []
-  # [Pressure_top_y]
-  #   type = Pressure
-  #   boundary = top
-  #   function = func_pressure_y
-  #   variable = disp_y
-  # []
-  # [Pressure_bottom_y]
-  #   type = Pressure
-  #   boundary = bottom
-  #   function = func_pressure_y
-  #   variable = disp_y
-  # []
-  [disp_top_y]
-    type = FunctionDirichletBC
-    function = func_disp_top
+  [Pressure_top_y]
+    type = Pressure
     boundary = top
+    function = func_pressure_y
     variable = disp_y
   []
-  [disp_bot_y]
-    type = FunctionDirichletBC
-    function = func_disp_bot
+  [Pressure_bottom_y]
+    type = Pressure
     boundary = bottom
+    function = func_pressure_y
     variable = disp_y
   []
+  # [disp_top_y]
+  #   type = FunctionDirichletBC
+  #   function = func_disp_top
+  #   boundary = top
+  #   variable = disp_y
+  # []
+  # [disp_bot_y]
+  #   type = FunctionDirichletBC
+  #   function = func_disp_bot
+  #   boundary = bottom
+  #   variable = disp_y
+  # []
   [./dashpot_top_x]
     type = NonReflectDashpotBC
     component = 0
