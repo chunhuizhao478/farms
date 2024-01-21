@@ -411,8 +411,7 @@
   [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStressv3
-        option = 1
+        type = ComputeDamageBreakageStressv4
         alpha_in = alpha_in_dummy
         B_in = B_in_dummy
         alpha_grad_x = alpha_grad_x
