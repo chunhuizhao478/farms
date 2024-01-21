@@ -610,7 +610,7 @@ ComputeDamageBreakageStressv4::setupInitial()
   //-------------------------------------------------------------------------------------------------------------------------------//
 
   //Compute xi, I1, I2
-  Real I1_init = eps11_init + eps22_init;
+  Real I1_init = eps11_init + eps22_init + eps33_init;
   Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + 2 * eps12_init * eps12_init + eps33_init * eps33_init;
   Real xi_init = I1_init / sqrt( I2_init );
 
