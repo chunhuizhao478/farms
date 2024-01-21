@@ -1,12 +1,12 @@
 //25m mesh generation
-lc = 200;
+lc = 100;
 
-Point(1) = {   5700,   -3000, 0, lc };
-Point(2) = {   5700,    3000, 0, lc };
-Point(3) = {  -5700,    3000, 0, lc };
-Point(4) = {  -5700,   -3000, 0, lc };
-Point(5) = {  -5700,       0, 0, lc };
-Point(6) = {   5700,       0, 0, lc };
+Point(1) = {   10000,   -2000, 0, lc };
+Point(2) = {   10000,    2000, 0, lc };
+Point(3) = {  -10000,    2000, 0, lc };
+Point(4) = {  -10000,   -2000, 0, lc };
+Point(5) = {  -10000,       0, 0, lc };
+Point(6) = {   10000,       0, 0, lc };
 
 Line(1) = {1,6};
 Line(2) = {6,2};
@@ -23,7 +23,7 @@ Line Loop(3) = {2,3,4,7};
 Plane Surface(4) = {3};
 
 Field[1] = Box;
-Field[1].VIn = lc / 8;
+Field[1].VIn = lc / 4;
 Field[1].VOut = lc;
 Field[1].XMin =  -20000;
 Field[1].XMax =   20000;
