@@ -222,6 +222,10 @@ def RetrieveCZMElementIDs(exodus_file_path,
 
         #loop over element
         for elem_ind in range(num_elem):
+
+            #track progress
+            print("(Sub) elemblock_ind: ", elem_ind)
+            print("(Sub) Progress: ", elem_ind/(num_elem)*100,"%")
         
             #get connectivity of current element
             elem_connect_i = tria_elem_connect[elem_ind,:]
@@ -1183,16 +1187,18 @@ def LinePlotParamVal2D(exodus_file_path,
                         plt.title("Splay Fault Normal Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
                     plt.savefig(save_folder_output_png_file_path + "/normaltraction_"+str(time_ind)+".png",bbox_inches = 'tight')
                 elif plot_var_name_i == "traction_y" and additional_flags == None:
-                    if fault_name == "mf180":
-                        plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_normal_sts[fault_name] ,'b*-',linewidth=3.0)
-                        plt.ylim([dict_ini_normal_sts[fault_name]-40,dict_ini_normal_sts[fault_name]+40])
-                    if fault_name == "mf180":
-                        plt.title("Main Fault Normal Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
-                    plt.xlabel("Arc Length (m)",fontsize=20)
-                    plt.ylabel("Normal Traction (MPa)",fontsize=20)
-                    plt.xticks(fontsize=15)
-                    plt.yticks(fontsize=15)
-                    plt.savefig(save_folder_output_png_file_path + "/normaltraction_"+str(time_ind)+".png",bbox_inches = 'tight')
+                    # if fault_name == "mf180":
+                    #     plt.plot(sorted_arr_czm_elem_arclength_i_all,sorted_arr_czm_param_i_all/1e6 + dict_ini_normal_sts[fault_name] ,'b*-',linewidth=3.0)
+                    #     plt.ylim([dict_ini_normal_sts[fault_name]-40,dict_ini_normal_sts[fault_name]+40])
+                    # if fault_name == "mf180":
+                    #     plt.title("Main Fault Normal Traction at Time Step "+str(time_i)+" s",fontsize=20) #name needed to be generalized
+                    # plt.xlabel("Arc Length (m)",fontsize=20)
+                    # plt.ylabel("Normal Traction (MPa)",fontsize=20)
+                    # plt.xticks(fontsize=15)
+                    # plt.yticks(fontsize=15)
+                    # plt.savefig(save_folder_output_png_file_path + "/normaltraction_"+str(time_ind)+".png",bbox_inches = 'tight')
+                    np.savetxt("./outputs/traction_y/xcoord.txt",sorted_arr_czm_elem_arclength_i_all)
+                    np.savetxt("./outputs/traction_y/traction_y_"+str(time_ind)+".txt",sorted_arr_czm_param_i_all)
                 #plt.show()
                 #front position over time
                 #[[[IMPORTANT: here the elements are all within the same block id, things are different if complex network fault involved]]]
@@ -1404,7 +1410,7 @@ if __name__ == "__main__":
     mf180_ptrs_data_file_path = "./ptrsdata/mf180_ptrs_data.txt"
 
     # exodus_file_path = "./files/test_planarfault_main_out_Cd1e7.e"
-    exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/test_planarfault_main_out_linearelastic.e"
+    exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/s02/uniform/test_planarfault_main_out.e"
 
     #file path (save)
     mf180_save_folder_output_file_path = "./outputs"
@@ -1424,11 +1430,12 @@ if __name__ == "__main__":
     # plot_var_name = ['tangent_jump_rate', 'tangent_traction','tangent_jump']
     # plot_var_name = ['tangent_traction']
     # plot_var_name = ["normal_jump_rate", "normal_jump", "normal_traction"]
+    plot_var_name = ["tangent_jump"]
     # plot_var_name = ["tangent_jump_rate"]
     # plot_var_name = ["jump_x"]
     # plot_var_name = ["traction_x"]
     # plot_var_name = ["traction_y"]
-    plot_var_name = ["traction_x"]
+    # plot_var_name = ["traction_x"]
     additional_files = {"mf180" : [(0,0),(10000,0),(0,0),(-10000,0)]}
     
     # additional_flags = "front_position"
@@ -1450,7 +1457,7 @@ if __name__ == "__main__":
 
     dict_master_locs = {"mf180" : master_locs_mf180}
 
-    run_decode_retrieve_flag = True
+    run_decode_retrieve_flag = False
 
     if run_decode_retrieve_flag == True:
         for fault_name_index in range(len(list_fault_name)):

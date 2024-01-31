@@ -2,7 +2,7 @@ clear all; close all; clc;
 load("vik.mat");
 %postprocess
 %number of steps
-num_steps = 21;
+num_steps = 20;
 data_0 = readmatrix("outputs/tangent_jump_rate/tangent_jump_rate_0.txt");
 %save data
 arr_sliprate = zeros(size(data_0,1),num_steps);
@@ -12,9 +12,9 @@ arr_sliprate_refine = zeros(size(data_0,1),num_steps);
 arr_slip_refine = zeros(size(data_0,1),num_steps);
 %save traction
 arr_traction = zeros(size(data_0,1),num_steps);
-%% xcoord
+% xcoord
 arr_xcoord = readmatrix("outputs/tangent_jump_rate/xcoord.txt");
-%% traction
+%% traction x
 for i = 1 : num_steps
     %read file
     data_i = readmatrix("outputs/traction_x/traction_x_"+string(i)+".txt");
@@ -23,6 +23,18 @@ for i = 1 : num_steps
 end
 figure();
 for i = 21 : num_steps
+    plot(arr_xcoord./10^3,arr_traction(:,i),'r-','LineWidth',1.5); hold on;
+end
+ylim([10,130])
+%% traction y
+for i = 1 : num_steps
+    %read file
+    data_i = readmatrix("outputs/traction_y/traction_y_"+string(i)+".txt");
+    %save
+    arr_traction(:,i) = data_i;
+end
+figure();
+for i = 21
     plot(arr_xcoord./10^3,arr_traction(:,i),'r-','LineWidth',1.5); hold on;
 end
 ylim([10,130])
@@ -47,13 +59,13 @@ figure(1);
 % for i = 1 : num_steps
 %     plot(arr_xcoord./10^3,arr_sliprate(:,i),'color',cm(i,:)); hold on;
 % end
-for i = 1 : num_steps
+for i = 11
     plot(arr_xcoord./10^3,arr_sliprate(:,i),'r-','LineWidth',1.5); hold on;
-%     plot(arr_xcoord./10^3,arr_sliprate_refine(:,i),'b-','LineWidth',1.5); hold on;
+%     plot(arr_xcoord./10^3,arr_sliprate_refine(:,i),'r-','LineWidth',1.5); hold on;
 end
 xlabel("Distance along fault, x(km)",'FontSize',15)
 ylabel("Slip rate (m/s)",'FontSize',15)
-legend("Refine","Uniform")
+% legend("Refine","Uniform")
 xlim([-10,10])
 ylim([0,50])
 
@@ -90,7 +102,7 @@ for i = 1 : num_steps
 end
 xlabel("Distance along fault, x(km)",'FontSize',15)
 ylabel("Slip (m)",'FontSize',15)
-legend("Refine","Uniform")
+% legend("Refine","Uniform")
 xlim([-10,10])
 ylim([0,10])
 
