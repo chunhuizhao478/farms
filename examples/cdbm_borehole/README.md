@@ -1,0 +1,1 @@
+Reference: Numerical investigation of borehole breakout and rock spalling based on strain energy criteria

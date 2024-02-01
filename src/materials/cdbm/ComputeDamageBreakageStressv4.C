@@ -578,7 +578,8 @@ ComputeDamageBreakageStressv4::setupInitial()
   Real sts11_init = stress_initial(0,0);
   Real sts12_init = stress_initial(0,1);
   Real sts22_init = stress_initial(1,1);
-  Real sts33_init = stress_initial(2,2);
+  //Real sts33_init = stress_initial(2,2);
+  Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init );
 
   //Note the presence of sts33 in plane strain problem
   //Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init );
@@ -600,7 +601,6 @@ ComputeDamageBreakageStressv4::setupInitial()
   //Compute strain components using Hooke's Law
   Real eps11_init = 1.0 / youngs_modulus_o * ( sts11_init - poisson_ratio_o * ( sts22_init + sts33_init ) );
   Real eps22_init = 1.0 / youngs_modulus_o * ( sts22_init - poisson_ratio_o * ( sts11_init + sts33_init ) ); 
-  Real eps33_init = 1.0 / youngs_modulus_o * ( sts33_init - poisson_ratio_o * ( sts11_init + sts22_init ) ); 
   Real eps12_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts12_init                       );
 
   //-------------------------------------------------------------------------------------------------------------------------------//
@@ -610,19 +610,19 @@ ComputeDamageBreakageStressv4::setupInitial()
   //-------------------------------------------------------------------------------------------------------------------------------//
 
   //Compute xi, I1, I2
-  Real I1_init = eps11_init + eps22_init + eps33_init;
-  Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + 2 * eps12_init * eps12_init + eps33_init * eps33_init;
+  Real I1_init = eps11_init + eps22_init;
+  Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + 2 * eps12_init * eps12_init;
   Real xi_init = I1_init / sqrt( I2_init );
 
   //Compute eps
   //eps_p
   _eps_p[_qp](0,0) = 0.0; _eps_p[_qp](0,1) = 0.0; 
   _eps_p[_qp](1,0) = 0.0; _eps_p[_qp](1,1) = 0.0;
-  _eps_p[_qp](2,2) = -1 * eps33_init;
+  _eps_p[_qp](2,2) = 0.0;
   //eps_e
   _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; 
   _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init;
-  _eps_e[_qp](2,2) = eps33_init;
+  _eps_e[_qp](2,2) = 0.0;
   //eps_total
   _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init;
   _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init;

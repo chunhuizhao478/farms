@@ -34,14 +34,14 @@ InitialStressXYPressureLateralBC::value(Real t, const Point & p) const
   Real dl = std::sqrt(dx*dx+dy*dy);
 
   //pressure magnitude as function of time
-  Real p_l = 16.2e6;
-  Real rate = 16.2e6;
+  Real p_l = 0;
+  Real rate = 15e6 / (200*5.9e-8);
   
   //assume linearly ramp up
   p_l = rate * t;
 
   //set & check threshold 
-  Real threshold = 16.2e6;
+  Real threshold = 15e6;
   
   if ( p_l > threshold ){
     p_l = threshold;

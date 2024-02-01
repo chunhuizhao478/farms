@@ -4,9 +4,9 @@ it consists of two steps:
 
 (1) static solve: hydrostatic loading upto confinement pressure
 
-(2) axial loading: axial direction displacement control
+(2) pressure loading
 
-reference: Choens, R. C., Lee, M. Y., Ingraham, M. D., Dewers, T. A., & Herrick, C. G. (2019). Experimental studies of anisotropy on borehole breakouts in Mancos Shale. Journal of Geophysical Research: Solid Earth, 124, 4119–4141. https://doi.org/10.1029/2018JB017090
+reference: Xiang, Z., Moon, T., Oh, J., Li, X., Si, G., & Canbulat, I. (2023). Numerical investigation of borehole breakout and rock spalling based on strain energy criteria. International Journal of Rock Mechanics and Mining Sciences, 171, 105587.
 
-Jan 13th, 2024
+Jan 30th, 2024
 

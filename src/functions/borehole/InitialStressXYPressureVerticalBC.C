@@ -35,11 +35,11 @@ InitialStressXYPressureVerticalBC::value(Real t, const Point & p) const
 
   //pressure magnitude as function of time
   Real p_l = 0.0;
-  Real rate1 = 16.2e6; //1s
-  Real rate2 = 17.5e6; //2s
+  Real rate1 = 15e6 / (200*5.9e-8); //200 time steps
+  Real rate2 = 35e6 / (400*5.9e-8); //400 time steps
   
   //assume linearly ramp up
-  Real t1 = 1;
+  Real t1 = 200*5.9e-8;
   if ( t < t1 ){
     p_l = rate1 * t;
   }
@@ -48,7 +48,7 @@ InitialStressXYPressureVerticalBC::value(Real t, const Point & p) const
   }
 
   //set & check threshold 
-  Real threshold = 52.2e6; 
+  Real threshold = 50e6; 
   
   if ( p_l > threshold ){
     p_l = threshold;
