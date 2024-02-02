@@ -23,15 +23,6 @@ InitialStressXYPressureLateralBC::InitialStressXYPressureLateralBC(const InputPa
 Real
 InitialStressXYPressureLateralBC::value(Real t, const Point & p) const
 {
-  
-  //get coordinate of current point
-  Real x_coord = p(0);
-  Real y_coord = p(1);
-
-  //compute ratio
-  Real dx = x_coord - 0.0;
-  Real dy = y_coord - 0.0;
-  Real dl = std::sqrt(dx*dx+dy*dy);
 
   //pressure magnitude as function of time
   Real p_l = 0;

@@ -23,20 +23,11 @@ InitialStressXYPressureVerticalBC::InitialStressXYPressureVerticalBC(const Input
 Real
 InitialStressXYPressureVerticalBC::value(Real t, const Point & p) const
 {
-  
-  //get coordinate of current point
-  Real x_coord = p(0);
-  Real y_coord = p(1);
-
-  //compute ratio
-  Real dx = x_coord - 0.0;
-  Real dy = y_coord - 0.0;
-  Real dl = std::sqrt(dx*dx+dy*dy);
 
   //pressure magnitude as function of time
   Real p_l = 0.0;
   Real rate1 = 15e6 / (200*5.9e-8); //200 time steps
-  Real rate2 = 35e6 / (400*5.9e-8); //400 time steps
+  Real rate2 = 55e6 / (400*5.9e-8); //400 time steps
   
   //assume linearly ramp up
   Real t1 = 200*5.9e-8;
@@ -48,7 +39,7 @@ InitialStressXYPressureVerticalBC::value(Real t, const Point & p) const
   }
 
   //set & check threshold 
-  Real threshold = 50e6; 
+  Real threshold = 70e6; 
   
   if ( p_l > threshold ){
     p_l = threshold;
