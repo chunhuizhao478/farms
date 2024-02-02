@@ -405,8 +405,8 @@
 [Executioner]
   type = Transient
   dt = 5.9e-8
-  end_time = 100.0
-  num_steps = 20000
+  end_time = 0.01
+  num_steps = 200000
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -416,21 +416,21 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 40
-  # [sample_snapshots]
-  #   type = Exodus
-  #   interval = 20000
-  # []
-  # [snapshots]
-  #   type = Exodus
-  #   interval = 2000
-  #   overwrite = true
-  # []
-  # [checkpoints]
-  #   type = Checkpoint
-  #   interval = 20000
-  #   num_files = 2
-  # []
+  interval = 500
+  [sample_snapshots]
+    type = Exodus
+    interval = 20000
+  []
+  [snapshots]
+    type = Exodus
+    interval = 2000
+    overwrite = true
+  []
+  [checkpoints]
+    type = Checkpoint
+    interval = 20000
+    num_files = 2
+  []
 []
 
 [UserObjects]
