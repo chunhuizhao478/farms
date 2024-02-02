@@ -31,10 +31,10 @@
   shear_modulus_o = 2.73e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.75
+  xi_0 = -0.976
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.75
+  xi_d = -0.976
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -50,7 +50,7 @@
   # C_d_min = 10
 
   #if option 2, use Cd_constant
-  Cd_constant = 1e6
+  Cd_constant = 1e7
 
   #power-law correction
   #index
@@ -76,7 +76,7 @@
   beta_width = 0.03 #1e-3
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.85078
+  xi_1 = 0.74231
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -88,10 +88,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 6.72891e8
-  a1 = -1.94056e9
-  a2 = 1.77295e9
-  a3 = -4.95618e8
+  a0 = 5.15336e8
+  a1 = -1.57828e9
+  a2 = 1.44664e9
+  a3 = -3.44462e8
 
   #diffusion coefficient #for structural stress coupling
   D = 0

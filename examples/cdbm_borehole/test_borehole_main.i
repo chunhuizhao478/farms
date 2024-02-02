@@ -41,10 +41,10 @@
   shear_modulus_o = 2.73e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.75
+  xi_0 = -0.976
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.75
+  xi_d = -0.976
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -70,10 +70,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 3.22714e9
+  gamma_damaged_r = 2.99256e9
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.85078
+  xi_1 = 0.74231
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -85,10 +85,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 6.72891e8
-  a1 = -1.94056e9
-  a2 = 1.77295e9
-  a3 = -4.95618e8
+  a0 = 5.15336e8
+  a1 = -1.57828e9
+  a2 = 1.44664e9
+  a3 = -3.44462e8
 
   #diffusion coefficient #for structural stress coupling
   D = 0
@@ -406,7 +406,7 @@
   type = Transient
   dt = 5.9e-8
   end_time = 100.0
-  num_steps = 16000
+  num_steps = 3200
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -416,21 +416,21 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 400
-  [sample_snapshots]
-    type = Exodus
-    interval = 20000
-  []
-  [snapshots]
-    type = Exodus
-    interval = 2000
-    overwrite = true
-  []
-  [checkpoints]
-    type = Checkpoint
-    interval = 20000
-    num_files = 2
-  []
+  interval = 20
+  # [sample_snapshots]
+  #   type = Exodus
+  #   interval = 20000
+  # []
+  # [snapshots]
+  #   type = Exodus
+  #   interval = 2000
+  #   overwrite = true
+  # []
+  # [checkpoints]
+  #   type = Checkpoint
+  #   interval = 20000
+  #   num_files = 2
+  # []
 []
 
 [UserObjects]
