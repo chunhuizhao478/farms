@@ -406,7 +406,7 @@
   type = Transient
   dt = 5.9e-8
   end_time = 100.0
-  num_steps = 4000
+  num_steps = 16000
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -416,7 +416,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 200
+  interval = 400
   [sample_snapshots]
     type = Exodus
     interval = 20000
