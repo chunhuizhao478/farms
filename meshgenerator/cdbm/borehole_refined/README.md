@@ -1,0 +1,1 @@
+same setup as "borehole", but refine the mesh
