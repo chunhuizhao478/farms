@@ -336,7 +336,8 @@ def WriteNCFile(nc,save_folder_output_file_path):
 
 #file path
 # exodus_file_path = "/Volumes/One Touch/Research/TurkeyEarthquake/datamar23complexfull/test_multifaults_maintb_out_full.e"
-exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/borehole/drytest/test_borehole_main_out.e"
+# exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/borehole/drytest/test_borehole_main_out.e"
+exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/borehole/drytest/test_borehole_main_out_preload.e"
 save_folder_output_file_path = "/Users/andyz/projects/farms/postprocess/cdbm_borehole"
 
 #read exodus file

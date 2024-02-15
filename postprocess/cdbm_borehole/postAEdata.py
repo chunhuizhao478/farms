@@ -109,7 +109,7 @@ for i in range(np.shape(given_coord_list)[0]):
     ptr_y = given_coord_list[i,1]
 
     # Plot origin signal
-    plot_origin_signal(time, velocity, ptr_x, ptr_y, showfig=True, savefig=False)
+    plot_origin_signal(time, velocity, ptr_x, ptr_y, showfig=True, savefig=True)
 
     # Process data
     frequency, amplitude_spectrum, _ = process_velocity_data(time, velocity)
@@ -118,7 +118,7 @@ for i in range(np.shape(given_coord_list)[0]):
     plot_frequency_spectrum(frequency, amplitude_spectrum)
 
     # Set a cutoff frequency for the high-pass filter
-    cutoff_frequency = 150000 #100000 # Adjust based on your data and requirements
+    cutoff_frequency = 50000 #100000 # Adjust based on your data and requirements
 
     # Apply Butterworth high-pass filter
     filtered_velocity = highpass_filter(velocity, cutoff_frequency, fs=1/(time[1] - time[0]))
