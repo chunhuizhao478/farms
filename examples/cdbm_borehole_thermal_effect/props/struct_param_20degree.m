@@ -4,10 +4,10 @@ function [param] = struct_param()
 %Define all parameters in "param" struct
 %% Prescribed values %%
 param.P_c = 10 * 10 ^ 6;   %Pa  <confinement pressure> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1
-param.lambda_0 = 9.3023e9; %Pa  <initial 1st lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10 | 3.204e10
-param.mu_0 = 1.6416e9;     %Pa  <initial 2nd lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10 | 3.204e10
-param.xi_0 = -1.172;        %--  <strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-param.xi_d = -1.172;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
+param.lambda_0 = 14e9; %Pa  <initial 1st lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10 | 3.204e10
+param.mu_0 = 14e9;     %Pa  <initial 2nd lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10 | 3.204e10
+param.xi_0 = -0.929;        %--  <strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
+param.xi_d = -0.929;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
 param.xi_max = sqrt(3);    %--  <strain invariants ratio: maximum allowable value>: set boundary
 param.xi_min = -sqrt(3);   %--  <strain invariants ratio: minimum allowable value>: set boundary
 param.chi = 0.75;          %--  <ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
@@ -39,7 +39,7 @@ param.a3 = double(a3_out); %--  <coefficient of F_B energy>: refer to "fb_coeff"
 %"note_mar25": in 'Self Note' folder 
 
 %% Plot the phase diagram
-xi = -sqrt(3):0.01:sqrt(3);
+xi = -1:0.01:sqrt(3);
 figure();
 plot(xi,param.alpha_out2_func(xi),'b-'); hold on;
 plot(xi,param.alpha_out1_func(xi),'r-'); hold on;

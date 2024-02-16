@@ -350,7 +350,7 @@
     alpha_grad_x = alpha_grad_x
     alpha_grad_y = alpha_grad_y
     output_properties = 'eps_p eps_e eps_total I1 sts_total'
-    outputs = exodus
+    outputs = nemesis
   []
   [density]
     type = GenericConstantMaterial
@@ -415,22 +415,25 @@
 
 #for cluster run
 [Outputs]
-  exodus = true
+  # exodus = true
+  # interval = 100
+  # [sample_snapshots]
+  #   type = Exodus
+  #   interval = 20000
+  # []
+  # [snapshots]
+  #   type = Exodus
+  #   interval = 2000
+  #   overwrite = true
+  # []
+  # [checkpoints]
+  #   type = Checkpoint
+  #   interval = 20000
+  #   num_files = 2
+  # []
   interval = 100
-  [sample_snapshots]
-    type = Exodus
-    interval = 20000
-  []
-  [snapshots]
-    type = Exodus
-    interval = 2000
-    overwrite = true
-  []
-  [checkpoints]
-    type = Checkpoint
-    interval = 20000
-    num_files = 2
-  []
+  nemesis = true
+  exodus = false
 []
 
 [UserObjects]
