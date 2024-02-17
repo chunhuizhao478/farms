@@ -380,7 +380,7 @@
   type = Transient
   dt = 5.9e-8
   end_time = 1
-  num_steps = 8000
+  num_steps = 800000
   # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
@@ -391,7 +391,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 50
+  interval = 100
   # interval = 1  
   # [sample_snapshots]
   #   type = Exodus
