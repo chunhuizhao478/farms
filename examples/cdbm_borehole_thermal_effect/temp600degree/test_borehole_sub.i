@@ -88,10 +88,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 2.5043e8
-  a1 = -1.4373e9
-  a2 = 2.624e9
-  a3 = -1.5474e9
+  a0 = 1.4191e9
+  a1 = -4.2245e9
+  a2 = 3.0755e9
+  a3 = 0.1024e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
