@@ -358,9 +358,10 @@
   #pressure
   #load upto 0.015
   #0.015 / (3.3e-2*5.9e-8) = 8000000
-  [bc_func_top]
+  #use pressure: 3.3e-4 * 48.5e9
+  [bc_func]
     type = ParsedFunction
-    expression = "-3.3e-2 * t"
+    expression = "16e6 * t"
   []
   [func_stress_xx]
     type = SolutionFunction
@@ -447,25 +448,17 @@
 []
 
 [BCs]
-  [Fix_bottom_x]
-    type = DirichletBC
-    displacements = 'disp_x disp_y'
-    variable = disp_x
-    boundary = bottom
-    value = 0.0
-  []
-  [Fix_bottom_y]
-    type = DirichletBC
-    displacements = 'disp_x disp_y'
-    boundary = bottom
-    variable = disp_y
-    value = 0.0
-  []
-  [Pressure_top_y]
-    type = FunctionDirichletBC
+  [Pressure_top]
+    type = Pressure
+    function = bc_func
     variable = disp_y
     boundary = top
-    function = bc_func_top
+  []
+  [Pressure_bottom]
+    type = Pressure
+    function = bc_func
+    variable = disp_y
+    boundary = bottom
   []
 []
 
