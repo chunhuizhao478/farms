@@ -361,7 +361,7 @@
   #use pressure: 3.3e-4 * 48.5e9
   [bc_func]
     type = ParsedFunction
-    expression = "16e6 * t"
+    expression = "16e8 * t"
   []
   [func_stress_xx]
     type = SolutionFunction
@@ -386,7 +386,7 @@
 
 [Executioner]
   type = Transient
-  dt = 5.9e-8
+  dt = 1e-8
   end_time = 1
   num_steps = 800000
   # num_steps = 10

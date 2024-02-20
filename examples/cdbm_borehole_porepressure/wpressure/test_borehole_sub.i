@@ -216,7 +216,7 @@
     variable = B_sub
   []
   [./B_forcing_func]
-      type = BreakageVarForcingFuncDevOld
+      type = BreakageVarForcingFuncPorePressureEffects
       option = 2
       variable = B_sub
       alpha_old = alpha_old
@@ -248,7 +248,7 @@
     variable = B_sub_dummy
   []
   [./B_forcing_func_dummy]
-      type = BreakageVarForcingFuncDevOld
+      type = BreakageVarForcingFuncPorePressureEffects
       option = 2
       variable = B_sub_dummy
       alpha_old = alpha_old
