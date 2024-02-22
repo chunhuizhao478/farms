@@ -22,7 +22,7 @@
 [Mesh]
   [./msh]
       type = FileMeshGenerator
-      file =  '../../../meshgenerator/cdbm/borehole/drytest/borehole_wofaults.msh'
+      file =  '../../meshgenerator/cdbm/borehole/drytest/borehole_wofaults.msh'
   []
 []
 
