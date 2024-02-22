@@ -18,7 +18,7 @@ ComputeDamageBreakageStress3D::validParams()
 { 
   //Note: lambda_o, shear_modulus_o is defined in "ComputeGeneralDamageBreakageStressBase"
   //to initialize _lambda, _shear_modulus material properties
-  InputParameters params = ComputeDamageBreakageStressBase::validParams();
+  InputParameters params = ComputeDamageBreakageStressBase3D::validParams();
   params.addClassDescription("Compute stress using elasticity for small strains");
   
   //constant parameters
@@ -48,7 +48,7 @@ ComputeDamageBreakageStress3D::validParams()
 }
 
 ComputeDamageBreakageStress3D::ComputeDamageBreakageStress3D(const InputParameters & parameters)
-  : ComputeDamageBreakageStressBase(parameters),
+  : ComputeDamageBreakageStressBase3D(parameters),
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
     _static_initial_strain_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_strain_tensor")),
     _xi_0(getParam<Real>("xi_0")),
@@ -76,7 +76,7 @@ ComputeDamageBreakageStress3D::ComputeDamageBreakageStress3D(const InputParamete
     _mechanical_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("mechanical_strain")),
     _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
-    _eqv_plastic_strain_old(getMaterialPropertyOldByName<Real>("eqv_plastic_strain")),
+    // _eqv_plastic_strain_old(getMaterialPropertyOldByName<Real>("eqv_plastic_strain")),
     _alpha_in(coupledValue("alpha_in")),
     _B_in(coupledValue("B_in")),
     _alpha_grad_x(coupledValue("alpha_grad_x")),
@@ -154,10 +154,10 @@ ComputeDamageBreakageStress3D::computeQpStress()
         update shear/pressure wave speed
       */
 
-      Real density = _density_old[_qp];
+      // Real density = _density_old[_qp];
 
-      _shear_wave_speed[_qp] = std::sqrt( ( shear_modulus_out ) / ( density ) );
-      _pressure_wave_speed[_qp] = std::sqrt( ( lambda_out + 2 * shear_modulus_out ) / ( density ) );
+      // _shear_wave_speed[_qp] = std::sqrt( ( shear_modulus_out ) / ( density ) );
+      // _pressure_wave_speed[_qp] = std::sqrt( ( lambda_out + 2 * shear_modulus_out ) / ( density ) );
 
       /*
         compute strain
@@ -588,13 +588,13 @@ ComputeDamageBreakageStress3D::setupInitial()
   // Real poisson_ratio_o = _lambda_o / ( 2 * ( _lambda_o + _shear_modulus_o ));
 
   //Convert (lambda_o,shear_modulus_o) to (shear_wave_speed_o,pressure_wave_speed_o)
-  Real density_o = _density_old[_qp];
-  Real shear_wave_speed_o = sqrt( ( _shear_modulus_o ) / ( density_o ) );
-  Real pressure_wave_speed_o = sqrt( ( _lambda_o + 2 * _shear_modulus_o ) / ( density_o ) );
+  // Real density_o = _density_old[_qp];
+  // Real shear_wave_speed_o = sqrt( ( _shear_modulus_o ) / ( density_o ) );
+  // Real pressure_wave_speed_o = sqrt( ( _lambda_o + 2 * _shear_modulus_o ) / ( density_o ) );
 
   //save
-  _shear_wave_speed[_qp] = shear_wave_speed_o;
-  _pressure_wave_speed[_qp] = pressure_wave_speed_o;
+  // _shear_wave_speed[_qp] = shear_wave_speed_o;
+  // _pressure_wave_speed[_qp] = pressure_wave_speed_o;
 
   //Get stress components
   RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
