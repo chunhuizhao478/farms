@@ -21,7 +21,7 @@ InitialStressXYPressureVerticalBC::InitialStressXYPressureVerticalBC(const Input
 }
 
 Real
-InitialStressXYPressureVerticalBC::value(Real t, const Point & p) const
+InitialStressXYPressureVerticalBC::value(Real t, const Point & /*p*/) const
 {
 
   //pressure magnitude as function of time

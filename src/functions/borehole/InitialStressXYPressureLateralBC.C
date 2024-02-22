@@ -21,7 +21,7 @@ InitialStressXYPressureLateralBC::InitialStressXYPressureLateralBC(const InputPa
 }
 
 Real
-InitialStressXYPressureLateralBC::value(Real t, const Point & p) const
+InitialStressXYPressureLateralBC::value(Real t, const Point & /*p*/) const
 {
 
   //pressure magnitude as function of time
