@@ -411,7 +411,7 @@
   type = Transient
   dt = 5.9e-8
   end_time = 1
-  num_steps = 100000
+  num_steps = 800000
   # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
