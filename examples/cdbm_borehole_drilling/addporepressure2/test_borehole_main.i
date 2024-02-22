@@ -35,16 +35,16 @@
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 2.15e9
+  lambda_o = 15.618e9
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 2.73e9
+  shear_modulus_o = 19.877e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.976
+  xi_0 = -0.869
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.976
+  xi_d = -0.869
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -70,10 +70,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 2.99256e9
+  gamma_damaged_r = 22.495e9
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.74231
+  xi_1 = 0.7909
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -85,16 +85,16 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 5.15336e8
-  a1 = -1.57828e9
-  a2 = 1.44664e9
-  a3 = -3.44462e8
+  a0 = 4.2445e9
+  a1 = -12.583e9
+  a2 = 11.462e9
+  a3 = -2.956e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
 
   #
-  biotcoeff_alpha = 0.31 #-
+  biotcoeff_alpha = 1.0 #-
 
 []
 
@@ -225,6 +225,7 @@
   [pressure]
     order = FIRST
     family = LAGRANGE
+    initial_condition = 6e6
   []
   #
   [./initial_stress_xx]
@@ -319,13 +320,6 @@
       variable = gamma_old
       execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
-  #
-  [./aux_func_pressure]
-    type = FunctionAux
-    variable = pressure
-    function = func_pressure
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
-  [../]
 []
 
 [Kernels]
@@ -411,20 +405,18 @@
     type = ConstantFunction
     value = 0
   []
-  [func_pressure]
-    type = InitialStressXYPressureBoreholeConstant
-  []
 []
 
 [Executioner]
   type = Transient
   dt = 5.9e-8
   end_time = 1
-  num_steps = 10000
+  num_steps = 100000
   # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
+    use_constant_mass = true
   []
 []
 
@@ -432,6 +424,7 @@
 [Outputs]
   exodus = true
   interval = 100
+  # interval = 1
   # [sample_snapshots]
   #   type = Exodus
   #   interval = 20000

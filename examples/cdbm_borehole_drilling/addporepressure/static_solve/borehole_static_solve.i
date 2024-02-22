@@ -166,9 +166,9 @@
   #young's modulus: 6.67GPa
   #poisson's ratio: 0.22
   [elasticity]
-      type = ComputeIsotropicElasticityTensor
-      youngs_modulus = 6.67e9
-      poissons_ratio = 0.22
+    type = ComputeIsotropicElasticityTensor
+    youngs_modulus = 48.5e9
+    poissons_ratio = 0.22
   []
 []
 
@@ -192,18 +192,18 @@
 []
 
 [BCs]
-  [Pressure_borehole_x]
-    type = Pressure
-    boundary = borehole
-    variable = disp_x
-    factor = 5e6
-  []
-  [Pressure_borehole_y]
-    type = Pressure
-    boundary = borehole
-    variable = disp_y
-    factor = 5e6
-  []
+  # [Pressure_borehole_x]
+  #   type = Pressure
+  #   boundary = borehole
+  #   variable = disp_x
+  #   factor = 5e6
+  # []
+  # [Pressure_borehole_y]
+  #   type = Pressure
+  #   boundary = borehole
+  #   variable = disp_y
+  #   factor = 5e6
+  # []
   [Pressure_top]
     type = Pressure
     boundary = top

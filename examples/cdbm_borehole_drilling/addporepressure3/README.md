@@ -1,0 +1,1 @@
+add pore pressure 6e6 do static solve, then dynamically apply inverse pressure to drop the fluid

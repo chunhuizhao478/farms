@@ -25,16 +25,16 @@
   
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 2.15e9
+  lambda_o = 15.618e9
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 2.73e9
+  shear_modulus_o = 19.877e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.976
+  xi_0 = -0.869
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.976
+  xi_d = -0.869
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -76,7 +76,7 @@
   beta_width = 0.03 #1e-3
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.74231
+  xi_1 = 0.7909
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -88,10 +88,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 5.15336e8
-  a1 = -1.57828e9
-  a2 = 1.44664e9
-  a3 = -3.44462e8
+  a0 = 4.2445e9
+  a1 = -12.583e9
+  a2 = 11.462e9
+  a3 = -2.956e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
@@ -216,7 +216,7 @@
     variable = B_sub
   []
   [./B_forcing_func]
-      type = BreakageVarForcingFuncDevOld
+      type = BreakageVarForcingFuncPorePressureEffects
       option = 2
       variable = B_sub
       alpha_old = alpha_old
@@ -248,7 +248,7 @@
     variable = B_sub_dummy
   []
   [./B_forcing_func_dummy]
-      type = BreakageVarForcingFuncDevOld
+      type = BreakageVarForcingFuncPorePressureEffects
       option = 2
       variable = B_sub_dummy
       alpha_old = alpha_old
