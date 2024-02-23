@@ -1,12 +1,12 @@
 ft = 0.001;
-xSize = 217*ft;
-ySize = 127*ft;
-zSize = 178*ft;
-esize = 5*ft;
+xSize = 50*ft;
+ySize = 75*ft;
+zSize = 50*ft;
+esize = 1*ft;
 deg = 2*Pi/360;
 alpha = 90*deg; // angle between hor plane and well
 beta = 0*deg; // angle between x and well
-r = 11*ft; // well radius
+r = 5.65*ft; // well radius
 // parameters of the horizontal cross-section
 e = Cos(alpha);
 a = r/Sin(alpha);

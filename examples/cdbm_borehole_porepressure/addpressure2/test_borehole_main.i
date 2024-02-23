@@ -443,13 +443,13 @@
 [BCs]
   [Pressure_boreholex]
     type = Pressure
-    boundary = top
+    boundary = borehole
     variable = disp_x
     factor = -6e6
   []
   [Pressure_boreholey]
     type = Pressure
-    boundary = bottom
+    boundary = borehole
     variable = disp_y
     factor = -6e6
   []
