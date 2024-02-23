@@ -431,6 +431,11 @@
   nemesis = true
   exodus = false
   show = 'disp_x disp_y disp_z vel_cdbm_x vel_cdbm_y vel_cdbm_z alpha_in B_in mu_old xi_old'
+  [checkpoints]
+    type = Checkpoint
+    interval = 10000
+    num_files = 2
+  []
 []
 
 [UserObjects]
