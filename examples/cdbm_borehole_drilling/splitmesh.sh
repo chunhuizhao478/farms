@@ -1,0 +1,2 @@
+mpirun -np 8 ./farms-opt -i examples/cdbm_borehole_drilling/test_borehole_main.i --split-mesh 8 --split-file examples/cdbm_borehole_drilling/foo_main.cpr
+mpirun -np 8 ./farms-opt -i examples/cdbm_borehole_drilling/test_borehole_main.i --use-split --split-file examples/cdbm_borehole_drilling/foo_main.cpr

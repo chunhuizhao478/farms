@@ -208,13 +208,13 @@
     type = Pressure
     boundary = left
     variable = disp_x
-    factor = 15e6
+    factor = 20e6
   []
   [Pressure_right]
     type = Pressure
     boundary = right
     variable = disp_x
-    factor = 15e6
+    factor = 20e6
   []
   [./fix_cptr1_x]
     type = DirichletBC
