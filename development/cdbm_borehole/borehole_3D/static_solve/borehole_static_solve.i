@@ -24,56 +24,6 @@
       type = FileMeshGenerator
       file =  '../../../../meshgenerator/cdbm/borehole_3d/borehole_example.msh'
   []
-  #
-  [./extranodeset1]
-      type = ExtraNodesetGenerator
-      coord = '-0.1085  -0.0635  0.178'
-      new_boundary = corner_ptr_1
-      input = msh
-  []
-  [./extranodeset2]
-      type = ExtraNodesetGenerator
-      coord = '0.1085  -0.0635  0.178'
-      new_boundary = corner_ptr_2
-      input = extranodeset1
-  []
-  [./extranodeset3]
-      type = ExtraNodesetGenerator
-      coord = '0.1085  0.0635  0.178'
-      new_boundary = corner_ptr_3
-      input = extranodeset2
-  []
-  [./extranodeset4]
-      type = ExtraNodesetGenerator
-      coord = '-0.1085  0.0635  0.178'
-      new_boundary = corner_ptr_4
-      input = extranodeset3
-  []
-  #
-  [./extranodeset5]
-    type = ExtraNodesetGenerator
-    coord = '-0.1085  -0.0635  0'
-    new_boundary = corner_ptr_5
-    input = extranodeset4
-  []
-  [./extranodeset6]
-      type = ExtraNodesetGenerator
-      coord = '0.1085  -0.0635  0'
-      new_boundary = corner_ptr_6
-      input = extranodeset5
-  []
-  [./extranodeset7]
-      type = ExtraNodesetGenerator
-      coord = '0.1085  0.0635  0'
-      new_boundary = corner_ptr_7
-      input = extranodeset6
-  []
-  [./extranodeset8]
-      type = ExtraNodesetGenerator
-      coord = '-0.1085  0.0635  0'
-      new_boundary = corner_ptr_8
-      input = extranodeset7
-  []
 []
 
 [GlobalParams]
@@ -267,7 +217,7 @@
   #poisson's ratio: 0.22
   [elasticity]
       type = ComputeIsotropicElasticityTensor
-      youngs_modulus = 6.67e9
+      youngs_modulus = 48.5e9
       poissons_ratio = 0.22
   []
 []
@@ -294,42 +244,42 @@
 
 [BCs]
   #
-  [disp_front]
+  [disp_top]
     type = DirichletBC
-    boundary = front
+    boundary = top
     variable = disp_y
-    value = 0.000276
+    value = 0.00000585
   []
-  [disp_back]
+  [disp_bottom]
     type = DirichletBC
-    boundary = back
+    boundary = bottom
     variable = disp_y
-    value = -0.000276
+    value = -0.00000585
   []
   #
   [disp_left]
     type = DirichletBC
     boundary = left
     variable = disp_x
-    value = 0.000075
+    value = 0.0000069
   []
   [disp_right]
     type = DirichletBC
     boundary = right
     variable = disp_x
-    value = -0.000075
+    value = -0.0000069
   []
   #
-  [disp_top]
+  [disp_front]
     type = DirichletBC
-    boundary = top
+    boundary = front
     variable = disp_z
-    value = -0.000224
+    value = -0.0000069
   []
-  [disp_bottom]
+  [disp_back]
     type = DirichletBC
-    boundary = bottom
+    boundary = back
     variable = disp_z
-    value = 0.000224
+    value = 0.0000069
   []
 []

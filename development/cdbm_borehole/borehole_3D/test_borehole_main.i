@@ -10,20 +10,20 @@
   displacements = 'disp_x disp_y disp_z'
   
   #damping ratio
-  q = 0.2
+  # q = 0.2
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 2.15e9
+  lambda_o = 15.6177e9
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 2.73e9
+  shear_modulus_o = 19.877e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.976
+  xi_0 = -1.0344
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.976
+  xi_d = -1.0344
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -49,10 +49,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 2.99256e9
+  gamma_damaged_r = 21.479e9
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.74231
+  xi_1 = 0.7177
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -64,10 +64,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 5.15336e8
-  a1 = -1.57828e9
-  a2 = 1.44664e9
-  a3 = -3.44462e8
+  a0 = 3.5155e9
+  a1 = -10.977e9
+  a2 = 10.116e9
+  a3 = -2.2931e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
@@ -76,18 +76,18 @@
 
 [AuxVariables]
   #
-  [./disp_cdbm_x]
-      order = FIRST
-      family = LAGRANGE
-  []
-  [./disp_cdbm_y]
-      order = FIRST
-      family = LAGRANGE
-  []
-  [./disp_cdbm_z]
-      order = FIRST
-      family = LAGRANGE
-  []
+  # [./disp_cdbm_x]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # []
+  # [./disp_cdbm_y]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # []
+  # [./disp_cdbm_z]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # []
   #
   [./vel_cdbm_x]
       order = FIRST
@@ -102,30 +102,30 @@
       family = LAGRANGE
   []
   #
-  [./mu_s]
-      order = CONSTANT
-      family = MONOMIAL
-  []
-  [./mu_d]
-      order = CONSTANT
-      family = MONOMIAL
-  []
-  [./ini_shear_stress]
-      order = FIRST
-      family = LAGRANGE
-  []
-  [./tangent_jump_rate]
-      order = CONSTANT
-      family = MONOMIAL
-  []
-  [./tria_area_aux]
-      order = CONSTANT
-      family = MONOMIAL
-  []
-  [./nodal_area]
-      order = FIRST
-      family = LAGRANGE
-  [../]
+  # [./mu_s]
+  #     order = CONSTANT
+  #     family = MONOMIAL
+  # []
+  # [./mu_d]
+  #     order = CONSTANT
+  #     family = MONOMIAL
+  # []
+  # [./ini_shear_stress]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # []
+  # [./tangent_jump_rate]
+  #     order = CONSTANT
+  #     family = MONOMIAL
+  # []
+  # [./tria_area_aux]
+  #     order = CONSTANT
+  #     family = MONOMIAL
+  # []
+  # [./nodal_area]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # [../]
   #obtain parameters from MaterialRealAux, pass parameters to subApp
   # [./alpha_old]
   #   order = FIRST
@@ -194,7 +194,7 @@
       [./all]
         strain = SMALL
         add_variables = true
-        generate_output = 'stress_xx stress_yy stress_xy stress_xz stress_yz stress_zz strain_xx strain_xy strain_yy strain_xz strain_yz strain_zz'
+        # generate_output = 'stress_xx stress_yy stress_xy stress_xz stress_yz stress_zz strain_xx strain_xy strain_yy strain_xz strain_yz strain_zz'
       [../]
     [../]
   [../]
@@ -202,24 +202,24 @@
 
 [AuxKernels]
   #
-  [Displacment_x]
-    type = ProjectionAux
-    variable = disp_cdbm_x
-    v = disp_x
-    execute_on = 'TIMESTEP_BEGIN'
-  []
-  [Displacement_y]
-    type = ProjectionAux
-    variable = disp_cdbm_y
-    v = disp_y
-    execute_on = 'TIMESTEP_BEGIN'
-  []
-  [Displacement_z]
-    type = ProjectionAux
-    variable = disp_cdbm_z
-    v = disp_z
-    execute_on = 'TIMESTEP_BEGIN'
-  []
+  # [Displacment_x]
+  #   type = ProjectionAux
+  #   variable = disp_cdbm_x
+  #   v = disp_x
+  #   execute_on = 'TIMESTEP_BEGIN'
+  # []
+  # [Displacement_y]
+  #   type = ProjectionAux
+  #   variable = disp_cdbm_y
+  #   v = disp_y
+  #   execute_on = 'TIMESTEP_BEGIN'
+  # []
+  # [Displacement_z]
+  #   type = ProjectionAux
+  #   variable = disp_cdbm_z
+  #   v = disp_z
+  #   execute_on = 'TIMESTEP_BEGIN'
+  # []
   #
   [Vel_x]
     type = CompVarRate
@@ -288,21 +288,21 @@
     use_displaced_mesh = true
     variable = disp_z
   []
-  [./Reactionx]
-    type = StiffPropDamping
-    variable = 'disp_x'
-    component = '0'
-  []
-  [./Reactiony]
-    type = StiffPropDamping
-    variable = 'disp_y'
-    component = '1'
-  []
-  [./Reactionz]
-    type = StiffPropDamping
-    variable = 'disp_z'
-    component = '2'
-  []
+  # [./Reactionx]
+  #   type = StiffPropDamping
+  #   variable = 'disp_x'
+  #   component = '0'
+  # []
+  # [./Reactiony]
+  #   type = StiffPropDamping
+  #   variable = 'disp_y'
+  #   component = '1'
+  # []
+  # [./Reactionz]
+  #   type = StiffPropDamping
+  #   variable = 'disp_z'
+  #   component = '2'
+  # []
 []
 
 [Materials]
@@ -314,7 +314,7 @@
     alpha_grad_x = alpha_grad_x
     alpha_grad_y = alpha_grad_y
     alpha_grad_z = alpha_grad_z
-    output_properties = 'eps_p eps_e eps_total I1 sts_total'
+    # output_properties = 'eps_p eps_e eps_total I1 sts_total'
     outputs = nemesis
   []
   [density]
@@ -343,82 +343,94 @@
   [func_stress_xx]
     type = SolutionFunction
     solution = load_stress_xx
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_stress_xy]
     type = SolutionFunction
     solution = load_stress_xy
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_stress_yy]
     type = SolutionFunction
     solution = load_stress_yy
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_stress_xz]
     type = SolutionFunction
     solution = load_stress_xz
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_stress_yz]
     type = SolutionFunction
     solution = load_stress_yz
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_stress_zz]
     type = SolutionFunction
     solution = load_stress_zz
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   #func_strain
   [func_strain_xx]
     type = SolutionFunction
     solution = load_strain_xx
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_strain_xy]
     type = SolutionFunction
     solution = load_strain_xy
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_strain_yy]
     type = SolutionFunction
     solution = load_strain_yy
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_strain_xz]
     type = SolutionFunction
     solution = load_strain_xz
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_strain_yz]
     type = SolutionFunction
     solution = load_strain_yz
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
   [func_strain_zz]
     type = SolutionFunction
     solution = load_strain_zz
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
   [../]
+  [func_bc_pos]
+    type = ParsedFunction
+    expression = '1.65 * t'
+  []
+  [func_bc_neg]
+    type = ParsedFunction
+    expression = '-1.65 * t'
+  []
 []
 
 [Executioner]
   type = Transient
-  dt = 5.9e-8
+  dt = 2.18e-8
   end_time = 1
-  num_steps = 5
+  num_steps = 400000
+  # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
+    use_constant_mass = true
   []
 []
 
 #for cluster run
 [Outputs]
-  interval = 1
+  # interval = 1
+  interval = 1000
   nemesis = true
   exodus = false
+  show = 'disp_x disp_y disp_z vel_cdbm_x vel_cdbm_y vel_cdbm_z alpha_in B_in mu_old xi_old'
 []
 
 [UserObjects]
@@ -427,7 +439,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = stress_xx_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -435,7 +447,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = stress_xy_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -443,7 +455,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = stress_yy_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -451,7 +463,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = stress_xz_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -459,7 +471,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = stress_yz_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -467,7 +479,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = stress_zz_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -476,7 +488,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = strain_xx_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -484,7 +496,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = strain_xy_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -492,7 +504,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = strain_yy_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -500,7 +512,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = strain_xz_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -508,7 +520,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = strain_yz_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -516,7 +528,7 @@
     type = SolutionUserObject
     mesh = ./static_solve/borehole_static_solve_out.e
     system_variables = strain_zz_saved
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
+    execute_on = 'INITIAL'
     timestep = LATEST
     force_preaux = true
   []
@@ -529,6 +541,22 @@
       input_files = 'test_borehole_sub.i'
       execute_on = 'TIMESTEP_BEGIN'
   [../]
+[]
+
+[BCs]
+  #
+  [disp_top]
+    type = FunctionDirichletBC
+    boundary = top
+    variable = disp_y
+    function = func_bc_neg
+  []
+  [disp_bottom]
+    type = FunctionDirichletBC
+    boundary = bottom
+    variable = disp_y
+    function = func_bc_pos
+  []
 []
 
 [Transfers]

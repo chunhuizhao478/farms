@@ -100,11 +100,11 @@ surf7 = news;
 Plane Surface(surf7) = {61};
 surf8 = news;
 //
-Physical Surface("bottom") = {surf2};
-Physical Surface("top") = {surf3};
-Physical Surface("front") = {surf4};
+Physical Surface("bottom") = {surf4};
+Physical Surface("top") = {surf6};
+Physical Surface("front") = {surf3};
 Physical Surface("left") = {surf5};
-Physical Surface("back") = {surf6};
+Physical Surface("back") = {surf2};
 Physical Surface("right") = {surf7};
 // Surface Loop(surf8) = {surf2,surf5,surf4,surf3,surf6,surf7,-9,-13,-17,-21} ;
 Surface Loop(surf8) = {surf2,-9,-13,-17,-21,surf3,surf5,surf4,surf7,surf6} ;
