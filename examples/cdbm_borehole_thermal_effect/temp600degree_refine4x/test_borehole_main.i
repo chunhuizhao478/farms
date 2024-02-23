@@ -411,6 +411,7 @@
 [Outputs]
   exodus = true
   interval = 400
+  show = 'alpha_in B_in mu_old'
   # interval = 1
   # [sample_snapshots]
   #   type = Exodus
