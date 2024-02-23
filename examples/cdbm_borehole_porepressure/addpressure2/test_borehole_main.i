@@ -392,7 +392,7 @@
 [Outputs]
   exodus = true
   interval = 100
-  show = 'alpha_in B_in mu_old'
+  show = 'alpha_in B_in mu_old xi_old'
   # interval = 1  
   # [sample_snapshots]
   #   type = Exodus
