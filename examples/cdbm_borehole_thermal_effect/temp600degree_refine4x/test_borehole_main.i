@@ -404,6 +404,7 @@
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
+    use_constant_mass = true
   []
 []
 
