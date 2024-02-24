@@ -401,22 +401,18 @@
     solution = load_strain_zz
     execute_on = 'INITIAL'
   [../]
-  [func_bc_pos]
+  [func_bc]
     type = ParsedFunction
-    expression = '1.65 * t'
-  []
-  [func_bc_neg]
-    type = ParsedFunction
-    expression = '-1.65 * t'
+    expression = '8e6 * t'
   []
 []
 
 [Executioner]
   type = Transient
-  dt = 2.18e-8
+  dt = 4e-8
   end_time = 1
-  num_steps = 400000
-  # num_steps = 10
+  # num_steps = 400000
+  num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -426,8 +422,8 @@
 
 #for cluster run
 [Outputs]
-  # interval = 1
-  interval = 1000
+  interval = 1
+  # interval = 1000
   nemesis = true
   exodus = false
   show = 'disp_x disp_y disp_z vel_cdbm_x vel_cdbm_y vel_cdbm_z alpha_in B_in mu_old xi_old'
@@ -551,16 +547,16 @@
 [BCs]
   #
   [disp_top]
-    type = FunctionDirichletBC
+    type = Pressure
     boundary = top
     variable = disp_y
-    function = func_bc_neg
+    function = func_bc
   []
   [disp_bottom]
-    type = FunctionDirichletBC
+    type = Pressure
     boundary = bottom
     variable = disp_y
-    function = func_bc_pos
+    function = func_bc
   []
 []
 

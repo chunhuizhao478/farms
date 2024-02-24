@@ -342,3 +342,9 @@ sub_app0:  Solve Converged!
   Finished Solving                                                                       [ 12.22 s] [  358 MB]
 Still Executing.
 Finished Executing                                                                       [228.06 s] [  402 MB]
+
+####
+
+130994.91s - 10000 steps
+
+131772.39s - 20000 steps
