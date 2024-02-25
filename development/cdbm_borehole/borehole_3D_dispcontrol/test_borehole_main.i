@@ -417,8 +417,8 @@
   type = Transient
   dt = 4e-8
   end_time = 1
-  # num_steps = 1000000
-  num_steps = 10
+  num_steps = 1000000
+  # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -428,8 +428,8 @@
 
 #for cluster run
 [Outputs]
-  interval = 1
-  # interval = 1000
+  # interval = 1
+  interval = 1000
   nemesis = true
   exodus = false
   show = 'disp_x disp_y disp_z vel_cdbm_x vel_cdbm_y vel_cdbm_z alpha_in B_in mu_old xi_old'
