@@ -1,0 +1,2 @@
+mpirun -np 8 ./farms-opt -i development/cdbm_borehole/borehole_3D_dispcontrol/test_borehole_main.i --split-mesh 8 --split-file development/cdbm_borehole/borehole_3D_dispcontrol/foo_main.cpr
+mpirun -np 8 ./farms-opt -i development/cdbm_borehole/borehole_3D_dispcontrol/test_borehole_main.i --use-split --split-file development/cdbm_borehole/borehole_3D_dispcontrol/foo_main.cpr
