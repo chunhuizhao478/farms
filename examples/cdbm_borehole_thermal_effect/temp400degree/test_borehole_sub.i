@@ -36,7 +36,7 @@
   # C_d_min = 10
 
   #if option 2, use Cd_constant
-  Cd_constant = 1e8
+  Cd_constant = 1e7
 
   #power-law correction
   #index
@@ -252,9 +252,8 @@
 
 [AuxKernels]
   [check_alpha]
-    type = CheckAlphaDev
+    type = CheckAlphaB
     coupled = alpha_sub
-    factor = 0.1
     variable = alpha_checked
     execute_on = 'TIMESTEP_END'
   []
@@ -266,9 +265,8 @@
   []
   #-high-order-dummy-#
   [check_alpha_dummy]
-    type = CheckAlphaDev
+    type = CheckAlphaB
     coupled = alpha_sub_dummy
-    factor = 0.1
     variable = alpha_checked_dummy
     execute_on = 'TIMESTEP_END'
   []
