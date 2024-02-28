@@ -11,16 +11,16 @@
   
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 3.704e9
+  lambda_o = 11.069e9
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 11.111e9
+  shear_modulus_o = 15.333e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -1.123
+  xi_0 = -1.006
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -1.123
+  xi_d = -1.006
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -36,7 +36,7 @@
   # C_d_min = 10
 
   #if option 2, use Cd_constant
-  Cd_constant = 1e7
+  Cd_constant = 5e7
 
   #power-law correction
   #index
@@ -62,7 +62,11 @@
   beta_width = 0.03 #1e-3
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.7631
+  xi_1 = 0.729
+
+  #coefficient of damage solid modulus
+  # gamma_damaged_r = 11.801e9
+  # # gamma_damaged_r = 8.9e9
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -74,10 +78,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 1.784e9
-  a1 = -5.350e9
-  a2 = 4.186e9
-  a3 = -0.262e9
+  a0 = 2.798e9
+  a1 = -8.566e9
+  a2 = 7.711e9
+  a3 = -1.681e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
