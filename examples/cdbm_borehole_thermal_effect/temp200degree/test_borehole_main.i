@@ -378,7 +378,7 @@
 
 [Executioner]
   type = Transient
-  dt = 1e-8
+  dt = 5e-8
   end_time = 1
   num_steps = 800000
   # num_steps = 10
