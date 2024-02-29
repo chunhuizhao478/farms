@@ -255,6 +255,17 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
     ///Get Components
     Ts = T_mag * ( Ts_trial / Tmag_trial );
 
+    ///Convert it to global coordinate //need to check credibility
+    RealVectorValue traction;
+    traction(0) = Tn;
+    traction(1) = Ts;
+    traction(2) = 0;
+
+    RealVectorValue traction_global = _rot[_qp] * traction;
+
+    Ts = traction_global(0);
+    Tn = traction_global(1);
+
     ////DISP
     Real du_strike_plus_t  =  alongfaultdisp_strike_plus_t  - alongfaultdisp_strike_plus_tminust  + _dt * _dt / M * (R_plus_local_strike  - len * (Ts - Ts_o - Ts_perturb));
     Real du_normal_plus_t  =  alongfaultdisp_normal_plus_t  - alongfaultdisp_normal_plus_tminust  + _dt * _dt / M * (R_plus_local_normal  - len * (Tn - Tn_o));
