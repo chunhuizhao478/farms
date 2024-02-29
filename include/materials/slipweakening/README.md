@@ -1,0 +1,1 @@
+**slip weakening material object with multi-purpose (need to generalize to reduce the number of versions)**
