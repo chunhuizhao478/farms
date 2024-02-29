@@ -35,16 +35,16 @@
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 1.6416e9
+  lambda_o = 5.43e9
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 9.3023e9
+  shear_modulus_o = 8.508e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -1.172
+  xi_0 = -1.031
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -1.172
+  xi_d = -1.031
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -70,10 +70,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 9.8110e9
+  gamma_damaged_r = 9.202e9
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.6647
+  xi_1 = 0.719
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -85,10 +85,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 1.4191e9
-  a1 = -4.2245e9
-  a2 = 3.0755e9
-  a3 = 0.1024e9
+  a0 = 1.511e9
+  a1 = -4.603e9
+  a2 = 4.037e9
+  a3 = -0.776e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
@@ -355,7 +355,7 @@
   [density]
     type = GenericConstantMaterial
     prop_names = density
-    prop_values = 2650
+    prop_values = 2517.5
   []
   [./static_initial_stress_tensor]
       type = GenericFunctionRankTwoTensor
@@ -397,7 +397,7 @@
 
 [Executioner]
   type = Transient
-  dt = 5.9e-8
+  dt = 5e-8
   end_time = 1
   num_steps = 800000
   # num_steps = 10
@@ -411,6 +411,7 @@
 [Outputs]
   exodus = true
   interval = 100
+  show = 'alpha_in B_in xi_old mu_old'
   # interval = 1
   # [sample_snapshots]
   #   type = Exodus

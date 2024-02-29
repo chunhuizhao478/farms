@@ -3,7 +3,7 @@ clear all; close all; clc;
 %% Input Parameters 
 E = 0;     %GPa
 nu = 0;  %-
-rho = 2616.9; %kg/m^3
+rho = 2517.5; %kg/m^3
 phi = 35;   %internal friction angle
 dx = 0.001; %m
 cd_constant = 5e7; %/s damage accumulation rate
@@ -11,8 +11,8 @@ cd_constant = 5e7; %/s damage accumulation rate
 %calculate lambda, mu
 % lambda = E * nu / ( ( 1 + nu )  * ( 1 - 2 * nu ));
 % mu = E / ( 2  * ( 1 + nu ));
-lambda = 9.792;
-mu = 13.819;
+lambda = 5.43;
+mu = 8.508;
 %calculate 2d xi_o
 xi_o = xiocalc2d(lambda,mu,phi);
 %calculate shear wave speed
