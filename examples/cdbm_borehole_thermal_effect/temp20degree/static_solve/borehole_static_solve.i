@@ -167,8 +167,10 @@
   #poisson's ratio: 0.22
   [elasticity]
       type = ComputeIsotropicElasticityTensor
-      youngs_modulus = 35e9
-      poissons_ratio = 0.25
+      # youngs_modulus = 35e9
+      # poissons_ratio = 0.25
+      shear_modulus = 14e9
+      lambda = 14e9
   []
 []
 

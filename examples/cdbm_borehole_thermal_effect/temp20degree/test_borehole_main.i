@@ -378,7 +378,7 @@
 
 [Executioner]
   type = Transient
-  dt = 5.9e-8
+  dt = 5e-8
   end_time = 1
   num_steps = 800000
   # num_steps = 10
@@ -392,6 +392,7 @@
 [Outputs]
   exodus = true
   interval = 100
+  show = 'alpha_in B_in xi_old mu_old'
   # interval = 1  
   # [sample_snapshots]
   #   type = Exodus
