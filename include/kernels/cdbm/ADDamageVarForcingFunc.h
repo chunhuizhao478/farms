@@ -17,32 +17,32 @@ int( d(alpha)/dt * v ) - int( (1-B) (C1 exp(alpha/C2) I2 (xi - xi_o) * v + D d(a
 
 #pragma once
 
-#include "Kernel.h"
+#include "ADKernel.h"
 #include "Material.h"
 
-class DamageVarForcingFunc : public Kernel
+class ADDamageVarForcingFunc : public ADKernel
 {
 public:
   static InputParameters validParams();
 
-  DamageVarForcingFunc(const InputParameters & parameters);
+  ADDamageVarForcingFunc(const InputParameters & parameters);
 
 protected:
-  virtual Real computeQpResidual();
-  virtual Real computeQpJacobian();
+
+  virtual ADReal computeQpResidual();
 
 private:
   /// constant parameters
-  Real _Cd;
-  Real _D;
-  Real _C1;
-  Real _C2;
-  Real _xi_0;
-  Real _xi_min;
-  Real _xi_max;
+  ADReal _Cd;
+  ADReal _D;
+  ADReal _C1;
+  ADReal _C2;
+  ADReal _xi_0;
+  ADReal _xi_min;
+  ADReal _xi_max;
   /// variable parameters
-  const VariableValue & _alpha_old;
-  const VariableValue & _B_old;
-  const VariableValue & _xi_old;
-  const VariableValue & _I2_old;
+  const ADVariableValue & _alpha_old;
+  const ADVariableValue & _B_old;
+  const ADVariableValue & _xi_old;
+  const ADVariableValue & _I2_old;
 };

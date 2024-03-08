@@ -15,14 +15,14 @@ int( d(alpha)/dt * v ) - int( (1-B) (C1 exp(alpha/C2) I2 (xi - xi_o) * v + D d(a
 
 */
 
-#include "DamageVarForcingFunc.h"
+#include "ADDamageVarForcingFunc.h"
 
-registerMooseObject("farmsApp", DamageVarForcingFunc);
+registerMooseObject("farmsApp", ADDamageVarForcingFunc);
 
 InputParameters
-DamageVarForcingFunc::validParams()
+ADDamageVarForcingFunc::validParams()
 {
-  InputParameters params = Kernel::validParams();
+  InputParameters params = ADKernel::validParams();
 
   //constant parameters
   params.addParam<Real>(   "C_d", 1.0, "coefficient gives positive damage evolution");
@@ -42,8 +42,8 @@ DamageVarForcingFunc::validParams()
   return params;
 }
 
-DamageVarForcingFunc::DamageVarForcingFunc(const InputParameters & parameters)
- : Kernel(parameters),
+ADDamageVarForcingFunc::ADDamageVarForcingFunc(const InputParameters & parameters)
+ : ADKernel(parameters),
   _Cd(getParam<Real>("C_d")),
   _D(getParam<Real>("D")),
   _C1(getParam<Real>("C_1")),
@@ -51,33 +51,27 @@ DamageVarForcingFunc::DamageVarForcingFunc(const InputParameters & parameters)
   _xi_0(getParam<Real>("xi_0")),
   _xi_min(getParam<Real>("xi_min")),
   _xi_max(getParam<Real>("xi_max")),
-  _alpha_old(coupledValue("alpha_old")),
-  _B_old(coupledValue("B_old")),
-  _xi_old(coupledValue("xi_old")),
-  _I2_old(coupledValue("I2_old"))
+  _alpha_old(adCoupledValue("alpha_old")),
+  _B_old(adCoupledValue("B_old")),
+  _xi_old(adCoupledValue("xi_old")),
+  _I2_old(adCoupledValue("I2_old"))
 {
 }
 
-Real
-DamageVarForcingFunc::computeQpResidual()
+ADReal
+ADDamageVarForcingFunc::computeQpResidual()
 { 
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
     return -1 * (1 - _B_old[_qp]) * ( _Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     //with healing
-    //return -1 * (1 - _B_old[_qp]) * ( _C1 * exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+    return -1 * (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
     //no healing
-    return 0.0;
+    //return 0.0;
   }
   else{
     mooseError("xi_old is OUT-OF-RANGE!.");
     return 0;
   }
-}
-
-Real
-DamageVarForcingFunc::computeQpJacobian()
-{
-  return 0.0;
 }
