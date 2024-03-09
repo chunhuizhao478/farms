@@ -82,7 +82,7 @@
     []
 []
 
-[Modules/TensorMechanics/CohesiveZoneMaster]
+[Physics/SolidMechanics/CohesiveZone]
     [./czm_ik]
         boundary = 'Block0_Block1'
         strain = SMALL
@@ -196,6 +196,12 @@
         type = ADRateStateFrictionLaw2D
         boundary = 'Block0_Block1'
     [../]
+    # [czm_mat]
+    #     type = ADPureElasticTractionSeparation
+    #     normal_stiffness = 1e4
+    #     tangent_stiffness = 7e3
+    #     boundary = 'Block0_Block1'
+    # []
 []  
 
 [Executioner]

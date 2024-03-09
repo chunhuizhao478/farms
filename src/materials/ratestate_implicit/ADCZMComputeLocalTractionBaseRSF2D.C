@@ -13,7 +13,7 @@
 InputParameters
 ADCZMComputeLocalTractionBaseRSF2D::validParams()
 {
-  InputParameters params = InterfaceMaterial::validParams();
+  InputParameters params = ADCZMComputeLocalTractionBaseRSF2D::validParams();
   return params;
 }
 
