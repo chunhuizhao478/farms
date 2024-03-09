@@ -4,12 +4,12 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 10
-        ny = 10
-        xmin = -500
-        xmax = 500
-        ymin = -500
-        ymax = 500
+        nx = 100
+        ny = 100
+        xmin = -5000
+        xmax = 5000
+        ymin = -5000
+        ymax = 5000
     []
 []
 
@@ -139,15 +139,6 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    #high-order-dummy
-    [./alpha_in_dummy]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [./B_in_dummy]
-        order = FIRST
-        family = MONOMIAL
-    []
     #grad_alpha
     [./alpha_grad_x]
         order = CONSTANT
@@ -256,6 +247,13 @@
         variable = gamma_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    # #initial alpha
+    # [initial_alpha]
+    #     type = FunctionAux
+    #     variable = alpha_in
+    #     function = func_initial_alpha
+    #     execute_on = 'INITIAL'
+    # []
 []
 
 [Materials]
@@ -269,8 +267,8 @@
     # []
     [damagestress]
         type = ADComputeDamageBreakageStress
-        alpha_in = alpha_in_dummy
-        B_in = B_in_dummy
+        alpha_in = alpha_in
+        B_in = B_in
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
@@ -352,6 +350,9 @@
         type = ConstantFunction
         value = 0
     [../]
+    [func_initial_alpha]
+        type = InitialAlphaAD
+    []
 []
 
 [Preconditioning]
@@ -366,7 +367,7 @@
     start_time = 0
     end_time = 2
     num_steps = 10
-    dt = 1e-8
+    dt = 1e-4
     petsc_options_iname = '-pc_type -ksp_gmres_restart'
     petsc_options_value = 'lu       101'
     solve_type = PJFNK
