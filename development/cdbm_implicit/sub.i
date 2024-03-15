@@ -1,23 +1,27 @@
 [Mesh]
-    [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 100
-        ny = 100
-        xmin = -5000
-        xmax = 5000
-        ymin = -5000
-        ymax = 5000
-    []
+  [./msh]
+      type = GeneratedMeshGenerator
+      dim = 2
+      nx = 100
+      ny = 100
+      xmin = -5000
+      xmax = 5000
+      ymin = -5000
+      ymax = 5000
+  []
+  # [./msh]
+  #     type = FileMeshGenerator
+  #     file =  './meshfile/squaremesh.msh'
+  # []
 []
   
 [GlobalParams]
   
     ##----continuum damage breakage model----##
-    # #initial lambda value (first lame constant) [Pa]
+    #initial lambda value (first lame constant) [Pa]
     # lambda_o = 3.204e10
       
-    # #initial shear modulus value (second lame constant) [Pa]
+    #initial shear modulus value (second lame constant) [Pa]
     # shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -29,14 +33,14 @@
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
     #may need a bit space, use 1.5 as boundary
-    xi_max = 1.5
+    xi_max = 1.8
   
     #<strain invariants ratio: minimum allowable value>: set boundary
     #Xu_etal_P15-2D
-    xi_min = -1.5
+    xi_min = -1.8
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e6
+    Cd_constant = 1e4
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -169,13 +173,13 @@
 
 [AuxKernels]
     [check_alpha]
-        type = CheckAlphaB
+        type = CheckAlpha
         coupled = alpha_sub
         variable = alpha_checked
         execute_on = 'TIMESTEP_END'
     []
     [check_B]
-        type = CheckAlphaB
+        type = CheckB
         coupled = B_sub
         variable = B_checked
         execute_on = 'TIMESTEP_END'

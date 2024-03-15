@@ -6,12 +6,12 @@ Check Alpha and B within the range
 
 #include "AuxKernel.h"
 
-class CheckAlphaB : public AuxKernel
+class CheckAlpha : public AuxKernel
 {
     public:
 
     static InputParameters validParams();
-    CheckAlphaB(const InputParameters & parameters);
+    CheckAlpha(const InputParameters & parameters);
 
     protected:
 

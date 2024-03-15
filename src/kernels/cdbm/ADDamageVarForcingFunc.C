@@ -25,7 +25,7 @@ ADDamageVarForcingFunc::validParams()
   InputParameters params = ADKernel::validParams();
 
   //constant parameters
-  params.addParam<Real>(   "C_d", 1.0, "coefficient gives positive damage evolution");
+  params.addParam<Real>(   "Cd_constant", 1.0, "coefficient gives positive damage evolution");
   params.addParam<Real>(     "D", 1.0, "coefficient gives diffusion magnitude of damage evolution");
   params.addParam<Real>(   "C_1", 1.0, "coefficient of healing for damage evolution");
   params.addParam<Real>(   "C_2", 1.0, "coefficient of healing for damage evolution");
@@ -44,7 +44,7 @@ ADDamageVarForcingFunc::validParams()
 
 ADDamageVarForcingFunc::ADDamageVarForcingFunc(const InputParameters & parameters)
  : ADKernel(parameters),
-  _Cd(getParam<Real>("C_d")),
+  _Cd(getParam<Real>("Cd_constant")),
   _D(getParam<Real>("D")),
   _C1(getParam<Real>("C_1")),
   _C2(getParam<Real>("C_2")),

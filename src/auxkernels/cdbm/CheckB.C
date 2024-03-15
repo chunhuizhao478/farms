@@ -1,9 +1,9 @@
-#include "CheckAlphaB.h"
+#include "CheckB.h"
 
-registerMooseObject("farmsApp", CheckAlphaB);
+registerMooseObject("farmsApp", CheckB);
 
 InputParameters
-CheckAlphaB::validParams()
+CheckB::validParams()
 {
   InputParameters params = AuxKernel::validParams();
 
@@ -12,7 +12,7 @@ CheckAlphaB::validParams()
   return params;
 }
 
-CheckAlphaB::CheckAlphaB(const InputParameters & parameters)
+CheckB::CheckB(const InputParameters & parameters)
   : AuxKernel(parameters),
   
   _coupled_val(coupledValue("coupled"))
@@ -21,7 +21,7 @@ CheckAlphaB::CheckAlphaB(const InputParameters & parameters)
 }
 
 Real
-CheckAlphaB::computeValue()
+CheckB::computeValue()
 {
   
   Real var = _coupled_val[_qp];
