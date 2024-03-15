@@ -9,6 +9,8 @@ else{ Cd = pow(10, log10(1+m*log10(e/1e-4)) ) }
 
 Cb = CdCb_multiplier * Cd
 
+Specific for tabular damage zone
+
 */
 
 #pragma once
@@ -16,12 +18,12 @@ Cb = CdCb_multiplier * Cd
 #include "ADKernel.h"
 #include "Material.h"
 
-class ADBreakageVarForcingFunc : public ADKernel
+class ADBreakageVarForcingFuncTDZ : public ADKernel
 {
 public:
   static InputParameters validParams();
 
-  ADBreakageVarForcingFunc(const InputParameters & parameters);
+  ADBreakageVarForcingFuncTDZ(const InputParameters & parameters);
 
 protected:
   virtual ADReal computeQpResidual();

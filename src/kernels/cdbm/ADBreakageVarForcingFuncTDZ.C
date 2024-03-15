@@ -11,12 +11,12 @@ Cb = CdCb_multiplier * Cd
 
 */
 
-#include "ADBreakageVarForcingFunc.h"
+#include "ADBreakageVarForcingFuncTDZ.h"
 
-registerMooseObject("farmsApp", ADBreakageVarForcingFunc);
+registerMooseObject("farmsApp", ADBreakageVarForcingFuncTDZ);
 
 InputParameters
-ADBreakageVarForcingFunc::validParams()
+ADBreakageVarForcingFuncTDZ::validParams()
 {
   InputParameters params = ADKernel::validParams();
 
@@ -49,7 +49,7 @@ ADBreakageVarForcingFunc::validParams()
   return params;
 }
 
-ADBreakageVarForcingFunc::ADBreakageVarForcingFunc(const InputParameters & parameters)
+ADBreakageVarForcingFuncTDZ::ADBreakageVarForcingFuncTDZ(const InputParameters & parameters)
  : ADKernel(parameters),
   _CBCBH_multiplier(getParam<Real>("CBCBH_multiplier")),
   _a0(getParam<Real>("a0")),
@@ -76,7 +76,7 @@ ADBreakageVarForcingFunc::ADBreakageVarForcingFunc(const InputParameters & param
 }
 
 ADReal
-ADBreakageVarForcingFunc::computeQpResidual()
+ADBreakageVarForcingFuncTDZ::computeQpResidual()
 { 
   
     //get parameters
@@ -126,7 +126,7 @@ ADBreakageVarForcingFunc::computeQpResidual()
 
 /// Function: Compute alpha_cr based on the current xi
 ADReal 
-ADBreakageVarForcingFunc::computeAlphaCr(ADReal xi)
+ADBreakageVarForcingFuncTDZ::computeAlphaCr(ADReal xi)
 {
   ADReal alphacr;
   if ( xi < _xi_0 )
@@ -135,11 +135,11 @@ ADBreakageVarForcingFunc::computeAlphaCr(ADReal xi)
   } 
   else if ( xi > _xi_0 && xi <= _xi_1 )
   {
-    alphacr = ((xi*2.76e5-7.100521107637101e2*xi*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e+2*std::pow(xi,3)*1.25e2+std::pow(xi,3)*4.6e4+std::sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(xi*(-1.44e3)-std::pow(xi,2)*2.1e3+std::pow(xi,3)*5.6e2+std::pow(xi,4)*3.0e2+std::pow(xi,6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(xi*3.837588e7-7.100521107637101e2*xi*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*std::pow(xi,2)*2.76e4+std::pow(xi,2)*2.3984925e7-3.517789e6);
+    alphacr = ((xi*2.76e5-7.100521107637101e2*xi*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e2*std::pow(xi,3)*1.25e2+std::pow(xi,3)*4.6e4+std::sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(xi*-1.44e3-std::pow(xi,2)*2.1e3+std::pow(xi,3)*5.6e2+std::pow(xi,4)*3.0e2+std::pow(xi,6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(xi*3.837588e7-7.100521107637101e2*xi*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*std::pow(xi,2)*2.76e4+std::pow(xi,2)*2.3984925e7-3.517789e6);
   }
   else if ( xi > _xi_1 && xi <= _xi_max )
   {
-    alphacr = 6.408e10/(7.100521107637101e2*1.737762711864407e8+xi*(7.100521107637101e2*1.086101694915254e8-3.996854237288136e10)-6.394966779661017e10);
+    alphacr = 6.0e10/(7.100521107637101e2*1.627118644067797e8+xi*(7.100521107637101e2*1.016949152542373e8-3.742372881355932e10)-5.987796610169492e10);
   }
   else
   {
