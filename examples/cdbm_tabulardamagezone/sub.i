@@ -30,7 +30,7 @@
     xi_min = -1.8
   
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1e7
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -150,7 +150,7 @@
       variable = B_sub
     []
     [./B_forcing_func]
-        type = ADBreakageVarForcingFunc
+        type = ADBreakageVarForcingFuncTDZ
         variable = B_sub
         alpha_old = alpha_old
         B_old = B_old
@@ -183,4 +183,8 @@
     [TimeIntegrator]
       type = ImplicitEuler
     []
+[]
+
+[Outputs]
+  exodus = true
 []

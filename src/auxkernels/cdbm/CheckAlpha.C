@@ -30,9 +30,9 @@ CheckAlpha::computeValue()
   {
     var_out = 0;
   }
-  else if ( var > 0.75 )
+  else if ( var > 1.0 )
   {
-    var_out = 0.75;
+    var_out = 1.0;
   } 
   else{
     var_out = var;

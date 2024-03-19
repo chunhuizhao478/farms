@@ -5,6 +5,15 @@
         type = FileMeshGenerator
         file =  './meshfile/tabulardamagezone.msh'
     []
+    [./sidesets]
+        input = msh
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []
 []
 
 [GlobalParams]
@@ -136,6 +145,15 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    #output alpha, B to subApp
+    [./alpha_damagedvar_out]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./B_out]
+        order = CONSTANT
+        family = MONOMIAL   
+    []        
     #grad_alpha
     [./alpha_grad_x]
         order = CONSTANT
@@ -148,7 +166,12 @@
     [./alpha_grad_z]
         order = CONSTANT
         family = MONOMIAL
-    []    
+    []
+    #initial alpha
+    [./initial_alpha]
+        order = CONSTANT
+        family = MONOMIAL        
+    []
 []
 
 [Kernels]
@@ -244,6 +267,25 @@
         variable = gamma_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    [get_alpha_old]
+        type = ADMaterialRealAux
+        property = alpha_damagedvar
+        variable = alpha_damagedvar_out
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_B_old]
+        type = ADMaterialRealAux
+        property = B
+        variable = B_out
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #add inital distribution of alpha
+    [assign_initial_alpha]
+        type = FunctionAux
+        variable = initial_alpha
+        function = func_initial_alpha
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
 []
 
 [Materials]
@@ -254,6 +296,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
+        initial_alpha = initial_alpha
         # output_properties = 'eps_p eps_e eps_total I1 sts_total'
         outputs = exodus
     []
@@ -264,7 +307,7 @@
     [density]
         type = ADGenericConstantMaterial
         prop_names = 'density'
-        prop_values = '2650'
+        prop_values = '2700'
     []
     [./static_initial_stress_tensor]
         type = ADGenericFunctionRankTwoTensor
@@ -286,14 +329,15 @@
     #func_stress
     [func_stress_xx]
         type = ConstantFunction
-        value = -135e6
+        value = -50e6
     [../]
     [func_stress_xy]
-        type = InitialStressAD
+        type = ConstantFunction
+        value = 35e6
     [../]
     [func_stress_yy]
         type = ConstantFunction
-        value = -120e6
+        value = -50e6
     [../]
     [func_stress_xz]
         type = ConstantFunction
@@ -332,6 +376,9 @@
         type = ConstantFunction
         value = 0
     [../]
+    [func_initial_alpha]
+        type = InitialAlphaAD
+    []
 []
 
 [Preconditioning]
@@ -346,7 +393,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 800
-    num_steps = 5000
+    num_steps = 20
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-4
@@ -355,14 +402,65 @@
     timestep_tolerance = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
-    automatic_scaling = true
+    # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1
+    dt = 5e-5
 []  
 
 [Outputs]
     exodus = true
+[]
+
+[BCs]
+    [fix_top_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = top
+        value = 0
+    []
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = top
+        value = 0
+    []
+    [fix_bot_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = bottom
+        value = 0
+    []
+    [fix_bot_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = bottom
+        value = 0
+    []
+    [fix_left_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = left
+        value = 0
+    []
+    [fix_left_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = left
+        value = 0
+    []
+    [fix_right_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = right
+        value = 0
+    []
+    [fix_right_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = right
+        value = 0
+    []
 []
 
 [MultiApps]
@@ -386,8 +484,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old'
-        variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old'
+        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
+        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []

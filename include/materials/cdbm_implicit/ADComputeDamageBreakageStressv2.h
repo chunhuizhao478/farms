@@ -29,7 +29,7 @@ protected:
   virtual void computeQpStress() override;
 
   /// Function: Compute initial strain based on initial stress
-  // void setupInitial();
+  void setupInitial();
 
   /// Name of the elasticity tensor material property
   //const std::string _elasticity_tensor_name;
@@ -108,6 +108,8 @@ protected:
   /// diffusion coefficient
   ADReal _D;
   
+  /// initial damage
+  const ADVariableValue & _initial_alpha; 
   // usingComputeDamageBreakageStressBaseMembers;
 };
 
