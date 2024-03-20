@@ -61,12 +61,27 @@ ADDamageVarForcingFunc::ADDamageVarForcingFunc(const InputParameters & parameter
 ADReal
 ADDamageVarForcingFunc::computeQpResidual()
 { 
+  // if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
+  //   return -1 * (1 - _B_old[_qp]) * ( _Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+  // }
+  // else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
+  //   //with healing
+  //   return -1 * (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+  //   //no healing
+  //   //return 0.0;
+  // }
+  // else{
+  //   mooseError("xi_old is OUT-OF-RANGE!.");
+  //   return 0;
+  // }
+
+  //ggw183
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    return -1 * (1 - _B_old[_qp]) * ( _Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+    return -1 * ( _Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     //with healing
-    return -1 * (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
+    return -1 * ( _C1 * std::exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) * _test[_i][_qp] + _D * _grad_u[_qp] * _grad_test[_i][_qp] );
     //no healing
     //return 0.0;
   }

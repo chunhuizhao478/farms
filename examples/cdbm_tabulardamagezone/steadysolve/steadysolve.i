@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  './meshfile/tabulardamagezone.msh'
+        file =  '../meshfile/tabulardamagezone.msh'
     []
     [./sidesets]
         input = msh
@@ -176,66 +176,20 @@
 
 [Kernels]
     [dispkernel_x]
-        type = ADDynamicStressDivergenceTensors
+        type = ADStressDivergenceTensors
         displacements = 'disp_x disp_y'
         variable = disp_x
         component = 0
     []
     [dispkernel_y]
-        type = ADDynamicStressDivergenceTensors
+        type = ADStressDivergenceTensors
         displacements = 'disp_x disp_y'
         variable = disp_y
         component = 1
     []
-    [inertia_x]
-        type = ADInertialForce
-        variable = disp_x
-        velocity = vel_x
-        acceleration = accel_x
-        beta = 0.25
-        gamma = 0.5
-    []
-    [inertia_y]
-        type = ADInertialForce
-        variable = disp_y
-        velocity = vel_y
-        acceleration = accel_y
-        beta = 0.25
-        gamma = 0.5
-    []
 []
 
 [AuxKernels]
-    [accel_x]
-        type = NewmarkAccelAux
-        variable = accel_x
-        displacement = disp_x
-        velocity = vel_x
-        beta = 0.25
-        execute_on = timestep_end
-    []
-    [vel_x]
-        type = NewmarkVelAux
-        variable = vel_x
-        acceleration = accel_x
-        gamma = 0.5
-        execute_on = timestep_end
-    []
-    [accel_y]
-        type = NewmarkAccelAux
-        variable = accel_y
-        displacement = disp_y
-        velocity = vel_y
-        beta = 0.25
-        execute_on = timestep_end
-    []
-    [vel_y]
-        type = NewmarkVelAux
-        variable = vel_y
-        acceleration = accel_y
-        gamma = 0.5
-        execute_on = timestep_end
-    []
     #
     [get_xi_old]
         type = ADMaterialRealAux
@@ -329,15 +283,15 @@
     #func_stress
     [func_stress_xx]
         type = ConstantFunction
-        value = -50e6
+        value = 0
     [../]
     [func_stress_xy]
         type = ConstantFunction
-        value = 35e6
+        value = 0
     [../]
     [func_stress_yy]
         type = ConstantFunction
-        value = -50e6
+        value = 0
     [../]
     [func_stress_xz]
         type = ConstantFunction
@@ -389,23 +343,23 @@
 []
   
 [Executioner]
-    type = Transient
+    type = Steady
     solve_type = 'PJFNK'
-    start_time = 0
-    end_time = 800
-    num_steps = 1000
+    # start_time = 0
+    # end_time = 800
+    # num_steps = 1000
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-4
     nl_max_its = 10
     nl_abs_tol = 1e-6
-    timestep_tolerance = 1e-6
+    # timestep_tolerance = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-4
+    # dt = 1e-4
 []  
 
 [Outputs]
@@ -413,79 +367,28 @@
 []
 
 [BCs]
-    [fix_top_x]
-        type = DirichletBC
-        variable = disp_x
+    [pressure_top]
+        type = Pressure
         boundary = top
-        value = 0
-    []
-    [fix_top_y]
-        type = DirichletBC
         variable = disp_y
-        boundary = top
-        value = 0
+        factor = 50e6
     []
-    [fix_bot_x]
-        type = DirichletBC
-        variable = disp_x
+    [pressure_bot]
+        type = Pressure
         boundary = bottom
-        value = 0
-    []
-    [fix_bot_y]
-        type = DirichletBC
         variable = disp_y
-        boundary = bottom
-        value = 0
+        factor = 50e6
     []
-    [fix_left_x]
-        type = DirichletBC
-        variable = disp_x
+    [pressure_left]
+        type = Pressure
         boundary = left
-        value = 0
-    []
-    [fix_left_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = left
-        value = 0
-    []
-    [fix_right_x]
-        type = DirichletBC
         variable = disp_x
+        factor = 50e6
+    []
+    [pressure_right]
+        type = Pressure
         boundary = right
-        value = 0
-    []
-    [fix_right_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = right
-        value = 0
-    []
-[]
-
-[MultiApps]
-    [./sub_app]
-        type = TransientMultiApp
-        positions = '0 0 0'
-        input_files = 'sub.i'
-        execute_on = 'TIMESTEP_BEGIN'
-    [../]
-[]
-  
-[Transfers]
-    [pull_resid]
-        type = MultiAppCopyTransfer
-        from_multi_app = sub_app
-        source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub'
-        variable = 'alpha_in B_in alpha_grad_x alpha_grad_y'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #we actually don't need to pass alpha and B
-    [push_disp]
-        type = MultiAppCopyTransfer
-        to_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
-        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
-        execute_on = 'TIMESTEP_BEGIN'
+        variable = disp_x
+        factor = 50e6
     []
 []

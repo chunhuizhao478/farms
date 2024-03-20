@@ -1,5 +1,4 @@
 #!/bin/bash
-
 conda activate moose
 make -j 8
 

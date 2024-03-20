@@ -20,6 +20,8 @@ for i in range(1,numofevents+1):
     vx_event_i = np.loadtxt("./events_data/vx_event"+str(i)+".txt",delimiter=",")
     vy_event_i = np.loadtxt("./events_data/vy_event"+str(i)+".txt",delimiter=",")
 
+    #make the first time as origin 0
+    time_event_i = time_event_i - time_event_i[0]
     #flatten the data
     time = time_event_i.flatten().tolist()
 
@@ -94,5 +96,5 @@ for i in range(1,numofevents+1):
                 f.write("%s\n" % item)
 
     #dump time in csv file
-    np.savetxt('./events_data_piecewisemultilinear/events_data_time_num'+str(i)+'.csv',time_event_i)
+    np.savetxt('./events_data_piecewisemultilinear/events_data_time_num'+str(i)+'.csv',time_event_i,delimiter=' ')
 

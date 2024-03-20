@@ -110,12 +110,24 @@ ADBreakageVarForcingFuncTDZ::computeQpResidual()
     ADReal alphacr = computeAlphaCr(xi);
     ADReal Prob = 1.0 / ( std::exp( (alphacr - alpha) / _beta_width ) + 1.0 );
 
-    //no healing //this formulation is used in the splitstrain article
-    if ( xi >= _xi_0 && xi <= _xi_max ){
-        return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+    // //no healing //this formulation is used in the splitstrain article
+    // if ( xi >= _xi_0 && xi <= _xi_max ){
+    //     return -1.0 * C_B * Prob * (1-B) * I2 * (xi - _xi_0) * _test[_i][_qp]; //could heal if xi < xi_0
+    // }
+    // else if ( xi < _xi_0 && xi >= _xi_min ){
+    //     return -1.0 * C_BH * I2 * ( xi - _xi_0 ) * _test[_i][_qp];
+    // }
+    // else{
+    //     mooseError("xi_old is OUT-OF-RANGE!.");
+    //     return 0;
+    // }
+
+    //with energy functions
+    if ( xi >= _xi_d && xi <= _xi_max ){
+        return -1.0 * C_B * Prob * I2 * ((_mu_old[_qp]-_a0)-(_a1+_gamma_old[_qp])*xi+(0.5*_lambda_old[_qp]-_a2)*xi*xi-(_a3)*xi*xi*xi) * _test[_i][_qp]; //could heal if xi < xi_0
     }
-    else if ( xi < _xi_0 && xi >= _xi_min ){
-        return -1.0 * C_BH * I2 * ( xi - _xi_0 ) * _test[_i][_qp];
+    else if ( xi < _xi_d && xi >= _xi_min ){
+        return -1.0 * C_BH * I2 * ((_mu_old[_qp]-_a0)-(_a1+_gamma_old[_qp])*xi+(0.5*_lambda_old[_qp]-_a2)*xi*xi-(_a3)*xi*xi*xi) * _test[_i][_qp];
     }
     else{
         mooseError("xi_old is OUT-OF-RANGE!.");

@@ -346,21 +346,71 @@ ADComputeDamageBreakageStressv2::setupInitial()
 
   ADReal alpha_o = 0;
 
-  // if (x_coord >= -1.21 and x_coord <= 1.21 and y_coord >= -0.21 and y_coord <= 0.21)
+  // if (x_coord >= -1.2 and x_coord <= 1.2 and y_coord >= -0.2 and y_coord <= 0.2)
   // {
   //   if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01 and y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
-  //     alpha_o = 0.85;
+  //     alpha_o = 0.8;
   //   }
   //   else{
   //     alpha_o = 0.7;
   //   }
   // }
   // else{
-  //   alpha_o = 0;
+  //   if ( y_coord <= -0.3 || y_coord >= 0.3 || x_coord <= -1.3 || x_coord >= 1.3 ){
+  //     alpha_o = 0.0;
+  //   }
+  //   else if ( x_coord >= -1.3 and x_coord <= 1.3 and y_coord >= -0.3 and y_coord <= 0.3 ){
+  //     if ( x_coord >= -1.29 and x_coord <= 1.29 and y_coord >= -0.29 and y_coord <= 0.29 ){
+  //       if ( x_coord >= -1.28 and x_coord <= 1.28 and y_coord >= -0.28 and y_coord <= 0.28 ){
+  //         if ( x_coord >= -1.27 and x_coord <= 1.27 and y_coord >= -0.27 and y_coord <= 0.27){
+  //           if ( x_coord >= -1.26 and x_coord <= 1.26 and y_coord >= -0.26 and y_coord <= 0.26){
+  //             if ( x_coord >= -1.25 and x_coord <= 1.25 and y_coord >= -0.25 and y_coord <= 0.25){
+  //               if ( x_coord >= -1.24 and x_coord <= 1.24 and y_coord >= -0.24 and y_coord <= 0.24){ 
+  //                 if ( x_coord >= -1.23 and x_coord <= 1.23 and y_coord >= -0.23 and y_coord <= 0.23){ 
+  //                   if ( x_coord >= -1.22 and x_coord <= 1.22 and y_coord >= -0.22 and y_coord <= 0.22){ 
+  //                     if ( x_coord >= -1.21 and x_coord <= 1.21 and y_coord >= -0.21 and y_coord <= 0.21){ 
+  //                       alpha_o = 0.70;
+  //                     }
+  //                     else{
+  //                       alpha_o = 0.63;  
+  //                     }
+  //                   }
+  //                   else{
+  //                     alpha_o = 0.56;  
+  //                   }
+  //                 }
+  //                 else{
+  //                   alpha_o = 0.49;  
+  //                 }                 
+  //               }
+  //               else{
+  //                 alpha_o = 0.42;
+  //               }              
+  //             }
+  //             else{
+  //               alpha_o = 0.35;
+  //             }
+  //           }
+  //           else{
+  //             alpha_o = 0.28;
+  //           }
+  //         }
+  //         else{
+  //           alpha_o = 0.21;
+  //         }
+  //       }
+  //       else{
+  //         alpha_o = 0.14;
+  //       }
+  //     }
+  //     else{
+  //       alpha_o = 0.07;
+  //     }
+  //   }
   // }
 
   if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01 and y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
-      alpha_o = 0.85;
+      alpha_o = 0.8;
   }
   else{
       alpha_o = 0.7;
