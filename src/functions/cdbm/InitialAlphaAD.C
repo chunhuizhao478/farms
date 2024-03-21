@@ -24,17 +24,16 @@ InitialAlphaAD::value(Real /*t*/, const Point & p) const
 
   Real alpha_o = 0;
 
-  if (x_coord >= -1.21 and x_coord <= 1.21 and y_coord >= -0.21 and y_coord <= 0.21)
-  {
-    if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01 and y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
-      alpha_o = 0.8;
+  if (y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
+    if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01){
+        alpha_o = 0.8;
     }
     else{
-      alpha_o = 0.7;
+        alpha_o = 0.7;
     }
   }
   else{
-    alpha_o = 0;
+    alpha_o = 0.0;
   }
   
   return alpha_o;

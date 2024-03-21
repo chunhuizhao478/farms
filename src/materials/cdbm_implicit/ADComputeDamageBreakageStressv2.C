@@ -346,74 +346,16 @@ ADComputeDamageBreakageStressv2::setupInitial()
 
   ADReal alpha_o = 0;
 
-  // if (x_coord >= -1.2 and x_coord <= 1.2 and y_coord >= -0.2 and y_coord <= 0.2)
-  // {
-  //   if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01 and y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
-  //     alpha_o = 0.8;
-  //   }
-  //   else{
-  //     alpha_o = 0.7;
-  //   }
-  // }
-  // else{
-  //   if ( y_coord <= -0.3 || y_coord >= 0.3 || x_coord <= -1.3 || x_coord >= 1.3 ){
-  //     alpha_o = 0.0;
-  //   }
-  //   else if ( x_coord >= -1.3 and x_coord <= 1.3 and y_coord >= -0.3 and y_coord <= 0.3 ){
-  //     if ( x_coord >= -1.29 and x_coord <= 1.29 and y_coord >= -0.29 and y_coord <= 0.29 ){
-  //       if ( x_coord >= -1.28 and x_coord <= 1.28 and y_coord >= -0.28 and y_coord <= 0.28 ){
-  //         if ( x_coord >= -1.27 and x_coord <= 1.27 and y_coord >= -0.27 and y_coord <= 0.27){
-  //           if ( x_coord >= -1.26 and x_coord <= 1.26 and y_coord >= -0.26 and y_coord <= 0.26){
-  //             if ( x_coord >= -1.25 and x_coord <= 1.25 and y_coord >= -0.25 and y_coord <= 0.25){
-  //               if ( x_coord >= -1.24 and x_coord <= 1.24 and y_coord >= -0.24 and y_coord <= 0.24){ 
-  //                 if ( x_coord >= -1.23 and x_coord <= 1.23 and y_coord >= -0.23 and y_coord <= 0.23){ 
-  //                   if ( x_coord >= -1.22 and x_coord <= 1.22 and y_coord >= -0.22 and y_coord <= 0.22){ 
-  //                     if ( x_coord >= -1.21 and x_coord <= 1.21 and y_coord >= -0.21 and y_coord <= 0.21){ 
-  //                       alpha_o = 0.70;
-  //                     }
-  //                     else{
-  //                       alpha_o = 0.63;  
-  //                     }
-  //                   }
-  //                   else{
-  //                     alpha_o = 0.56;  
-  //                   }
-  //                 }
-  //                 else{
-  //                   alpha_o = 0.49;  
-  //                 }                 
-  //               }
-  //               else{
-  //                 alpha_o = 0.42;
-  //               }              
-  //             }
-  //             else{
-  //               alpha_o = 0.35;
-  //             }
-  //           }
-  //           else{
-  //             alpha_o = 0.28;
-  //           }
-  //         }
-  //         else{
-  //           alpha_o = 0.21;
-  //         }
-  //       }
-  //       else{
-  //         alpha_o = 0.14;
-  //       }
-  //     }
-  //     else{
-  //       alpha_o = 0.07;
-  //     }
-  //   }
-  // }
-
-  if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01 and y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
-      alpha_o = 0.8;
+  if (y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
+    if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01){
+        alpha_o = 0.8;
+    }
+    else{
+        alpha_o = 0.7;
+    }
   }
   else{
-      alpha_o = 0.7;
+    alpha_o = 0.0;
   }
 
   //initial shear modulus (which take initial damage into account)
@@ -432,8 +374,8 @@ ADComputeDamageBreakageStressv2::setupInitial()
   _B[_qp] = 0.0;
 
   //Convert (lambda_o,shear_modulus_o) to (youngs_modulus_o,poisson_ratio_o)
-  ADReal youngs_modulus_o = _shear_modulus_o * ( 3 * _lambda_o + 2 * _shear_modulus_o ) / ( _lambda_o + _shear_modulus_o );
-  ADReal poisson_ratio_o = _lambda_o / ( 2 * ( _lambda_o + _shear_modulus_o ));
+  ADReal youngs_modulus_o = initial_shear_modulus * ( 3 * _lambda_o + 2 * initial_shear_modulus ) / ( _lambda_o + initial_shear_modulus );
+  ADReal poisson_ratio_o = _lambda_o / ( 2 * ( _lambda_o + initial_shear_modulus ));
 
   //Get stress components
   ADRankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
