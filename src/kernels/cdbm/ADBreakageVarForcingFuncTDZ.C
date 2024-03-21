@@ -122,12 +122,12 @@ ADBreakageVarForcingFuncTDZ::computeQpResidual()
     //     return 0;
     // }
 
-    //with energy functions
+    //ggw183
     if ( xi >= _xi_d && xi <= _xi_max ){
-        return -1.0 * C_B * Prob * I2 * ((_mu_old[_qp]-_a0)-(_a1+_gamma_old[_qp])*xi+(0.5*_lambda_old[_qp]-_a2)*xi*xi-(_a3)*xi*xi*xi) * _test[_i][_qp]; //could heal if xi < xi_0
+        return -1.0 * C_B * Prob * I2 * ((_mu_old[_qp]-_a0)-(_a1+_gamma_old[_qp])*xi+(0.5*_lambda_old[_qp]-_a2)*xi*xi-(_a3)*xi*xi*xi)/((1)); //could heal if xi < xi_0
     }
     else if ( xi < _xi_d && xi >= _xi_min ){
-        return -1.0 * C_BH * I2 * ((_mu_old[_qp]-_a0)-(_a1+_gamma_old[_qp])*xi+(0.5*_lambda_old[_qp]-_a2)*xi*xi-(_a3)*xi*xi*xi) * _test[_i][_qp];
+        return -1.0 * C_BH * I2 * ((_mu_old[_qp]-_a0)-(_a1+_gamma_old[_qp])*xi+(0.5*_lambda_old[_qp]-_a2)*xi*xi-(_a3)*xi*xi*xi)/((1));
     }
     else{
         mooseError("xi_old is OUT-OF-RANGE!.");

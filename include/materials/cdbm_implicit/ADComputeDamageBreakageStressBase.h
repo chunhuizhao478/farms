@@ -71,6 +71,8 @@ protected:
   ADMaterialProperty<Real> & _shear_modulus;
   /// gamma_damaged (damage modulus)
   ADMaterialProperty<Real> & _gamma_damaged;
+  /// principal strain
+  ADMaterialProperty<Real> & _principal_strain;
   /// viscoelastic strain
   ADMaterialProperty<RankTwoTensor> & _eps_p;
   /// elastic strain

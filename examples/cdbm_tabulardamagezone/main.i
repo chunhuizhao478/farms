@@ -2,17 +2,15 @@
 
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file =  './meshfile/tabulardamagezone.msh'
-    []
-    [./sidesets]
-        input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
+        type = GeneratedMeshGenerator
+        dim = 2
+        nx = 240
+        ny = 240
+        xmin = -1.2
+        xmax = 1.2
+        ymin = -1.2
+        ymax = 1.2
+        elem_type = QUAD4
     []
 []
 
@@ -172,6 +170,11 @@
         order = CONSTANT
         family = MONOMIAL        
     []
+    #principal strain
+    [./principal_strain_rate_out]
+        order = CONSTANT
+        family = MONOMIAL         
+    []
 []
 
 [Kernels]
@@ -286,6 +289,13 @@
         function = func_initial_alpha
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #principal strain
+    [get_principal_strain]
+        type = ADMaterialRateRealAux
+        property = principal_strain
+        variable = principal_strain_rate_out
+        execute_on = 'INITIAL TIMESTEP_END'
+    []
 []
 
 [Materials]
@@ -333,7 +343,7 @@
     [../]
     [func_stress_xy]
         type = ConstantFunction
-        value = 35e6
+        value = 20e6
     [../]
     [func_stress_yy]
         type = ConstantFunction
@@ -379,6 +389,14 @@
     [func_initial_alpha]
         type = InitialAlphaAD
     []
+    [func_top_bc]
+        type = ParsedFunction
+        expression = '10*t'
+    []
+    [func_bot_bc]
+        type = ParsedFunction
+        expression = '-10*t'
+    []
 []
 
 [Preconditioning]
@@ -396,16 +414,16 @@
     num_steps = 1000
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-4
-    nl_max_its = 10
-    nl_abs_tol = 1e-6
+    nl_rel_tol = 1e-6
+    nl_max_its = 20
+    nl_abs_tol = 1e-10
     timestep_tolerance = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-4
+    dt = 1e-5
 []  
 
 [Outputs]

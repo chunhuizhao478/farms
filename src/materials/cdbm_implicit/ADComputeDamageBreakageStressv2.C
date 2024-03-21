@@ -300,6 +300,10 @@ ADComputeDamageBreakageStressv2::computeQpStress()
     _I2[_qp] = I2_out;
     _xi[_qp] = xi_out; 
 
+    //compute principal strain
+    //_principal_strain[_qp] = 0.5 * ( eps11e_out + eps22e_out ) + std::sqrt( std::pow( 0.5 * ( eps11e_out - eps22e_out ) , 2) + std::pow(eps12e_out , 2) );
+    _principal_strain[_qp] = I1_out;
+
     //compute stress
     //sts_total, stress are updated
     //feed total stress
@@ -347,8 +351,11 @@ ADComputeDamageBreakageStressv2::setupInitial()
   ADReal alpha_o = 0;
 
   if (y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
-    if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01){
+    if (x_coord >= -0.5-2*0.01 and x_coord <= -0.5+2*0.01){
         alpha_o = 0.8;
+    }
+    else if (x_coord <= -0.6 || x_coord >= 0.6){
+        alpha_o = 0.0;
     }
     else{
         alpha_o = 0.7;
@@ -359,7 +366,7 @@ ADComputeDamageBreakageStressv2::setupInitial()
   }
 
   //initial shear modulus (which take initial damage into account)
-  ADReal initial_shear_modulus = _shear_modulus_o - _xi_0 * alpha_o * _gamma_damaged_r;
+  ADReal initial_shear_modulus = _shear_modulus_o + _xi_0 * alpha_o * _gamma_damaged_r;
 
   //compute initial strain based on initial stress
   /// lambda (first lame const)

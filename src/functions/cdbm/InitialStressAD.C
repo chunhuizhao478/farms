@@ -24,12 +24,19 @@ InitialStressAD::value(Real /*t*/, const Point & p) const
 
   Real T1_o = 0;
 
-  if (x_coord >= -400 and x_coord <= 400 and y_coord >= -100 and y_coord <= 100)
-  {
-    T1_o = 93e6;
+  if (y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
+    if (x_coord >= -1.0-2*0.01 and x_coord <= -1.0+2*0.01){
+        T1_o = 35e6;
+    }
+    else if (x_coord <= -1.1 || x_coord >= 1.1){
+        T1_o = 30e6;
+    }
+    else{
+        T1_o = 30e6;
+    }
   }
   else{
-    T1_o = 70e6;
+    T1_o = 30e6;
   }
   
   return T1_o;

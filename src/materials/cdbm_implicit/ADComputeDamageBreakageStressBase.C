@@ -49,6 +49,7 @@ ADComputeDamageBreakageStressBase::ADComputeDamageBreakageStressBase(const Input
     _lambda(declareADProperty<Real>("lambda")),
     _shear_modulus(declareADProperty<Real>("shear_modulus")),
     _gamma_damaged(declareADProperty<Real>("gamma_damaged")),
+    _principal_strain(declareADProperty<Real>("principal_strain")),
     _eps_p(declareADProperty<RankTwoTensor>("eps_p")),
     _eps_e(declareADProperty<RankTwoTensor>("eps_e")),
     _eps_total(declareADProperty<RankTwoTensor>("eps_total")),

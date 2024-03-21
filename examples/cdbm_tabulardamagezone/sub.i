@@ -1,7 +1,14 @@
 [Mesh]
-  [./msh]
-    type = FileMeshGenerator
-    file =  './meshfile/tabulardamagezone.msh'
+    [./msh]
+      type = GeneratedMeshGenerator
+      dim = 2
+      nx = 240
+      ny = 240
+      xmin = -1.2
+      xmax = 1.2
+      ymin = -1.2
+      ymax = 1.2
+      elem_type = QUAD4
   []
 []
   
@@ -9,10 +16,10 @@
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    # lambda_o = 3.204e10
+    # lambda_o = 30e9
       
     #initial shear modulus value (second lame constant) [Pa]
-    # shear_modulus_o = 3.204e10
+    # shear_modulus_o = 30e9
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
