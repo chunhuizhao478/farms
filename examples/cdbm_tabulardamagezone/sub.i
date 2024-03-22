@@ -3,11 +3,11 @@
       type = GeneratedMeshGenerator
       dim = 2
       nx = 240
-      ny = 240
+      ny = 40
       xmin = -1.2
       xmax = 1.2
-      ymin = -1.2
-      ymax = 1.2
+      ymin = -0.2
+      ymax = 0.2
       elem_type = QUAD4
   []
 []
@@ -37,7 +37,7 @@
     xi_min = -1.8
   
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1e7
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd

@@ -350,12 +350,27 @@ ADComputeDamageBreakageStressv2::setupInitial()
 
   ADReal alpha_o = 0;
 
-  if (y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
+  // if (y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
+  //   if (x_coord >= -0.5-2*0.01 and x_coord <= -0.5+2*0.01){
+  //       alpha_o = 0.8;
+  //   }
+  //   else if (x_coord <= -0.6 || x_coord >= 0.6){
+  //       alpha_o = 0.0;
+  //   }
+  //   else{
+  //       alpha_o = 0.7;
+  //   }
+  // }
+  // else{
+  //   alpha_o = 0.0;
+  // }
+
+  if (y_coord >= 0-1*0.01 and y_coord <= 0){
     if (x_coord >= -0.5-2*0.01 and x_coord <= -0.5+2*0.01){
         alpha_o = 0.8;
     }
     else if (x_coord <= -0.6 || x_coord >= 0.6){
-        alpha_o = 0.0;
+        alpha_o = 0.7;
     }
     else{
         alpha_o = 0.7;

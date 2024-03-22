@@ -5,11 +5,11 @@
         type = GeneratedMeshGenerator
         dim = 2
         nx = 240
-        ny = 240
+        ny = 40
         xmin = -1.2
         xmax = 1.2
-        ymin = -1.2
-        ymax = 1.2
+        ymin = -0.2
+        ymax = 0.2
         elem_type = QUAD4
     []
 []
@@ -342,8 +342,9 @@
         value = -50e6
     [../]
     [func_stress_xy]
-        type = ConstantFunction
-        value = 20e6
+        # type = ConstantFunction
+        # value = 30e6
+        type = InitialStressAD
     [../]
     [func_stress_yy]
         type = ConstantFunction
@@ -411,7 +412,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 800
-    num_steps = 1000
+    num_steps = 10000
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -423,11 +424,12 @@
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-5
+    dt = 1e-4
 []  
 
 [Outputs]
     exodus = true
+    interval = 10
 []
 
 [BCs]
