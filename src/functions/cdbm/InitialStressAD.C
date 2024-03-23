@@ -36,7 +36,7 @@ InitialStressAD::value(Real /*t*/, const Point & p) const
     }
   }
   else{
-    T1_o = 0;
+    T1_o = 20e6;
   }
   
   return T1_o;

@@ -116,6 +116,7 @@ ADBreakageVarForcingFuncTDZ::computeQpResidual()
     }
     else if ( xi < _xi_0 && xi >= _xi_min ){
         return -1.0 * C_BH * I2 * ( xi - _xi_0 ) * _test[_i][_qp];
+        //return 0.0;
     }
     else{
         mooseError("xi_old is OUT-OF-RANGE!.");

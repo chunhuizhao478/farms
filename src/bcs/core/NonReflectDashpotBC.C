@@ -28,7 +28,7 @@ NonReflectDashpotBC::NonReflectDashpotBC(const InputParameters & parameters)
     _disp_y_var(coupled("disp_y")),
     _disp_x_dot(coupledDot("disp_x")),
     _disp_y_dot(coupledDot("disp_y")),
-    _density(getMaterialPropertyByName<Real>("density")),
+    _density(getMaterialPropertyByName<Real>("nonADdensity")),
     _p_wave_speed(getParam<Real>("p_wave_speed")),
     _shear_wave_speed(getParam<Real>("shear_wave_speed"))
 {

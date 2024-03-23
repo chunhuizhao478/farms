@@ -370,7 +370,7 @@ ADComputeDamageBreakageStressv2::setupInitial()
         alpha_o = 0.8;
     }
     else if (x_coord <= -0.6 || x_coord >= 0.6){
-        alpha_o = 0.7;
+        alpha_o = 0.0;
     }
     else{
         alpha_o = 0.7;

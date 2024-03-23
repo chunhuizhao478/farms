@@ -2,10 +2,10 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2
-      nx = 240
+      nx = 160
       ny = 40
-      xmin = -1.2
-      xmax = 1.2
+      xmin = -0.8
+      xmax = 0.8
       ymin = -0.2
       ymax = 0.2
       elem_type = QUAD4

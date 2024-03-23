@@ -4,10 +4,10 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 240
+        nx = 160
         ny = 40
-        xmin = -1.2
-        xmax = 1.2
+        xmin = -0.8
+        xmax = 0.8
         ymin = -0.2
         ymax = 0.2
         elem_type = QUAD4
@@ -175,6 +175,11 @@
         order = CONSTANT
         family = MONOMIAL         
     []
+    #record shear stress
+    [./shear_stress_applied]
+        order = CONSTANT
+        family = MONOMIAL        
+    []
 []
 
 [Kernels]
@@ -296,6 +301,11 @@
         variable = principal_strain_rate_out
         execute_on = 'INITIAL TIMESTEP_END'
     []
+    [record_applied_shear_stress]
+        type = FunctionAux
+        function = func_stress_xy
+        variable = shear_stress_applied
+    []
 []
 
 [Materials]
@@ -317,6 +327,11 @@
     [density]
         type = ADGenericConstantMaterial
         prop_names = 'density'
+        prop_values = '2700'
+    []
+    [nonADdensity]
+        type = GenericConstantMaterial
+        prop_names = 'nonADdensity'
         prop_values = '2700'
     []
     [./static_initial_stress_tensor]
@@ -343,9 +358,13 @@
     [../]
     [func_stress_xy]
         # type = ConstantFunction
-        # value = 30e6
+        # value = 20e6
         type = InitialStressAD
     [../]
+    # [func_stress_xy]
+    #     type = ParsedFunction
+    #     expression = '20e6 + 1e9 * t'
+    # []
     [func_stress_yy]
         type = ConstantFunction
         value = -50e6
@@ -392,7 +411,7 @@
     []
     [func_top_bc]
         type = ParsedFunction
-        expression = '10*t'
+        expression = '1*t'
     []
     [func_bot_bc]
         type = ParsedFunction
@@ -433,54 +452,110 @@
 []
 
 [BCs]
-    [fix_top_x]
-        type = DirichletBC
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC
+        component = 0
         variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = top
-        value = 0
     []
-    [fix_top_y]
-        type = DirichletBC
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC
+        component = 1
         variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = top
-        value = 0
     []
-    [fix_bot_x]
-        type = DirichletBC
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC
+        component = 0
         variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = bottom
-        value = 0
     []
-    [fix_bot_y]
-        type = DirichletBC
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC
+        component = 1
         variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = bottom
-        value = 0
     []
-    [fix_left_x]
-        type = DirichletBC
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC
+        component = 0
         variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = left
-        value = 0
     []
-    [fix_left_y]
-        type = DirichletBC
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC
+        component = 1
         variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = left
-        value = 0
     []
-    [fix_right_x]
-        type = DirichletBC
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC
+        component = 0
         variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = right
-        value = 0
     []
-    [fix_right_y]
-        type = DirichletBC
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC
+        component = 1
         variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
         boundary = right
-        value = 0
     []
+    # [bc_load_top_x]
+    #     type = FunctionDirichletBC
+    #     variable = disp_x
+    #     function = func_top_bc
+    #     boundary = top
+    # []
+    # [bc_fix_top_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     value = 0
+    #     boundary = top
+    # []
+    # [bc_fix_bottom_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     value = 0
+    #     boundary = bottom
+    # []
+    # [bc_fix_bottom_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     value = 0
+    #     boundary = bottom
+    # []
 []
 
 [MultiApps]
