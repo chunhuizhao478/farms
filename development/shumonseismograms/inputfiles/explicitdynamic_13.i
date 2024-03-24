@@ -11,6 +11,9 @@
     []
 []
 
+[GlobalParams]
+    q = 0.2
+[]
 
 [Variables]
     [disp_x]
@@ -53,6 +56,18 @@
         type = InertialForce
         use_displaced_mesh = true
         variable = disp_y
+    []
+    [./damping_x]
+        type = StiffPropDamping
+        displacements = 'disp_x disp_y'
+        variable = disp_x
+        component = 0
+    []
+    [./damping_y]
+        type = StiffPropDamping
+        displacements = 'disp_x disp_y'
+        variable = disp_y
+        component = 1       
     []
 []
 
@@ -107,20 +122,24 @@
   
 [Executioner]
     type = Transient
-
+    dt = 6.94e-5
+    num_steps = 4000
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
+        use_constant_mass = true
     []    
-  
-    [TimeStepper]
-      type = TimeSequenceFromTimes
-      times = file
-    []
 []
 
 [Outputs]
     exodus = true
+    interval = 10
+    show = 'vel_x vel_y'
+    [checkpoints]
+      type = Checkpoint
+      num_files = 1
+      execute_on = 'FINAL'
+    []
 []
 
 [BCs]
@@ -145,8 +164,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 6095
-        shear_wave_speed = 3129
+        p_wave_speed = 5999.81
+        shear_wave_speed = 3464
         boundary = bottom
     []
     [./dashpot_bottom_y]
@@ -155,8 +174,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 6095
-        shear_wave_speed = 3129
+        p_wave_speed = 5999.81
+        shear_wave_speed = 3464
         boundary = bottom
     []
     [./dashpot_left_x]
@@ -165,8 +184,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 6095
-        shear_wave_speed = 3129
+        p_wave_speed = 5999.81
+        shear_wave_speed = 3464
         boundary = left
     []
     [./dashpot_left_y]
@@ -175,8 +194,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 6095
-        shear_wave_speed = 3129
+        p_wave_speed = 5999.81
+        shear_wave_speed = 3464
         boundary = left
     []
     [./dashpot_right_x]
@@ -185,8 +204,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 6095
-        shear_wave_speed = 3129
+        p_wave_speed = 5999.81
+        shear_wave_speed = 3464
         boundary = right
     []
     [./dashpot_right_y]
@@ -195,8 +214,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 6095
-        shear_wave_speed = 3129
+        p_wave_speed = 5999.81
+        shear_wave_speed = 3464
         boundary = right
     []
 []
