@@ -342,12 +342,13 @@
         type = FunctionAux
         function = func_stress_xy
         variable = shear_stress_applied
+        execute_on = 'INITIAL'
     []
 []
 
 [Materials]
     [damagestress]
-        type = ADComputeDamageBreakageStressv2
+        type = ADComputeDamageBreakageStress3D
         alpha_in = alpha_in
         B_in = B_in
         alpha_grad_x = alpha_grad_x
@@ -356,6 +357,7 @@
         initial_alpha = initial_alpha
         # output_properties = 'eps_p eps_e eps_total I1 sts_total'
         outputs = exodus
+        # outputs = nemesis
     []
     [strain]
         type = ADComputeSmallStrain
@@ -397,7 +399,7 @@
     [func_stress_xy]
         # type = ConstantFunction
         # value = 20e6
-        type = InitialStressAD
+        type = InitialStress3DAD
     [../]
     [func_stress_yy]
         type = ConstantFunction
@@ -454,7 +456,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 800
-    num_steps = 1
+    num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -470,8 +472,9 @@
 []  
 
 [Outputs]
+    nemesis = false
     exodus = true
-    interval = 10
+    interval = 1
 []
 
 [BCs]
@@ -630,8 +633,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
-        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
+        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old shear_stress_applied'
+        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old shear_stress_applied'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []

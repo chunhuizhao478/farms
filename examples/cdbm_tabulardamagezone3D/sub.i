@@ -144,6 +144,11 @@
       order = CONSTANT
       family = MONOMIAL
     []
+    #initial stress
+    [./shear_stress_applied]
+      order = CONSTANT
+      family = MONOMIAL        
+    []
 []
   
 [Kernels]

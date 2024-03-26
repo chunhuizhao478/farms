@@ -365,12 +365,12 @@ ADComputeDamageBreakageStress3D::setupInitial()
   // else{
   //   alpha_o = 0.0;
   // }
-  if (z_coord == 0){
-    if (y_coord >= 0-1*0.01 and y_coord <= 0){
-      if (x_coord >= -0.5-2*0.01 and x_coord <= -0.5+2*0.01){
+  if (z_coord >= 0-0.01 and z_coord <= 0){
+    if (y_coord >= -0.15 and y_coord <= 0.15){
+      if (x_coord >= -0.6-2*0.01 and x_coord <= -0.6+2*0.01 and y_coord >= 0-2*0.01 and y_coord <= 0+2*0.01){
           alpha_o = 0.8;
       }
-      else if (x_coord <= -0.6 || x_coord >= 0.6){
+      else if (x_coord <= -0.75 || x_coord >= 0.75){
           alpha_o = 0.0;
       }
       else{
@@ -440,7 +440,7 @@ ADComputeDamageBreakageStress3D::setupInitial()
   //eps_total
   _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
   _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
-  _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](1,2) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
+  _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](2,1) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
   //sts_total
   _sts_total[_qp] = stress_initial;
 
