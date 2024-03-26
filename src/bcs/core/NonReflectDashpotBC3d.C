@@ -32,7 +32,7 @@ NonReflectDashpotBC3d::NonReflectDashpotBC3d(const InputParameters & parameters)
     _disp_x_dot(coupledDot("disp_x")),
     _disp_y_dot(coupledDot("disp_y")),
     _disp_z_dot(coupledDot("disp_z")),
-    _density(getMaterialPropertyByName<Real>("density")),
+    _density(getMaterialPropertyByName<Real>("nonADdensity")),
     _p_wave_speed(getParam<Real>("p_wave_speed")),
     _shear_wave_speed(getParam<Real>("shear_wave_speed"))
 {
