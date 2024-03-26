@@ -100,6 +100,11 @@
         prop_names = density
         prop_values = 2670
     []
+    [nonADdensity]
+        type = GenericConstantMaterial
+        prop_names = nonADdensity
+        prop_values = 2670
+    []
 []
 
 [Functions]

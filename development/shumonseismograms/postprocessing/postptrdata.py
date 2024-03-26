@@ -167,11 +167,11 @@ def PlotPtrXYVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,angle,i
     ptr_x_valhist = arr_param_x[:,idc]
     ptr_y_valhist = arr_param_y[:,idc]
 
-    print("compute the magnitude of given variable values ...")
+    # print("compute the magnitude of given variable values ...")
 
-    ptr_mag_valhist = np.sqrt(ptr_x_valhist**2+ptr_y_valhist**2)
+    # ptr_mag_valhist = np.sqrt(ptr_x_valhist**2+ptr_y_valhist**2)
 
-    print("direction converting to fault normal/parallel ...")
+    # print("direction converting to fault normal/parallel ...")
     
     # #fault_normal/fault_parallel components
     # theta = math.radians(angle)
@@ -181,7 +181,7 @@ def PlotPtrXYVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,angle,i
     # fault_normal = np.multiply(math.sin(theta),ptr_x_valhist) - np.multiply(math.cos(theta),ptr_y_valhist)
     # fault_parallel = np.multiply(math.cos(theta),ptr_x_valhist) + np.multiply(math.sin(theta),ptr_y_valhist)
 
-    print("filtering . remove high frenquency ...")
+    # print("filtering . remove high frenquency ...")
 
     # create a normalized Hanning window
     # windowSize = 40
@@ -192,12 +192,39 @@ def PlotPtrXYVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,angle,i
     # faultnormalfiltered = np.convolve(window, fault_normal, mode='same')
     # faultparallelfiltered = np.convolve(window, fault_parallel, mode='same')
 
+    print("Performing Fourier Transform ...") 
+
+    # Perform the Fourier Transform
+    ## time
+    frequencies = np.fft.fftfreq(timeseries[:].size, timeseries[:][1] - timeseries[:][0])   
+
+    ## x dir
+    V_fft_x = np.fft.fft(ptr_x_valhist)
+    
+    # We need only the positive half of the spectrum, since the negative is a mirror of the positive
+    pos_half = frequencies > 0
+    
+    # Find the peak magnitude and its corresponding frequency
+    peak_magnitude_x = np.max(np.abs(V_fft_x[pos_half]))
+    peak_frequency_x = frequencies[pos_half][np.argmax(np.abs(V_fft_x[pos_half]))]
+    
+    ## y dir
+    V_fft_y = np.fft.fft(ptr_y_valhist)
+
+    # We need only the positive half of the spectrum, since the negative is a mirror of the positive
+    pos_half = frequencies > 0
+    
+    # Find the peak magnitude and its corresponding frequency
+    peak_magnitude_y = np.max(np.abs(V_fft_y[pos_half]))
+    peak_frequency_y = frequencies[pos_half][np.argmax(np.abs(V_fft_y[pos_half]))]
+
     print("ploting ...")
 
-    #plot
+    #plot velocity in x
     #global
     plt.figure(figsize=(10,6))
-    plt.plot(timeseries[:],ptr_mag_valhist,'b-',label = "velocity mag")
+    plt.subplot(1, 2, 1)
+    plt.plot(timeseries[:],ptr_x_valhist,'b-',label = "velocity in x direction")
     # plt.plot(timeseries[:],ptr_y_valhist,'r-',label = "velocity y")
     plt.xlabel("time history (s)")
     plt.ylabel("velocity (m/s)")
@@ -206,17 +233,55 @@ def PlotPtrXYVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,angle,i
     # plt.xlim([0,35])
     # plt.ylim([0,18.0])
 
+    plt.subplot(1, 2, 2)  
+    plt.plot(frequencies, np.abs(V_fft_x))
+    plt.title('Magnitude of Fourier Transform')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Magnitude')     
+    plt.tight_layout()
+
+    plt.savefig(save_folder_output_file_path+'/imgx'+str(i)+'.png')
+
+    #plot velocity in y
+    #global
+    plt.figure(figsize=(10,6))
+    plt.subplot(1, 2, 1)
+    plt.plot(timeseries[:],ptr_y_valhist,'b-',label = "velocity in y direction")
+    # plt.plot(timeseries[:],ptr_y_valhist,'r-',label = "velocity y")
+    plt.xlabel("time history (s)")
+    plt.ylabel("velocity (m/s)")
+    plt.legend()
+    plt.title("Time History of Velocity at location: "+str(ptr_x)+" , "+str(ptr_y))
+    # plt.xlim([0,35])
+    # plt.ylim([0,18.0]) 
+    
+    plt.subplot(1, 2, 2)  
+    plt.plot(frequencies, np.abs(V_fft_y))
+    plt.title('Magnitude of Fourier Transform')
+    plt.xlabel('Frequency (Hz)')
+    plt.ylabel('Magnitude') 
+    plt.tight_layout()
+
+    plt.savefig(save_folder_output_file_path+'/imgy'+str(i)+'.png')
+    
     #
     np.savetxt(save_folder_output_file_path+'/list_timeseries'+str(i)+'.txt',
                     timeseries,
                     fmt='%.7f',
                     newline=" ")
-    np.savetxt(save_folder_output_file_path+'/list_velmag'+str(i)+'.txt',
-                    ptr_mag_valhist,
+    np.savetxt(save_folder_output_file_path+'/list_velx'+str(i)+'.txt',
+                    ptr_x_valhist,
+                    fmt='%.7f',
+                    newline=" ")
+    np.savetxt(save_folder_output_file_path+'/list_vely'+str(i)+'.txt',
+                    ptr_y_valhist,
+                    fmt='%.7f',
+                    newline=" ")
+    np.savetxt(save_folder_output_file_path+'/list_peaks'+str(i)+'.txt',
+                    [peak_magnitude_x,peak_frequency_x,peak_magnitude_y,peak_frequency_y],
                     fmt='%.7f',
                     newline=" ")
     
-    plt.savefig(save_folder_output_file_path+'/img'+str(i)+'.png')
 
     # #fault_local
     # plt.figure()
