@@ -1,18 +1,18 @@
 [Mesh]
-  [./msh]
+    [./msh]
       type = GeneratedMeshGenerator
       dim = 3
       nx = 160
       ny = 40
-      nz = 40
+      nz = 10
       xmin = -0.8
       xmax = 0.8
       ymin = -0.2
       ymax = 0.2
-      zmin = -0.2
-      zmax = 0.2
+      zmin = -0.05
+      zmax = 0.05
       elem_type = HEX8
-  []
+    []
 []
   
 [GlobalParams]
@@ -206,5 +206,6 @@
 []
 
 [Outputs]
+  nemesis = false
   exodus = true
 []

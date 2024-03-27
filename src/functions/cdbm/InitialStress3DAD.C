@@ -31,18 +31,18 @@ InitialStress3DAD::value(Real /*t*/, const Point & p) const
           T1_o = 40e6;
       }
       else if (x_coord <= -0.75 || x_coord >= 0.75){
-          T1_o = 20e6;
+          T1_o = 25e6;
       }
       else{
-          T1_o = 20e6;
+          T1_o = 25e6;
       }
     }
     else{
-      T1_o = 20e6;
+      T1_o = 25e6;
     }
   }
   else{
-    T1_o = 20e6;
+    T1_o = 25e6;
   }
   
   return T1_o;

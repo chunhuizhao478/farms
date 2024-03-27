@@ -6,13 +6,13 @@
         dim = 3
         nx = 160
         ny = 40
-        nz = 40
+        nz = 10
         xmin = -0.8
         xmax = 0.8
         ymin = -0.2
         ymax = 0.2
-        zmin = -0.2
-        zmax = 0.2
+        zmin = -0.05
+        zmax = 0.05
         elem_type = HEX8
     []
 []
@@ -340,7 +340,7 @@
     []
     [record_applied_shear_stress]
         type = FunctionAux
-        function = func_stress_xy
+        function = func_stress_xz
         variable = shear_stress_applied
         execute_on = 'INITIAL'
     []
@@ -397,17 +397,17 @@
         value = -50e6
     [../]
     [func_stress_xy]
-        # type = ConstantFunction
-        # value = 20e6
-        type = InitialStress3DAD
+        type = ConstantFunction
+        value = 0
     [../]
     [func_stress_yy]
         type = ConstantFunction
         value = -50e6
     [../]
     [func_stress_xz]
-        type = ConstantFunction
-        value = 0
+        # type = ConstantFunction
+        # value = 0
+        type = InitialStress3DAD      
     [../]
     [func_stress_yz]
         type = ConstantFunction
@@ -432,7 +432,7 @@
     [../]
     [func_strain_xz]
         type = ConstantFunction
-        value = 0
+        value = 0  
     [../]
     [func_strain_yz]
         type = ConstantFunction
@@ -456,7 +456,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 800
-    num_steps = 10
+    num_steps = 10000
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6

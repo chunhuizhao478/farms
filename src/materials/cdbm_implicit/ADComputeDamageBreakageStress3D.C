@@ -421,7 +421,7 @@ ADComputeDamageBreakageStress3D::setupInitial()
   ADReal eps12_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts12_init                       );
   ADReal eps13_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts13_init                       );
   ADReal eps23_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts23_init                       );
-  ADReal eps33_init = 1.0 / youngs_modulus_o * ( sts11_init - poisson_ratio_o * ( sts11_init + sts22_init ) );
+  ADReal eps33_init = 1.0 / youngs_modulus_o * ( sts33_init - poisson_ratio_o * ( sts11_init + sts22_init ) );
 
   //Compute xi, I1, I2
   ADReal I1_init = eps11_init + eps22_init + eps33_init;
@@ -436,7 +436,7 @@ ADComputeDamageBreakageStress3D::setupInitial()
   //eps_e
   _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; _eps_e[_qp](0,2) = eps13_init;
   _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init; _eps_e[_qp](1,2) = eps23_init;
-  _eps_e[_qp](2,0) = eps12_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
+  _eps_e[_qp](2,0) = eps13_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
   //eps_total
   _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
   _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
