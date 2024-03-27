@@ -206,6 +206,7 @@
 []
 
 [Outputs]
-  nemesis = false
-  exodus = true
+  nemesis = true
+  exodus = false
+  interval = 10
 []
