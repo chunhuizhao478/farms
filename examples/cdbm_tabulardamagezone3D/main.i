@@ -456,7 +456,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 800
-    num_steps = 10000
+    num_steps = 100000
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -468,13 +468,13 @@
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-4
+    dt = 1e-3
 []  
 
 [Outputs]
     nemesis = true
     exodus = false
-    interval = 10
+    interval = 100
 []
 
 [BCs]
