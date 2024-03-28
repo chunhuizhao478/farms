@@ -417,7 +417,7 @@
     [../]
     [func_stress_xz]
         type = ParsedFunction
-        expression = '20e6 + 1e9 * t'
+        expression = '25e6 + 1e6 * t'
         # type = InitialStress3DAD 
         # type = ConstantFunction
         # value = 15e6
@@ -491,7 +491,7 @@
 [Outputs]
     nemesis = false
     exodus = true
-    interval = 1
+    interval = 100
 []
 
 [BCs]
