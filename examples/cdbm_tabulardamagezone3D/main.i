@@ -356,8 +356,8 @@
         alpha_grad_z = alpha_grad_z
         initial_alpha = initial_alpha
         # output_properties = 'eps_p eps_e eps_total I1 sts_total'
-        # outputs = exodus
-        outputs = nemesis
+        outputs = exodus
+        # outputs = nemesis
     []
     [strain]
         type = ADComputeSmallStrain
@@ -472,9 +472,9 @@
 []  
 
 [Outputs]
-    nemesis = true
-    exodus = false
-    interval = 100
+    nemesis = false
+    exodus = true
+    interval = 1
 []
 
 [BCs]
