@@ -40,7 +40,7 @@
     xi_min = -1.8
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e7
+    Cd_constant = 1e4
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -149,11 +149,6 @@
       order = CONSTANT
       family = MONOMIAL        
     []
-    #initial damage
-    [./initial_damage_applied]
-      order = CONSTANT
-      family = MONOMIAL        
-    []
 []
   
 [Kernels]
@@ -188,9 +183,8 @@
 
 [AuxKernels]
     [check_alpha]
-        type = CheckAlphaTDZ
+        type = CheckAlpha
         coupled = alpha_sub
-        initial_damage = initial_damage_applied
         variable = alpha_checked
         execute_on = 'TIMESTEP_END'
     []
@@ -200,13 +194,6 @@
         variable = B_checked
         execute_on = 'TIMESTEP_END'
     []
-    #
-    [record_applied_initial_damage]
-      type = FunctionAux
-      function = func_initial_damage
-      variable = initial_damage_applied
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []    
 []
   
 #by default, subApp is using the same time step as mainApp
@@ -218,14 +205,8 @@
     []
 []
 
-[Functions]
-    [func_initial_damage]
-        type = InitialAlphaAD
-    [../]  
-[]
-
-[Outputs]
-  nemesis = false
-  exodus = true
-  interval = 1
-[]
+# [Outputs]
+#   nemesis = true
+#   exodus = false
+#   interval = 10
+# []

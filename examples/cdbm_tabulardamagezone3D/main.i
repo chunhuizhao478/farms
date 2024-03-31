@@ -195,11 +195,6 @@
         order = CONSTANT
         family = MONOMIAL        
     []
-    #record initial damage
-    [./initial_damage_applied]
-        order = CONSTANT
-        family = MONOMIAL        
-    []
 []
 
 [Kernels]
@@ -341,19 +336,13 @@
         type = ADMaterialRateRealAux
         property = principal_strain
         variable = principal_strain_rate_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [record_applied_shear_stress]
         type = FunctionAux
         function = func_stress_xz
         variable = shear_stress_applied
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [record_applied_initial_damage]
-        type = FunctionAux
-        function = func_initial_damage
-        variable = initial_damage_applied
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL'
     []
 []
 
@@ -416,11 +405,9 @@
         value = -50e6
     [../]
     [func_stress_xz]
-        type = ParsedFunction
-        expression = '20e6 + 1e9 * t'
-        # type = InitialStress3DAD 
         # type = ConstantFunction
-        # value = 15e6
+        # value = 0
+        type = InitialStress3DAD      
     [../]
     [func_stress_yz]
         type = ConstantFunction
@@ -455,10 +442,6 @@
         type = ConstantFunction
         value = 0
     [../]
-    #
-    [func_initial_damage]
-        type = InitialAlphaAD
-    [../]    
 []
 
 [Preconditioning]
@@ -473,7 +456,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 800
-    num_steps = 10000
+    num_steps = 100000
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -485,7 +468,7 @@
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-3
+    dt = 1e-2
 []  
 
 [Outputs]
@@ -650,8 +633,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old shear_stress_applied initial_damage_applied'
-        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old shear_stress_applied initial_damage_applied'
+        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old shear_stress_applied'
+        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old shear_stress_applied'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
