@@ -474,7 +474,7 @@
 [Outputs]
     nemesis = false
     exodus = true
-    interval = 1
+    interval = 100
 []
 
 [BCs]
