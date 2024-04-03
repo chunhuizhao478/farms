@@ -365,20 +365,20 @@ ADComputeDamageBreakageStressv2::setupInitial()
   //   alpha_o = 0.0;
   // }
 
-  if (y_coord >= 0-1*0.01 and y_coord <= 0){
-    if (x_coord >= -0.5-2*0.01 and x_coord <= -0.5+2*0.01){
-        alpha_o = 0.8;
-    }
-    else if (x_coord <= -0.6 || x_coord >= 0.6){
-        alpha_o = 0.0;
-    }
-    else{
-        alpha_o = 0.7;
-    }
-  }
-  else{
-    alpha_o = 0.0;
-  }
+  // if (y_coord >= 0-1*0.5 and y_coord <= 0+1*0.5){
+  //   if (x_coord >= 0-1*0.5 and x_coord <= 0+1*0.5){
+  //       alpha_o = 0.5;
+  //   }
+  //   else if (x_coord <= -15 || x_coord >= 15){
+  //       alpha_o = 0.0;
+  //   }
+  //   else{
+  //       alpha_o = 0.1;
+  //   }
+  // }
+  // else{
+  //   alpha_o = 0.0;
+  // }
 
   //initial shear modulus (which take initial damage into account)
   ADReal initial_shear_modulus = _shear_modulus_o + _xi_0 * alpha_o * _gamma_damaged_r;
