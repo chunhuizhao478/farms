@@ -438,7 +438,7 @@
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 10
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-8
     timestep_tolerance = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
@@ -456,7 +456,7 @@
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 100
 []
 
 [BCs]

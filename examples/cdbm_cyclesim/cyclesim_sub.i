@@ -202,6 +202,6 @@
     []
 []
 
-[Outputs]
-  exodus = true
-[]
+# [Outputs]
+#   exodus = true
+# []
