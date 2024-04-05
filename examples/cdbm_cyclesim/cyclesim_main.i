@@ -371,8 +371,8 @@
     [../]
     [func_stress_xy]
         type = ConstantFunction
-        value = 20e6
-        type = InitialStressAD
+        value = 85e6
+        # type = InitialStressAD
     [../]
     # [func_stress_xy]
     #     type = ParsedFunction
