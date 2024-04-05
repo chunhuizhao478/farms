@@ -1,19 +1,30 @@
 #implicit continuum damage-breakage model dynamics
 
 [Mesh]
+    # [./msh]
+    #     type = FileMeshGenerator
+    #     file =  './meshfile/cyclesim.msh'
+    # []
+    # [./sidesets]
+    #     input = msh
+    #     type = SideSetsFromNormalsGenerator
+    #     normals = '-1 0 0
+    #                 1 0 0
+    #                 0 -1 0
+    #                 0 1 0'
+    #     new_boundary = 'left right bottom top'
+    # []
     [./msh]
-        type = FileMeshGenerator
-        file =  './meshfile/cyclesim.msh'
-    []
-    [./sidesets]
-        input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
-    []   
+        type = GeneratedMeshGenerator
+        dim = 2
+        nx = 200
+        ny = 200
+        xmin = -10
+        xmax = 10
+        ymin = -10
+        ymax = 10
+        elem_type = QUAD4
+    []       
 []
 
 [GlobalParams]
@@ -44,7 +55,7 @@
     xi_min = -1.8
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-15
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -312,7 +323,7 @@
 
 [Materials]
     [damagestress]
-        type = ADComputeDamageBreakageStressv2
+        type = ADComputeDamageBreakageStressCycleSim
         alpha_in = alpha_in
         B_in = B_in
         alpha_grad_x = alpha_grad_x
@@ -359,13 +370,13 @@
         value = -135e6
     [../]
     [func_stress_xy]
-        # type = ConstantFunction
-        # value = 75e6
+        type = ConstantFunction
+        value = 20e6
         type = InitialStressAD
     [../]
     # [func_stress_xy]
     #     type = ParsedFunction
-    #     expression = '20e6 + 1e9 * t'
+    #     expression = '1e4 * t'
     # []
     [func_stress_yy]
         type = ConstantFunction
@@ -432,7 +443,7 @@
     type = Transient
     solve_type = 'PJFNK'
     start_time = 0
-    end_time = 100000
+    end_time = 1e10
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -442,7 +453,7 @@
     timestep_tolerance = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
-    # automatic_scaling = true
+    automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
     [TimeStepper]
@@ -456,7 +467,7 @@
 
 [Outputs]
     exodus = true
-    interval = 100
+    interval = 1
 []
 
 [BCs]
@@ -573,6 +584,7 @@
         positions = '0 0 0'
         input_files = 'cyclesim_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
+        sub_cycling = true
     [../]
 []
   

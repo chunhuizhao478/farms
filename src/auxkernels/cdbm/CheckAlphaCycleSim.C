@@ -29,15 +29,15 @@ CheckAlphaCycleSim::computeValue()
   Real y_coord = _q_point[_qp](1); //along the normal direction
   Real initial_damage = 0.0;
 
-  if (y_coord >= 0-1*0.5 and y_coord <= 0+1*0.5){
-    if (x_coord >= 0-1*0.5 and x_coord <= 0+1*0.5){
-        initial_damage = 0.5;
+  if (y_coord >= 0-1*0.1 and y_coord <= 0+1*0.1){
+    if (x_coord >= 0-1*0.1 and x_coord <= 0+1*0.1){
+        initial_damage = 0.8;
     }
-    else if(x_coord <= -15 || x_coord >= 15){
+    else if(x_coord <= -5 || x_coord >= 5){
         initial_damage = 0.0;
     }
     else{
-        initial_damage = 0.1;
+        initial_damage = 0.7;
     }
   }
   else{

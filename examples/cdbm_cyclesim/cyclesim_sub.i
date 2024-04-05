@@ -1,16 +1,27 @@
 [Mesh]
+    # [./msh]
+    #     type = FileMeshGenerator
+    #     file =  './meshfile/cyclesim.msh'
+    # []
+    # [./sidesets]
+    #     input = msh
+    #     type = SideSetsFromNormalsGenerator
+    #     normals = '-1 0 0
+    #                 1 0 0
+    #                 0 -1 0
+    #                 0 1 0'
+    #     new_boundary = 'left right bottom top'
+    # []
     [./msh]
-        type = FileMeshGenerator
-        file =  './meshfile/cyclesim.msh'
-    []
-    [./sidesets]
-        input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
+      type = GeneratedMeshGenerator
+      dim = 2
+      nx = 200
+      ny = 200
+      xmin = -10
+      xmax = 10
+      ymin = -10
+      ymax = 10
+      elem_type = QUAD4
     []
 []
   
@@ -159,7 +170,7 @@
       variable = B_sub
     []
     [./B_forcing_func]
-        type = ADBreakageVarForcingFuncTDZ
+        type = ADBreakageVarForcingFuncCycleSim
         variable = B_sub
         alpha_old = alpha_old
         B_old = B_old
@@ -174,6 +185,7 @@
 [AuxKernels]
     [check_alpha]
         type = CheckAlpha
+        # type = CheckAlpha
         coupled = alpha_sub
         variable = alpha_checked
         execute_on = 'TIMESTEP_END'
@@ -202,6 +214,7 @@
     []
 []
 
-# [Outputs]
-#   exodus = true
-# []
+[Outputs]
+  exodus = true
+  interval = 1
+[]
