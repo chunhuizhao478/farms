@@ -365,15 +365,15 @@ ADComputeDamageBreakageStressCycleSim::setupInitial()
   //   alpha_o = 0.0;
   // }
 
-  if (y_coord >= 0-1*1.0 and y_coord <= 0+1*1.0){
+  if (y_coord >= 0-1*0.1 and y_coord <= 0+1*0.1){
     if (x_coord >= 0-1*0.1 and x_coord <= 0+1*0.1){
-        alpha_o = 0.1;
+        alpha_o = 0.8;
     }
     else if (x_coord <= -5 || x_coord >= 5){
-        alpha_o = 0.1;
+        alpha_o = 0.7;
     }
     else{
-        alpha_o = 0.1;
+        alpha_o = 0.7;
     }
   }
   else{
