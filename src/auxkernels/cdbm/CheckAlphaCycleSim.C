@@ -31,13 +31,13 @@ CheckAlphaCycleSim::computeValue()
 
   if (y_coord >= 0-1*0.1 and y_coord <= 0+1*0.1){
     if (x_coord >= 0-1*0.1 and x_coord <= 0+1*0.1){
-        initial_damage = 0.8;
+        initial_damage = 0.1;
     }
     else if(x_coord <= -5 || x_coord >= 5){
-        initial_damage = 0.7;
+        initial_damage = 0.1;
     }
     else{
-        initial_damage = 0.7;
+        initial_damage = 0.1;
     }
   }
   else{

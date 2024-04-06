@@ -27,15 +27,15 @@
       type = SubdomainBoundingBoxGenerator    
       input = sidesets
       block_id = 1
-      bottom_left = '-200 -50 0'
-      top_right = '200 -0.1 0'
+      bottom_left = '-50 -50 0'
+      top_right = '50 -0.1 0'
     []
     [./elasticblock_2]
         type = SubdomainBoundingBoxGenerator    
         input = elasticblock_1
         block_id = 1
-        bottom_left = '-200 0.1 0'
-        top_right = '200 50 0'
+        bottom_left = '-50 0.1 0'
+        top_right = '50 50 0'
     [] 
 []
   
