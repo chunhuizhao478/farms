@@ -499,9 +499,10 @@
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 10
-        cutback_factor_at_failure = 0.1
+        cutback_factor_at_failure = 0.01
         growth_factor = 2
         enable = true
+        optimal_iterations = 3
     []
 []  
 
