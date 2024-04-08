@@ -1,28 +1,28 @@
 [Mesh]
-    # [./msh]
-    #     type = FileMeshGenerator
-    #     file =  './meshfile/cyclesim.msh'
-    # []
-    # [./sidesets]
-    #     input = msh
-    #     type = SideSetsFromNormalsGenerator
-    #     normals = '-1 0 0
-    #                 1 0 0
-    #                 0 -1 0
-    #                 0 1 0'
-    #     new_boundary = 'left right bottom top'
-    # []
     [./msh]
-      type = GeneratedMeshGenerator
-      dim = 2
-      nx = 200
-      ny = 200
-      xmin = -10
-      xmax = 10
-      ymin = -10
-      ymax = 10
-      elem_type = QUAD4
+        type = FileMeshGenerator
+        file =  './meshfile/cyclesim.msh'
     []
+    [./sidesets]
+        input = msh
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []
+    # [./msh]
+    #   type = GeneratedMeshGenerator
+    #   dim = 2
+    #   nx = 200
+    #   ny = 200
+    #   xmin = -10
+    #   xmax = 10
+    #   ymin = -10
+    #   ymax = 10
+    #   elem_type = QUAD4
+    # []
 []
   
 [GlobalParams]
@@ -50,7 +50,7 @@
     xi_min = -1.8
   
     #if option 2, use Cd_constant
-    Cd_constant = 100
+    Cd_constant = 10
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -184,8 +184,8 @@
 
 [AuxKernels]
     [check_alpha]
-        type = CheckAlphaCycleSim
-        # type = CheckAlpha
+        # type = CheckAlphaCycleSim
+        type = CheckAlpha
         coupled = alpha_sub
         variable = alpha_checked
         execute_on = 'TIMESTEP_END'
@@ -207,14 +207,15 @@
     []
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 10
+        dt = 1e-5
         cutback_factor_at_failure = 0.1
         growth_factor = 2
         enable = true
+        optimal_iterations = 3
     []
 []
 
-[Outputs]
-  exodus = true
-  interval = 1
-[]
+# [Outputs]
+#   exodus = true
+#   interval = 1
+# []

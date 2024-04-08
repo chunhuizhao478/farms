@@ -25,20 +25,20 @@
     #     ymax = 10
     #     elem_type = QUAD4
     # []
-    # [./elasticblock_1]
-    #     type = SubdomainBoundingBoxGenerator    
-    #     input = sidesets
-    #     block_id = 1
-    #     bottom_left = '-50 -50 0'
-    #     top_right = '50 -0.1 0'
-    # []
-    # [./elasticblock_2]
-    #     type = SubdomainBoundingBoxGenerator    
-    #     input = elasticblock_1
-    #     block_id = 1
-    #     bottom_left = '-50 0.1 0'
-    #     top_right = '50 50 0'
-    # []    
+    [./elasticblock_1]
+        type = SubdomainBoundingBoxGenerator    
+        input = sidesets
+        block_id = 1
+        bottom_left = '-50 -50 0'
+        top_right = '50 -0.1 0'
+    []
+    [./elasticblock_2]
+        type = SubdomainBoundingBoxGenerator    
+        input = elasticblock_1
+        block_id = 1
+        bottom_left = '-50 0.1 0'
+        top_right = '50 50 0'
+    []    
 []
 
 [GlobalParams]
@@ -385,34 +385,29 @@
                             func_strain_xz        func_strain_yz     func_strain_zz'
     [../]
     #non-damage elastic block (id = 1)
-    # [./nondamagestress]
-    #     type = ADComputeLinearElasticStress
-    #     extra_stress_names = 'elastic_initial_stress'
-    #     block = 1
-    # [../]
-    # [./elasticity_tensor]
-    #     type = ADComputeIsotropicElasticityTensor
-    #     lambda = 30e9
-    #     shear_modulus = 30e9
-    #     block = 1
-    # [../]
-    # [./elastic_initial_stress]
-    #     type = GenericConstantRankTwoTensor
-    #     tensor_name = elastic_initial_stress
-    #     tensor_values = '-50e6 0 0 0 -50e6 0 0 0 0'
-    # [../]
+    [./nondamagestress]
+        type = ADComputeLinearElasticStress
+        # extra_stress_names = 'elastic_initial_stress'
+        block = 1
+    [../]
+    [./elasticity_tensor]
+        type = ADComputeIsotropicElasticityTensor
+        lambda = 30e9
+        shear_modulus = 30e9
+        block = 1
+    [../]
 []  
 
 [Functions]
     #func_stress
     [func_stress_xx]
         type = ConstantFunction
-        value = -135e6
+        value = -50e6
     [../]
     [func_stress_xy]
-        # type = ConstantFunction
-        # value = 0
-        type = InitialStressAD
+        type = ConstantFunction
+        value = 0
+        # type = InitialStressAD
     [../]
     # [func_stress_xy]
     #     type = ParsedFunction
@@ -420,7 +415,7 @@
     # []
     [func_stress_yy]
         type = ConstantFunction
-        value = -120e6
+        value = -50e6
     [../]
     [func_stress_xz]
         type = ConstantFunction
@@ -484,7 +479,7 @@
     solve_type = 'PJFNK'
     start_time = 0
     end_time = 1e10
-    # num_steps = 1
+    num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6

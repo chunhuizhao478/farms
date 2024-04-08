@@ -1,30 +1,30 @@
 #implicit continuum damage-breakage model dynamics
 
 [Mesh]
-    # [./msh]
-    #     type = FileMeshGenerator
-    #     file =  './meshfile/cyclesim.msh'
-    # []
-    # [./sidesets]
-    #     input = msh
-    #     type = SideSetsFromNormalsGenerator
-    #     normals = '-1 0 0
-    #                 1 0 0
-    #                 0 -1 0
-    #                 0 1 0'
-    #     new_boundary = 'left right bottom top'
-    # []
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 200
-        ny = 200
-        xmin = -10
-        xmax = 10
-        ymin = -10
-        ymax = 10
-        elem_type = QUAD4
-    []       
+        type = FileMeshGenerator
+        file =  './meshfile/cyclesim.msh'
+    []
+    [./sidesets]
+        input = msh
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []
+    # [./msh]
+    #     type = GeneratedMeshGenerator
+    #     dim = 2
+    #     nx = 200
+    #     ny = 200
+    #     xmin = -10
+    #     xmax = 10
+    #     ymin = -10
+    #     ymax = 10
+    #     elem_type = QUAD4
+    # []       
 []
 
 [GlobalParams]
@@ -367,11 +367,11 @@
     #func_stress
     [func_stress_xx]
         type = ConstantFunction
-        value = -135e6
+        value = -50e6
     [../]
     [func_stress_xy]
         type = ConstantFunction
-        value = 85e6
+        value = 30e6
         # type = InitialStressAD
     [../]
     # [func_stress_xy]
@@ -380,7 +380,7 @@
     # []
     [func_stress_yy]
         type = ConstantFunction
-        value = -120e6
+        value = -50e6
     [../]
     [func_stress_xz]
         type = ConstantFunction
@@ -424,11 +424,11 @@
     []
     [func_top_bc]
         type = ParsedFunction
-        expression = '5e-13*t'
+        expression = '1e-9*t'
     []
     [func_bot_bc]
         type = ParsedFunction
-        expression = '-5e-13*t'
+        expression = '-1e-9*t'
     []
 []
 
@@ -458,9 +458,10 @@
     line_search = 'none'
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 10
+        dt = 1e-5
         cutback_factor_at_failure = 0.1
         growth_factor = 2
+        optimal_iterations = 3
         enable = true
     []
 []  
