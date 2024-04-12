@@ -493,6 +493,7 @@
 [Outputs]
     exodus = true
     interval = 1
+    show = 'alpha_in B_in xi_old mu_old disp_x disp_y'    
 []
 
 [BCs]

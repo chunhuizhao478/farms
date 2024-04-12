@@ -64,7 +64,7 @@
     CBH_constant = 1e4
   
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 1
+    C_1 = 1e-5
   
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 20
