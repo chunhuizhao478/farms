@@ -1,40 +1,56 @@
 //0.02m mesh generation
-lc = 5;
+lc = 2;
 
-Point(1) = {   -50.0,  -50, 0, lc };
-Point(2) = {    50.0,  -50, 0, lc };
-Point(3) = {    50.0, -0.1, 0, lc };
-Point(4) = {   -50.0, -0.1, 0, lc };
-Point(5) = {    50.0,  0.1, 0, lc };
-Point(6) = {    50.0,   50, 0, lc };
-Point(7) = {   -50.0,   50, 0, lc };
-Point(8) = {   -50.0,  0.1, 0, lc };
+Point(1)  = {   -20.0,  -50, 0, lc };
+Point(2)  = {    20.0,  -50, 0, lc };
+Point(3)  = {   -20.0,  -45, 0, lc };
+Point(4)  = {    20.0,  -45, 0, lc };
+Point(5)  = {   -20.0, -0.1, 0, lc/100 };
+Point(6)  = {    20.0, -0.1, 0, lc/100 };
+Point(7)  = {   -20.0,  0.1, 0, lc/100 };
+Point(8)  = {    20.0,  0.1, 0, lc/100 };
+Point(9)  = {   -20.0,   45, 0, lc };
+Point(10) = {    20.0,   45, 0, lc };
+Point(11) = {   -20.0,   50, 0, lc };
+Point(12) = {    20.0,   50, 0, lc };
 
 Line(1) = {1,2};
-Line(2) = {2,3};
+Line(2) = {2,4};
 Line(3) = {3,4};
-Line(4) = {4,1};
-Line(5) = {3,5};
-Line(6) = {5,8};
-Line(7) = {8,4};
-Line(8) = {5,6};
-Line(9) = {6,7};
-Line(10) = {7,8};
+Line(4) = {3,1};
+Line(5) = {4,6};
+Line(6) = {5,6};
+Line(7) = {5,3};
+Line(8) = {6,8};
+Line(9) = {7,8};
+Line(10) = {7,5};
+Line(11) = {8,10};
+Line(12) = {9,10};
+Line(13) = {9,7};
+Line(14) = {10,12};
+Line(15) = {11,12};
+Line(16) = {11,9};
 
-Line Loop(1) = {1,2,3,4};
+Line Loop(1) = {1,2,-3,4};
 Plane Surface(2) = {1};
 
-Line Loop(3) = {5,6,7,-3};
+Line Loop(3) = {3,5,-6,7};
 Plane Surface(4) = {3};
 
-Line Loop(5) = {8,9,10,-6};
+Line Loop(5) = {6,8,-9,10};
 Plane Surface(6) = {5};
 
+Line Loop(7) = {9,11,-12,13};
+Plane Surface(8) = {7};
+
+Line Loop(9) = {12,14,-15,16};
+Plane Surface(10) = {9};
+
 Field[1] = Box;
-Field[1].VIn = lc / 100;
-Field[1].VOut = lc;
-Field[1].XMin =  -200;
-Field[1].XMax =   200;
+Field[1].VIn  = lc / 100;
+Field[1].VOut = lc * 4;
+Field[1].XMin =  -50;
+Field[1].XMax =   50;
 Field[1].YMin =  -0.2;
 Field[1].YMax =   0.2;
 Field[1].Thickness = lc;

@@ -1,28 +1,31 @@
 [Mesh]
-    [./msh]
-        type = FileMeshGenerator
-        file =  './meshfile/cyclesim.msh'
-    []
-    [./sidesets]
-        input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
-    []
-    # [./msh]
-    #   type = GeneratedMeshGenerator
-    #   dim = 2
-    #   nx = 200
-    #   ny = 200
-    #   xmin = -10
-    #   xmax = 10
-    #   ymin = -10
-    #   ymax = 10
-    #   elem_type = QUAD4
-    # []
+  [./msh]
+    type = FileMeshGenerator
+    file =  './meshfile/cyclesim.msh'
+  []
+  [./sidesets]
+      input = msh
+      type = SideSetsFromNormalsGenerator
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0'
+      new_boundary = 'left right bottom top'
+  []
+  [./elasticblock_1]
+      type = SubdomainBoundingBoxGenerator    
+      input = sidesets
+      block_id = 1
+      bottom_left = '-20 -50 0'
+      top_right = '20 -45 0'
+  []
+  [./elasticblock_2]
+      type = SubdomainBoundingBoxGenerator    
+      input = elasticblock_1
+      block_id = 1
+      bottom_left = '-20 45 0'
+      top_right = '20 50 0'
+  []
 []
   
 [GlobalParams]
@@ -61,10 +64,10 @@
     CBH_constant = 1e4
   
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 300
+    C_1 = 1
   
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 0.05
+    C_2 = 20
   
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.03 #1e-3
@@ -207,11 +210,10 @@
     []
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 1e-5
+        dt = 1
         cutback_factor_at_failure = 0.1
         growth_factor = 2
         enable = true
-        optimal_iterations = 3
     []
 []
 

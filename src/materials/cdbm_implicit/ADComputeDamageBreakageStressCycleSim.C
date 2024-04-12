@@ -368,31 +368,30 @@ ADComputeDamageBreakageStressCycleSim::setupInitial()
   // }
 
   // Random engine
-  if (y_coord >= 0-1*0.4 and y_coord <= 0+1*0.4){
-    std::random_device rd;  // Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
-    // Define the distribution, [0, 0.1]
-    std::uniform_real_distribution<> dis(0.0, 0.8);
-    alpha_o = dis(gen);
-  }
-  else{
-    alpha_o = 0.0;
-  }
-
-  // if (y_coord >= 0-1*0.1 and y_coord <= 0+1*0.1){
-  //   if (x_coord >= 0-1*0.1 and x_coord <= 0+1*0.1){
-  //       alpha_o = 0.7;
-  //   }
-  //   else if (x_coord <= -5 || x_coord >= 5){
-  //       alpha_o = 0.7;
-  //   }
-  //   else{
-  //       alpha_o = 0.7;
-  //   }
+  // if (y_coord >= 0-1*0.4 and y_coord <= 0+1*0.4){
+  //   std::random_device rd;  // Will be used to obtain a seed for the random number engine
+  //   std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+  //   // Define the distribution, [0, 0.1]
+  //   std::uniform_real_distribution<> dis(0.0, 0.8);
+  //   alpha_o = dis(gen);
   // }
   // else{
   //   alpha_o = 0.0;
   // }
+  
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::weibull_distribution<double> wb_distribution(2.0,0.05);
+
+  if (y_coord >= 0-1*0.1 and y_coord <= 0+1*0.1){
+    alpha_o = 0.7;
+  }
+  else if (y_coord >= -45 and y_coord <= 45){
+    alpha_o = wb_distribution(gen);
+  }
+  else{
+    alpha_o = 0.0;
+  }
 
   //initial shear modulus (which take initial damage into account)
   ADReal initial_shear_modulus = _shear_modulus_o + _xi_0 * alpha_o * _gamma_damaged_r;

@@ -14,17 +14,20 @@
                     0 1 0'
         new_boundary = 'left right bottom top'
     []
-    # [./msh]
-    #     type = GeneratedMeshGenerator
-    #     dim = 2
-    #     nx = 200
-    #     ny = 200
-    #     xmin = -10
-    #     xmax = 10
-    #     ymin = -10
-    #     ymax = 10
-    #     elem_type = QUAD4
-    # []       
+    [./elasticblock_1]
+        type = SubdomainBoundingBoxGenerator    
+        input = sidesets
+        block_id = 1
+        bottom_left = '-20 -50 0'
+        top_right = '20 -45 0'
+    []
+    [./elasticblock_2]
+        type = SubdomainBoundingBoxGenerator    
+        input = elasticblock_1
+        block_id = 1
+        bottom_left = '-20 45 0'
+        top_right = '20 50 0'
+    []      
 []
 
 [GlobalParams]
@@ -55,7 +58,7 @@
     xi_min = -1.8
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-15
+    C_g = 1e-5
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -263,49 +266,57 @@
         property = xi
         variable = xi_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     [get_I2_old]
         type = ADMaterialRealAux
         property = I2
         variable = I2_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     [get_mu_old]
         type = ADMaterialRealAux
         property = shear_modulus
         variable = mu_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     [get_lambda_old]
         type = ADMaterialRealAux
         property = lambda
         variable = lambda_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     [get_gamma_old]
         type = ADMaterialRealAux
         property = gamma_damaged
         variable = gamma_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     [get_alpha_old]
         type = ADMaterialRealAux
         property = alpha_damagedvar
         variable = alpha_damagedvar_out
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     [get_B_old]
         type = ADMaterialRealAux
         property = B
         variable = B_out
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     #add inital distribution of alpha
     [assign_initial_alpha]
         type = FunctionAux
         variable = initial_alpha
-        function = func_initial_alpha
+        function = func_stress_yy
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+        block = 0
     []
     #principal strain
     [get_principal_strain]
@@ -313,6 +324,7 @@
         property = principal_strain
         variable = principal_strain_rate_out
         execute_on = 'INITIAL TIMESTEP_END'
+        block = 0
     []
     [record_applied_shear_stress]
         type = FunctionAux
@@ -332,6 +344,7 @@
         initial_alpha = initial_alpha
         # output_properties = 'eps_p eps_e eps_total I1 sts_total'
         outputs = exodus
+        block = 0
     []
     [strain]
         type = ADComputeSmallStrain
@@ -361,6 +374,17 @@
                             func_strain_xy        func_strain_yy     func_strain_yz
                             func_strain_xz        func_strain_yz     func_strain_zz'
     [../]
+    #non-damage elastic block (id = 1)
+    [./nondamagestress]
+        type = ADComputeLinearElasticStress
+        block = 1
+    [../]
+    [./elasticity_tensor]
+        type = ADComputeIsotropicElasticityTensor
+        lambda = 30e9
+        shear_modulus = 30e9
+        block = 1
+    [../]         
 []  
 
 [Functions]
@@ -371,7 +395,7 @@
     [../]
     [func_stress_xy]
         type = ConstantFunction
-        value = 30e6
+        value = 0
         # type = InitialStressAD
     [../]
     # [func_stress_xy]
@@ -381,6 +405,7 @@
     [func_stress_yy]
         type = ConstantFunction
         value = -50e6
+        # type = InitialNormalStressAD
     [../]
     [func_stress_xz]
         type = ConstantFunction
@@ -458,10 +483,9 @@
     line_search = 'none'
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 1e-5
+        dt = 1
         cutback_factor_at_failure = 0.1
         growth_factor = 2
-        optimal_iterations = 3
         enable = true
     []
 []  
