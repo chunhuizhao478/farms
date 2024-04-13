@@ -455,6 +455,11 @@
         type = ParsedFunction
         expression = '-1e-9*t'
     []
+    #function for adaptivity
+    [solution]
+        type = ConstantFunction
+        value = 0
+    []
 []
 
 [Preconditioning]
@@ -611,6 +616,7 @@
         input_files = 'cyclesim_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
         sub_cycling = true
+        clone_master_mesh = true
     [../]
 []
   
@@ -631,3 +637,16 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
+
+# [Adaptivity]
+#     marker = thresholdmarker
+#     steps = 5
+#     max_h_level = 5
+#     [Markers]
+#         [thresholdmarker]
+#             type = ValueThresholdMarker
+#             refine = 0.5
+#             variable = alpha_in
+#         []
+#     []
+# []

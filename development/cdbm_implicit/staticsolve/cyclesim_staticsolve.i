@@ -27,18 +27,7 @@
         block_id = 1
         bottom_left = '-20 45 0'
         top_right = '20 50 0'
-    [] 
-    # [./msh]
-    #     type = GeneratedMeshGenerator
-    #     dim = 2
-    #     nx = 200
-    #     ny = 200
-    #     xmin = -10
-    #     xmax = 10
-    #     ymin = -10
-    #     ymax = 10
-    #     elem_type = QUAD4
-    # []       
+    []      
 []
 
 [GlobalParams]
@@ -222,112 +211,50 @@
         variable = disp_y
         component = 1
     []
-    # [inertia_x]
-    #     type = ADInertialForce
-    #     variable = disp_x
-    #     velocity = vel_x
-    #     acceleration = accel_x
-    #     beta = 0.25
-    #     gamma = 0.5
-    # []
-    # [inertia_y]
-    #     type = ADInertialForce
-    #     variable = disp_y
-    #     velocity = vel_y
-    #     acceleration = accel_y
-    #     beta = 0.25
-    #     gamma = 0.5
-    # []
 []
 
 [AuxKernels]
-    # [accel_x]
-    #     type = NewmarkAccelAux
-    #     variable = accel_x
-    #     displacement = disp_x
-    #     velocity = vel_x
-    #     beta = 0.25
-    #     execute_on = timestep_end
-    # []
-    # [vel_x]
-    #     type = NewmarkVelAux
-    #     variable = vel_x
-    #     acceleration = accel_x
-    #     gamma = 0.5
-    #     execute_on = timestep_end
-    # []
-    # [accel_y]
-    #     type = NewmarkAccelAux
-    #     variable = accel_y
-    #     displacement = disp_y
-    #     velocity = vel_y
-    #     beta = 0.25
-    #     execute_on = timestep_end
-    # []
-    # [vel_y]
-    #     type = NewmarkVelAux
-    #     variable = vel_y
-    #     acceleration = accel_y
-    #     gamma = 0.5
-    #     execute_on = timestep_end
-    # []
-    #
     [get_xi_old]
         type = ADMaterialRealAux
         property = xi
         variable = xi_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'   
     []
     [get_I2_old]
         type = ADMaterialRealAux
         property = I2
         variable = I2_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'    
     []
     [get_mu_old]
         type = ADMaterialRealAux
         property = shear_modulus
         variable = mu_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'   
     []
     [get_lambda_old]
         type = ADMaterialRealAux
         property = lambda
         variable = lambda_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'   
     []
     [get_gamma_old]
         type = ADMaterialRealAux
         property = gamma_damaged
         variable = gamma_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'  
     []
     [get_alpha_old]
         type = ADMaterialRealAux
         property = alpha_damagedvar
         variable = alpha_damagedvar_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'   
     []
     [get_B_old]
         type = ADMaterialRealAux
         property = B
         variable = B_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
-    []
-    #add inital distribution of alpha
-    [assign_initial_alpha]
-        type = FunctionAux
-        variable = initial_alpha
-        function = func_stress_yy
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-        block = 0    
+        execute_on = 'INITIAL TIMESTEP_BEGIN'   
     []
     #principal strain
     [get_principal_strain]
@@ -335,7 +262,6 @@
         property = principal_strain
         variable = principal_strain_rate_out
         execute_on = 'INITIAL TIMESTEP_END'
-        block = 0
     []
     [record_applied_shear_stress]
         type = FunctionAux
@@ -385,17 +311,6 @@
                             func_strain_xy        func_strain_yy     func_strain_yz
                             func_strain_xz        func_strain_yz     func_strain_zz'
     [../]
-    #non-damage elastic block (id = 1)
-    [./nondamagestress]
-        type = ADComputeLinearElasticStress
-        block = 1
-    [../]
-    [./elasticity_tensor]
-        type = ADComputeIsotropicElasticityTensor
-        lambda = 30e9
-        shear_modulus = 30e9
-        block = 1
-    [../]    
 []  
 
 [Functions]
@@ -410,9 +325,8 @@
         # type = InitialStressAD    
     [../]
     [func_stress_yy]
-        # type = ConstantFunction
-        # value = -50e6
-        type = InitialNormalStressAD
+        type = ConstantFunction
+        value = -50e6
     [../]
     [func_stress_xz]
         type = ConstantFunction
@@ -451,17 +365,6 @@
         type = ConstantFunction
         value = 0
     [../]
-    [func_initial_alpha]
-        type = InitialAlphaAD
-    []
-    [func_top_bc]
-        type = ParsedFunction
-        expression = '1e-9*t'
-    []
-    [func_bot_bc]
-        type = ParsedFunction
-        expression = '-1e-9*t'
-    []
 []
 
 [Preconditioning]
@@ -475,151 +378,20 @@
   
 [Executioner]
     type = Steady
-    solve_type = PJFNK
-    # start_time = 0
-    # end_time = 1e10
-    # num_steps = 1
+    solve_type = Newton
     l_max_its = 10
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    # nl_max_its = 5
     nl_abs_tol = 1e-10
-    # timestep_tolerance = 1e-6
     automatic_scaling = true
-    # nl_forced_its = 3
     line_search = 'none'
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     dt = 10
-    #     cutback_factor_at_failure = 0.5
-    #     growth_factor = 2
-    #     enable = true
-    # []
 []  
 
 [Outputs]
     exodus = true
-    interval = 1
 []
 
 [BCs]
-    # [./dashpot_top_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = top
-    # []
-    # [./dashpot_top_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = top
-    # []
-    # [./dashpot_bottom_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = bottom
-    # []
-    # [./dashpot_bottom_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = bottom
-    # []
-    # [./dashpot_left_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = left
-    # []
-    # [./dashpot_left_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = left
-    # []
-    # [./dashpot_right_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = right
-    # []
-    # [./dashpot_right_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 5773.50
-    #     shear_wave_speed = 3333.33
-    #     boundary = right
-    # []
-    #
-    # [bc_load_top_x]
-    #     type = FunctionDirichletBC
-    #     variable = disp_x
-    #     value = 0
-    #     boundary = top
-    # []
-    # [bc_fix_top_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     value = 0
-    #     boundary = top
-    # []
-    # [bc_load_bottom_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     value = 0
-    #     boundary = bottom
-    # []
-    # [bc_fix_bottom_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     value = 0
-    #     boundary = bottom
-    # []
-    # [bc_fix_left_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     value = 0
-    #     boundary = left
-    # []
-    # [bc_fix_right_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     value = 0
-    #     boundary = right
-    # []
     #pressure
     ##compression
     [pressure_top]
@@ -647,31 +419,3 @@
         factor = 50e6
     []  
 []
-
-# [MultiApps]
-#     [./sub_app]
-#         type = TransientMultiApp
-#         positions = '0 0 0'
-#         input_files = 'cyclesim_sub.i'
-#         execute_on = 'TIMESTEP_BEGIN'
-#         sub_cycling = true
-#     [../]
-# []
-  
-# [Transfers]
-#     [pull_resid]
-#         type = MultiAppCopyTransfer
-#         from_multi_app = sub_app
-#         source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub'
-#         variable = 'alpha_in B_in alpha_grad_x alpha_grad_y'
-#         execute_on = 'TIMESTEP_BEGIN'
-#     []
-#     #we actually don't need to pass alpha and B
-#     [push_disp]
-#         type = MultiAppCopyTransfer
-#         to_multi_app = sub_app
-#         source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
-#         variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
-#         execute_on = 'TIMESTEP_BEGIN'
-#     []
-# []
