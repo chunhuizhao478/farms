@@ -153,6 +153,11 @@
       order = CONSTANT
       family = MONOMIAL
     []
+    #
+    [./thresholdmarker]
+      family = MONOMIAL
+      order = CONSTANT
+    [../]
 []
   
 [Kernels]
@@ -216,21 +221,3 @@
         enable = true
     []
 []
-
-# [Outputs]
-#   exodus = true
-#   interval = 1
-# []
-
-# [Adaptivity]
-#   marker = thresholdmarker
-#   steps = 5
-#   max_h_level = 5
-#   [Markers]
-#       [thresholdmarker]
-#           type = ValueThresholdMarker
-#           refine = 0.5
-#           variable = alpha_sub
-#       []
-#   []
-# []

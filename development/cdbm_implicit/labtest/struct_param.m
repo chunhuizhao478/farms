@@ -12,8 +12,8 @@ param.xi_max = sqrt(3);    %--  <strain invariants ratio: maximum allowable valu
 param.xi_min = -sqrt(3);   %--  <strain invariants ratio: minimum allowable value>: set boundary
 param.chi = 0.8;          %--  <ratio of two energy state: F_b/F_s = chi < 1>: ensure the energy transition from solid state to granular state.
 param.C_d = 10;          %1/s <coefficient gives positive damage   evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-param.C_1 = 300;           %1/s <coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4 %%1e-14 %%300
-param.C_2 = 0.05;          %1/s <coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4 %%0.1 %%0.05
+param.C_1 = 1e-5;           %1/s <coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4 %%1e-14 %%300
+param.C_2 = 20;          %1/s <coefficient of healing for damage evolution>: refer to "Lyakhovsky_2011_Hessian_Matrix" Section 3.4 %%0.1 %%0.05
 param.beta = 0.03;         %--  <coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1 %%0.001%%
 param.C_B = 100 * param.C_d; %1e-5     %1/s <coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
 param.C_BH = 1e4;  %1/s <coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14".

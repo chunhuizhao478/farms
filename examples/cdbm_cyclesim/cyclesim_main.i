@@ -58,7 +58,7 @@
     xi_min = -1.8
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-15
+    C_g = 1e-5
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -498,7 +498,7 @@
 [Outputs]
     exodus = true
     interval = 1
-    show = 'alpha_in B_in xi_old mu_old disp_x disp_y'    
+    show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
 [BCs]
@@ -616,7 +616,6 @@
         input_files = 'cyclesim_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
         sub_cycling = true
-        clone_master_mesh = true
     [../]
 []
   
@@ -636,17 +635,31 @@
         variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
         execute_on = 'TIMESTEP_BEGIN'
     []
+    #Borrowed from LevelSet module
+    [marker_to_sub]
+        type = LevelSetMeshRefinementTransfer
+        to_multi_app = sub_app
+        source_variable = thresholdmarker
+        variable = thresholdmarker
+        check_multiapp_execute_on = false
+    []
 []
 
-# [Adaptivity]
-#     marker = thresholdmarker
-#     steps = 5
-#     max_h_level = 5
-#     [Markers]
-#         [thresholdmarker]
-#             type = ValueThresholdMarker
-#             refine = 0.5
-#             variable = alpha_in
-#         []
-#     []
-# []
+[Adaptivity]
+    marker = thresholdmarker
+    max_h_level = 5
+    cycles_per_step = 2
+    inactive = 1
+    [Markers]
+        [thresholdmarker]
+            type = ValueThresholdMarker
+            refine = 0.5
+            variable = B_in
+        []
+    []
+[]
+
+#this is added only to activate "LevelSetMeshRefinementTransfer"
+[Problem]
+    type = LevelSetProblem
+[]

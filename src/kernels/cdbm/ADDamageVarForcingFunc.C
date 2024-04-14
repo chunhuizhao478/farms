@@ -79,7 +79,15 @@ ADDamageVarForcingFunc::computeQpResidual()
     return -1 * (1 - _B_old[_qp]) * ( _Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
-    //with healing
+    
+    //with healing //hardcode avoid reduce initial damage profile    
+    if (_B_old[_qp] >= 0.1){
+      _C1 = 300; _C2 = 0.05;
+    }
+    else{
+      _C1 = 1e-5; _C2 = 20;
+    }
+
     return -1 * (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
     //no healing
     //return 0.0;
