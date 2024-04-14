@@ -649,7 +649,6 @@
     marker = thresholdmarker
     max_h_level = 5
     cycles_per_step = 2
-    inactive = 1
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
