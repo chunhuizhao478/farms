@@ -652,7 +652,7 @@
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
-            refine = 0.5
+            refine = 0.1
             variable = B_in
         []
     []
