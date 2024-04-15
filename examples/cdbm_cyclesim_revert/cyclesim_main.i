@@ -228,10 +228,10 @@
   #by default, subApp is using the same time step as mainApp
   [Executioner]
       type = Transient
-      # [TimeIntegrator]
-      #   # type = ImplicitEuler
-      #   type = CrankNicolson
-      # []
+      [TimeIntegrator]
+        # type = ImplicitEuler
+        type = CrankNicolson
+      []
       [TimeStepper]
           type = IterationAdaptiveDT
           dt = 1
@@ -294,7 +294,7 @@
     type = LevelSetProblem
 []
 
-[Outputs]
-  exodus = true
-  interval = 1  
-[]
+# [Outputs]
+#   exodus = true
+#   interval = 1  
+# []
