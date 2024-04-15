@@ -58,7 +58,7 @@
     xi_min = -1.8
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-5
+    C_g = 1e-8
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -497,7 +497,7 @@
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 10
     show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
@@ -652,7 +652,7 @@
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
-            refine = 0.1
+            refine = 0.3
             variable = B_in
         []
     []
