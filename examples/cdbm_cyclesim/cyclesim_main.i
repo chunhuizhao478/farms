@@ -36,10 +36,10 @@
     displacements = 'disp_x disp_y'
   
     ##----continuum damage breakage model----##
-    #initial lambda value (first lame FIRST) [Pa]
+    #initial lambda value (first lame constant) [Pa]
     lambda_o = 30e9
       
-    #initial shear modulus value (second lame FIRST) [Pa]
+    #initial shear modulus value (second lame constant) [Pa]
     shear_modulus_o = 30e9
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -131,69 +131,69 @@
         family = LAGRANGE
     []
     [./xi_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./I2_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./mu_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./lambda_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./gamma_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #updated alpha, B
     [./alpha_in]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./B_in]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #output alpha, B to subApp
     [./alpha_damagedvar_out]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./B_out]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL   
     []        
     #grad_alpha
     [./alpha_grad_x]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./alpha_grad_y]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [./alpha_grad_z]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #initial alpha
     [./initial_alpha]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL        
     []
     #principal strain
     [./principal_strain_rate_out]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL         
     []
     #record shear stress
     [./shear_stress_applied]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL        
     []
 []
@@ -647,7 +647,7 @@
 
 [Adaptivity]
     marker = thresholdmarker
-    max_h_level = 2
+    max_h_level = 5
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker

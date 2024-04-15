@@ -31,10 +31,10 @@
 [GlobalParams]
   
     ##----continuum damage breakage model----##
-    #initial lambda value (first lame FIRST) [Pa]
+    #initial lambda value (first lame constant) [Pa]
     # lambda_o = 30e9
       
-    #initial shear modulus value (second lame FIRST) [Pa]
+    #initial shear modulus value (second lame constant) [Pa]
     # shear_modulus_o = 30e9
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -97,60 +97,60 @@
   
 [Variables]
     [alpha_sub]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     [B_sub]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
 []
   
 [AuxVariables]
     [alpha_old]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     [B_old]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     [xi_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [I2_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [mu_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [lambda_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [gamma_old]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #checked
     [alpha_checked]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     [B_checked]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     #grad_alpha
     [alpha_grad_x_sub]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     [alpha_grad_y_sub]
-      order = FIRST
+      order = CONSTANT
       family = MONOMIAL
     []
     #
@@ -158,6 +158,11 @@
       family = MONOMIAL
       order = CONSTANT
     [../]
+    #
+    [bounds_dummy]
+      family = MONOMIAL
+      order = CONSTANT      
+    []
 []
   
 [Kernels]
