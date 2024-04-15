@@ -156,7 +156,7 @@
     #
     [./thresholdmarker]
       family = MONOMIAL
-      order = FIRST
+      order = CONSTANT
     [../]
 []
   
