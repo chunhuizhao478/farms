@@ -497,7 +497,7 @@
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 1
     show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
@@ -647,12 +647,11 @@
 
 [Adaptivity]
     marker = thresholdmarker
-    max_h_level = 5
-    cycles_per_step = 2
+    max_h_level = 2
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
-            refine = 0.3
+            refine = 0.4
             variable = B_in
         []
     []
