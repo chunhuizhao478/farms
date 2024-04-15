@@ -31,10 +31,10 @@
 [GlobalParams]
   
     ##----continuum damage breakage model----##
-    #initial lambda value (first lame constant) [Pa]
+    #initial lambda value (first lame FIRST) [Pa]
     # lambda_o = 30e9
       
-    #initial shear modulus value (second lame constant) [Pa]
+    #initial shear modulus value (second lame FIRST) [Pa]
     # shear_modulus_o = 30e9
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -97,66 +97,66 @@
   
 [Variables]
     [alpha_sub]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     [B_sub]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
 []
   
 [AuxVariables]
     [alpha_old]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     [B_old]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     [xi_old]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [I2_old]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [mu_old]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [lambda_old]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [gamma_old]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     #checked
     [alpha_checked]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     [B_checked]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     #grad_alpha
     [alpha_grad_x_sub]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     [alpha_grad_y_sub]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
     #
     [./thresholdmarker]
       family = MONOMIAL
-      order = CONSTANT
+      order = FIRST
     [../]
 []
   
