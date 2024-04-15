@@ -275,8 +275,8 @@
     [pull_disp]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
-        variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old'
+        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
+        variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
         execute_on = 'TIMESTEP_BEGIN'
     []
     #Borrowed from LevelSet module
@@ -294,7 +294,7 @@
     type = LevelSetProblem
 []
 
-# [Outputs]
-#   exodus = true
-#   interval = 1  
-# []
+[Outputs]
+  exodus = true
+  interval = 1  
+[]
