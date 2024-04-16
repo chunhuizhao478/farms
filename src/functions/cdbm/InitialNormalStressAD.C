@@ -33,12 +33,15 @@ InitialNormalStressAD::value(Real /*t*/, const Point & p) const
   Real T2_o = 0.0;
 
   if (y_coord >= 0-1*0.1 and y_coord <= 0+1*0.1){
-    if (x_coord >= 0-1*0.05 and x_coord <= 0+1*0.05 and y_coord >= 0-1*0.05 and y_coord <= 0+1*0.05){
-      T2_o = -50e6 + 0.5e6;
+    if (x_coord >= 0-1*0.025 and x_coord <= 0+1*0.025 and y_coord >= 0-1*0.025 and y_coord <= 0+1*0.025){
+      T2_o = -50e6 + 5e6;
+    }
+    else{
+      T2_o = -50e6;
     }
   }
   else{
-    T2_o = 0.0;
+    T2_o = -50e6;
   }
   
   return T2_o;

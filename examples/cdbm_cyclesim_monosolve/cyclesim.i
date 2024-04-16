@@ -78,7 +78,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-10
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -493,9 +493,9 @@
         # type = InitialStressAD
     [../]
     [func_stress_yy]
-        type = ConstantFunction
-        value = -50e6
-        # type = InitialNormalStressAD
+        # type = ConstantFunction
+        # value = -50e6
+        type = InitialNormalStressAD
     [../]
     [func_stress_xz]
         type = ConstantFunction
