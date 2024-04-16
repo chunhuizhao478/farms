@@ -79,7 +79,7 @@ ADDamageVarForcingFunc::computeQpResidual()
 
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
     
-    if ( y_coord >= -25 and y_coord <= 25 ){ //restrict damage in small region / avoid boundary effect
+    if ( y_coord >= -10 and y_coord <= 10 ){ //restrict damage in small region / avoid boundary effect
       return -1 * (1 - _B_old[_qp]) * ( _Cd * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
     }
     else{
