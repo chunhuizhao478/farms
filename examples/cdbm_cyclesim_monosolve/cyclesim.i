@@ -359,49 +359,49 @@
         type = ADMaterialRealAux
         property = xi
         variable = xi_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     [get_I2_old]
         type = ADMaterialRealAux
         property = I2
         variable = I2_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     [get_mu_old]
         type = ADMaterialRealAux
         property = shear_modulus
         variable = mu_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     [get_lambda_old]
         type = ADMaterialRealAux
         property = lambda
         variable = lambda_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     [get_gamma_old]
         type = ADMaterialRealAux
         property = gamma_damaged
         variable = gamma_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     [get_alpha_old]
         type = ADMaterialRealAux
         property = alpha_damagedvar
         variable = alpha_damagedvar_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     [get_B_old]
         type = ADMaterialRealAux
         property = B
         variable = B_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     #add inital distribution of alpha
@@ -409,7 +409,7 @@
         type = FunctionAux
         variable = initial_alpha
         function = func_stress_yy
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
     #principal strain
@@ -607,7 +607,7 @@
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 10
     show = 'alpha_sub B_sub xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
@@ -717,6 +717,19 @@
         value = 0
         boundary = bottom
     []
+    #
+    [bc_fix_left_y]
+        type = DirichletBC
+        variable = disp_y
+        value = 0
+        boundary = left
+    []
+    [bc_fix_right_y]
+        type = DirichletBC
+        variable = disp_y
+        value = 0
+        boundary = right
+    []
 []
 
 [Adaptivity]
@@ -726,7 +739,7 @@
         [thresholdmarker]
             type = ValueThresholdMarker
             refine = 0.5
-            variable = B_in
+            variable = B_sub
         []
     []
 []
