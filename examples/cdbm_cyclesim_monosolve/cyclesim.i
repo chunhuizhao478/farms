@@ -493,9 +493,9 @@
         # type = InitialStressAD
     [../]
     [func_stress_yy]
-        # type = ConstantFunction
-        # value = -50e6
-        type = InitialNormalStressAD
+        type = ConstantFunction
+        value = -50e6
+        # type = InitialNormalStressAD
     [../]
     [func_stress_xz]
         type = ConstantFunction
