@@ -636,28 +636,28 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
     #Borrowed from LevelSet module
-    [marker_to_sub]
-        type = LevelSetMeshRefinementTransfer
-        to_multi_app = sub_app
-        source_variable = thresholdmarker
-        variable = thresholdmarker
-        check_multiapp_execute_on = false
-    []
+    # [marker_to_sub]
+    #     type = LevelSetMeshRefinementTransfer
+    #     to_multi_app = sub_app
+    #     source_variable = thresholdmarker
+    #     variable = thresholdmarker
+    #     check_multiapp_execute_on = false
+    # []
 []
 
-[Adaptivity]
-    marker = thresholdmarker
-    max_h_level = 2
-    [Markers]
-        [thresholdmarker]
-            type = ValueThresholdMarker
-            refine = 0.5
-            variable = B_in
-        []
-    []
-[]
+# [Adaptivity]
+#     marker = thresholdmarker
+#     max_h_level = 2
+#     [Markers]
+#         [thresholdmarker]
+#             type = ValueThresholdMarker
+#             refine = 0.5
+#             variable = B_in
+#         []
+#     []
+# []
 
-#this is added only to activate "LevelSetMeshRefinementTransfer"
-[Problem]
-    type = LevelSetProblem
-[]
+# #this is added only to activate "LevelSetMeshRefinementTransfer"
+# [Problem]
+#     type = LevelSetProblem
+# []
