@@ -228,8 +228,8 @@
   [Executioner]
       type = Transient
       [TimeIntegrator]
-        # type = ImplicitEuler
-        type = CrankNicolson
+        type = ImplicitEuler
+        # type = CrankNicolson
       []
       [TimeStepper]
           type = IterationAdaptiveDT
