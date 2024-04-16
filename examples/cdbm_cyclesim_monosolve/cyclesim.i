@@ -78,7 +78,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-5
+    C_g = 1e-8
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -703,19 +703,19 @@
         value = 0
         boundary = bottom
     []
-    #
-    [bc_fix_left_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = left
-    []
-    [bc_fix_right_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = right
-    []
+    # #
+    # [bc_fix_left_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     value = 0
+    #     boundary = left
+    # []
+    # [bc_fix_right_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     value = 0
+    #     boundary = right
+    # []
 []
 
 [Adaptivity]
