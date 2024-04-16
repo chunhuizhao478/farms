@@ -647,7 +647,7 @@
 
 [Adaptivity]
     marker = thresholdmarker
-    max_h_level = 5
+    max_h_level = 1
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
