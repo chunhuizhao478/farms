@@ -718,22 +718,22 @@
     # []
 []
 
-[Adaptivity]
-    marker = thresholdmarker
-    max_h_level = 2
-    [Markers]
-        [thresholdmarker]
-            type = ValueThresholdMarker
-            refine = 0.5
-            variable = B_sub
-        []
-    []
-[]
+# [Adaptivity]
+#     marker = thresholdmarker
+#     max_h_level = 2
+#     [Markers]
+#         [thresholdmarker]
+#             type = ValueThresholdMarker
+#             refine = 0.5
+#             variable = B_sub
+#         []
+#     []
+# []
 
 #this is added only to activate "LevelSetMeshRefinementTransfer"
-[Problem]
-    type = LevelSetProblem
-[]
+# [Problem]
+#     type = LevelSetProblem
+# []
 
 [ICs]
     [alpha_ic]
