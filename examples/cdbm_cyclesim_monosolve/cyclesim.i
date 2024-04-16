@@ -18,15 +18,15 @@
         type = SubdomainBoundingBoxGenerator    
         input = sidesets
         block_id = 1
-        bottom_left = '-20 -50 0'
-        top_right = '20 -45 0'
+        bottom_left = '-20 -20 0'
+        top_right = '20 -15 0'
     []
     [./elasticblock_2]
         type = SubdomainBoundingBoxGenerator    
         input = elasticblock_1
         block_id = 1
-        bottom_left = '-20 45 0'
-        top_right = '20 50 0'
+        bottom_left = '-20 15 0'
+        top_right = '20 20 0'
     []      
 []
 
@@ -78,7 +78,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-5
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -424,20 +424,7 @@
         type = FunctionAux
         function = func_stress_xy
         variable = shear_stress_applied
-    []
-    #
-    # [check_alpha]
-    #     type = CheckAlpha
-    #     coupled = alpha_sub
-    #     variable = alpha_checked
-    #     execute_on = 'TIMESTEP_END'
-    # []
-    # [check_B]
-    #     type = CheckB
-    #     coupled = B_sub
-    #     variable = B_checked
-    #     execute_on = 'TIMESTEP_END'
-    # []    
+    []   
 []
 
 [Materials]
@@ -505,10 +492,6 @@
         value = 0
         # type = InitialStressAD
     [../]
-    # [func_stress_xy]
-    #     type = ParsedFunction
-    #     expression = '1e4 * t'
-    # []
     [func_stress_yy]
         type = ConstantFunction
         value = -50e6
@@ -603,11 +586,14 @@
         growth_factor = 2
         enable = true
     []
+    [TimeIntegrator]
+        type = NewmarkBeta
+    []
 []  
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 1
     show = 'alpha_sub B_sub xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
@@ -734,7 +720,7 @@
 
 [Adaptivity]
     marker = thresholdmarker
-    max_h_level = 5
+    max_h_level = 2
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
