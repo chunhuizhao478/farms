@@ -211,7 +211,6 @@
   
   [AuxKernels]
     [check_alpha]
-        # type = CheckAlphaCycleSim
         type = CheckAlpha
         coupled = alpha_sub
         variable = alpha_checked
