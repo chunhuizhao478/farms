@@ -246,7 +246,7 @@
     [Markers]
         [thresholdmarker]
             type = ValueThresholdMarker
-            refine = 0.3
+            refine = 0.5
             variable = B_checked
         []
     []
