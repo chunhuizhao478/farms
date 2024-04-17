@@ -196,7 +196,12 @@
     [./B_out]
         order = CONSTANT
         family = MONOMIAL   
-    []        
+    []
+    #
+    [./B_rate_out]
+        order = CONSTANT
+        family = MONOMIAL   
+    []          
     #grad_alpha
     [./alpha_grad_x]
         order = CONSTANT
@@ -415,8 +420,8 @@
     #principal strain
     [get_principal_strain]
         type = ADMaterialRateRealAux
-        property = principal_strain
-        variable = principal_strain_rate_out
+        property = B
+        variable = B_rate_out
         execute_on = 'INITIAL TIMESTEP_END'
         block = 0
     []
