@@ -599,7 +599,7 @@
 [Outputs]
     exodus = true
     interval = 1
-    show = 'alpha_sub B_sub xi_old mu_old disp_x disp_y vel_x vel_y'    
+    show = 'alpha_sub B_sub B_rate_out xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
 [BCs]
