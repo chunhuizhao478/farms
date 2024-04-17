@@ -204,12 +204,14 @@
         displacements = 'disp_x disp_y'
         variable = disp_x
         component = 0
+        zeta = 0.0029
     []
     [dispkernel_y]
         type = ADDynamicStressDivergenceTensors
         displacements = 'disp_x disp_y'
         variable = disp_y
         component = 1
+        zeta = 0.0029
     []
     [inertia_x]
         type = ADInertialForce
@@ -218,6 +220,7 @@
         acceleration = accel_x
         beta = 0.25
         gamma = 0.5
+        eta = 31.35
     []
     [inertia_y]
         type = ADInertialForce
@@ -226,6 +229,7 @@
         acceleration = accel_y
         beta = 0.25
         gamma = 0.5
+        eta = 31.35
     []
 []
 
@@ -493,11 +497,16 @@
         growth_factor = 2
         enable = true
     []
+    [./TimeIntegrator]
+        type = NewmarkBeta
+        beta = 0.25
+        gamma = 0.5
+    [../]
 []  
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 10
     # show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
@@ -584,10 +593,13 @@
     []
     #
     [bc_load_top_x]
-        type = FunctionDirichletBC
+        type = PresetDisplacement
         variable = disp_x
         function = func_top_bc
         boundary = top
+        velocity = vel_x
+        acceleration = accel_x
+        beta = 0.25
     []
     [bc_fix_top_y]
         type = DirichletBC
@@ -596,10 +608,13 @@
         boundary = top
     []
     [bc_load_bottom_x]
-        type = FunctionDirichletBC
+        type = PresetDisplacement
         variable = disp_x
         function = func_bot_bc
         boundary = bottom
+        velocity = vel_x
+        acceleration = accel_x
+        beta = 0.25
     []
     [bc_fix_bottom_y]
         type = DirichletBC
