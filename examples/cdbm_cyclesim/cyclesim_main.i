@@ -593,13 +593,10 @@
     []
     #
     [bc_load_top_x]
-        type = PresetDisplacement
+        type = FunctionDirichletBC
         variable = disp_x
         function = func_top_bc
         boundary = top
-        velocity = vel_x
-        acceleration = accel_x
-        beta = 0.25
     []
     [bc_fix_top_y]
         type = DirichletBC
@@ -608,13 +605,10 @@
         boundary = top
     []
     [bc_load_bottom_x]
-        type = PresetDisplacement
+        type = FunctionDirichletBC
         variable = disp_x
         function = func_bot_bc
         boundary = bottom
-        velocity = vel_x
-        acceleration = accel_x
-        beta = 0.25
     []
     [bc_fix_bottom_y]
         type = DirichletBC
