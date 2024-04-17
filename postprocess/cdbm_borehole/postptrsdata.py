@@ -169,7 +169,7 @@ def PlotPtrXYVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,angle,i
 
     print("compute the magnitude of given variable values ...")
 
-    ptr_mag_valhist = np.sqrt(ptr_x_valhist**2+ptr_y_valhist**2)
+    # ptr_mag_valhist = np.sqrt(ptr_x_valhist**2+ptr_y_valhist**2)
 
     print("direction converting to fault normal/parallel ...")
     
@@ -197,22 +197,27 @@ def PlotPtrXYVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,angle,i
     #plot
     #global
     plt.figure(figsize=(10,6))
-    plt.plot(timeseries[:85],ptr_mag_valhist[:85],'b-',label = "velocity mag")
+    plt.plot(timeseries[:85],ptr_x_valhist[:85],'b-',label = "velocity x")
+    plt.plot(timeseries[:85],ptr_y_valhist[:85],'k-',label = "velocity y")    
     # plt.plot(timeseries[:],ptr_y_valhist,'r-',label = "velocity y")
     plt.xlabel("time history (s)")
     plt.ylabel("velocity (m/s)")
     plt.legend()
     plt.title("Time History of Velocity at location: "+str(ptr_x)+" , "+str(ptr_y))
     # plt.xlim([0,35])
-    plt.ylim([0,18.0])
+    # plt.ylim([0,18.0])
 
     #
     np.savetxt(save_folder_output_file_path+'/outputs/list_timeseries'+str(i)+'.txt',
                     timeseries[:85],
                     fmt='%.7f',
                     newline=" ")
-    np.savetxt(save_folder_output_file_path+'/outputs/list_velmag'+str(i)+'.txt',
-                    ptr_mag_valhist[:85],
+    np.savetxt(save_folder_output_file_path+'/outputs/list_velx'+str(i)+'.txt',
+                    ptr_x_valhist[:85],
+                    fmt='%.7f',
+                    newline=" ")
+    np.savetxt(save_folder_output_file_path+'/outputs/list_vely'+str(i)+'.txt',
+                    ptr_y_valhist[:85],
                     fmt='%.7f',
                     newline=" ")
     
