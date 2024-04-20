@@ -17,21 +17,21 @@ from scipy.spatial import distance
 import PyGmshBuildExplodeFunc as efunc
 
 # First Step Mesh Size 
-lc1 = 250
+lc1 = 500
 
 # Meshing Coarse Mesh Size
-lc2 = 30 #for outer domain
+lc2 = 60 #for outer domain
 lc3 = 30  #for inner network region
 
 #list_cornerptrs: list of corner ptrs coordinates [x1, y1, x2, y2, x3, y3, x4, y4]
-list_cornerptrs = [-2000.0,-2000.0,
-                    2000.0,-2000.0,
-                    2000.0,2000.0,
-                   -2000.0,2000.0]
+list_cornerptrs = [-2500.0,-2500.0,
+                    2500.0,-2500.0,
+                    2500.0,2500.0,
+                   -2500.0,2500.0]
 
 # Region of Multifaults
-dist_verticalbc = 1500
-dist_lateralbc = 1500
+dist_verticalbc = 2250
+dist_lateralbc = 2280
 
 # Meshing Algorithm
 num_alg_meshing = 5

@@ -164,7 +164,7 @@ SlipWeakeningMultifaultsPressure::computeInterfaceTractionAndDerivatives()
    //Assign back traction in CZM
    RealVectorValue traction;
 
-   traction(0) = T2+T2_o; 
+   traction(0) = (T2+_alpha*_pressure[_qp])+T2_o; 
    traction(1) = -T1+T1_o; 
    traction(2) = 0;
 
