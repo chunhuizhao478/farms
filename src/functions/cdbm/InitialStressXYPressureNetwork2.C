@@ -22,6 +22,7 @@ InitialStressXYPressureNetwork2::validParams()
   params.addRequiredParam<Real>(  "undrained_nu_u", "undrained poisson's ratio");
   params.addRequiredParam<Real>("shear_modulus_mu", "shear modulus");
   params.addRequiredParam<Real>(      "drained_nu", "drained poisson's ratio");
+  params.addParam<Real>("tini","initial time");
   return params;
 }
 
@@ -34,7 +35,8 @@ InitialStressXYPressureNetwork2::InitialStressXYPressureNetwork2(const InputPara
   _biotcoeff_alpha(getParam<Real>("biotcoeff_alpha")),
   _undrained_nu_u(getParam<Real>("undrained_nu_u")),
   _shear_modulus_mu(getParam<Real>("shear_modulus_mu")),
-  _drained_nu(getParam<Real>("drained_nu"))
+  _drained_nu(getParam<Real>("drained_nu")),
+  _tini(getParam<Real>("tini"))
 {
 }
 
@@ -150,8 +152,8 @@ InitialStressXYPressureNetwork2::value(Real t, const Point & p) const
   Real pi = 3.14159265358979323846;
 
   //compute R
-  Real x_center = 208.7;
-  Real y_center = -1200;
+  Real x_center = -165.0;
+  Real y_center = -232.5;
   Real x_coord = p(0) - x_center; //along the strike direction
   Real y_coord = p(1) - y_center; //along the normal direction
   Real R = sqrt(x_coord*x_coord+y_coord*y_coord); //assume injection location is (0,0)
@@ -167,13 +169,16 @@ InitialStressXYPressureNetwork2::value(Real t, const Point & p) const
   Real c = ( _permeability_k * ( undrained_lambda - drained_lambda ) * ( drained_lambda + 2 * _shear_modulus_mu ) ) / ( _viscosity_eta * _biotcoeff_alpha * _biotcoeff_alpha * ( undrained_lambda + 2 * _shear_modulus_mu ) );
 
   //Define z
-  Real z = R * R / ( 4 * c * t );
+  //Real z = R * R / ( 4 * c * (t + _tini) );
 
   //Compute exp integral
-  Real expIntz = expint_network2(1, z);
+  //Real expIntz = expint_network2(1, z);
 
   //compute pressure
-  pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k ) * expIntz;
+  //pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k ) * expIntz;
+
+  //compute pressure
+  pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k * R ) * std::erfc(0.5 * R / std::sqrt(c*(t+_tini)));
 
   return pressure;
 

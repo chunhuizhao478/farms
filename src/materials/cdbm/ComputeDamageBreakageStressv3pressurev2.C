@@ -256,9 +256,9 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
           Real sigma12_b = ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps12e;
 
           //Represent total stress
-          Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b - _effec_sts_coeff * _pressure_pos;
-          Real sigma22_t = (1 - B) * sigma22_s + B * sigma22_b - _effec_sts_coeff * _pressure_pos;
-          Real sigma33_t = (1 - B) * sigma33_s + B * sigma33_b - _effec_sts_coeff * _pressure_pos;
+          Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b + _effec_sts_coeff * _pressure_pos;
+          Real sigma22_t = (1 - B) * sigma22_s + B * sigma22_b + _effec_sts_coeff * _pressure_pos;
+          Real sigma33_t = (1 - B) * sigma33_s + B * sigma33_b + _effec_sts_coeff * _pressure_pos;
           Real sigma12_t = (1 - B) * sigma12_s + B * sigma12_b;
           
           // //Compute sigma33_t
@@ -385,9 +385,9 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       // }
       //-----------------------------------DEBUG-----------------------------------//
 
-      stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * _pressure_pos;
-      stress_total_out(1,1) = stress_total_out(1,1) - _effec_sts_coeff * _pressure_pos;
-      stress_total_out(2,2) = stress_total_out(2,2) - _effec_sts_coeff * _pressure_pos;
+      stress_total_out(0,0) = stress_total_out(0,0) + _effec_sts_coeff * _pressure_pos;
+      stress_total_out(1,1) = stress_total_out(1,1) + _effec_sts_coeff * _pressure_pos;
+      stress_total_out(2,2) = stress_total_out(2,2) + _effec_sts_coeff * _pressure_pos;
 
       //-----------------------------------DEBUG-----------------------------------//
       // if ( x_coord > -3.26158-1.0 && x_coord < -3.26158+1.0 && y_coord > 6.89017-1.0 && y_coord < 6.89017+1.0 )
@@ -575,12 +575,12 @@ ComputeDamageBreakageStressv3pressurev2::setupInitial()
 
   //Get stress components
   RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
-  Real sts11_init = stress_initial(0,0);
+  Real sts11_init = stress_initial(0,0) + _effec_sts_coeff * _pressure[_qp];
   Real sts12_init = stress_initial(0,1);
-  Real sts22_init = stress_initial(1,1);
+  Real sts22_init = stress_initial(1,1) + _effec_sts_coeff * _pressure[_qp];
   
   //Note the presence of sts33 in plane strain problem
-  Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init );
+  Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init ) + _effec_sts_coeff * _pressure[_qp];
 
   //In https://www.fracturemechanics.org/plane.html it is given:
   //eps11 = 1 / youngs_modulus_o ( ( 1 - poisson_ratio_o ^ 2) sigma_xx - poisson_ratio_o * ( 1 + poisson_ratio_o ) * sigma_yy ) (1)

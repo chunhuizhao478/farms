@@ -8,10 +8,10 @@ dx = 0.001; %m
 cd_constant = 5e7; %/s damage accumulation rate
 %% Calculate Parameters
 %calculate lambda, mu
-lambda = E * nu / ( ( 1 + nu )  * ( 1 - 2 * nu ));
-mu = E / ( 2  * ( 1 + nu ));
-% lambda = 14;
-% mu = 14;
+% lambda = E * nu / ( ( 1 + nu )  * ( 1 - 2 * nu ));
+% mu = E / ( 2  * ( 1 + nu ));
+lambda = 32.04;
+mu = 32.04;
 %calculate 2d xi_o
 xi_o = xiocalc2d(lambda,mu,phi);
 %calculate shear wave speed
