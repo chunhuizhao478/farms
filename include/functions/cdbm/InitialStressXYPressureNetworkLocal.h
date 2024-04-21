@@ -28,5 +28,7 @@ public:
   Real _shear_modulus_mu;  //shear modulus
   Real _drained_nu;        //drained poisson's ratio
   Real _tini;
+  Real _xcoord;
+  Real _ycoord;
 
 };

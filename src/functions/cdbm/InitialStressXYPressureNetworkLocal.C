@@ -23,6 +23,8 @@ InitialStressXYPressureNetworkLocal::validParams()
   params.addRequiredParam<Real>("shear_modulus_mu", "shear modulus");
   params.addRequiredParam<Real>(      "drained_nu", "drained poisson's ratio");
   params.addParam<Real>("tini","initial time");
+  params.addParam<Real>("xcoord","injection location");
+  params.addParam<Real>("ycoord","injection location");
   return params;
 }
 
@@ -36,7 +38,9 @@ InitialStressXYPressureNetworkLocal::InitialStressXYPressureNetworkLocal(const I
   _undrained_nu_u(getParam<Real>("undrained_nu_u")),
   _shear_modulus_mu(getParam<Real>("shear_modulus_mu")),
   _drained_nu(getParam<Real>("drained_nu")),
-  _tini(getParam<Real>("tini"))
+  _tini(getParam<Real>("tini")),
+  _xcoord(getParam<Real>("xcoord")),
+  _ycoord(getParam<Real>("ycoord"))
 {
 }
 
@@ -152,8 +156,12 @@ InitialStressXYPressureNetworkLocal::value(Real t, const Point & p) const
   Real pi = 3.14159265358979323846;
 
   //compute R
-  Real x_center = -439;
-  Real y_center = 121;
+  //[saved] place on the fault
+  //   Real x_center = -439;
+  //   Real y_center = 121;
+  //[saved] place inside the domain
+  Real x_center = _xcoord;
+  Real y_center = _ycoord;
   Real x_coord = p(0) - x_center; //along the strike direction
   Real y_coord = p(1) - y_center; //along the normal direction
   Real R = sqrt(x_coord*x_coord+y_coord*y_coord); //assume injection location is (0,0)

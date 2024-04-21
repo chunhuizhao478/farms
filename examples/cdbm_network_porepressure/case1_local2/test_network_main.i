@@ -135,8 +135,8 @@
   shear_modulus_mu = 20e9 #Pa
   drained_nu = 0.25 #-
   tini = 86400
-  xcoord = -439
-  ycoord = 121
+  xcoord = 232
+  ycoord = 105
 []
 
 [AuxVariables]
