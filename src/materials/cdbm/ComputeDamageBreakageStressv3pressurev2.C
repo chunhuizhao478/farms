@@ -256,9 +256,9 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
           Real sigma12_b = ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * eps12e;
 
           //Represent total stress
-          Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b + _effec_sts_coeff * _pressure_pos;
-          Real sigma22_t = (1 - B) * sigma22_s + B * sigma22_b + _effec_sts_coeff * _pressure_pos;
-          Real sigma33_t = (1 - B) * sigma33_s + B * sigma33_b + _effec_sts_coeff * _pressure_pos;
+          Real sigma11_t = (1 - B) * sigma11_s + B * sigma11_b - _effec_sts_coeff * _pressure_pos;
+          Real sigma22_t = (1 - B) * sigma22_s + B * sigma22_b - _effec_sts_coeff * _pressure_pos;
+          Real sigma33_t = (1 - B) * sigma33_s + B * sigma33_b - _effec_sts_coeff * _pressure_pos;
           Real sigma12_t = (1 - B) * sigma12_s + B * sigma12_b;
           
           // //Compute sigma33_t
@@ -385,9 +385,9 @@ ComputeDamageBreakageStressv3pressurev2::computeQpStress()
       // }
       //-----------------------------------DEBUG-----------------------------------//
 
-      stress_total_out(0,0) = stress_total_out(0,0) + _effec_sts_coeff * _pressure_pos;
-      stress_total_out(1,1) = stress_total_out(1,1) + _effec_sts_coeff * _pressure_pos;
-      stress_total_out(2,2) = stress_total_out(2,2) + _effec_sts_coeff * _pressure_pos;
+      stress_total_out(0,0) = stress_total_out(0,0) - _effec_sts_coeff * _pressure_pos;
+      stress_total_out(1,1) = stress_total_out(1,1) - _effec_sts_coeff * _pressure_pos;
+      stress_total_out(2,2) = stress_total_out(2,2) - _effec_sts_coeff * _pressure_pos;
 
       //-----------------------------------DEBUG-----------------------------------//
       // if ( x_coord > -3.26158-1.0 && x_coord < -3.26158+1.0 && y_coord > 6.89017-1.0 && y_coord < 6.89017+1.0 )

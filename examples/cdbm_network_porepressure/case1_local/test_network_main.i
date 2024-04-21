@@ -62,20 +62,20 @@
   q = 0.2
   
   #characteristic length (m)
-  Dc = 0.4
+  Dc = 0.1
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 3.204e10
+  lambda_o = 2e10
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 3.204e10
+  shear_modulus_o = 2e10
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = -0.929
+  xi_0 = -0.943
 
   #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = -0.929
+  xi_d = -0.943
 
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
@@ -101,10 +101,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 3.5583e10
+  gamma_damaged_r = 2.2125e10
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.763
+  xi_1 = 0.757
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -116,10 +116,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 6.379e9
-  a1 = -1.9891e10
-  a2 = 1.9269e10
-  a3 = -5.446e9
+  a0 = 3.982e9
+  a1 = -1.2417e10
+  a2 = 1.2028e10
+  a3 = -3.400e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
@@ -132,9 +132,9 @@
   viscosity_eta = 0.4e-3 #Pa s
   biotcoeff_alpha = 0.31 #-
   undrained_nu_u = 0.3  #-
-  shear_modulus_mu = 32.04e9 #Pa
+  shear_modulus_mu = 20e9 #Pa
   drained_nu = 0.25 #-
-  tini = 864000
+  tini = 86400
 []
 
 [AuxVariables]
@@ -574,7 +574,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 100
+  interval = 10
   [sample_snapshots]
     type = Exodus
     interval = 2000
