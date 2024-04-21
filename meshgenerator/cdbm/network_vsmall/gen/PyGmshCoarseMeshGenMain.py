@@ -21,7 +21,7 @@ lc1 = 300
 
 # Meshing Coarse Mesh Size
 lc2 = 60 #for outer domain
-lc3 = 30  #for inner network region
+lc3 = 8  #for inner network region
 
 #list_cornerptrs: list of corner ptrs coordinates [x1, y1, x2, y2, x3, y3, x4, y4]
 list_cornerptrs = [-1000.0,-1000.0,
