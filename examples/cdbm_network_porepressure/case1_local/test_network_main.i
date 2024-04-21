@@ -10,7 +10,7 @@
 # the principal stress is 198e6 
 
 # S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4 ) = 0.5
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.1 / (( 0.677 - 0.4) * 198e6) = 58.4m
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.025 / (( 0.677 - 0.4) * 50e6) = 57.83m #50e6 minimum of all faults
 
 # Use mesh size = 8m, resolved by 7 elements [Check!]
 
@@ -62,7 +62,7 @@
   q = 0.2
   
   #characteristic length (m)
-  Dc = 0.1
+  Dc = 0.025
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]

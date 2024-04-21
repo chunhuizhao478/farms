@@ -152,8 +152,8 @@ InitialStressXYPressureNetworkLocal::value(Real t, const Point & p) const
   Real pi = 3.14159265358979323846;
 
   //compute R
-  Real x_center = 235;
-  Real y_center = 94;
+  Real x_center = -439;
+  Real y_center = 121;
   Real x_coord = p(0) - x_center; //along the strike direction
   Real y_coord = p(1) - y_center; //along the normal direction
   Real R = sqrt(x_coord*x_coord+y_coord*y_coord); //assume injection location is (0,0)
@@ -181,8 +181,8 @@ InitialStressXYPressureNetworkLocal::value(Real t, const Point & p) const
   pressure = ( _flux_q * _viscosity_eta ) / ( 4 * pi * _density_rho_0 * _permeability_k * R ) * std::erfc(0.5 * R / std::sqrt(c*(t+_tini)));
   
   //cap pressure
-  if ( pressure > 30e6 ){
-	pressure = 30e6;
+  if ( pressure > 100e6 ){
+	pressure = 100e6;
   }
 
   return pressure;

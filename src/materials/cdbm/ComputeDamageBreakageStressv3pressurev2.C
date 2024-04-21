@@ -575,12 +575,12 @@ ComputeDamageBreakageStressv3pressurev2::setupInitial()
 
   //Get stress components
   RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
-  Real sts11_init = stress_initial(0,0) + _effec_sts_coeff * _pressure[_qp];
+  Real sts11_init = stress_initial(0,0) - _effec_sts_coeff * _pressure[_qp];
   Real sts12_init = stress_initial(0,1);
-  Real sts22_init = stress_initial(1,1) + _effec_sts_coeff * _pressure[_qp];
+  Real sts22_init = stress_initial(1,1) - _effec_sts_coeff * _pressure[_qp];
   
   //Note the presence of sts33 in plane strain problem
-  Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init ) + _effec_sts_coeff * _pressure[_qp];
+  Real sts33_init = poisson_ratio_o * ( sts11_init + sts22_init ) - _effec_sts_coeff * _pressure[_qp];
 
   //In https://www.fracturemechanics.org/plane.html it is given:
   //eps11 = 1 / youngs_modulus_o ( ( 1 - poisson_ratio_o ^ 2) sigma_xx - poisson_ratio_o * ( 1 + poisson_ratio_o ) * sigma_yy ) (1)
