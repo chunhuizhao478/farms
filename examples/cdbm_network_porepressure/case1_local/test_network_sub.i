@@ -78,7 +78,7 @@
   # C_d_min = 10
 
   #if option 2, use Cd_constant
-  Cd_constant = 1e4
+  Cd_constant = 1e3
 
   #power-law correction
   #index
