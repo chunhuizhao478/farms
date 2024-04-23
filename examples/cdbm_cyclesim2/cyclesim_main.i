@@ -18,16 +18,17 @@
         type = SubdomainBoundingBoxGenerator    
         input = sidesets
         block_id = 1
-        bottom_left = '-20 -50 0'
-        top_right = '20 -45 0'
+        bottom_left = '-10 -10 0'
+        top_right = '10 -5 0'
     []
     [./elasticblock_2]
         type = SubdomainBoundingBoxGenerator    
         input = elasticblock_1
         block_id = 1
-        bottom_left = '-20 45 0'
-        top_right = '20 50 0'
-    []      
+        bottom_left = '-10 5 0'
+        top_right = '10 10 0'
+    []
+    displacements = 'disp_x disp_y'      
 []
 
 [GlobalParams]
@@ -205,6 +206,7 @@
         variable = disp_x
         component = 0
         zeta = 0.0029
+        use_displaced_mesh = true
     []
     [dispkernel_y]
         type = ADDynamicStressDivergenceTensors
@@ -212,6 +214,7 @@
         variable = disp_y
         component = 1
         zeta = 0.0029
+        use_displaced_mesh = true
     []
     [inertia_x]
         type = ADInertialForce
@@ -221,6 +224,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 31.35
+        use_displaced_mesh = true
     []
     [inertia_y]
         type = ADInertialForce
@@ -230,6 +234,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 31.35
+        use_displaced_mesh = true
     []
 []
 
@@ -475,7 +480,7 @@
   
 [Executioner]
     type = Transient
-    solve_type = 'PJFNK'
+    solve_type = 'NEWTON'
     start_time = 0
     end_time = 1e10
     # num_steps = 1
@@ -507,7 +512,7 @@
 [Outputs]
     exodus = true
     interval = 10
-    # show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
+    show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 
 [BCs]
