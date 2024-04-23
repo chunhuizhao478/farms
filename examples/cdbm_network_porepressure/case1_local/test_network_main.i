@@ -600,8 +600,8 @@
       variable = disp_x
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = top
   []
   [./dashpot_top_y]
@@ -610,8 +610,8 @@
       variable = disp_y
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = top
   []
   [./dashpot_bottom_x]
@@ -620,8 +620,8 @@
       variable = disp_x
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = bottom
   []
   [./dashpot_bottom_y]
@@ -630,8 +630,8 @@
       variable = disp_y
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = bottom
   []
   [./dashpot_left_x]
@@ -640,8 +640,8 @@
       variable = disp_x
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = left
   []
   [./dashpot_left_y]
@@ -650,8 +650,8 @@
       variable = disp_y
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = left
   []
   [./dashpot_right_x]
@@ -660,8 +660,8 @@
       variable = disp_x
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = right
   []
   [./dashpot_right_y]
@@ -670,8 +670,8 @@
       variable = disp_y
       disp_x = disp_x
       disp_y = disp_y
-      p_wave_speed = 4714.05 
-      shear_wave_speed = 2721.66
+      p_wave_speed = 4740.45 
+      shear_wave_speed = 2736.90
       boundary = right
   []
 []
