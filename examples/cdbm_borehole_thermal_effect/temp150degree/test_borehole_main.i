@@ -380,8 +380,8 @@
   type = Transient
   dt = 5e-8
   end_time = 1
-  # num_steps = 800000
-  num_steps = 1
+  num_steps = 800000
+  # num_steps = 1
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -391,7 +391,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 1
+  interval = 100
   show = 'alpha_in B_in xi_old mu_old'
   # interval = 1  
   # [sample_snapshots]
