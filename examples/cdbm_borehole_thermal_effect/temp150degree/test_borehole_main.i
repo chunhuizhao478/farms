@@ -16,10 +16,10 @@
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
-  lambda_o = 15.685e9
+  lambda_o = 10.456e9
     
   #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = 10.456e9
+  shear_modulus_o = 15.685e9
 
   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
   xi_0 = -1.021
@@ -380,8 +380,8 @@
   type = Transient
   dt = 5e-8
   end_time = 1
-  num_steps = 800000
-  # num_steps = 10
+  # num_steps = 800000
+  num_steps = 1
   [TimeIntegrator]
     type = CentralDifference
     solve_type = lumped
@@ -391,7 +391,7 @@
 #for cluster run
 [Outputs]
   exodus = true
-  interval = 100
+  interval = 1
   show = 'alpha_in B_in xi_old mu_old'
   # interval = 1  
   # [sample_snapshots]
