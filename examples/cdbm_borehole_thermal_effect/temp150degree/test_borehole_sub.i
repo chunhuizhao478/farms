@@ -62,7 +62,7 @@
   beta_width = 0.03 #1e-3
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.723
+  xi_1 = 0.7233
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -74,10 +74,10 @@
 
   # #coefficients
   # chi = 0.75
-  a0 = 2.814e9
-  a1 = -8.587e9
-  a2 = 7.610e9
-  a3 = -1.543e9
+  a0 = 2.8155e9
+  a1 = -8.5871e9
+  a2 = 7.5987e9
+  a3 = -1.5322e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0

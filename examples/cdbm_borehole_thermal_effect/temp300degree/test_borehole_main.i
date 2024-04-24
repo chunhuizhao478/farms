@@ -51,10 +51,10 @@
   #check struct_param.m 
 
   #coefficient of damage solid modulus
-  gamma_damaged_r = 15.835e9
+  gamma_damaged_r = 15.837e9
 
   #critical point of three phases (strain invariants ratio vs damage)
-  xi_1 = 0.729
+  xi_1 = 0.7287
 
   ##Compute parameters in granular states
   #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
@@ -67,9 +67,9 @@
   # #coefficients
   # chi = 0.75
   a0 = 2.652e9
-  a1 = -8.115e9
-  a2 = 7.289e9
-  a3 = -1.574e9
+  a1 = -8.117e9
+  a2 = 7.292e9
+  a3 = -1.5758e9
 
   #diffusion coefficient #for structural stress coupling
   D = 0
