@@ -15,7 +15,7 @@ clear all; close all; clc;
 %% Temp 225 degree
 Vs = 2398.6; %m/s
 Vp = 3956; %m/s
-rho = 2631.34; %kg/m^3
+rho = 2633.4; %kg/m^3
 %% Temp 300 degree
 % Vs = 2355.45; %m/s
 % Vp = 3881; %m/s
@@ -24,7 +24,7 @@ rho = 2631.34; %kg/m^3
 %
 E = rho * Vs ^ 2 * ( 3 * Vp ^ 2 - 4 * Vs ^ 2 ) / ( Vp ^ 2 - Vs ^ 2 ) / 1e9;     %GPa
 nu = 0.5 * ( Vp ^ 2 - 2 * Vs ^ 2 ) / ( Vp ^ 2 - Vs ^ 2 );  %-
-phi = 35;   %internal friction angle
+phi = 46;   %internal friction angle
 dx = 0.001; %m
 cd_constant = 5e7; %/s damage accumulation rate
 %% Calculate Parameters
