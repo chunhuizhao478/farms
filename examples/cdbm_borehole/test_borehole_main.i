@@ -5,6 +5,13 @@
         type = FileMeshGenerator
         file =  './meshfile/borehole_example.msh'
     []
+    [./extranodeset1]
+        type = ExtraNodesetGenerator
+        coord = '-0.025 -0.0375  0'
+        new_boundary = corner_ptr1
+        input = msh
+    []
+    displacements = 'disp_x disp_y disp_z'
 []
 
 [GlobalParams]
@@ -140,12 +147,12 @@
     []
     #updated alpha, B
     [./alpha_in]
-        order = CONSTANT
-        family = MONOMIAL
+        order = FIRST
+        family = LAGRANGE
     []
     [./B_in]
-        order = CONSTANT
-        family = MONOMIAL
+        order = FIRST
+        family = LAGRANGE
     []
     #output alpha, B to subApp
     [./alpha_damagedvar_out]
@@ -192,18 +199,21 @@
         displacements = 'disp_x disp_y disp_z'
         variable = disp_x
         component = 0
+        use_displaced_mesh = true
     []
     [dispkernel_y]
         type = ADDynamicStressDivergenceTensors
         displacements = 'disp_x disp_y disp_z'
         variable = disp_y
         component = 1
+        use_displaced_mesh = true
     []
     [dispkernel_z]
         type = ADDynamicStressDivergenceTensors
         displacements = 'disp_x disp_y disp_z'
         variable = disp_z
         component = 2
+        use_displaced_mesh = true
     []
     [inertia_x]
         type = ADInertialForce
@@ -212,6 +222,7 @@
         acceleration = accel_x
         beta = 0.25
         gamma = 0.5
+        use_displaced_mesh = true
     []
     [inertia_y]
         type = ADInertialForce
@@ -220,6 +231,7 @@
         acceleration = accel_y
         beta = 0.25
         gamma = 0.5
+        use_displaced_mesh = true
     []
     [inertia_z]
         type = ADInertialForce
@@ -228,6 +240,7 @@
         acceleration = accel_z
         beta = 0.25
         gamma = 0.5
+        use_displaced_mesh = true
     []
 []
 
@@ -282,43 +295,43 @@
         type = ADMaterialRealAux
         property = xi
         variable = xi_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [get_I2_old]
         type = ADMaterialRealAux
         property = I2
         variable = I2_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [get_mu_old]
         type = ADMaterialRealAux
         property = shear_modulus
         variable = mu_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [get_lambda_old]
         type = ADMaterialRealAux
         property = lambda
         variable = lambda_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [get_gamma_old]
         type = ADMaterialRealAux
         property = gamma_damaged
         variable = gamma_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [get_alpha_old]
         type = ADMaterialRealAux
         property = alpha_damagedvar
         variable = alpha_damagedvar_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     [get_B_old]
         type = ADMaterialRealAux
         property = B
         variable = B_out
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
+        execute_on = 'INITIAL TIMESTEP_END'
     []
     #principal strain
     [get_principal_strain]
@@ -384,7 +397,7 @@
     #left-right
     [func_stress_xx]
         type = ConstantFunction
-        value = -40e6
+        value = -70e6
     [../]
     [func_stress_xy]
         type = ConstantFunction
@@ -458,13 +471,13 @@
         type = Pressure
         boundary = left
         variable = disp_x
-        factor = 40e6
+        factor = 70e6
     []
     [disp_right]
         type = Pressure
         boundary = right
         variable = disp_x
-        factor = 40e6
+        factor = 70e6
     []
     #
     [disp_front]
@@ -479,29 +492,56 @@
         variable = disp_z
         factor = 30e6
     []
+    #
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr1
+        value = 0
+    []
+    [./fix_cptr1_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr1
+        value = 0
+    []
+    [./fix_cptr1_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = corner_ptr1
+        value = 0
+    []
+[]
+
+
+[Preconditioning]
+    [smp]
+      type = SMP
+      full = true
+    []
 []
 
 [Executioner]
     type = Transient
-    solve_type = 'PJFNK'
+    solve_type = 'NEWTON'
     start_time = 0
-    end_time = 1800
+    end_time = 18000
     # num_steps = 10
-    l_max_its = 100
-    l_tol = 1e-7
+    l_max_its = 20
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
     timestep_tolerance = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
-    automatic_scaling = true
+    # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
+    # dt = 1
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 1e-3
-        cutback_factor_at_failure = 0.5
+        cutback_factor_at_failure = 0.1
         growth_factor = 2
         enable = true
     []
@@ -514,8 +554,8 @@
 
 [Outputs]
     exodus = true
-    interval = 10
-    show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
+    interval = 1
+    show = 'alpha_in B_in xi_old mu_old disp_x disp_y disp_z vel_x vel_y vel_z'    
 []
 
 [MultiApps]
@@ -540,7 +580,7 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_out B_out alpha_damagedvar_out B_out xi_old I2_old mu_old lambda_old gamma_old'
+        source_variable = 'alpha_in B_in alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old'
         variable = 'alpha_old B_old alpha_sub B_sub xi_old I2_old mu_old lambda_old gamma_old'
         execute_on = 'TIMESTEP_BEGIN'
     []

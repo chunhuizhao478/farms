@@ -45,7 +45,7 @@
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 10 
+    CdCb_multiplier = 1 
   
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     CBCBH_multiplier = 10
@@ -84,23 +84,23 @@
 
 [Variables]
     [alpha_sub]
-      order = CONSTANT
-      family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
     [B_sub]
-      order = CONSTANT
-      family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
 []
   
 [AuxVariables]
     [alpha_old]
-      order = CONSTANT
-      family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
     [B_old]
-      order = CONSTANT
-      family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
     [xi_old]
         order = CONSTANT
@@ -124,12 +124,12 @@
     []
     #checked
     [alpha_checked]
-      order = CONSTANT
-      family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
     [B_checked]
-      order = CONSTANT
-      family = MONOMIAL
+      order = FIRST
+      family = LAGRANGE
     []
     #grad_alpha
     [alpha_grad_x_sub]
@@ -148,7 +148,7 @@
     #
     [bounds_dummy]
       family = MONOMIAL
-      order = CONSTANT      
+      order = CONSTANT     
     []
 []
   
@@ -200,6 +200,7 @@
 #by default, subApp is using the same time step as mainApp
 [Executioner]
     type = Transient
+    solve_type = 'NEWTON'
     [TimeIntegrator]
       # type = ImplicitEuler
       type = CrankNicolson
@@ -207,7 +208,7 @@
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 1e-3
-        cutback_factor_at_failure = 0.5
+        cutback_factor_at_failure = 0.1
         growth_factor = 2
         enable = true
     []
