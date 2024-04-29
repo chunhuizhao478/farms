@@ -8,13 +8,13 @@ import json
 
 #---------------------------------#
 #Define parameters
-flux_q = 0.1; #kg/(s m)
+flux_q = 10; #kg/(s m)
 density_rho_0 = 1e3; #kg/m^3
 permeability_k = 3e-16; #m^2
 viscosity_eta = 0.4e-3; #Pa s
 biotcoeff_alpha = 0.31; #-
 undrained_nu_u = 0.3;  #-
-shear_modulus_mu = 32.04e9; #Pa
+shear_modulus_mu = 20e9; #Pa
 drained_nu = 0.25; #-
 
 #injection location
@@ -22,12 +22,12 @@ injection_x = 0
 injection_y = 0
 
 #geometry
-nx = 1001
-ny = 1001
-xmin = -15000
-xmax = 15000
-ymin = -15000
-ymax = 15000
+nx = 3
+ny = 3
+xmin = -1
+xmax = 1
+ymin = -1
+ymax = 1
 
 #time
 dt = 0.1
@@ -41,8 +41,8 @@ xdata = np.linspace(xmin,xmax,nx+1).round(0)
 ydata = np.linspace(ymin,ymax,ny+1).round(0)
 tdata = np.linspace(dt,tmax,nt).round(2)
 
-# print(tdata)
-# exit()
+print(xdata)
+exit()
 
 xv, yv = np.meshgrid(xdata,ydata)
 
@@ -109,6 +109,11 @@ print("max pressure: ", np.max(arr_pressure_3d[:,:,0])/1e6, " MPa")
 xdata_flat = xdata.flatten().tolist()
 ydata_flat = ydata.flatten().tolist()
 tdata_flat = tdata.tolist()
+
+#
+plt.figure()
+plt.plot(tdata_flat,arr_pressure_3d[:,:,0])
+plt.show()
 
 #write
 with open('analyticalsol.txt','w') as f:

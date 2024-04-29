@@ -10,11 +10,11 @@ import json
 #Define parameters
 flux_q = 10; #kg/s
 density_rho_0 = 1e3; #kg/m^3
-permeability_k = 3e-16; #m^2
+permeability_k = 3e-12; #m^2
 viscosity_eta = 0.4e-3; #Pa s
 biotcoeff_alpha = 0.31; #-
 undrained_nu_u = 0.3;  #-
-shear_modulus_mu = 32.04e9; #Pa
+shear_modulus_mu = 20e9; #Pa
 drained_nu = 0.25; #-
 
 #injection location
@@ -30,7 +30,7 @@ ymin = -1e-1
 ymax = 1e-1
 
 #time
-dt = 0.5 * 24 * 60 * 60
+dt = 1
 tmin = 0.0
 tmax = 1 * 24 * 60 * 60
 nt = int( ( tmax - tmin ) / dt )
@@ -42,13 +42,15 @@ shapexv0 = 1
 shapexv1 = 1
 shapet = np.shape(tdata)[0]
 
-arr_diff_x = 10
-arr_diff_y = 10
+# arr_diff_x = 1e-4
+# arr_diff_y = 1e-4
 
-arr_R = np.sqrt(arr_diff_x*arr_diff_x+arr_diff_y*arr_diff_y)
+# arr_R = np.sqrt(arr_diff_x*arr_diff_x+arr_diff_y*arr_diff_y)
 
 # print(np.max(arr_R),np.sqrt(2)*2500)
 # print(np.min(arr_R))
+
+arr_R = 10
 
 #undrained lame constant
 drained_lambda   = 2 * shear_modulus_mu *     drained_nu / ( 1 - 2 *     drained_nu )
@@ -61,7 +63,7 @@ print(c)
 # exit()
 
 #compute pressure
-arr_pressure_3d = np.zeros((shapet,1))
+arr_pressure_3d = []
 
 #plot figures
 # plt.figure()
@@ -75,7 +77,7 @@ for t_i in tdata[:]:
 
     #3D
     xi = arr_R / np.sqrt(c*t_i)
-    arr_pressure_3d[index,0] = ( flux_q * viscosity_eta ) / ( 4 * np.pi * density_rho_0 * arr_R * permeability_k ) * erfc( 0.5 * xi )
+    arr_pressure_3d.append( ( flux_q * viscosity_eta ) / ( 4 * np.pi * density_rho_0 * arr_R * permeability_k ) * erfc( 0.5 * xi ) )
 
     index += 1
     # plt.imshow(arr_pressure_3d[:,:,t_i], cmap='cool', interpolation='nearest')
@@ -87,7 +89,11 @@ for t_i in tdata[:]:
 
 #rearrange xdata ydata
 tdata_flat = tdata.tolist()
-arr_pressure_3d = arr_pressure_3d.tolist()
+
+for i in range(len(arr_pressure_3d)):
+    arr_pressure_3d[i] = 0.31 * arr_pressure_3d[i]
+
+print(arr_pressure_3d)
 
 np.savetxt("./tdata_flat.txt",
                 tdata_flat,
