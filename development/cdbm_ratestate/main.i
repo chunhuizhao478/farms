@@ -2,12 +2,13 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 201
-        ny = 200
-        xmin = -10050
-        xmax = 10050
-        ymin = -10000
-        ymax = 10000
+        nx = 400
+        ny = 60
+        xmin = -20000
+        xmax = 20000
+        ymin = -3000
+        ymax = 3000
+        elem_type = TRI3
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -29,6 +30,66 @@
 
     ##damping ratio 
     q = 0.5
+
+    ##----continuum damage breakage model----##
+    #initial lambda value (first lame constant) [Pa]
+    lambda_o = 3.204e10
+      
+    #initial shear modulus value (second lame constant) [Pa]
+    shear_modulus_o = 3.204e10
+  
+    #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
+    xi_0 = -0.8
+  
+    #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
+    xi_d = -0.9
+  
+    #<strain invariants ratio: maximum allowable value>: set boundary
+    #Xu_etal_P15-2D
+    #may need a bit space, use 1.5 as boundary
+    xi_max = 1.8
+  
+    #<strain invariants ratio: minimum allowable value>: set boundary
+    #Xu_etal_P15-2D
+    xi_min = -1.8
+  
+    #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    C_g = 1e-10
+  
+    #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    m1 = 10
+  
+    #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
+    m2 = 1
+  
+    ##Compute gamma_damaged_r, xi_1
+    #Determine two parameters using convexity of Hessian matrix, positivity of eigenvalues
+    #two equations [15a] = 0 [15b] = 0 solves gamma_damaged_r and xi_1 
+    #check struct_param.m 
+  
+    #coefficient of damage solid modulus
+    gamma_damaged_r = 3.7150e10
+  
+    #critical point of three phases (strain invariants ratio vs damage)
+    xi_1 = 0.8248
+  
+    ##Compute parameters in granular states
+    #see note_mar25 for detailed setup for solving coefficients a0 a1 a2 a3
+    #check struct_param.m
+  
+    #--------------------------------------------------------------------------------#
+    #Note: "computeAlphaCr" needs to change every time the related parameters changed
+    #--------------------------------------------------------------------------------#
+  
+    # #coefficients
+    # chi = 0.75
+    a0 = 7.4289e9
+    a1 = -2.214e10
+    a2 = 2.0929e10
+    a3 = -6.0672e9
+  
+    #diffusion coefficient #for structural stress coupling
+    D = 0
 
 []
 
@@ -112,6 +173,49 @@
         order = FIRST
         family = LAGRANGE
     []
+    #damage-breakage
+    [./B_old]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./xi_old]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./I2_old]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./mu_old]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./lambda_old]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./gamma_old]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #updated alpha, B
+    [./alpha_in]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./B_in]
+        order = CONSTANT
+        family = MONOMIAL
+    []    
+    #grad_alpha
+    [./alpha_grad_x]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./alpha_grad_y]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -157,6 +261,37 @@
         coupled = disp_y
         execute_on = 'TIMESTEP_END'
     []
+    #damage-breakage
+    [get_xi_old]
+        type = MaterialRealAux
+        property = xi
+        variable = xi_old
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_I2_old]
+        type = MaterialRealAux
+        property = I2
+        variable = I2_old
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_mu_old]
+        type = MaterialRealAux
+        property = shear_modulus
+        variable = mu_old
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_lambda_old]
+        type = MaterialRealAux
+        property = lambda
+        variable = lambda_old
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_gamma_old]
+        type = MaterialRealAux
+        property = gamma_damaged
+        variable = gamma_old
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []    
 []
 
 [Problem]
@@ -202,20 +337,28 @@
 []
 
 [Materials]
-    [elasticity]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 32.04e9
-        shear_modulus = 32.04e9
-        use_displaced_mesh = false
-    []
-    [stress]
-        type = ComputeLinearElasticStress
+    #damage breakage model
+    [stress_medium]
+        type = ComputeDamageBreakageStressv4
+        alpha_in = alpha_in
+        B_in = B_in
+        alpha_grad_x = alpha_grad_x
+        alpha_grad_y = alpha_grad_y
+        output_properties = 'eps_p eps_e eps_total I1'
+        outputs = exodus
     []
     [density]
         type = GenericConstantMaterial
         prop_names = density
         prop_values = 2670
     []
+    [./static_initial_stress_tensor]
+        type = GenericFunctionRankTwoTensor
+        tensor_name = static_initial_stress_tensor
+        tensor_functions = 'func_initial_stress_xx             func_initial_stress_xy_const        func_initial_stress_00 
+                            func_initial_stress_xy_const       func_initial_stress_yy              func_initial_stress_00
+                            func_initial_stress_00             func_initial_stress_00              func_initial_stress_00'
+    [../]
 []
 
 [UserObjects]
@@ -237,6 +380,33 @@
         vector_tag = 'restore_dampy_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
+    []
+[]
+
+[Functions]
+    [func_initial_strike_shear_stress]
+        type = InitialStressXYcontmfbfs
+        # type = ConstantFunction
+        # value = 70e6
+    []
+    #this function is used in medimum
+    [func_initial_stress_xy_const]
+        type = ConstantFunction
+        value = 75e6
+    []
+    [./func_initial_stress_00]
+        type = ConstantFunction
+        value = 0.0
+    []
+    [./func_initial_stress_yy]
+        type = ConstantFunction
+        value = -120e6
+    []
+    #In problems with inelasticity, the sigma11 is important
+    #This is different from pure tpv205 
+    [./func_initial_stress_xx]
+        type = ConstantFunction
+        value = -135e6
     []
 []
 
@@ -351,9 +521,9 @@
 
 [Executioner]
     type = Transient
-    dt = 0.00125
+    dt = 4e-4
     end_time = 5.0
-  #  num_steps = 10
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -362,7 +532,7 @@
 
 [Outputs]
     exodus = true
-    interval = 20
+    interval = 100
 []
 
 [MultiApps]
@@ -373,9 +543,16 @@
       input_files = 'sub.i'
       execute_on = 'INITIAL TIMESTEP_BEGIN'
     [../]
+    [./damage_app]
+      type = TransientMultiApp
+      positions = '0 0 1'
+      input_files = 'damage.i'
+      execute_on = 'TIMESTEP_BEGIN'
+    []
   []
 
 [Transfers]
+    #rate-state
     #get displacement residuals from subApp to mainApp
     [pull_resid]
         type = MultiAppCopyTransfer
@@ -391,6 +568,22 @@
         source_variable = 'resid_x resid_y resid_damp_x resid_damp_y'
         variable = 'resid_sub_x resid_sub_y resid_damp_sub_x resid_damp_sub_y'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #damage-breakage
+    [pull_resid_damage_breakage]
+        type = MultiAppCopyTransfer
+        from_multi_app = damage_app
+        source_variable = 'alpha_checked B_checked'
+        variable = 'alpha_in B_in'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #we actually don't need to pass alpha and B
+    [push_disp_damage_breakage]
+        type = MultiAppCopyTransfer
+        to_multi_app = damage_app
+        source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old'
+        variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old'
+        execute_on = 'TIMESTEP_BEGIN'
     []
 []
 

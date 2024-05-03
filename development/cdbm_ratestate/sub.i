@@ -2,12 +2,13 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 201
-        ny = 200
-        xmin = -10050
-        xmax = 10050
-        ymin = -10000
-        ymax = 10000
+        nx = 400
+        ny = 60
+        xmin = -20000
+        xmax = 20000
+        ymin = -3000
+        ymax = 3000
+        elem_type = TRI3
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -346,7 +347,7 @@
     []
 []
 
-[Outputs]
-    exodus = true
-    interval = 20
-[]
+# [Outputs]
+#     exodus = true
+#     interval = 20
+# []
