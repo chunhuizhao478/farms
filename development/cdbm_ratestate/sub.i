@@ -1,14 +1,7 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 400
-        ny = 60
-        xmin = -20000
-        xmax = 20000
-        ymin = -3000
-        ymax = 3000
-        elem_type = TRI3
+        type = FileMeshGenerator
+        file =  '../../meshgenerator/cdbm/planarfault/planarfault.msh'
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -23,13 +16,22 @@
         split_interface = true
         add_interface_on_two_sides = true
     []
+    [./sidesets]
+        input = split
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []    
 []
 
 [GlobalParams]
     displacements = 'disp_sub_x disp_sub_y'
     
     ##element length (m)
-    len = 100
+    len = 25
     
     ##rate-and-state coefficients
     f_o = 0.6
@@ -42,13 +44,13 @@
     Tn_o = 120e6
 
     ##initial shear traction (Pa)
-    Ts_o = 75e6
+    Ts_o = 70e6
 
     ##initial sliprate (m/s)
     Vini = 1e-12
 
     ##initial state variable
-    statevarini = 1.606238999213454e9
+    statevarini = 4.987044175545944e7
 []
 
 [Variables]
@@ -163,7 +165,7 @@
     [const_element_side_volume]
         type = ConstantAux
         variable = element_side_volume
-        value = 100
+        value = 25
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #retrieve fault displacement residual vector using tagging
@@ -337,6 +339,9 @@
     [./func_initial_strike_shear_stress]
         type = InitialStrikeShearStressPerturbRSF2D
     []
+    # [./func_initial_strike_shear_stress] #weird
+    #     type = InitialStressXYcontmfbfs
+    # []
 []
 
 [Executioner]

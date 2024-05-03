@@ -1,28 +1,30 @@
 [Mesh]
-    [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 400
-        ny = 60
-        xmin = -20000
-        xmax = 20000
-        ymin = -3000
-        ymax = 3000
-        elem_type = TRI3
-    [../]
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'y<0'
-        block_id = 1
-    []
-    #add "Block0_Block1" and "Block1_Block0" interfaces
-    [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block
-        split_interface = true
-        add_interface_on_two_sides = true
-    []
+  [./msh]
+      type = FileMeshGenerator
+      file =  '../../meshgenerator/cdbm/planarfault/planarfault.msh'
+  [../]
+  [./new_block]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'y<0'
+      block_id = 1
+  []
+  #add "Block0_Block1" and "Block1_Block0" interfaces
+  [./split]
+      type = BreakMeshByBlockGenerator
+      input = new_block
+      split_interface = true
+      add_interface_on_two_sides = true
+  []
+  [./sidesets]
+      input = split
+      type = SideSetsFromNormalsGenerator
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0'
+      new_boundary = 'left right bottom top'
+  []    
 []
   
   [GlobalParams]
@@ -54,7 +56,7 @@
     # C_d_min = 10
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 1e6
   
     #power-law correction
     #index

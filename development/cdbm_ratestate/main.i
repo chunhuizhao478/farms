@@ -1,14 +1,7 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 400
-        ny = 60
-        xmin = -20000
-        xmax = 20000
-        ymin = -3000
-        ymax = 3000
-        elem_type = TRI3
+        type = FileMeshGenerator
+        file =  '../../meshgenerator/cdbm/planarfault/planarfault.msh'
     [../]
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -23,6 +16,15 @@
         split_interface = true
         add_interface_on_two_sides = true
     []
+    [./sidesets]
+        input = split
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []    
 []
 
 [GlobalParams]
@@ -384,15 +386,10 @@
 []
 
 [Functions]
-    [func_initial_strike_shear_stress]
-        type = InitialStressXYcontmfbfs
-        # type = ConstantFunction
-        # value = 70e6
-    []
     #this function is used in medimum
     [func_initial_stress_xy_const]
         type = ConstantFunction
-        value = 75e6
+        value = 70e6
     []
     [./func_initial_stress_00]
         type = ConstantFunction
@@ -532,7 +529,7 @@
 
 [Outputs]
     exodus = true
-    interval = 100
+    interval = 10
 []
 
 [MultiApps]
