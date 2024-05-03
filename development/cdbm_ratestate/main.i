@@ -519,7 +519,7 @@
 [Executioner]
     type = Transient
     dt = 4e-4
-    end_time = 5.0
+    end_time = 10.0
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
@@ -529,7 +529,7 @@
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 100
 []
 
 [MultiApps]
