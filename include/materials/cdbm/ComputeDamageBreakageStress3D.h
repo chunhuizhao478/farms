@@ -40,7 +40,7 @@ protected:
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
 
   //initial strain tensor
-  const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;  
+  // const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;  
 
   /// additional variables
   /// strain invariants ratio: onset of damage evolution

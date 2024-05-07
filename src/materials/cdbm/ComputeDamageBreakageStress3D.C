@@ -50,7 +50,6 @@ ComputeDamageBreakageStress3D::validParams()
 ComputeDamageBreakageStress3D::ComputeDamageBreakageStress3D(const InputParameters & parameters)
   : ComputeDamageBreakageStressBase3D(parameters),
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
-    _static_initial_strain_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_strain_tensor")),
     _xi_0(getParam<Real>("xi_0")),
     _xi_d(getParam<Real>("xi_d")),
     _xi_1(getParam<Real>("xi_1")),
@@ -584,8 +583,8 @@ ComputeDamageBreakageStress3D::setupInitial()
   _B[_qp] = 0.0;
 
   //Convert (lambda_o,shear_modulus_o) to (youngs_modulus_o,poisson_ratio_o)
-  // Real youngs_modulus_o = _shear_modulus_o * ( 3 * _lambda_o + 2 * _shear_modulus_o ) / ( _lambda_o + _shear_modulus_o );
-  // Real poisson_ratio_o = _lambda_o / ( 2 * ( _lambda_o + _shear_modulus_o ));
+  Real youngs_modulus_o = _shear_modulus_o * ( 3 * _lambda_o + 2 * _shear_modulus_o ) / ( _lambda_o + _shear_modulus_o );
+  Real poisson_ratio_o = _lambda_o / ( 2 * ( _lambda_o + _shear_modulus_o ));
 
   //Convert (lambda_o,shear_modulus_o) to (shear_wave_speed_o,pressure_wave_speed_o)
   // Real density_o = _density_old[_qp];
@@ -598,15 +597,20 @@ ComputeDamageBreakageStress3D::setupInitial()
 
   //Get stress components
   RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
+  Real sts11_init = stress_initial(0,0);
+  Real sts12_init = stress_initial(0,1);
+  Real sts13_init = stress_initial(0,2);
+  Real sts23_init = stress_initial(1,2);
+  Real sts22_init = stress_initial(1,1);
+  Real sts33_init = stress_initial(2,2); 
 
-  //Get strain components
-  RankTwoTensor strain_initial = _static_initial_strain_tensor[_qp];
-  Real eps11_init = strain_initial(0,0);
-  Real eps12_init = strain_initial(0,1);
-  Real eps22_init = strain_initial(1,1);
-  Real eps13_init = strain_initial(0,2);
-  Real eps23_init = strain_initial(1,2);
-  Real eps33_init = strain_initial(2,2);  
+  //Compute strain components using Hooke's Law
+  Real eps11_init = 1.0 / youngs_modulus_o * ( sts11_init - poisson_ratio_o * ( sts22_init + sts33_init ) );
+  Real eps22_init = 1.0 / youngs_modulus_o * ( sts22_init - poisson_ratio_o * ( sts11_init + sts33_init ) ); 
+  Real eps12_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts12_init                       );
+  Real eps13_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts13_init                       );
+  Real eps23_init = 1.0 / youngs_modulus_o * ( ( 1 + poisson_ratio_o ) * sts23_init                       );
+  Real eps33_init = 1.0 / youngs_modulus_o * ( sts33_init - poisson_ratio_o * ( sts11_init + sts22_init ) ); 
 
   //-------------------------------------------------------------------------------------------------------------------------------//
   //Initially we are at elastic region, eps33_init = eps_elastic = - eps_plastic = 0                                               //
@@ -625,9 +629,13 @@ ComputeDamageBreakageStress3D::setupInitial()
   _eps_p[_qp](1,0) = 0.0; _eps_p[_qp](1,1) = 0.0; _eps_p[_qp](1,2) = 0.0;
   _eps_p[_qp](2,0) = 0.0; _eps_p[_qp](2,1) = 0.0; _eps_p[_qp](2,2) = 0.0;
   //eps_e
-  _eps_e[_qp] = strain_initial;
+  _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; _eps_e[_qp](0,2) = eps13_init;
+  _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init; _eps_e[_qp](1,2) = eps23_init;
+  _eps_e[_qp](2,0) = eps13_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
   //eps_total
-  _eps_total[_qp] = strain_initial;
+  _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
+  _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
+  _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](2,1) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
   //sts_total
   _sts_total[_qp] = stress_initial;
 
