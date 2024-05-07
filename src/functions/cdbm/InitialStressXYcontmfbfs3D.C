@@ -24,7 +24,7 @@ InitialStressXYcontmfbfs3D::value(Real /*t*/, const Point & p) const
 
   Real T1_o = 0;
 
-  if ((x_coord<=(0.0+100))&&(x_coord>=(0.0-100))&& (z_coord<=(-400+100))&&(z_coord>=(-400-100))&&(y_coord<=(0+100))&&(y_coord>=(0-100)))
+  if ((x_coord<=(0.0+100))&&(x_coord>=(0.0-100))&& (z_coord<=(-4000+100))&&(z_coord>=(-4000-100))&&(y_coord<=(0+100))&&(y_coord>=(0-100)))
   {
       T1_o = 81.6e6;
   }
