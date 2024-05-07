@@ -1,3 +1,10 @@
+# Continuum Damage-Breakage Model with Rate-and-state friction
+# [check ratestateprop.m to compute process zone length and maximum dx]
+# mu (GPa): 32040000000.000 
+# nu (-): 0.250 
+# Lb (m): 593.333 
+# dx_max (m): 74.167 -> use dx = 50m
+
 [Mesh]
     [./msh]
         type = FileMeshGenerator

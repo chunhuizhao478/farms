@@ -31,7 +31,7 @@
     displacements = 'disp_sub_x disp_sub_y'
     
     ##element length (m)
-    len = 25
+    len = 50
     
     ##rate-and-state coefficients
     f_o = 0.6
@@ -165,7 +165,7 @@
     [const_element_side_volume]
         type = ConstantAux
         variable = element_side_volume
-        value = 25
+        value = 50
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #retrieve fault displacement residual vector using tagging
