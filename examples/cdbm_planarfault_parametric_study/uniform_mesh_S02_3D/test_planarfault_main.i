@@ -625,7 +625,7 @@
     # []
     [checkpoints]
       type = Checkpoint
-      interval = 2000
+      interval = 200
       num_files = 2
     []
   []
