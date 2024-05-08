@@ -602,7 +602,7 @@
     type = Transient
     dt = 4e-4
     end_time = 3.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -612,7 +612,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 250
+    interval = 1
     # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z'
     # [sample_snapshots]
     #   type = Exodus
