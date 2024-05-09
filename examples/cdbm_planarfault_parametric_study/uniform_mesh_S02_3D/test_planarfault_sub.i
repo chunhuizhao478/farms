@@ -20,9 +20,11 @@
     type = SideSetsFromNormalsGenerator
     normals = '-1 0 0
                 1 0 0
+                0 0 -1
+                0 0 1
                 0 -1 0
                 0 1 0'
-    new_boundary = 'left right bottom top'
+    new_boundary = 'left right bottom top front back'
   []
 []
   
