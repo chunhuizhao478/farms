@@ -2,8 +2,8 @@
 # [check ratestateprop.m to compute process zone length and maximum dx]
 # mu (GPa): 32040000000.000 
 # nu (-): 0.250 
-# Lb (m): 593.333 
-# dx_max (m): 74.167 -> use dx = 50m
+# Lb (m): 512.640 
+# dx_max (m): 64.080 -> use dx = 50m
 
 [Mesh]
     [./msh]
@@ -527,7 +527,7 @@
     type = Transient
     dt = 4e-4
     end_time = 10.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -536,7 +536,7 @@
 
 [Outputs]
     exodus = true
-    interval = 100
+    interval = 1
 []
 
 [MultiApps]

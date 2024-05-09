@@ -1,14 +1,14 @@
 format long
 %% Parameters Rate-and-state
 % frictional properties
-L = 0.02; 
-a = 0.008; 
-b = 0.012;
+L = 0.012; 
+a = 0.016; 
+b = 0.02;
 fo = 0.6; 
-Vini = 1e-12; 
+Vini = 1e-6; 
 Vo = 1e-6;
-tau_init = 70e6; 
-sigma_init = 120e6;
+tau_init = 30e6; 
+sigma_init = 50e6;
 % material properties
 nu = 0.25;
 mu = 3.204e10;

@@ -31,13 +31,13 @@
     displacements = 'disp_sub_x disp_sub_y'
     
     ##element length (m)
-    len = 50
+    len = 25
     
     ##rate-and-state coefficients
     f_o = 0.6
-    rsf_a = 0.008
-    rsf_b = 0.012
-    rsf_L = 0.02
+    rsf_a = 0.016
+    rsf_b = 0.020
+    rsf_L = 0.012
     delta_o = 1e-6
 
     ##initial normal traction (Pa)
@@ -47,10 +47,10 @@
     Ts_o = 70e6
 
     ##initial sliprate (m/s)
-    Vini = 1e-12
+    Vini = 1e-6
 
     ##initial state variable
-    statevarini = 4.987044175545944e7
+    statevarini = 5.215178502084955e3
 []
 
 [Variables]
@@ -165,7 +165,7 @@
     [const_element_side_volume]
         type = ConstantAux
         variable = element_side_volume
-        value = 50
+        value = 25
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     #retrieve fault displacement residual vector using tagging
