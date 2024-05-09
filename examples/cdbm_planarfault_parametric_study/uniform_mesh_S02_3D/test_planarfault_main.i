@@ -2,11 +2,11 @@
 # Unified Parameter Choice For CBDM Complex Network Problem
 # mu_d = 0.1
 # For Main Fault, 
-# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
-# mu_s = 0.677
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.1) = 0.2
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 120e6) = 185m
-# Use mesh size = 25m
+# mu = shear stress / normal stress = 30e6 / 60e6 = 0.5
+# mu_s = 0.58
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.58 - 0.5 ) / ( 0.5 - 0.1) = 0.2
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.58 - 0.1) * 60e6) = 445m
+# Use mesh size = 50m
 ##########################################################
 
 [Mesh]
@@ -270,6 +270,23 @@
       order = CONSTANT
       family = MONOMIAL
     []
+    #
+    [./check_function_initial_stress_xx]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_xy]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_yy]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_zz]
+      order = FIRST
+      family = LAGRANGE      
+    []    
   []
   
   [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -387,10 +404,28 @@
         function = func_dynamic_friction_coeff_mud
         execute_on = 'INITIAL TIMESTEP_BEGIN'
       []
-    [StrikeShearStress]
+    [checkxx]
+        type = FunctionAux
+        variable = check_function_initial_stress_xx
+        function = func_initial_stress_xx
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkxy]
       type = FunctionAux
-      variable = ini_shear_stress
+      variable = check_function_initial_stress_xy
       function = func_initial_strike_shear_stress
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkyy]
+      type = FunctionAux
+      variable = check_function_initial_stress_yy
+      function = func_initial_stress_yy
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkzz]
+      type = FunctionAux
+      variable = check_function_initial_stress_zz
+      function = func_initial_stress_zz
       execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     # [TJump_rate]
@@ -470,7 +505,7 @@
     [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 25
+        value = 50
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
   []
@@ -550,7 +585,7 @@
     #mus constant value: 0.7
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.677
+        value = 0.58
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
@@ -561,31 +596,39 @@
     #this function is used in czm only
     [func_initial_strike_shear_stress]
       type = InitialStressXYcontmfbfs3D
-      # type = ConstantFunction
-      # value = 70e6
+      maximum_value = 30e6
+      length_z = 6e3
+      nucl_loc_x = 0
+      nucl_loc_y = 0
+      nucl_loc_z = -3e3
+      nucl_patch_size = 500
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
-      type = ConstantFunction
-      value = 70e6
+      type = InitialStresscontmfbfs3D
+      maximum_value = 30e6
+      length_z = 6e3
     []
     [./func_initial_stress_00]
       type = ConstantFunction
       value = 0.0
     []
     [./func_initial_stress_yy]
-      type = ConstantFunction
-      value = -120e6
+      type = InitialStresscontmfbfs3D
+      maximum_value = -60e6
+      length_z = 6e3
     []
     #In problems with inelasticity, the sigma11 is important
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
-      type = ConstantFunction
-      value = -135e6
+      type = InitialStresscontmfbfs3D
+      maximum_value = -60e6
+      length_z = 6e3
     []
     [./func_initial_stress_zz]
-      type = ConstantFunction
-      value = -63.75e6
+      type = InitialStresscontmfbfs3D
+      maximum_value = -30e6
+      length_z = 6e3
     []
   []
   
@@ -602,7 +645,7 @@
     type = Transient
     dt = 4e-4
     end_time = 3.0
-    # num_steps = 10
+    num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -612,7 +655,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 250
+    interval = 1
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old'
     # [sample_snapshots]
     #   type = Exodus
@@ -632,39 +675,40 @@
   
   [BCs]
     ##non-reflecting bc
-    [./dashpot_top_x]
-      type = NonReflectDashpotBC3d
-      component = 0
-      variable = disp_x
-      disp_x = disp_x
-      disp_y = disp_y
-      disp_z = disp_z
-      p_wave_speed = 6000
-      shear_wave_speed = 3464
-      boundary = top
-  []
-  [./dashpot_top_y]
-      type = NonReflectDashpotBC3d
-      component = 1
-      variable = disp_y
-      disp_x = disp_x
-      disp_y = disp_y
-      disp_z = disp_z
-      p_wave_speed = 6000
-      shear_wave_speed = 3464
-      boundary = top
-  []
-  [./dashpot_top_z]
-      type = NonReflectDashpotBC3d
-      component = 2
-      variable = disp_z
-      disp_x = disp_x
-      disp_y = disp_y
-      disp_z = disp_z
-      p_wave_speed = 6000
-      shear_wave_speed = 3464
-      boundary = top
-  []
+    #top surface is free surface
+  #   [./dashpot_top_x]
+  #     type = NonReflectDashpotBC3d
+  #     component = 0
+  #     variable = disp_x
+  #     disp_x = disp_x
+  #     disp_y = disp_y
+  #     disp_z = disp_z
+  #     p_wave_speed = 6000
+  #     shear_wave_speed = 3464
+  #     boundary = top
+  # []
+  # [./dashpot_top_y]
+  #     type = NonReflectDashpotBC3d
+  #     component = 1
+  #     variable = disp_y
+  #     disp_x = disp_x
+  #     disp_y = disp_y
+  #     disp_z = disp_z
+  #     p_wave_speed = 6000
+  #     shear_wave_speed = 3464
+  #     boundary = top
+  # []
+  # [./dashpot_top_z]
+  #     type = NonReflectDashpotBC3d
+  #     component = 2
+  #     variable = disp_z
+  #     disp_x = disp_x
+  #     disp_y = disp_y
+  #     disp_z = disp_z
+  #     p_wave_speed = 6000
+  #     shear_wave_speed = 3464
+  #     boundary = top
+  # []
   [./dashpot_bottom_x]
       type = NonReflectDashpotBC3d
       component = 0

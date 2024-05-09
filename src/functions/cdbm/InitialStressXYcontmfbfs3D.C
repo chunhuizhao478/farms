@@ -6,32 +6,47 @@ InputParameters
 InitialStressXYcontmfbfs3D::validParams()
 {
   InputParameters params = Function::validParams();
+  params.addRequiredParam<Real>("maximum_value", "Maximum stress value at the bottom of simulation domain along dip");
+  params.addRequiredParam<Real>("length_z", "domain length along dip");
+  params.addRequiredParam<Real>("nucl_loc_x", "nucleation location x coordinate");
+  params.addRequiredParam<Real>("nucl_loc_y", "nucleation location y coordinate");
+  params.addRequiredParam<Real>("nucl_loc_z", "nucleation location z coordinate");
+  params.addRequiredParam<Real>("nucl_patch_size", "nucleation location patch size");
   return params;
 }
 
 InitialStressXYcontmfbfs3D::InitialStressXYcontmfbfs3D(const InputParameters & parameters)
-  : Function(parameters)
+  : Function(parameters),
+  _maximum_value(getParam<Real>("maximum_value")),
+  _length_z(getParam<Real>("length_z")),
+  _nucl_loc_x(getParam<Real>("nucl_loc_x")),
+  _nucl_loc_y(getParam<Real>("nucl_loc_y")),
+  _nucl_loc_z(getParam<Real>("nucl_loc_z")),
+  _nucl_patch_size(getParam<Real>("nucl_patch_size")) 
 {
 }
 
 Real
 InitialStressXYcontmfbfs3D::value(Real /*t*/, const Point & p) const
 {
-
-  Real x_coord = p(0); //along the strike direction
-  Real y_coord = p(1); //along the normal direction
+  
+  Real x_coord = p(0);
+  Real y_coord = p(1);
   Real z_coord = p(2); //along the slip direction
+  Real To = 0;
 
-  Real T1_o = 0;
-
-  if ((x_coord<=(0.0+100))&&(x_coord>=(0.0-100))&& (z_coord<=(-3000+100))&&(z_coord>=(-3000-100))&&(y_coord<=(0+100))&&(y_coord>=(0-100)))
+  if ( (x_coord >= _nucl_loc_x - _nucl_patch_size / 2 ) && (x_coord <= _nucl_loc_x + _nucl_patch_size / 2 ) && (y_coord >= _nucl_loc_y - _nucl_patch_size / 2 ) && (y_coord <= _nucl_loc_y + _nucl_patch_size / 2 ) && (z_coord >= _nucl_loc_z - _nucl_patch_size / 2 ) && (z_coord <= _nucl_loc_z + _nucl_patch_size / 2 ) )
   {
-      T1_o = 81.6e6;
+    //shear strength = 0.58 * 30MPa = 17.4MPa
+    //overstress by 1%: 17.4 * 1.01 
+    To = 17.574e6;
   }
   else{
-      T1_o = 70e6;
+
+    To = _maximum_value / _length_z * std::abs(z_coord);
+  
   }
   
-  return T1_o;
+  return To;
 
 }

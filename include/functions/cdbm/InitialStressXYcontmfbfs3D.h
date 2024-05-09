@@ -18,4 +18,11 @@ public:
   using Function::value;
   virtual Real value(Real t, const Point & p) const override;
 
+  Real _maximum_value;
+  Real _length_z;
+  Real _nucl_loc_x;
+  Real _nucl_loc_y;
+  Real _nucl_loc_z;
+  Real _nucl_patch_size;
+
 };

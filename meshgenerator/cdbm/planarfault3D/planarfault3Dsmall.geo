@@ -1,10 +1,10 @@
 // Define parameters
-Lx = 800;
-Ly = 600;
-Lz = 800;
+Lx = 6000;
+Ly = 6000;
+Lz = 6000;
 
-lc1 = 25;
-lc2 = 100;
+lc1 = 100;
+lc2 = 1000;
 
 //Define points
 Point(1) = {-Lx, -Ly, -Lz, lc2};

@@ -1,5 +1,5 @@
 //25m mesh generation
-lc = 50;
+lc = 25;
 
 Point(1) = {   15000,   -3000, 0, lc };
 Point(2) = {   15000,    3000, 0, lc };
