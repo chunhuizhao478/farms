@@ -93,11 +93,11 @@ Volume(2) = {2};
 Field[1] = Box;
 Field[1].VIn = lc1;
 Field[1].VOut = lc2;
-Field[1].XMin =  -6000;
-Field[1].XMax =   6000;
+Field[1].XMin =  -Lx;
+Field[1].XMax =   Lx;
 Field[1].YMin =  -1500;
 Field[1].YMax =   1500;
-Field[1].ZMin =  -6000;
+Field[1].ZMin =  -Lz;
 Field[1].ZMax =   0;
 Field[1].Thickness = Ly;
 
