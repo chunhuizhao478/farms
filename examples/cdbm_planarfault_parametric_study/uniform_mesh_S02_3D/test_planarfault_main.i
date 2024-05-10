@@ -2,11 +2,11 @@
 # Unified Parameter Choice For CBDM Complex Network Problem
 # mu_d = 0.1
 # For Main Fault, 
-# mu = shear stress / normal stress = 30e6 / 60e6 = 0.5
+# mu = shear stress / normal stress = 30e6 / 60e6 = 0.5 (maximum value ratio)
 # mu_s = 0.58
 # S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.58 - 0.5 ) / ( 0.5 - 0.1) = 0.2
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.58 - 0.1) * 60e6) = 445m
-# Use mesh size = 50m
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.58 - 0.1) * 30e6) = 890m use normal stress around nucleation point
+# Use mesh size = 100m
 ##########################################################
 
 [Mesh]
@@ -507,7 +507,7 @@
     [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 50
+        value = 100
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
   []
@@ -603,7 +603,7 @@
       nucl_loc_x = 0
       nucl_loc_y = 0
       nucl_loc_z = -3e3
-      nucl_patch_size = 500
+      nucl_patch_size = 1000
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
@@ -646,7 +646,7 @@
   [Executioner]
     type = Transient
     dt = 4e-4
-    end_time = 3.0
+    end_time = 10.0
     # num_steps = 1
     [TimeIntegrator]
       type = CentralDifference

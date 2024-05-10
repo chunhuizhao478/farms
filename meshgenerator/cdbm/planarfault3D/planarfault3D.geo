@@ -1,9 +1,9 @@
 // Define parameters
-Lx = 6000;
+Lx = 8000;
 Ly = 6000;
 Lz = 6000;
 
-lc1 = 50;
+lc1 = 100;
 lc2 = 1000;
 
 //Define points
@@ -88,4 +88,18 @@ Volume(1) = {1};
 
 Surface Loop(2) = {6, 7, 8, 9, 10, 11};
 Volume(2) = {2};
+
+//
+Field[1] = Box;
+Field[1].VIn = lc1;
+Field[1].VOut = lc2;
+Field[1].XMin =  -6000;
+Field[1].XMax =   6000;
+Field[1].YMin =  -1500;
+Field[1].YMax =   1500;
+Field[1].ZMin =  -6000;
+Field[1].ZMax =   0;
+Field[1].Thickness = Ly;
+
+Background Field = 1;
 
