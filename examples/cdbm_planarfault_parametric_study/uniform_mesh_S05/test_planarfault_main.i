@@ -1,18 +1,18 @@
 ##########################################################
 # Unified Parameter Choice For CBDM Complex Network Problem
-# mu_d = 0.1
+# mu_d = 0.4
 # For Main Fault, 
 # mu = shear stress / normal stress = 70e6 / 120e6 = 0.583
 # mu_s = 0.677
 # S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.4) = 0.51
 # Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.4) * 120e6) = 386m
-# Use mesh size = 25m
+# Use mesh size = 50m
 ##########################################################
 
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/planarfault2_uniform/planarfault2_uniform.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault2_uniform_extend/planarfault2_uniform_extend.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -435,7 +435,7 @@
     [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 25
+        value = 50
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
   []

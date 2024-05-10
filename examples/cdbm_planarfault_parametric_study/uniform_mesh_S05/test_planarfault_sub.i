@@ -1,30 +1,30 @@
 [Mesh]
-    [./msh]
-        type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/planarfault2_uniform/planarfault2_uniform.msh'
-    []
-    [./new_block_1]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'y<0'
-        block_id = 1
-    []
-    [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block_1
-        split_interface = true
-        block_pairs = '0 1'
-    []
-    [./sidesets]
-      input = split
-      type = SideSetsFromNormalsGenerator
-      normals = '-1 0 0
-                  1 0 0
-                  0 -1 0
-                  0 1 0'
-      new_boundary = 'left right bottom top'
-    []
+  [./msh]
+      type = FileMeshGenerator
+      file =  '../../../meshgenerator/cdbm/planarfault2_uniform_extend/planarfault2_uniform_extend.msh'
   []
+  [./new_block_1]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'y<0'
+      block_id = 1
+  []
+  [./split]
+      type = BreakMeshByBlockGenerator
+      input = new_block_1
+      split_interface = true
+      block_pairs = '0 1'
+  []
+  [./sidesets]
+    input = split
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0'
+    new_boundary = 'left right bottom top'
+  []
+[]
   
   [GlobalParams]
   
