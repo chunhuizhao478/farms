@@ -56,13 +56,13 @@ colormap(autumn);
 cm=colormap(autumn(21));
 %plot
 figure(1);
-% for i = 1 : num_steps
-%     plot(arr_xcoord./10^3,arr_sliprate(:,i),'color',cm(i,:)); hold on;
-% end
-for i = 11
-    plot(arr_xcoord./10^3,arr_sliprate(:,i),'r-','LineWidth',1.5); hold on;
-%     plot(arr_xcoord./10^3,arr_sliprate_refine(:,i),'r-','LineWidth',1.5); hold on;
+for i = 1 : num_steps
+    plot(arr_xcoord./10^3,arr_sliprate(:,i),'color',cm(i,:)); hold on;
 end
+% for i = 11
+%     plot(arr_xcoord./10^3,arr_sliprate(:,i),'r-','LineWidth',1.5); hold on;
+% %     plot(arr_xcoord./10^3,arr_sliprate_refine(:,i),'r-','LineWidth',1.5); hold on;
+% end
 xlabel("Distance along fault, x(km)",'FontSize',15)
 ylabel("Slip rate (m/s)",'FontSize',15)
 % legend("Refine","Uniform")

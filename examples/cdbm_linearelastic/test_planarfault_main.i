@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../meshgenerator/cdbm/planarfault2_uniform/planarfault2_uniform.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -597,7 +597,8 @@
   [Outputs]
     exodus = true
     # csv = true
-    interval = 100
+    interval = 2
+    show = 'tangent_jump_rate vel_slipweakening_x traction_x traction_y'
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 2000

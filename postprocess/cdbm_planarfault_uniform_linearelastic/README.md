@@ -1,0 +1,1 @@
+uniform mesh size, planar fault case

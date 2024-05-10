@@ -12,7 +12,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../../../meshgenerator/cdbm/planarfault2_uniform/planarfault2_uniform.msh'
+        file =  '../../../meshgenerator/cdbm/planarfault2/planarfault2.msh'
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
@@ -559,7 +559,7 @@
   
   [Executioner]
     type = Transient
-    dt = 4e-4
+    dt = 5e-4
     end_time = 3.0
     # num_steps = 10
     [TimeIntegrator]
@@ -571,21 +571,22 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 250
-    [sample_snapshots]
-      type = Exodus
-      interval = 2000
-    []
-    [snapshots]
-      type = Exodus
-      interval = 2000
-      overwrite = true
-    []
-    [checkpoints]
-      type = Checkpoint
-      interval = 2000
-      num_files = 2
-    []
+    interval = 2
+    show = 'tangent_jump_rate vel_slipweakening_x traction_x traction_y'
+    # [sample_snapshots]
+    #   type = Exodus
+    #   interval = 2000
+    # []
+    # [snapshots]
+    #   type = Exodus
+    #   interval = 2000
+    #   overwrite = true
+    # []
+    # [checkpoints]
+    #   type = Checkpoint
+    #   interval = 2000
+    #   num_files = 2
+    # []
   []
   
   [BCs]
