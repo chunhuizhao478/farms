@@ -603,7 +603,7 @@
       nucl_loc_x = 0
       nucl_loc_y = 0
       nucl_loc_z = -3e3
-      nucl_patch_size = 1000
+      nucl_patch_size = 1200
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]

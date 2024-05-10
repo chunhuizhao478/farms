@@ -38,8 +38,8 @@ InitialStressXYcontmfbfs3D::value(Real /*t*/, const Point & p) const
   if ( (x_coord >= _nucl_loc_x - _nucl_patch_size / 2 ) && (x_coord <= _nucl_loc_x + _nucl_patch_size / 2 ) && (y_coord >= _nucl_loc_y - _nucl_patch_size / 2 ) && (y_coord <= _nucl_loc_y + _nucl_patch_size / 2 ) && (z_coord >= _nucl_loc_z - _nucl_patch_size / 2 ) && (z_coord <= _nucl_loc_z + _nucl_patch_size / 2 ) )
   {
     //shear strength = 0.58 * 30MPa = 17.4MPa
-    //overstress by 1%: 17.4 * 1.01 
-    To = 17.574e6;
+    //overstress by 1%: 17.4 * 1.05 
+    To = 18.3e6;
   }
   else{
 
