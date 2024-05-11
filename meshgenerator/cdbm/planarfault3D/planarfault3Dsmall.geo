@@ -3,8 +3,8 @@ Lx = 2000;
 Ly = 1500;
 Lz = 6000;
 
-lc1 = 100;
-lc2 = 2000;
+lc1 = 50;
+lc2 = 1000;
 
 //Define points
 Point(1) = {-Lx, -Ly, -Lz, lc2};
@@ -95,8 +95,8 @@ Field[1].VIn = lc1;
 Field[1].VOut = lc2;
 Field[1].XMin =  -Lx;
 Field[1].XMax =   Lx;
-Field[1].YMin =  -1500;
-Field[1].YMax =   1500;
+Field[1].YMin =  -500;
+Field[1].YMax =   500;
 Field[1].ZMin =  -Lz;
 Field[1].ZMax =   0;
 Field[1].Thickness = Ly;

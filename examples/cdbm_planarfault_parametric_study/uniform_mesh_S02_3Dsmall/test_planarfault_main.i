@@ -2,11 +2,11 @@
 # Unified Parameter Choice For CBDM Complex Network Problem
 # mu_d = 0.1
 # For Main Fault, 
-# mu = shear stress / normal stress = 30e6 / 60e6 = 0.5 (maximum value ratio)
-# mu_s = 0.58
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.58 - 0.5 ) / ( 0.5 - 0.1) = 0.2
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.58 - 0.1) * 30e6) = 890m use normal stress around nucleation point
-# Use mesh size = 100m
+# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583 (maximum value ratio)
+# mu_s = 0.677
+# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.1) = 0.2
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 60e6) = 370m use normal stress around nucleation point
+# Use mesh size = 50m
 ##########################################################
 
 [Mesh]
@@ -507,7 +507,7 @@
     [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 100
+        value = 50
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
   []
@@ -587,7 +587,7 @@
     #mus constant value: 0.7
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.58
+        value = 0.677
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
@@ -598,17 +598,17 @@
     #this function is used in czm only
     [func_initial_strike_shear_stress]
       type = InitialStressXYcontmfbfs3D
-      maximum_value = 30e6
+      maximum_value = 70e6
       length_z = 6e3
       nucl_loc_x = 0
       nucl_loc_y = 0
       nucl_loc_z = -3e3
-      nucl_patch_size = 1200
+      nucl_patch_size = 500
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
       type = InitialStresscontmfbfs3D
-      maximum_value = 30e6
+      maximum_value = 70e6
       length_z = 6e3
     []
     [./func_initial_stress_00]
@@ -617,19 +617,19 @@
     []
     [./func_initial_stress_yy]
       type = InitialStresscontmfbfs3D
-      maximum_value = -60e6
+      maximum_value = -120e6
       length_z = 6e3
     []
     #In problems with inelasticity, the sigma11 is important
     #This is different from pure tpv205 
     [./func_initial_stress_xx]
       type = InitialStresscontmfbfs3D
-      maximum_value = -60e6
+      maximum_value = -135e6
       length_z = 6e3
     []
     [./func_initial_stress_zz]
       type = InitialStresscontmfbfs3D
-      maximum_value = -30e6
+      maximum_value = -63.75e6
       length_z = 6e3
     []
   []
@@ -645,7 +645,7 @@
   
   [Executioner]
     type = Transient
-    dt = 4e-4
+    dt = 0.0025
     end_time = 10.0
     # num_steps = 1
     [TimeIntegrator]
@@ -657,8 +657,8 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 250
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old'
+    interval = 40
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old check_function_initial_stress_xx check_function_initial_stress_xy check_function_initial_stress_yy check_function_initial_stress_zz'
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 2000
@@ -668,11 +668,11 @@
     #   interval = 2000
     #   overwrite = true
     # []
-    [checkpoints]
-      type = Checkpoint
-      interval = 200
-      num_files = 2
-    []
+    # [checkpoints]
+    #   type = Checkpoint
+    #   interval = 200
+    #   num_files = 2
+    # []
   []
   
   [BCs]
