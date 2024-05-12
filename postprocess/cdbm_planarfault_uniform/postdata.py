@@ -1409,8 +1409,8 @@ if __name__ == "__main__":
     #file path (read)
     mf180_ptrs_data_file_path = "./ptrsdata/mf180_ptrs_data.txt"
 
-    # exodus_file_path = "./files/test_planarfault_main_out_Cd1e7.e"
-    exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/s02/uniform/test_planarfault_main_out.e"
+    exodus_file_path = "/Users/andyz/Downloads/test_planarfault_main_out_damagemodel.e"
+    # exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/s02/uniform/test_planarfault_main_out.e"
 
     #file path (save)
     mf180_save_folder_output_file_path = "./outputs"
@@ -1457,7 +1457,7 @@ if __name__ == "__main__":
 
     dict_master_locs = {"mf180" : master_locs_mf180}
 
-    run_decode_retrieve_flag = False
+    run_decode_retrieve_flag = True
 
     if run_decode_retrieve_flag == True:
         for fault_name_index in range(len(list_fault_name)):
