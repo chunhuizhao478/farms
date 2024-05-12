@@ -5,8 +5,8 @@
 # mu = shear stress / normal stress = 70e6 / 120e6 = 0.583 (maximum value ratio)
 # mu_s = 0.677
 # S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.1) = 0.2
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.8 / (( 0.677 - 0.1) * 60e6) = 740m use normal stress around nucleation point
-# Use mesh size = 100m
+# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 60e6) = 370m use normal stress around nucleation point
+# Use mesh size = 50m
 ##########################################################
 
 [Mesh]
@@ -47,7 +47,7 @@
     q = 0.2
     
     #characteristic length (m)
-    Dc = 0.8
+    Dc = 0.4
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -507,7 +507,7 @@
     [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 100
+        value = 50
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
   []
@@ -603,7 +603,7 @@
       nucl_loc_x = 0
       nucl_loc_y = 0
       nucl_loc_z = -3e3
-      nucl_patch_size = 1000
+      nucl_patch_size = 500
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
@@ -645,7 +645,7 @@
   
   [Executioner]
     type = Transient
-    dt = 0.001
+    dt = 0.0025
     end_time = 10.0
     # num_steps = 1
     [TimeIntegrator]
@@ -657,8 +657,8 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 100
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old'
+    interval = 40
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old check_function_initial_stress_xx check_function_initial_stress_xy check_function_initial_stress_yy check_function_initial_stress_zz'
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 2000
