@@ -572,7 +572,8 @@
   [Outputs]
     exodus = true
     interval = 2
-    show = 'tangent_jump_rate vel_slipweakening_x traction_x traction_y'
+    # show = 'tangent_jump_rate vel_slipweakening_x traction_x traction_y'
+    show = 'mu_old alpha_in'
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 2000
