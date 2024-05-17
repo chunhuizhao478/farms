@@ -1,18 +1,11 @@
 ##########################################################
-# Unified Parameter Choice For CBDM Complex Network Problem
-# mu_d = 0.1
-# For Main Fault, 
-# mu = shear stress / normal stress = 70e6 / 120e6 = 0.583 (maximum value ratio)
-# mu_s = 0.677
-# S = ( mu_s - mu ) / ( mu - mu_d ) = ( 0.677 - 0.583 ) / ( 0.583 - 0.1) = 0.2
-# Frictional Length Scale L = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.1) * 60e6) = 370m use normal stress around nucleation point
-# Use mesh size = 50m
+# TPV24 benchmark setup with continuum damage-breakge model
 ##########################################################
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3D.msh'
+    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3Dsmall.msh'
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -47,7 +40,7 @@
     q = 0.2
     
     #characteristic length (m)
-    Dc = 0.4
+    Dc = 0.3
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -288,7 +281,16 @@
     [./check_function_initial_stress_zz]
       order = FIRST
       family = LAGRANGE      
-    []    
+    []
+    #
+    [cohesion_aux]
+      order = FIRST
+      family = LAGRANGE         
+    []
+    [forced_rupture_time_aux]
+      order = FIRST
+      family = LAGRANGE      
+    []
   []
   
   [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -507,8 +509,22 @@
     [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 50
+        value = 100
         execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #cohesion
+    [cohesion]
+      type = FunctionAux
+      variable = cohesion_aux
+      function = func_initial_cohesion
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #forced_rupture_time
+    [forced_rupture_time]
+      type = FunctionAux
+      variable = forced_rupture_time_aux
+      function = func_forced_rupture_time
+      execute_on = 'INITIAL TIMESTEP_BEGIN'      
     []
   []
   
@@ -565,6 +581,8 @@
         mu_d = mu_d
         mu_s = mu_s
         tria_area = tria_area_aux
+        cohesion = cohesion_aux
+        forced_rupture_time = forced_rupture_time_aux
         boundary = 'Block0_Block1'
     [../]
     [./static_initial_stress_tensor_slipweakening]
@@ -587,29 +605,25 @@
     #mus constant value: 0.7
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.677
+        value = 0.18
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
         type = ConstantFunction
-        value = 0.1
+        value = 0.12
     []
     #Note:restrict stress variation along the fault only
     #this function is used in czm only
     [func_initial_strike_shear_stress]
-      type = InitialStressXYcontmfbfs3D
-      maximum_value = 70e6
-      length_z = 6e3
-      nucl_loc_x = 0
-      nucl_loc_y = 0
-      nucl_loc_z = -3e3
-      nucl_patch_size = 500
+      type = InitialStresscontmfbfs3D
+      i = 1
+      j = 2
     []
     #this function is used in medimum
     [func_initial_stress_xy_const]
       type = InitialStresscontmfbfs3D
-      maximum_value = 70e6
-      length_z = 6e3
+      i = 1
+      j = 2
     []
     [./func_initial_stress_00]
       type = ConstantFunction
@@ -617,20 +631,29 @@
     []
     [./func_initial_stress_yy]
       type = InitialStresscontmfbfs3D
-      maximum_value = -120e6
-      length_z = 6e3
+      i = 2
+      j = 2
     []
-    #In problems with inelasticity, the sigma11 is important
-    #This is different from pure tpv205 
     [./func_initial_stress_xx]
       type = InitialStresscontmfbfs3D
-      maximum_value = -135e6
-      length_z = 6e3
+      i = 1
+      j = 1
     []
     [./func_initial_stress_zz]
       type = InitialStresscontmfbfs3D
-      maximum_value = -63.75e6
-      length_z = 6e3
+      i = 3
+      j = 3
+    []
+    [./func_initial_cohesion]
+      type = InitialCohesion3D
+    []
+    [./func_forced_rupture_time]
+      type = ForcedRuptureTime
+      loc_x = 0
+      loc_y = 0
+      loc_z = -10000
+      r_crit = 4000
+      Vs = 3464
     []
   []
   
@@ -658,7 +681,7 @@
   [Outputs]
     exodus = true
     interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old check_function_initial_stress_xx check_function_initial_stress_xy check_function_initial_stress_yy check_function_initial_stress_zz'
+    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old check_function_initial_stress_xx check_function_initial_stress_xy check_function_initial_stress_yy check_function_initial_stress_zz'
     # [sample_snapshots]
     #   type = Exodus
     #   interval = 2000

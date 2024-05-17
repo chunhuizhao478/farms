@@ -21,6 +21,8 @@ SlipWeakeningMultifaults3D::validParams()
   params.addRequiredCoupledVar("mu_s","static friction coefficient spatial distribution");
   params.addRequiredCoupledVar("mu_d","dynamic friction coefficient spatial distribution");
   params.addRequiredCoupledVar("tria_area","area of triangle element along the faults");
+  params.addRequiredCoupledVar("cohesion","cohesion in shear stress");
+  params.addRequiredCoupledVar("forced_rupture_time","time of forced rupture");
   return params;
 }
 
@@ -52,7 +54,9 @@ SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & p
     _mu_d(coupledValue("mu_d")),
     _sts_init(getMaterialPropertyByName<RankTwoTensor>(_base_name + "static_initial_stress_tensor_slipweakening")),
     _tria_area(coupledValue("tria_area")),
-    _tria_area_neighbor(coupledNeighborValue("tria_area"))
+    _tria_area_neighbor(coupledNeighborValue("tria_area")),
+    _Co(coupledValue("cohesion")),
+    _T(coupledValue("forced_rupture_time"))
 {
 }
 
@@ -125,32 +129,68 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
    }
 
    //Compute friction strength
-   if (std::norm(displacement_jump) < Dc)
-   {
-     tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
-   } 
-   else
-   {
-     tau_f = mu_d * (-T2);
-   }
+  //  if (std::norm(displacement_jump) < Dc)
+  //  {
+  //    tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
+  //  } 
+  //  else
+  //  {
+  //    tau_f = mu_d * (-T2);
+  //  }
 
-   //Compute fault traction
-   if (std::sqrt(T1*T1 + T3*T3)<tau_f)
-   {
-   
-   }else{
-     T1 = tau_f*T1/std::sqrt(T1*T1 + T3*T3);
-     T3 = tau_f*T3/std::sqrt(T1*T1 + T3*T3);
-   }
+  //parameter f1
+  Real f1 = 0.0;
+  if ( std::norm(displacement_jump) < Dc ){
+    f1 = ( 1.0 * std::norm(displacement_jump) ) / ( 1.0 * Dc );
+  }
+  else{
+    f1 = 1;
+  }
 
-   //Assign back traction in CZM
-   RealVectorValue traction;
+  //parameter f2
+  Real f2 = 0.0;
+  Real t0 = 0.5; //s
+  Real T = _T[_qp];
+  if ( _t < T ){
+    f2 = 0.0;
+  }
+  else if ( _t > T && _t < T + t0 ){
+    f2 = ( _t - T ) / t0;
+  }
+  else{
+    f2 = 1;
+  }
 
-   traction(0) = T2+T2_o; 
-   traction(1) = -T1+T1_o; 
-   traction(2) = -T3+T3_o;
+  Real mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
 
-   _interface_traction[_qp] = traction;
-   _dinterface_traction_djump[_qp] = 0;
+  //Pf
+  Real z_coord = _q_point[_qp](2);
+  Real fluid_density = 1000; //kg/m^3 fluid density
+  Real gravity = 9.8; //m/s^2
+  Real Pf = fluid_density * gravity * abs(z_coord);
+
+  //tau_f
+  //T2: total normal stress acting on the fault, taken to be positive in compression: abs(T2)
+  Real effective_stress = abs(T2) - Pf;
+  tau_f = _Co[_qp] + mu * std::max(effective_stress,0.0);
+
+  //Compute fault traction
+  if (std::sqrt(T1*T1 + T3*T3)<tau_f)
+  {
+  
+  }else{
+    T1 = tau_f*T1/std::sqrt(T1*T1 + T3*T3);
+    T3 = tau_f*T3/std::sqrt(T1*T1 + T3*T3);
+  }
+
+  //Assign back traction in CZM
+  RealVectorValue traction;
+
+  traction(0) = T2+T2_o; 
+  traction(1) = -T1+T1_o; 
+  traction(2) = -T3+T3_o;
+
+  _interface_traction[_qp] = traction;
+  _dinterface_traction_djump[_qp] = 0;
 
 }

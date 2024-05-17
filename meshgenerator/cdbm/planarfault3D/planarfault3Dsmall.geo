@@ -1,9 +1,9 @@
 // Define parameters
-Lx = 2000;
-Ly = 1500;
-Lz = 6000;
+Lx = 4000;
+Ly = 3000;
+Lz = 15000;
 
-lc1 = 50;
+lc1 = 100;
 lc2 = 1000;
 
 //Define points

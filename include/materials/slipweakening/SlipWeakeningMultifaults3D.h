@@ -49,5 +49,8 @@ protected:
 
   const VariableValue & _tria_area;
   const VariableValue & _tria_area_neighbor;
+
+  const VariableValue & _Co;
+  const VariableValue & _T;
  
 };
