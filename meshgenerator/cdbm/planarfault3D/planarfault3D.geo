@@ -1,6 +1,6 @@
 // Define parameters
 Lx = 10000;
-Ly = 3000;
+Ly = 4000;
 Lz = 15000;
 
 lc1 = 100;
