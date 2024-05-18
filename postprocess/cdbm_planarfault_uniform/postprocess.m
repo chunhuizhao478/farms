@@ -22,7 +22,7 @@ for i = 1 : num_steps
     arr_traction(:,i) = data_i;
 end
 figure();
-for i = 21 : num_steps
+for i = 1 : num_steps
     plot(arr_xcoord./10^3,arr_traction(:,i),'r-','LineWidth',1.5); hold on;
 end
 ylim([10,130])
@@ -34,8 +34,8 @@ for i = 1 : num_steps
     arr_traction(:,i) = data_i;
 end
 figure();
-for i = 21
-    plot(arr_xcoord./10^3,arr_traction(:,i),'r-','LineWidth',1.5); hold on;
+for i = 1:20
+    plot(arr_xcoord./10^3,arr_traction(:,i)/1e6 + 120,'r-','LineWidth',1.5); hold on;
 end
 ylim([10,130])
 %% sliprate

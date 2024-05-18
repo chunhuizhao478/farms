@@ -1409,8 +1409,8 @@ if __name__ == "__main__":
     #file path (read)
     mf180_ptrs_data_file_path = "./ptrsdata/mf180_ptrs_data.txt"
 
-    exodus_file_path = "/Users/andyz/Downloads/test_planarfault_main_out_damagemodel.e"
-    # exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/s02/uniform/test_planarfault_main_out.e"
+    # exodus_file_path = "/Users/andyz/Downloads/test_planarfault_main_out_damagemodel.e"
+    exodus_file_path = "/Volumes/One Touch/Research/DamageBreakage/planarfaulttests/s02/uniform/test_planarfault_main_out.e"
 
     #file path (save)
     mf180_save_folder_output_file_path = "./outputs"
@@ -1431,10 +1431,10 @@ if __name__ == "__main__":
     # plot_var_name = ['tangent_traction']
     # plot_var_name = ["normal_jump_rate", "normal_jump", "normal_traction"]
     # plot_var_name = ["tangent_jump"]
-    plot_var_name = ["tangent_jump_rate"]
+    # plot_var_name = ["tangent_jump_rate"]
     # plot_var_name = ["jump_x"]
     # plot_var_name = ["traction_x"]
-    # plot_var_name = ["traction_y"]
+    plot_var_name = ["traction_y"]
     # plot_var_name = ["traction_x"]
     additional_files = {"mf180" : [(0,0),(10000,0),(0,0),(-10000,0)]}
     
@@ -1457,7 +1457,7 @@ if __name__ == "__main__":
 
     dict_master_locs = {"mf180" : master_locs_mf180}
 
-    run_decode_retrieve_flag = True
+    run_decode_retrieve_flag = False
 
     if run_decode_retrieve_flag == True:
         for fault_name_index in range(len(list_fault_name)):
