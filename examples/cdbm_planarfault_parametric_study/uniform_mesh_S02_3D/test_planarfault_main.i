@@ -602,7 +602,7 @@
   []
   
   [Functions]
-    #mus constant value: 0.7
+    #mu_s = 0.18, mu_d = 0.12, mu = 0.1575, S = 0.6
     [func_static_friction_coeff_mus]
         type = ConstantFunction
         value = 0.18

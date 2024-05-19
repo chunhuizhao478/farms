@@ -1,5 +1,5 @@
 // Define parameters
-Lx = 12000;
+Lx = 10000;
 Ly = 4000;
 Lz = 15000;
 
