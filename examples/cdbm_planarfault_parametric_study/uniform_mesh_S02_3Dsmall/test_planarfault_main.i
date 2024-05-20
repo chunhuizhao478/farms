@@ -40,7 +40,7 @@
     q = 0.2
     
     #characteristic length (m)
-    Dc = 0.3
+    Dc = 2.5
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -605,7 +605,7 @@
     #mu_s = 0.165, S = 0.2 #MODIFIED TPV24
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.165
+        value = 0.55
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
@@ -652,7 +652,7 @@
       loc_x = 0
       loc_y = 0
       loc_z = -10000
-      r_crit = 2000
+      r_crit = 1000
       Vs = 3464
     []
   []
@@ -670,7 +670,7 @@
     type = Transient
     dt = 0.0025
     end_time = 10.0
-    # num_steps = 1
+    num_steps = 1
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -680,7 +680,7 @@
   #for cluster run
   [Outputs]
     exodus = true
-    interval = 40
+    interval = 1
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z mu_old alpha_in B_in xi_old'
     # [sample_snapshots]
     #   type = Exodus
