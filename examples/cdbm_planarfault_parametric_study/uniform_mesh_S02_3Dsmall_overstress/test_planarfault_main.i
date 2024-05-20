@@ -5,7 +5,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3Dsmalloverstress.msh'
+    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3Dsmall.msh'
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -40,7 +40,7 @@
     q = 0.2
     
     #characteristic length (m)
-    Dc = 0.3
+    Dc = 2.5
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -50,10 +50,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+    xi_0 = -0.985
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.985
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -512,20 +512,20 @@
         value = 100
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
-    # #cohesion
-    # [cohesion]
-    #   type = FunctionAux
-    #   variable = cohesion_aux
-    #   function = func_initial_cohesion
-    #   execute_on = 'INITIAL TIMESTEP_BEGIN'
-    # []
-    # #forced_rupture_time
-    # [forced_rupture_time]
-    #   type = FunctionAux
-    #   variable = forced_rupture_time_aux
-    #   function = func_forced_rupture_time
-    #   execute_on = 'INITIAL TIMESTEP_BEGIN'      
-    # []
+    #cohesion
+    [cohesion]
+      type = FunctionAux
+      variable = cohesion_aux
+      function = func_initial_cohesion
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #forced_rupture_time
+    [forced_rupture_time]
+      type = FunctionAux
+      variable = forced_rupture_time_aux
+      function = func_forced_rupture_time
+      execute_on = 'INITIAL TIMESTEP_BEGIN'      
+    []
   []
   
   [Kernels]
@@ -570,7 +570,7 @@
     []
     #SlipWeakeningMultifaults ONLY supports TRIA currently!
     [./czm_mat]
-        type = SlipWeakeningMultifaultsOverStress3D
+        type = SlipWeakeningMultifaults3D
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         disp_slipweakening_z     = disp_slipweakening_z
@@ -581,8 +581,8 @@
         mu_d = mu_d
         mu_s = mu_s
         tria_area = tria_area_aux
-        # cohesion = cohesion_aux
-        # forced_rupture_time = forced_rupture_time_aux
+        cohesion = cohesion_aux
+        forced_rupture_time = forced_rupture_time_aux
         boundary = 'Block0_Block1'
     [../]
     [./static_initial_stress_tensor_slipweakening]
@@ -605,7 +605,7 @@
     #mu_s = 0.165, S = 0.2 #MODIFIED TPV24
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.165
+        value = 0.55
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
@@ -644,17 +644,17 @@
       i = 3
       j = 3
     []
-    # [./func_initial_cohesion]
-    #   type = InitialCohesion3D
-    # []
-    # [./func_forced_rupture_time]
-    #   type = ForcedRuptureTime
-    #   loc_x = 0
-    #   loc_y = 0
-    #   loc_z = -10000
-    #   r_crit = 2000
-    #   Vs = 3464
-    # []
+    [./func_initial_cohesion]
+      type = InitialCohesion3D
+    []
+    [./func_forced_rupture_time]
+      type = ForcedRuptureTime
+      loc_x = 0
+      loc_y = 0
+      loc_z = -8000
+      r_crit = 1000
+      Vs = 3464
+    []
   []
   
   [UserObjects]

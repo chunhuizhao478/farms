@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3Dsmalloverstress.msh'
+    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3Dsmall.msh'
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -38,10 +38,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+    xi_0 = -0.985
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.985
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -57,7 +57,7 @@
     # C_d_min = 10
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e7
+    Cd_constant = 1e5
   
     #power-law correction
     #index
