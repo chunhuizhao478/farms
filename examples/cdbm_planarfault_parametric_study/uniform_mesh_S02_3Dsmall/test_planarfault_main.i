@@ -652,7 +652,7 @@
       loc_x = 0
       loc_y = 0
       loc_z = -10000
-      r_crit = 4000
+      r_crit = 2000
       Vs = 3464
     []
   []
