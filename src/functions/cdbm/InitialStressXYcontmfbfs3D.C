@@ -6,7 +6,7 @@ InputParameters
 InitialStressXYcontmfbfs3D::validParams()
 {
   InputParameters params = Function::validParams();
-  params.addRequiredParam<Real>("maximum_value", "Maximum stress value at the bottom of simulation domain along dip");
+  //params.addRequiredParam<Real>("maximum_value", "Maximum stress value at the bottom of simulation domain along dip");
   params.addRequiredParam<Real>("length_z", "domain length along dip");
   params.addRequiredParam<Real>("nucl_loc_x", "nucleation location x coordinate");
   params.addRequiredParam<Real>("nucl_loc_y", "nucleation location y coordinate");
