@@ -602,7 +602,7 @@
   []
   
   [Functions]
-    #mu_s = 0.165, S = 0.2
+    #mu_s = 0.165, S = 0.2 #MODIFIED TPV24
     [func_static_friction_coeff_mus]
         type = ConstantFunction
         value = 0.165
