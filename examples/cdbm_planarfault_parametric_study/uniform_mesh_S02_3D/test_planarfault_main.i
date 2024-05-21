@@ -5,7 +5,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3D.msh'
+    file =  '../../../meshgenerator/cdbm/planarfault3D/planarfault3Dsmall.msh'
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -40,7 +40,7 @@
     q = 0.2
     
     #characteristic length (m)
-    Dc = 0.3
+    Dc = 2.5
   
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -50,10 +50,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+    xi_0 = -0.99
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.99
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -602,10 +602,10 @@
   []
   
   [Functions]
-    #mu_s = 0.18, mu_d = 0.12, mu = 0.1575, S = 0.6
+    #mu_s = 0.165, S = 0.2 #MODIFIED TPV24
     [func_static_friction_coeff_mus]
         type = ConstantFunction
-        value = 0.18
+        value = 0.55
     []
     #mud constant value: 0.4
     [func_dynamic_friction_coeff_mud]
@@ -651,8 +651,8 @@
       type = ForcedRuptureTime
       loc_x = 0
       loc_y = 0
-      loc_z = -10000
-      r_crit = 4000
+      loc_z = -8000
+      r_crit = 2000
       Vs = 3464
     []
   []
