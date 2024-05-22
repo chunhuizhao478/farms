@@ -651,7 +651,7 @@
       type = ForcedRuptureTime
       loc_x = 0
       loc_y = 0
-      loc_z = -8000
+      loc_z = -5000
       r_crit = 2000
       Vs = 3464
     []
