@@ -28,13 +28,13 @@
     [./new_block_3]
         type = ParsedSubdomainMeshGenerator
         input = split_1
-        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= -100 & y <= 100 & x <= 10500 & y >= -6500'
+        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10442 & y >= -6050'
         block_id = 3
     []
     [./new_block_4]
         type = ParsedSubdomainMeshGenerator
         input = new_block_3
-        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= -100 & y <= 100 & x <= 10500 & y >= -6500'
+        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10442 & y >= -6050'
         block_id = 4
     []    
     [./split_2]
