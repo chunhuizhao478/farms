@@ -335,12 +335,6 @@
         function = func_forced_rupture_time
         execute_on = 'INITIAL TIMESTEP_BEGIN'      
       []
-      #element_side
-      [element_side]
-        type = VolumeAux
-        variable = nodal_area
-        boundary = 'Block1_Block2 Block3_Block4'
-      []
 []
     
     [Kernels]
