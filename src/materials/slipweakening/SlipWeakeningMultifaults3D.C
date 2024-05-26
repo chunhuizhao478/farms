@@ -97,7 +97,8 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     Real T2_o = -traction_local(0); 
     Real T3_o = -traction_local(2); 
 
-   Real area = _nodal_area[_qp];
+   Real area_input = _nodal_area[_qp];
+   //  Real area = std::sqrt(area_input);
 
    //Reaction force in local coordinate
    RealVectorValue R_plus_global(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], -_reaction_slipweakening_z[_qp]);
@@ -149,7 +150,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
   //parameter f2
   Real f2 = 0.0;
-  Real t0 = 0.05; //0.5; //s //reduce the nucleation time MODIFIED TPV24
+  Real t0 = 0.5; //0.5; //s //reduce the nucleation time MODIFIED TPV24
   Real T = _T[_qp];
   if ( _t < T ){
     f2 = 0.0;

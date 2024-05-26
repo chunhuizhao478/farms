@@ -1,7 +1,8 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  './planarfault3D.msh'
+        # file =  './planarfault3D.msh'
+        file = './TPV24.msh'
     []
     [./sidesets]
         input = msh
