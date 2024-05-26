@@ -19,30 +19,24 @@
         combinatorial_geometry = 'x > -16000 & x < 12000 & y > 0 & z > -15000'
         block_id = 2
     []    
-    [./split_1]
-        type = BreakMeshByBlockGenerator
-        input = new_block_2
-        split_interface = true
-        block_pairs = '1 2'
-    []
     [./new_block_3]
         type = ParsedSubdomainMeshGenerator
-        input = split_1
-        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10417 & y >= -6025'
+        input = new_block_2
+        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= 150 & y <= -150 & x <= 10417 & y >= -6025'
         block_id = 3
     []
     [./new_block_4]
         type = ParsedSubdomainMeshGenerator
         input = new_block_3
-        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10417 & y >= -6025'
+        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= 150 & y <= -150 & x <= 10417 & y >= -6025'
         block_id = 4
     []    
-    [./split_2]
+    [./split_1]
         type = BreakMeshByBlockGenerator
         input = new_block_4
         split_interface = true
-        block_pairs = '3 4'
-    []        
+        block_pairs = '1 2; 3 4'
+    []     
 []
     
 [GlobalParams]

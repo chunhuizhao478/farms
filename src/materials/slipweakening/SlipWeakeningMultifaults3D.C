@@ -150,7 +150,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
   //parameter f2
   Real f2 = 0.0;
-  Real t0 = 0.5; //0.5; //s //reduce the nucleation time MODIFIED TPV24
+  Real t0 = 0.5; //0.5;
   Real T = _T[_qp];
   if ( _t < T ){
     f2 = 0.0;

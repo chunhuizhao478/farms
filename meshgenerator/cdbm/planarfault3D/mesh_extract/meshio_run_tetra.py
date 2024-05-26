@@ -7,7 +7,7 @@ m = meshio.read('../TPV24.msh')
 # Get TETRA Element Nodal Connectivity
 tetra_elem_connect = m.cells_dict['tetra']
 
-print(m.cell_sets)
+print(m.cell_sets_dict)
 exit()
 
 #

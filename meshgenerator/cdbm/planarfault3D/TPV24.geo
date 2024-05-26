@@ -38,7 +38,7 @@
 */
 
 lc = 25e3;
-lc_fault = 400;
+lc_fault = 150;
 
 Fault_length = 16e3;
 Fault_width = 15e3;
@@ -48,7 +48,7 @@ Fault_dip = 90*Pi/180.;
 X_nucl = -8e3;
 Width_nucl = 10e3;
 R_nucl = 1.5e3;
-lc_nucl = 400;
+lc_nucl = 150;
 
 Xmax = 60e3;
 Xmin = -Xmax;
@@ -179,4 +179,4 @@ Physical Surface("branch") = {100,200};
 Physical Surface("105") = {14,18,22,26,27};
 
 Physical Volume("vol") = {1};
-Mesh.MshFileVersion = 2.2;
+// Mesh.MshFileVersion = 2.2;
