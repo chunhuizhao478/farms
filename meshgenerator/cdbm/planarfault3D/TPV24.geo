@@ -38,7 +38,7 @@
 */
 
 lc = 25e3;
-lc_fault = 150;
+lc_fault = 400;
 
 Fault_length = 16e3;
 Fault_width = 15e3;
@@ -48,7 +48,7 @@ Fault_dip = 90*Pi/180.;
 X_nucl = -8e3;
 Width_nucl = 10e3;
 R_nucl = 1.5e3;
-lc_nucl = 150;
+lc_nucl = 400;
 
 Xmax = 60e3;
 Xmin = -Xmax;

@@ -8,10 +8,10 @@
       file =  '../../meshgenerator/cdbm/planarfault3D/TPV24.msh'
     []
     [./new_block_1]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'x > -16000 & x < 12000 & y < 0 & z > -15000'
-        block_id = 1
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'x > -16000 & x < 12000 & y < 0 & z > -15000'
+      block_id = 1
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
@@ -28,13 +28,13 @@
     [./new_block_3]
         type = ParsedSubdomainMeshGenerator
         input = split_1
-        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10442 & y >= -6050'
+        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10417 & y >= -6025'
         block_id = 3
     []
     [./new_block_4]
         type = ParsedSubdomainMeshGenerator
         input = new_block_3
-        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10442 & y >= -6050'
+        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= -50 & y <= 50 & x <= 10417 & y >= -6025'
         block_id = 4
     []    
     [./split_2]
@@ -42,7 +42,7 @@
         input = new_block_4
         split_interface = true
         block_pairs = '3 4'
-    []       
+    []        
 []
     
 [GlobalParams]
@@ -469,7 +469,7 @@
     type = Transient
     dt = 0.0025
     end_time = 12.0
-    num_steps = 1
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -479,6 +479,6 @@
 #for cluster run
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 40
     # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
 []
