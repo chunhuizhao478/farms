@@ -18,6 +18,9 @@ SlipWeakeningMultifaults3D::validParams()
   params.addRequiredCoupledVar("reaction_slipweakening_x","reaction in x dir");
   params.addRequiredCoupledVar("reaction_slipweakening_y","reaction in y dir");
   params.addRequiredCoupledVar("reaction_slipweakening_z","reaction in z dir");
+  params.addRequiredCoupledVar("reaction_damp_x","reaction damping in x dir");
+  params.addRequiredCoupledVar("reaction_damp_y","reaction damping in y dir");
+  params.addRequiredCoupledVar("reaction_damp_z","reaction damping in z dir");
   params.addRequiredCoupledVar("mu_s","static friction coefficient spatial distribution");
   params.addRequiredCoupledVar("mu_d","dynamic friction coefficient spatial distribution");
   params.addRequiredCoupledVar("tria_area","area of triangle element along the faults");
@@ -44,6 +47,12 @@ SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & p
     _reaction_slipweakening_neighbor_y(coupledNeighborValue("reaction_slipweakening_y")),
     _reaction_slipweakening_z(coupledValue("reaction_slipweakening_z")),
     _reaction_slipweakening_neighbor_z(coupledNeighborValue("reaction_slipweakening_z")),
+    _reaction_damp_x(coupledValue("reaction_damp_x")),
+    _reaction_damp_neighbor_x(coupledNeighborValue("reaction_damp_x")),
+    _reaction_damp_y(coupledValue("reaction_damp_y")),
+    _reaction_damp_neighbor_y(coupledNeighborValue("reaction_damp_y")),
+    _reaction_damp_z(coupledValue("reaction_damp_z")),
+    _reaction_damp_neighbor_z(coupledNeighborValue("reaction_damp_z")),
     _disp_slipweakening_x_old(coupledValueOld("disp_slipweakening_x")),
     _disp_slipweakening_neighbor_x_old(coupledNeighborValueOld("disp_slipweakening_x")),
     _disp_slipweakening_y_old(coupledValueOld("disp_slipweakening_y")),
@@ -100,19 +109,65 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
    Real area = _nodal_area[_qp];
    //  Real area = std::sqrt(area_input);
 
+    //*Restoration Force*
+
+    //Stress Divergence Components (label as stsdivcomp)
+
+    //--------------------------------------------------------------------------------------------------//
+
+    ///Define in global coordinate
+    //current time step 
+    RealVectorValue R_plus_global_stsdivcomp(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], -_reaction_slipweakening_z[_qp]);
+    RealVectorValue R_minus_global_stsdivcomp(-_reaction_slipweakening_neighbor_x[_qp],-_reaction_slipweakening_neighbor_y[_qp], -_reaction_slipweakening_neighbor_z[_qp]);
+
+    ///Rotate in local coordinate
+    //current time step
+    RealVectorValue R_plus_local_stsdivcomp = _rot[_qp].transpose() * R_plus_global_stsdivcomp;
+    RealVectorValue R_minus_local_stsdivcomp = _rot[_qp].transpose() * R_minus_global_stsdivcomp;
+
+    ///Get Components
+    //current time step
+    Real R_plus_local_normal_stsdivcomp  = R_plus_local_stsdivcomp(0);
+    Real R_plus_local_strike_stsdivcomp  = R_plus_local_stsdivcomp(1);
+    Real R_plus_local_dip_stsdivcomp     = R_plus_local_stsdivcomp(2);
+
+    Real R_minus_local_normal_stsdivcomp = R_minus_local_stsdivcomp(0);
+    Real R_minus_local_strike_stsdivcomp = R_minus_local_stsdivcomp(1);
+    Real R_minus_local_dip_stsdivcomp    = R_minus_local_stsdivcomp(2);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Damping Components Contribution (label as dampingcomp)
+
+    ///Define in global coordinate
+    //current time step 
+    RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],-_reaction_damp_y[_qp], -_reaction_damp_z[_qp]);
+    RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],-_reaction_damp_neighbor_y[_qp], -_reaction_damp_neighbor_z[_qp]);
+
+    ///Rotate in local coordinate
+    //current time step
+    RealVectorValue R_plus_local_dampingcomp = _rot[_qp].transpose() * R_plus_global_dampingcomp;
+    RealVectorValue R_minus_local_dampingcomp = _rot[_qp].transpose() * R_minus_global_dampingcomp;
+
+    ///Get Components
+    //current time step
+    Real R_plus_local_normal_dampingcomp  = R_plus_local_dampingcomp(0);
+    Real R_plus_local_strike_dampingcomp  = R_plus_local_dampingcomp(1);
+    Real R_plus_local_dip_dampingcomp     = R_plus_local_dampingcomp(2);
+    
+    Real R_minus_local_normal_dampingcomp = R_minus_local_dampingcomp(0);
+    Real R_minus_local_strike_dampingcomp = R_minus_local_dampingcomp(1);
+    Real R_minus_local_dip_dampingcomp    = R_minus_local_dampingcomp(2);
+
+   //--------------------------------------------------------------------------------------------------//
+
    //Reaction force in local coordinate
-   RealVectorValue R_plus_global(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], -_reaction_slipweakening_z[_qp]);
-   RealVectorValue R_minus_global(-_reaction_slipweakening_neighbor_x[_qp],-_reaction_slipweakening_neighbor_y[_qp], -_reaction_slipweakening_neighbor_z[_qp]);
-
-   RealVectorValue R_plus_local = _rot[_qp].transpose() * R_plus_global;
-   RealVectorValue R_minus_local = _rot[_qp].transpose() * R_minus_global;
-
-   Real R_plus_local_x  = R_plus_local(1);
-   Real R_plus_local_y  = R_plus_local(0);
-   Real R_plus_local_z  = R_plus_local(2);
-   Real R_minus_local_x = R_minus_local(1);
-   Real R_minus_local_y = R_minus_local(0);
-   Real R_minus_local_z = R_minus_local(2);
+   Real R_plus_local_x  = R_plus_local_strike_stsdivcomp + R_plus_local_strike_dampingcomp;
+   Real R_plus_local_y  = R_plus_local_normal_stsdivcomp + R_plus_local_normal_dampingcomp;
+   Real R_plus_local_z  = R_plus_local_dip_stsdivcomp + R_plus_local_dip_dampingcomp;
+   Real R_minus_local_x = R_minus_local_strike_stsdivcomp + R_minus_local_strike_dampingcomp;
+   Real R_minus_local_y = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
+   Real R_minus_local_z = R_minus_local_dip_stsdivcomp + R_minus_local_dip_dampingcomp;
 
     //Compute node mass //equal length tetrahedron
     Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
