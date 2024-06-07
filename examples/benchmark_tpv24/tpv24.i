@@ -76,6 +76,31 @@
           order = FIRST
           family = LAGRANGE
       [../]
+      #restoration force for damping (tag after solve)
+      [./resid_damp_x]
+        order = FIRST
+        family = LAGRANGE
+      [../]
+      [./resid_damp_y]
+          order = FIRST
+          family = LAGRANGE
+      [../] 
+      [./resid_damp_z]
+          order = FIRST
+          family = LAGRANGE
+      [../] 
+      [./resid_damp_sw_x]
+        order = FIRST
+        family = LAGRANGE
+      [../]
+      [./resid_damp_sw_y]
+          order = FIRST
+          family = LAGRANGE
+      [../] 
+      [./resid_damp_sw_z]
+          order = FIRST
+          family = LAGRANGE
+      [../]
       [./disp_slipweakening_x]
           order = FIRST
           family = LAGRANGE
@@ -187,7 +212,7 @@
 []
     
 [Problem]
-    extra_tag_vectors = 'restore_tag'
+    extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag restore_dampz_tag'
 []
     
 [AuxKernels]
@@ -227,6 +252,7 @@
         coupled = disp_z
         execute_on = 'TIMESTEP_BEGIN'
       []
+      #
       [Residual_x]
         type = ProjectionAux
         variable = resid_slipweakening_x
@@ -265,6 +291,47 @@
         v = 'disp_z'
         variable = 'resid_z'
         execute_on = 'TIMESTEP_END'
+      []
+      #damping
+      #
+      [Residual_damp_x]
+        type = ProjectionAux
+        variable = resid_damp_sw_x
+        v = resid_damp_x
+        execute_on = 'TIMESTEP_BEGIN'
+      []
+      [Residual_damp_y]
+        type = ProjectionAux
+        variable = resid_damp_sw_y
+        v = resid_damp_y
+        execute_on = 'TIMESTEP_BEGIN'
+      []
+      [Residual_damp_z]
+        type = ProjectionAux
+        variable = resid_damp_sw_z
+        v = resid_damp_z
+        execute_on = 'TIMESTEP_BEGIN'
+      []
+      [restore_dampx]
+        type = TagVectorAux
+        vector_tag = 'restore_dampx_tag'
+        v = 'disp_x'
+        variable = 'resid_damp_x'
+        execute_on = 'TIMESTEP_END'
+      []
+      [restore_dampy]
+          type = TagVectorAux
+          vector_tag = 'restore_dampy_tag'
+          v = 'disp_y'
+          variable = 'resid_damp_y'
+          execute_on = 'TIMESTEP_END'
+      []
+      [restore_dampz]
+          type = TagVectorAux
+          vector_tag = 'restore_dampz_tag'
+          v = 'disp_z'
+          variable = 'resid_damp_z'
+          execute_on = 'TIMESTEP_END'
       []
       [StaticFricCoeff]
         type = FunctionAux
@@ -342,15 +409,28 @@
         use_displaced_mesh = false
         variable = disp_y
       []
+      [./inertia_z]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_z
+      []
       [./Reactionx]
         type = StiffPropDamping
         variable = 'disp_x'
         component = '0'
+        extra_vector_tags = restore_dampx_tag
       []
       [./Reactiony]
         type = StiffPropDamping
         variable = 'disp_y'
         component = '1'
+        extra_vector_tags = restore_dampy_tag
+      []
+      [./Reactionz]
+        type = StiffPropDamping
+        variable = 'disp_z'
+        component = '2'
+        extra_vector_tags = restore_dampz_tag
       []
     []
     
@@ -378,6 +458,9 @@
           reaction_slipweakening_x = resid_slipweakening_x
           reaction_slipweakening_y = resid_slipweakening_y
           reaction_slipweakening_z = resid_slipweakening_z
+          reaction_damp_x = resid_damp_sw_x
+          reaction_damp_y = resid_damp_sw_y
+          reaction_damp_z = resid_damp_sw_z
           nodal_area = nodal_area
           mu_d = mu_d
           mu_s = mu_s
@@ -454,6 +537,25 @@
     [recompute_residual_tag]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+    #damping
+    [recompute_residual_tag_dampx]
+      type = ResidualEvaluationUserObject
+      vector_tag = 'restore_dampx_tag'
+      force_preaux = true
+      execute_on = 'TIMESTEP_END'
+    []
+    [recompute_residual_tag_dampy]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampy_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
+    []
+    [recompute_residual_tag_dampz]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_dampz_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
