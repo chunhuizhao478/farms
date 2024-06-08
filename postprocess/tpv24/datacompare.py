@@ -26,10 +26,10 @@ slip_strikem2dip10 = np.loadtxt("./farms_data/slip_strikem2_dip10.txt",skiprows=
 #time farms
 time = np.linspace(0,12.0,121)
 
-plot_strikem8dip10 = False
+plot_strikem8dip10 = True
 plot_strikem8dip5 = False
 plot_strikem8dip0 = False
-plot_strikem2dip10 = True
+plot_strikem2dip10 = False
 
 # plot
 # strikem8dip10

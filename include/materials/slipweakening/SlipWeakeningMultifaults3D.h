@@ -1,9 +1,9 @@
 /* Debug */
 #pragma once
 
-#include "CZMComputeLocalTractionTotalBase.h"
+#include "CZMComputeLocalTractionTotalBaseLSW3D.h"
 
-class SlipWeakeningMultifaults3D : public CZMComputeLocalTractionTotalBase
+class SlipWeakeningMultifaults3D : public CZMComputeLocalTractionTotalBaseLSW3D
 {
 public:
   static InputParameters validParams();
@@ -59,5 +59,13 @@ protected:
 
   const VariableValue & _Co;
   const VariableValue & _T;
- 
+
+  const MaterialProperty<Real> & _accumulated_slip_along_normal_old;
+  const MaterialProperty<Real> & _accumulated_slip_along_strike_old;
+  const MaterialProperty<Real> & _accumulated_slip_along_dip_old;
+
+  const MaterialProperty<Real> & _slip_along_normal_old;
+  const MaterialProperty<Real> & _slip_along_strike_old;
+  const MaterialProperty<Real> & _slip_along_dip_old;
+
 };

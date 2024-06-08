@@ -8,7 +8,7 @@ registerMooseObject("farmsApp", SlipWeakeningMultifaults3D);
 InputParameters
 SlipWeakeningMultifaults3D::validParams()
 {
-  InputParameters params = CZMComputeLocalTractionTotalBase::validParams();
+  InputParameters params = CZMComputeLocalTractionTotalBaseLSW3D::validParams();
   params.addClassDescription("Linear Slip Weakening Traction Separation Law.");
   params.addParam<Real>("Dc", 1.0, "Value of characteristic length");
   params.addRequiredCoupledVar("nodal_area","nodal area");
@@ -30,7 +30,7 @@ SlipWeakeningMultifaults3D::validParams()
 }
 
 SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & parameters)
-  : CZMComputeLocalTractionTotalBase(parameters),
+  : CZMComputeLocalTractionTotalBaseLSW3D(parameters),
     _Dc(getParam<Real>("Dc")),
     _nodal_area(coupledValue("nodal_area")),
     _density(getMaterialPropertyByName<Real>(_base_name + "density")),
@@ -65,7 +65,13 @@ SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & p
     _tria_area(coupledValue("tria_area")),
     _tria_area_neighbor(coupledNeighborValue("tria_area")),
     _Co(coupledValue("cohesion")),
-    _T(coupledValue("forced_rupture_time"))
+    _T(coupledValue("forced_rupture_time")),
+    _accumulated_slip_along_normal_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_normal")),
+    _accumulated_slip_along_strike_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_strike")),
+    _accumulated_slip_along_dip_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_dip")),
+    _slip_along_normal_old(getMaterialPropertyOldByName<Real>("slip_along_normal")),
+    _slip_along_strike_old(getMaterialPropertyOldByName<Real>("slip_along_strike")),
+    _slip_along_dip_old(getMaterialPropertyOldByName<Real>("slip_along_dip"))
 {
 }
 
@@ -184,20 +190,35 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
      T2 = 0;
    }
 
-   //Compute friction strength
-  //  if (std::norm(displacement_jump) < Dc)
-  //  {
-  //    tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
-  //  } 
-  //  else
-  //  {
-  //    tau_f = mu_d * (-T2);
-  //  }
-
   //parameter f1
+  //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
+  //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
+  //get current slip components
+  Real slip_along_normal = displacement_jump(0);
+  Real slip_along_strike = displacement_jump(1);
+  Real slip_along_dip    = displacement_jump(2);
+  //get slip absolute difference value compared with previous step
+  Real slip_diff_along_normal = abs(slip_along_normal-_slip_along_normal_old[_qp]);
+  Real slip_diff_along_strike = abs(slip_along_strike-_slip_along_strike_old[_qp]);
+  Real slip_diff_along_dip    = abs(slip_along_dip-_slip_along_dip_old[_qp]);
+  //update accumulated slip
+  Real accumulated_slip_along_normal = _accumulated_slip_along_normal_old[_qp] + slip_diff_along_normal;
+  Real accumulated_slip_along_strike = _accumulated_slip_along_strike_old[_qp] + slip_diff_along_strike;
+  Real accumulated_slip_along_dip = _accumulated_slip_along_dip_old[_qp] + slip_diff_along_dip;
+  //compute total distance using 
+  Real total_distance = sqrt(accumulated_slip_along_normal*accumulated_slip_along_normal+accumulated_slip_along_strike*accumulated_slip_along_strike+accumulated_slip_along_dip*accumulated_slip_along_dip);
+  //update accumulated slip components
+  _accumulated_slip_along_normal[_qp] = accumulated_slip_along_normal;
+  _accumulated_slip_along_strike[_qp] = accumulated_slip_along_strike;
+  _accumulated_slip_along_dip[_qp] = accumulated_slip_along_dip; 
+  //update slip conponents
+  _slip_along_normal[_qp] = slip_along_normal;
+  _slip_along_strike[_qp] = slip_along_strike;
+  _slip_along_dip[_qp] = slip_along_dip;
+  
   Real f1 = 0.0;
-  if ( std::norm(displacement_jump) < Dc ){
-    f1 = ( 1.0 * std::norm(displacement_jump) ) / ( 1.0 * Dc );
+  if ( total_distance < Dc ){
+    f1 = ( 1.0 * total_distance ) / ( 1.0 * Dc );
   }
   else{
     f1 = 1;

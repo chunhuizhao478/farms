@@ -44,7 +44,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 0.2
+    q = 0.4
     
     #characteristic length (m)
     Dc = 0.3
@@ -435,7 +435,6 @@
     []
     
     [Materials]
-      #damage breakage model
       [stress]
           type = ComputeLinearElasticStress
       []
