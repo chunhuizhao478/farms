@@ -44,7 +44,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 0.4
+    q = 1.0
     
     #characteristic length (m)
     Dc = 0.3

@@ -205,7 +205,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
   Real accumulated_slip_along_normal = _accumulated_slip_along_normal_old[_qp] + slip_diff_along_normal;
   Real accumulated_slip_along_strike = _accumulated_slip_along_strike_old[_qp] + slip_diff_along_strike;
   Real accumulated_slip_along_dip = _accumulated_slip_along_dip_old[_qp] + slip_diff_along_dip;
-  //compute total distance using 
+  //compute total distance using accumulated slip
   Real total_distance = sqrt(accumulated_slip_along_normal*accumulated_slip_along_normal+accumulated_slip_along_strike*accumulated_slip_along_strike+accumulated_slip_along_dip*accumulated_slip_along_dip);
   //update accumulated slip components
   _accumulated_slip_along_normal[_qp] = accumulated_slip_along_normal;
