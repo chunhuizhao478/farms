@@ -71,12 +71,12 @@ Plane Surface(1) = {5};
 Extrude {0,0, Zmin} { Surface{1}; }
 
 //Create the fault
-Point(100) = {-Fault_length, 0 , -Fault_width, lc_fault};
-Point(101) = {-Fault_length, 0, 0e3, lc_fault};
-Point(102) = {12e3, 0,  0e3, lc_fault};
-Point(103) = {12e3, 0, -Fault_width, lc_fault};
+Point(100) = {-Fault_length-lc_fault, 0 , -Fault_width-lc_fault, lc_fault};
+Point(101) = {-Fault_length-lc_fault, 0, 0e3, lc_fault};
+Point(102) = {12e3+lc_fault, 0,  0e3, lc_fault};
+Point(103) = {12e3+lc_fault, 0, -Fault_width-lc_fault, lc_fault};
 Point(106) = {0, 0, 0,  lc_fault} ;
-Point(107) = {0, 0,-Fault_width,  lc_fault} ;
+Point(107) = {0, 0,-Fault_width-lc_fault,  lc_fault} ;
 
 
 Line(100) = {101, 106};
@@ -105,8 +105,8 @@ Plane Surface(100) = {105};
 
 //create branch
 strike = 30*Pi/180 ; 
-Fault_length = 12e3 ;
-Point(104) = {Fault_length*Cos(strike), -Fault_length*Sin(strike), -Fault_width, lc_fault} ;
+Fault_length = 12e3+lc_fault;
+Point(104) = {Fault_length*Cos(strike), -Fault_length*Sin(strike), -Fault_width-lc_fault, lc_fault} ;
 Point(105) = {Fault_length*Cos(strike), -Fault_length*Sin(strike), 0,  lc_fault} ;
 
 

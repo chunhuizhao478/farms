@@ -14,6 +14,10 @@ strikem2dip10 = np.loadtxt("./benchmark_data/eqdynastrikem2dip10.txt")
 sliprate_strikem8dip10 = np.loadtxt("./farms_data/sliprate_strikem8_dip10.txt",skiprows=1)
 slip_strikem8dip10 = np.loadtxt("./farms_data/slip_strikem8_dip10.txt",skiprows=1)
 
+#
+sliprate_strikem8dip10_new = np.loadtxt("./farms_data/jun11/sliprate.txt",skiprows=1)
+slip_strikem8dip10_new = np.loadtxt("./farms_data/jun11/slip.txt",skiprows=1)
+
 sliprate_strikem8dip5 = np.loadtxt("./farms_data/sliprate_strikem8_dip5.txt",skiprows=1)
 slip_strikem8dip5 = np.loadtxt("./farms_data/slip_strikem8_dip5.txt",skiprows=1)
 
@@ -38,6 +42,7 @@ if plot_strikem8dip10:
     ## slip
     plt.figure()
     plt.plot(time,slip_strikem8dip10,'k-',label="farms")
+    plt.plot(time[:88],slip_strikem8dip10_new,'b-',label="farms-new")
     plt.plot(strikem8dip10[:,0],strikem8dip10[:,1],'r-',label="benchmark-eqdyna")
     plt.title("TPV24 slip time history at strike -8km and at dip 10km ")
     plt.legend()
@@ -47,6 +52,7 @@ if plot_strikem8dip10:
     ## slip rate
     plt.figure()
     plt.plot(time,sliprate_strikem8dip10,'k-',label="farms")
+    plt.plot(time[:88],sliprate_strikem8dip10_new,'b-',label="farms-new")
     plt.plot(strikem8dip10[:,0],strikem8dip10[:,2],'r-',label="benchmark-eqdyna")
     plt.title("TPV24 slip rate time history at strike -8km and at dip 10km ")
     plt.legend()

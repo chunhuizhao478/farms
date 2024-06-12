@@ -10,25 +10,25 @@
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x > -16000 & x < 12000 & y < 0 & z > -15000'
+      combinatorial_geometry = 'x >= -16150 & x <= 12150 & y < 0 & z >= -15150'
       block_id = 1
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x > -16000 & x < 12000 & y > 0 & z > -15000'
+        combinatorial_geometry = 'x > -16150 & x < 12150 & y > 0 & z > -15150'
         block_id = 2
     []    
     [./new_block_3]
         type = ParsedSubdomainMeshGenerator
         input = new_block_2
-        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= 150 & y <= -150 & x <= 10417 & y >= -6025'
+        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15150 & x >= 150 & y <= -150 & x <= 10525 & y >= -6075'
         block_id = 3
     []
     [./new_block_4]
         type = ParsedSubdomainMeshGenerator
         input = new_block_3
-        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= 150 & y <= -150 & x <= 10417 & y >= -6025'
+        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15150 & x >= 150 & y <= -150 & x <= 10525 & y >= -6075'
         block_id = 4
     []    
     [./split_1]
@@ -479,8 +479,7 @@
     
     [Functions]
       [func_static_friction_coeff_mus]
-          type = ConstantFunction
-          value = 0.18
+         type = InitialStaticFrictionCoeff
       []
       #mud constant value: 0.4
       [func_dynamic_friction_coeff_mud]
@@ -564,7 +563,7 @@
     type = Transient
     dt = 0.0025
     end_time = 12.0
-    # num_steps = 10
+    num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -575,5 +574,5 @@
 [Outputs]
     exodus = true
     interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z mu_s'
 []
