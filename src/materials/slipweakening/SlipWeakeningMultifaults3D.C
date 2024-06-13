@@ -183,12 +183,12 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area*area) + (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
     Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area*area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area*area ) ) - T2_o ;
 
-    //Compute fault traction
-   if (T2<0)
-   {
-   }else{
-     T2 = 0;
-   }
+  //   //Compute fault traction //effective normal stress is zero, see below
+  //  if (T2<0)
+  //  {
+  //  }else{
+  //    T2 = 0;
+  //  }
 
   //parameter f1
   //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
@@ -238,7 +238,14 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     f2 = 1;
   }
 
-  Real mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
+  //if mu_s > 0.18, must be boundary location, set high mus without degradation
+  Real mu = 0.0;
+  if ( mu_s > 10 ){ //must be boundary elements, set high mus values
+    mu = mu_s * 1;
+  }
+  else{
+    mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
+  }
 
   //Pf
   Real z_coord = _q_point[_qp](2);
@@ -247,8 +254,9 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
   Real Pf = fluid_density * gravity * abs(z_coord);
 
   //tau_f
-  //T2: total normal stress acting on the fault, taken to be positive in compression: abs(T2)
-  Real effective_stress = abs(T2) - Pf;
+  //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
+  //treat tension on the fault the same as if the effective normal stress equals zero.
+  Real effective_stress = (-T2) - Pf;
   tau_f = _Co[_qp] + mu * std::max(effective_stress,0.0);
 
   //Compute fault traction

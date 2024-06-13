@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 #read benchmark data
 strikem8dip10 = np.loadtxt("./benchmark_data/eqdynastrikem8dip10.txt")
 
+#
+strikem8dip10_2 = np.loadtxt("./benchmark_data/seisolstrikem8dip10.txt")
+
 strikem8dip5 = np.loadtxt("./benchmark_data/eqdynastrikem8dip5.txt")
 
 strikem8dip0 = np.loadtxt("./benchmark_data/eqdynastrikem8dip0.txt")
@@ -17,6 +20,10 @@ slip_strikem8dip10 = np.loadtxt("./farms_data/slip_strikem8_dip10.txt",skiprows=
 #
 sliprate_strikem8dip10_new = np.loadtxt("./farms_data/jun11/sliprate.txt",skiprows=1)
 slip_strikem8dip10_new = np.loadtxt("./farms_data/jun11/slip.txt",skiprows=1)
+
+#
+sliprate_strikem8dip10_new2 = np.loadtxt("./farms_data/jun13/sliprate.txt",skiprows=1)
+slip_strikem8dip10_new2 = np.loadtxt("./farms_data/jun13/slip.txt",skiprows=1)
 
 sliprate_strikem8dip5 = np.loadtxt("./farms_data/sliprate_strikem8_dip5.txt",skiprows=1)
 slip_strikem8dip5 = np.loadtxt("./farms_data/slip_strikem8_dip5.txt",skiprows=1)
@@ -41,9 +48,11 @@ if plot_strikem8dip10:
 
     ## slip
     plt.figure()
-    plt.plot(time,slip_strikem8dip10,'k-',label="farms")
-    plt.plot(time[:88],slip_strikem8dip10_new,'b-',label="farms-new")
+    plt.plot(time,slip_strikem8dip10,'k-',label="farms-old")
+    plt.plot(time[:88],slip_strikem8dip10_new,'b-',label="farms-high damp")
+    plt.plot(time[:76],slip_strikem8dip10_new2,'m-',label="farms-high damp-high mus")
     plt.plot(strikem8dip10[:,0],strikem8dip10[:,1],'r-',label="benchmark-eqdyna")
+    plt.plot(strikem8dip10_2[:,0],2*strikem8dip10_2[:,1],'r-',label="benchmark-seisol")
     plt.title("TPV24 slip time history at strike -8km and at dip 10km ")
     plt.legend()
     plt.savefig("./outputs/strikem8dip10/slip.png")
@@ -51,9 +60,11 @@ if plot_strikem8dip10:
 
     ## slip rate
     plt.figure()
-    plt.plot(time,sliprate_strikem8dip10,'k-',label="farms")
-    plt.plot(time[:88],sliprate_strikem8dip10_new,'b-',label="farms-new")
+    plt.plot(time,sliprate_strikem8dip10,'k-',label="farms-old")
+    plt.plot(time[:88],sliprate_strikem8dip10_new,'b-',label="farms-high damp")
+    plt.plot(time[:76],sliprate_strikem8dip10_new2,'m-',label="farms-high damp-high mus")
     plt.plot(strikem8dip10[:,0],strikem8dip10[:,2],'r-',label="benchmark-eqdyna")
+    plt.plot(strikem8dip10_2[:,0],strikem8dip10_2[:,2],'r-',label="benchmark-seisol")
     plt.title("TPV24 slip rate time history at strike -8km and at dip 10km ")
     plt.legend()
     plt.savefig("./outputs/strikem8dip10/sliprate.png")
