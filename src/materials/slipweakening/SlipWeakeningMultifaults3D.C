@@ -275,6 +275,13 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
   traction(1) = -T1+T1_o; 
   traction(2) = -T3+T3_o;
 
+  //
+  if ( mu > 10 ){
+    traction(0) = 0.0; 
+    traction(1) = 0.0; 
+    traction(2) = 0.0;
+  }
+
   _interface_traction[_qp] = traction;
   _dinterface_traction_djump[_qp] = 0;
 

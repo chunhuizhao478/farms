@@ -30,7 +30,7 @@ InitialStaticFrictionCoeff::value(Real /*t*/, const Point & p) const
 
   //Parameter
   if ( z_coord < -15000 || x_coord < -16000 || x_coord > 12000 || ( x_coord > 10392.5 && y_coord < -6000 ) ){
-    mu_s = 1000;
+    mu_s = 1e12;
   }
   else{
     mu_s = 0.18;
