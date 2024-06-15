@@ -20,6 +20,7 @@ solve_gamma_r = subs(solve_gamma_r,alpha_,1);
 solve_gamma_r = subs(solve_gamma_r,xi,xi_o);
 out_gamma_r = solve(solve_gamma_r,gamma_r);
 out_gamma_r = out_gamma_r(2);
+disp(eval(out_gamma_r))
 %%Solve for alpha
 solve_alpha2 = expr2;
 solve_alpha2 = subs(solve_alpha2,gamma_r,out_gamma_r);

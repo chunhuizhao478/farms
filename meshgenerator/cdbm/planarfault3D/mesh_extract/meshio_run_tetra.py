@@ -4,10 +4,25 @@ import meshio
 # Load Files
 m = meshio.read('../TPV24.msh')
 
+# Get the physical groups
+physical_groups = m.cell_data_dict["gmsh:physical"]
+
+print(physical_groups)
+exit()
+
+# Extract cells (elements) and their corresponding physical group data
+for cell_type, cells in m.cells_dict.items():
+    if cell_type in physical_groups:
+        physical_data = physical_groups[cell_type]
+        print(f"Cell type: {cell_type}")
+        for i, cell in enumerate(cells):
+            physical_group = physical_data[i]
+            print(f"Element {i}: Nodes {cell}, Physical Group {physical_group}")
+
 # Get TETRA Element Nodal Connectivity
 tetra_elem_connect = m.cells_dict['tetra']
 
-print(m.cell_sets_dict)
+print(m.cells_dict)
 exit()
 
 #
