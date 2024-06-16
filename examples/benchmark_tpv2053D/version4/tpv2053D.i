@@ -373,7 +373,7 @@
       [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 100
+        value = 200
         execute_on = 'INITIAL TIMESTEP_BEGIN'
       []
 []
@@ -467,6 +467,7 @@
       #this function is used in czm only
       [func_initial_strike_shear_stress]
         type = InitialShearStress
+        benchmark_type = tpv205
       []
       [./func_initial_stress_00]
         type = ConstantFunction
@@ -529,5 +530,5 @@
 [Outputs]
     exodus = true
     interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z mu_s'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z mu_s tangent_jump_rate'
 []

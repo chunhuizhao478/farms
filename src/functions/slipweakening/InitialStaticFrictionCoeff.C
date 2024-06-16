@@ -1,5 +1,5 @@
 /*
-Define Function for Initial Static Friction Coefficient for TPV24 benchmark
+Define Function for Initial Static Friction Coefficient for benchmark
 */
 
 #include "InitialStaticFrictionCoeff.h"
