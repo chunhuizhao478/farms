@@ -139,7 +139,7 @@ def helper_find_nearest(array_x, value_x, array_y, value_y, array_z, value_z):
     return closest_index
 
 #file path
-exodus_file_path = "/Users/andyz/Downloads/tpv2053D_out-2.e"
+exodus_file_path = "/Users/zhaoc/Downloads/tpv2053D_out.e"
 save_folder_output_file_path = "./farms_data"
 
 #read exodus file
