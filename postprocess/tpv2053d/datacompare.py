@@ -1,50 +1,110 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+
+#benchmark code
+benchmark_code = "TPV205"
 
 #read benchmark data
-strikem0dip7dot5 = np.loadtxt("./benchmark_data/eqdyna_strike0_dip7dot5.txt")
+benchmark_label = "benchmark-eqsim-200m"
 
 #read farms data
-sliprate_strike0dip7dot5 = np.loadtxt("./farms_data/sliprate_strike0_dip7dot5.txt",skiprows=1)
-slip_strike0dip7dot5 = np.loadtxt("./farms_data/slip_strike0_dip7dot5.txt",skiprows=1)
+farms_label = "farms-200m"
 
-#time farms
+#time farms 0.1s interval
 time = np.linspace(0,12.0,121)
 
-plot_strike0_dip7dot5 = True
-# plot_strikem8dip5 = True
-# plot_strikem8dip0 = True
-# plot_strikem2dip10 = True
+#check dir
+def ensure_dir(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        print(f"Directory '{directory}' created.")
+    else:
+        print(f"Directory '{directory}' already exists.")
 
-# plot
-# strike0_dip7dot5
-if plot_strike0_dip7dot5:
+def find_and_read_file(filename, search_directory):
+    # Walk through the directory
+    for root, dirs, files in os.walk(search_directory):
+        if filename in files:
+            file_path = os.path.join(root, filename)
+            print(f"File found: {file_path}")
+            with open(file_path, 'r') as file:
+                contents = file.read()
+            return contents
+    
+    # If the file is not found
+    print(f"File '{filename}' not found in directory '{search_directory}'.")
+    return None
+
+#define plot function
+def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, benchmark_label, farms_label, strike_value, dip_value, benchmark_code):
+
+    ## check if dir exists, create one if not
+    saved_path = "./outputs/strike"+str(strike_value)+"_dip"+str(dip_value)+"/"
+    ensure_dir(saved_path)
+
+    ## check size of data
+    datalen = len(farms_sliprate_data)
 
     ## slip
     plt.figure()
-    plt.plot(time[:32],slip_strike0dip7dot5,'g-',label="farms-high damp-high mus-2")
-    plt.plot(strikem0dip7dot5[:,0],strikem0dip7dot5[:,1],'r-',label="benchmark-eqdyna")
-    plt.title("TPV24 slip time history at strike -8km and at dip 10km ")
+    plt.plot(time[:datalen],farms_slip_data,'g-',label=farms_label)
+    plt.plot(benchmark_data[:,0],benchmark_data[:,1],'r-',label=benchmark_label)
+    plt.title(benchmark_code+" slip time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
     plt.legend()
-    plt.savefig("./outputs/strike0_dip7dot5/slip.png")
+    plt.xlabel("time (s)")
+    plt.ylabel("slip (m)")
+    plt.savefig(saved_path+"/slip.png")
     plt.show()
 
     ## slip rate
     plt.figure()
-    plt.plot(time[:32],sliprate_strike0dip7dot5,'g-',label="farms-high damp-high mus-2")
-    plt.plot(strikem0dip7dot5[:,0],strikem0dip7dot5[:,2],'r-',label="benchmark-eqdyna")
-    plt.title("TPV24 slip rate time history at strike -8km and at dip 10km ")
+    plt.plot(time[:datalen],farms_sliprate_data,'g-',label=farms_label)
+    plt.plot(benchmark_data[:,0],benchmark_data[:,2],'r-',label=benchmark_label)
+    plt.title(benchmark_code+" slip rate time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
     plt.legend()
-    plt.savefig("./outputs/strike0_dip7dot5/sliprate.png")
-    plt.show()
+    plt.xlabel("time (s)")
+    plt.ylabel("slip rate (m/s)")
+    plt.savefig(saved_path+"/sliprate.png")
+    plt.show()   
 
-    ## shear stress
-    # plt.figure()
-    # plt.plot(time[:73],shearsts_strikem8dip10_new4,'k-',label="farms-high damp-high mus-2")
-    # plt.plot(strikem8dip10[:,0],strikem8dip10[:,3],'r-',label="benchmark-eqdyna")
-    # plt.title("TPV24 shear stress time history at strike -8km and at dip 10km ")
-    # plt.legend()
-    # plt.ylabel("shear stress (MPa)")
-    # plt.xlabel("time (s)")
-    # plt.savefig("./outputs/strikem8dip10/shearstress.png")
-    # plt.show()
+#strike,dip
+given_coord_list = [[0     , 0 ,-0    ],
+                    [0     , 0 ,-3000 ],
+                    [0     , 0 ,-7500 ],
+                    [0     , 0 ,-12000],
+                    [4500  , 0 ,-0    ],
+                    [4500  , 0 ,-7500 ],
+                    [-4500 , 0 ,-0    ],
+                    [-4500 , 0 ,-7500 ],
+                    [7500  , 0 ,-0    ],
+                    [7500  , 0 ,-7500 ],
+                    [-7500 , 0 ,-0    ],
+                    [-7500 , 0 ,-7500 ],
+                    [12000 , 0 ,-0    ],
+                    [12000 , 0 ,-7500 ],
+                    [-12000, 0 ,-0    ],
+                    [-12000, 0 ,-7500 ]]
+
+#num of files
+num_of_file = np.shape(given_coord_list)[0]
+
+#loop over files
+for i in range(num_of_file):
+
+    #get coords
+    xcoord_i = given_coord_list[i][0] / 1000
+    ycoord_i = given_coord_list[i][1] / 1000
+    zcoord_i = given_coord_list[i][2] / 1000
+
+    #file path
+    benchmark_path = "./benchmark_data/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_slip_path = "./farms_data/slip_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_sliprate_path = "./farms_data/sliprate_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+
+    benchmark = np.loadtxt(benchmark_path)
+    farms_slip = np.loadtxt(farms_slip_path)
+    farms_sliprate = np.loadtxt(farms_sliprate_path)
+
+    ##plot
+    plotfigure(benchmark,time,farms_sliprate,farms_slip,benchmark_label,farms_label,xcoord_i,zcoord_i,benchmark_code)
