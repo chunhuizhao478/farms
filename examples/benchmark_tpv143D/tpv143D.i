@@ -49,7 +49,7 @@
     q = 1.0
     
     #characteristic length (m)
-    Dc = 0.3
+    Dc = 0.4
     
 []
     
@@ -536,7 +536,7 @@
 [Executioner]
     type = Transient
     dt = 0.0025
-    end_time = 12.0
+    end_time = 1.0
     # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
