@@ -99,16 +99,24 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
    
     //Involve Background Stress Projection
     //Local Init Stress
-    //RankTwoTensor sts_init_local = _rot[_qp].transpose() * _sts_init[_qp] * _rot[_qp];
-    //RealVectorValue local_normal(1.0,0.0,0.0);
+    // RankTwoTensor sts_init_local = _rot[_qp].transpose() * _sts_init[_qp] * _rot[_qp];
+    // RealVectorValue local_normal(1.0,0.0,0.0);
 
-    //Local Traction
-    //RealVectorValue traction_local =  sts_init_local * local_normal;
+    // //Local Traction
+    // RealVectorValue traction_local =  sts_init_local * local_normal;
+
+    // Real T1_o_old = -traction_local(1); 
+    // Real T2_o_old = -traction_local(0); 
+    // Real T3_o_old = -traction_local(2); 
 
     //for benchmarks, we don't rotate stress
-    Real T1_o = _sts_init[_qp](0,1); 
+    Real T1_o = -1*_sts_init[_qp](0,1); 
     Real T2_o = -1*_sts_init[_qp](1,1); 
-    Real T3_o = _sts_init[_qp](2,2); 
+    Real T3_o = -1*_sts_init[_qp](2,2); 
+
+    // std::cout<<"T1: "<<T1_o<<" "<<T1_o_old<<std::endl;
+    // std::cout<<"T2: "<<T2_o<<" "<<T2_o_old<<std::endl;
+    // std::cout<<"T3: "<<T3_o<<" "<<T3_o_old<<std::endl;
 
     Real area = _nodal_area[_qp];
 
