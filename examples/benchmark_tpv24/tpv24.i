@@ -5,37 +5,37 @@
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      file =  '../../meshgenerator/cdbm/planarfault3D/TPV24.msh'
+      file =  '../../meshgenerator/cdbm/planarfault3D/TPV24_200m.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -16150 & x <= 12150 & y < 0 & z >= -15150'
-      block_id = 1
+      combinatorial_geometry = 'x >= -16000 & x <= 12000 & y < 0 & z >= -15000'
+      block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x > -16150 & x < 12150 & y > 0 & z > -15150'
-        block_id = 2
+        combinatorial_geometry = 'x > -16000 & x < 12000 & y > 0 & z > -15000'
+        block_id = 3
     []    
     [./new_block_3]
         type = ParsedSubdomainMeshGenerator
         input = new_block_2
-        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15150 & x >= 150 & y <= -150 & x <= 10525 & y >= -6075'
-        block_id = 3
+        combinatorial_geometry = '0.5773505384 * x + y < 0 & z > -15000 & x >= 200 & y <= -200 & x <= 10393 & y >= -6000'
+        block_id = 4
     []
     [./new_block_4]
         type = ParsedSubdomainMeshGenerator
         input = new_block_3
-        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15150 & x >= 150 & y <= -150 & x <= 10525 & y >= -6075'
-        block_id = 4
+        combinatorial_geometry = '0.5773505384 * x + y > 0 & z > -15000 & x >= 200 & y <= -200 & x <= 10393 & y >= -6000'
+        block_id = 5
     []    
     [./split_1]
         type = BreakMeshByBlockGenerator
         input = new_block_4
         split_interface = true
-        block_pairs = '1 2; 3 4'
+        block_pairs = '2 3; 4 5'
     []     
 []
     
@@ -191,7 +191,7 @@
     
 [Modules/TensorMechanics/CohesiveZoneMaster]
     [./czm_ik]
-        boundary = 'Block1_Block2 Block3_Block4'
+        boundary = 'Block2_Block3 Block4_Block5'
         strain = SMALL
         generate_output='traction_x traction_y traction_z jump_x jump_y jump_z'
     [../]
@@ -379,7 +379,7 @@
       [fault_len]
         type = ConstantAux
         variable = nodal_area
-        value = 150
+        value = 200
         execute_on = 'INITIAL TIMESTEP_BEGIN'
       []
       #cohesion
@@ -466,7 +466,7 @@
           tria_area = tria_area_aux
           cohesion = cohesion_aux
           forced_rupture_time = forced_rupture_time_aux
-          boundary = 'Block1_Block2 Block3_Block4'
+          boundary = 'Block2_Block3 Block4_Block5'
       [../]
       [./static_initial_stress_tensor_slipweakening]
           type = GenericFunctionRankTwoTensor
@@ -574,5 +574,5 @@
 [Outputs]
     exodus = true
     interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z mu_s'
+    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z mu_s'
 []

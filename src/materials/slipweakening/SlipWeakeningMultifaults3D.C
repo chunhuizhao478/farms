@@ -102,15 +102,15 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
    
     //Involve Background Stress Projection
     //Local Init Stress
-    RankTwoTensor sts_init_local = _rot[_qp].transpose() * _sts_init[_qp] * _rot[_qp];
-    RealVectorValue local_normal(1.0,0.0,0.0);
+    //RankTwoTensor sts_init_local = _rot[_qp].transpose() * _sts_init[_qp] * _rot[_qp];
+    //RealVectorValue local_normal(1.0,0.0,0.0);
 
     //Local Traction
-    RealVectorValue traction_local =  sts_init_local * local_normal;
+    //RealVectorValue traction_local =  sts_init_local * local_normal;
 
-    Real T1_o = -traction_local(1); 
-    Real T2_o = -traction_local(0); 
-    Real T3_o = -traction_local(2); 
+    Real T1_o = _sts_init[_qp](0,1); 
+    Real T2_o = -1*_sts_init[_qp](1,1); 
+    Real T3_o = _sts_init[_qp](2,2); 
 
    Real area = _nodal_area[_qp];
    //  Real area = std::sqrt(area_input);
@@ -178,10 +178,13 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     //Compute node mass //equal length tetrahedron
     Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
 
+    //Compute area of triangle
+    Real area_of_triangle = sqrt(3) / 4 * area * area;
+
     //Compute sticking stress
-    Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area*area) + (R_plus_local_x - R_minus_local_x)/(2*area*area) + T1_o;
-    Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area*area) + (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
-    Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area*area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area*area ) ) - T2_o ;
+    Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area_of_triangle) + (R_plus_local_x - R_minus_local_x)/(2*area_of_triangle) + T1_o;
+    Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area_of_triangle) + (R_plus_local_z - R_minus_local_z)/(2*area_of_triangle) + T3_o;
+    Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area_of_triangle) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area_of_triangle ) ) - T2_o ;
 
   //   //Compute fault traction //effective normal stress is zero, see below
   //  if (T2<0)
