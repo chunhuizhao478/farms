@@ -7,6 +7,7 @@
       type = FileMeshGenerator
       # file =  '../../../meshgenerator/tpv205/tpv2053d_400m.msh'
       file =  '../../../meshgenerator/tpv205/tpv2053d.msh'
+      # file =  '../../../meshgenerator/tpv205/tpv2053d_local.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -523,6 +524,7 @@
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
+        use_constant_mass = true
     []
 []
     

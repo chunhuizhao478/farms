@@ -1,5 +1,6 @@
 ##########################################################
 # TPV14 benchmark
+# Lfric = G Dc / ( ( mu_s - mu_d ) sigma_yy ) = 32.04e9 * 0.4 / (( 0.677 - 0.525) * 120e6) = 702 m
 ##########################################################
 
 [Mesh]
@@ -536,11 +537,12 @@
 [Executioner]
     type = Transient
     dt = 0.0025
-    end_time = 1.0
+    end_time = 12.0
     # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
+        use_constant_mass = true
     []
 []
     
