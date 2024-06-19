@@ -179,7 +179,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
 
     //Compute area of triangle
-    Real area_of_triangle = sqrt(3) / 4 * area * area;
+    Real area_of_triangle = 2 * sqrt(3) / 4 * area * area;
 
     //Compute sticking stress
     Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area_of_triangle) + (R_plus_local_x - R_minus_local_x)/(2*area_of_triangle) + T1_o;
