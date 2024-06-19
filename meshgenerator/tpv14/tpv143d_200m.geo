@@ -45,7 +45,7 @@ Fault_dip = 90*Pi/180.;
 
 //Nucleation in X,Z local coordinates
 X_nucl = -8e3;
-Width_nucl = 10e3;
+Width_nucl = 7.5e3;
 R_nucl = 1.5e3;
 lc_nucl = 200;
 
