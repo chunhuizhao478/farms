@@ -99,20 +99,27 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
    
     //Involve Background Stress Projection
     //Local Init Stress
-    // RankTwoTensor sts_init_local = _rot[_qp].transpose() * _sts_init[_qp] * _rot[_qp];
-    // RealVectorValue local_normal(1.0,0.0,0.0);
+    RankTwoTensor _rot_static;
+    _rot_static(0,0) = 0; _rot_static(0,1) = 1; _rot_static(0,2) = 0;
+    _rot_static(1,0) = 1; _rot_static(1,1) = 0; _rot_static(1,2) = 0;
+    _rot_static(2,0) = 0; _rot_static(2,1) = 0; _rot_static(2,2) = -1;
 
-    // //Local Traction
-    // RealVectorValue traction_local =  sts_init_local * local_normal;
+    RankTwoTensor sts_init_local = _rot_static.transpose() * _sts_init[_qp] * _rot_static;
+    RealVectorValue local_normal(1.0,0.0,0.0);
 
-    // Real T1_o_old = -traction_local(1); 
-    // Real T2_o_old = -traction_local(0); 
-    // Real T3_o_old = -traction_local(2); 
+    std::cout<<_rot_static<<std::endl;
+
+    //Local Traction
+    RealVectorValue traction_local =  sts_init_local * local_normal;
+
+    Real T1_o = -traction_local(1); 
+    Real T2_o = -traction_local(0); 
+    Real T3_o = -traction_local(2); 
 
     //for benchmarks, we don't rotate stress
-    Real T1_o = -1*_sts_init[_qp](0,1); 
-    Real T2_o = -1*_sts_init[_qp](1,1); 
-    Real T3_o = -1*_sts_init[_qp](2,2); 
+    // Real T1_o = -1*_sts_init[_qp](0,1); 
+    // Real T2_o = -1*_sts_init[_qp](1,1); 
+    // Real T3_o = -1*_sts_init[_qp](2,2); 
 
     // std::cout<<"T1: "<<T1_o<<" "<<T1_o_old<<std::endl;
     // std::cout<<"T2: "<<T2_o<<" "<<T2_o_old<<std::endl;
@@ -227,6 +234,53 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
       //Compute friction strength
       //In Seisol documentation states: tau = -C - min(0,sigma_N) * (mu_s - (mu_s - mu_d)/dc * min(total distance,dc))
       tau_f = (mu_s - (mu_s - mu_d)*std::min(total_distance,Dc)/Dc)*(-T2);
+
+    }
+    //region with forced rupture time nucleation, same as tpv24
+    else{
+      
+      Real f1 = 0.0;
+      if ( total_distance < Dc ){
+        f1 = ( 1.0 * total_distance ) / ( 1.0 * Dc );
+      }
+      else{
+        f1 = 1;
+      }
+
+      //parameter f2
+      Real f2 = 0.0;
+      Real t0 = 0.5; //0.5;
+      Real T = (*_T)[_qp];
+      if ( _t < T ){
+        f2 = 0.0;
+      }
+      else if ( _t > T && _t < T + t0 ){
+        f2 = ( _t - T ) / t0;
+      }
+      else{
+        f2 = 1;
+      }
+
+      //if mu_s > 0.18, must be boundary location, set high mus without degradation
+      Real mu = 0.0;
+      if ( mu_s > 10 ){ //must be boundary elements, set high mus values
+        mu = mu_s * 1;
+      }
+      else{
+        mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
+      }
+
+      //Pf
+      Real z_coord = _q_point[_qp](2);
+      Real fluid_density = 1000; //kg/m^3 fluid density
+      Real gravity = 9.8; //m/s^2
+      Real Pf = fluid_density * gravity * abs(z_coord);
+
+      //tau_f
+      //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
+      //treat tension on the fault the same as if the effective normal stress equals zero.
+      Real effective_stress = (-T2) - Pf;
+      tau_f = (*_Co)[_qp] + mu * std::max(effective_stress,0.0);
 
     }
 
