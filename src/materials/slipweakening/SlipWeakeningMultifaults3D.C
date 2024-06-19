@@ -108,9 +108,9 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     //Local Traction
     //RealVectorValue traction_local =  sts_init_local * local_normal;
 
-    Real T1_o = _sts_init[_qp](0,1); 
+    Real T1_o = -1*_sts_init[_qp](0,1); 
     Real T2_o = -1*_sts_init[_qp](1,1); 
-    Real T3_o = _sts_init[_qp](2,2); 
+    Real T3_o = -1*_sts_init[_qp](2,2); 
 
    Real area = _nodal_area[_qp];
    //  Real area = std::sqrt(area_input);
