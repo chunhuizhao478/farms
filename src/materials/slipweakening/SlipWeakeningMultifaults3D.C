@@ -105,9 +105,9 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     // //Local Traction
     // RealVectorValue traction_local =  sts_init_local * local_normal;
 
-    // Real T1_o = -traction_local(1); 
-    // Real T2_o = -traction_local(0); 
-    // Real T3_o = -traction_local(2); 
+    // Real T1_o_old = -traction_local(1); 
+    // Real T2_o_old = -traction_local(0); 
+    // Real T3_o_old = -traction_local(2); 
 
     //for benchmarks, we don't rotate stress
     Real T1_o = -1*_sts_init[_qp](0,1); 
@@ -183,13 +183,10 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     //Compute node mass //equal length tetrahedron
     Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
 
-    //Compute area associated with the node (assume equal lengths, each node has two triangles area)
-    Real area_of_triangle = 2 * sqrt(3) / 4 * area * area;
-
     //Compute sticking stress
-    Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area_of_triangle) + (R_plus_local_x - R_minus_local_x)/(2*area_of_triangle) + T1_o;
-    Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area_of_triangle) + (R_plus_local_z - R_minus_local_z)/(2*area_of_triangle) + T3_o;
-    Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area_of_triangle) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area_of_triangle ) ) - T2_o ;
+    Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area * area) + (R_plus_local_x - R_minus_local_x)/(2*area * area) + T1_o;
+    Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area * area) + (R_plus_local_z - R_minus_local_z)/(2*area * area) + T3_o;
+    Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area * area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area * area ) ) - T2_o ;
 
     //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
     //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
@@ -232,45 +229,9 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
       tau_f = (mu_s - (mu_s - mu_d)*std::min(total_distance,Dc)/Dc)*(-T2);
 
     }
-    //forced rupture time nucleation, same as tpv24
-    // else{
-    //   //parameter f1
-    //   Real f1 = 0.0;
-    //   if ( total_distance < Dc ){
-    //     f1 = ( 1.0 * total_distance ) / ( 1.0 * Dc );
-    //   }
-    //   else{
-    //     f1 = 1;
-    //   }
-    //   //parameter f2
-    //   Real f2 = 0.0;
-    //   Real t0 = 0.5; //0.5;
-    //   Real T = (*_T)[_qp];
-    //   if ( _t < T ){
-    //     f2 = 0.0;
-    //   }
-    //   else if ( _t > T && _t < T + t0 ){
-    //     f2 = ( _t - T ) / t0;
-    //   }
-    //   else{
-    //     f2 = 1;
-    //   }
-    //   Real mu = 0.0;
-    //   mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
-    //   //Pf
-    //   Real z_coord = _q_point[_qp](2);
-    //   Real fluid_density = 1000; //kg/m^3 fluid density
-    //   Real gravity = 9.8; //m/s^2
-    //   Real Pf = fluid_density * gravity * abs(z_coord);
-    //   //tau_f
-    //   //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
-    //   //treat tension on the fault the same as if the effective normal stress equals zero.
-    //   Real effective_stress = (-T2) - Pf;
-    //   tau_f = (*_Co)[_qp] + mu * std::max(effective_stress,0.0);
-    // }
 
     //Compute fault traction
-    if (std::sqrt(T1*T1 + T3*T3)<=tau_f)
+    if (std::sqrt(T1*T1 + T3*T3)<tau_f)
     {
     }else{
       T1 = tau_f*T1/std::sqrt(T1*T1 + T3*T3);
