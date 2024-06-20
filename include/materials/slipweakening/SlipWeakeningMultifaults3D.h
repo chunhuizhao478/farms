@@ -15,8 +15,6 @@ protected:
 
   Real _Dc;
 
-  const VariableValue & _nodal_area;
-
   const MaterialProperty<Real> & _density;
 
   const MaterialProperty<RankTwoTensor> & _rot;
@@ -67,5 +65,14 @@ protected:
   const MaterialProperty<Real> & _slip_along_normal_old;
   const MaterialProperty<Real> & _slip_along_strike_old;
   const MaterialProperty<Real> & _slip_along_dip_old;
+
+  /// The volume (or length) of the current element
+  const Real & _current_elem_volume;
+
+  /// The neighboring element volume
+  const Real & _neighbor_elem_volume;
+
+  /// The volume (or length) of the current side
+  const Real & _current_side_volume;
 
 };
