@@ -370,13 +370,6 @@
         function = func_initial_strike_shear_stress
         execute_on = 'INITIAL TIMESTEP_BEGIN'
       []
-      #fault length
-      [fault_len]
-        type = ConstantAux
-        variable = nodal_area
-        value = 200
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-      []
 []
     
     [Kernels]
@@ -441,7 +434,6 @@
           reaction_damp_x = resid_damp_sw_x
           reaction_damp_y = resid_damp_sw_y
           reaction_damp_z = resid_damp_sw_z
-          nodal_area = nodal_area
           mu_d = mu_d
           mu_s = mu_s
           boundary = 'Block2_Block3'

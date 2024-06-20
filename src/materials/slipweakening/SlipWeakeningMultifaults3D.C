@@ -11,7 +11,6 @@ SlipWeakeningMultifaults3D::validParams()
   InputParameters params = CZMComputeLocalTractionTotalBaseLSW3D::validParams();
   params.addClassDescription("Linear Slip Weakening Traction Separation Law.");
   params.addParam<Real>("Dc", 1.0, "Value of characteristic length");
-  params.addRequiredCoupledVar("nodal_area","nodal area");
   params.addRequiredCoupledVar("disp_slipweakening_x","displacement in x dir");
   params.addRequiredCoupledVar("disp_slipweakening_y","displacement in y dir");
   params.addRequiredCoupledVar("disp_slipweakening_z","displacement in z dir");
@@ -31,7 +30,6 @@ SlipWeakeningMultifaults3D::validParams()
 SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & parameters)
   : CZMComputeLocalTractionTotalBaseLSW3D(parameters),
     _Dc(getParam<Real>("Dc")),
-    _nodal_area(coupledValue("nodal_area")),
     _density(getMaterialPropertyByName<Real>(_base_name + "density")),
     _rot(getMaterialPropertyByName<RankTwoTensor>(_base_name + "czm_total_rotation")),
     _disp_slipweakening_x(coupledValue("disp_slipweakening_x")),
@@ -70,7 +68,10 @@ SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & p
     _accumulated_slip_along_dip_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_dip")),
     _slip_along_normal_old(getMaterialPropertyOldByName<Real>("slip_along_normal")),
     _slip_along_strike_old(getMaterialPropertyOldByName<Real>("slip_along_strike")),
-    _slip_along_dip_old(getMaterialPropertyOldByName<Real>("slip_along_dip"))
+    _slip_along_dip_old(getMaterialPropertyOldByName<Real>("slip_along_dip")),
+    _current_elem_volume(_assembly.elemVolume()),
+    _neighbor_elem_volume(_assembly.neighborVolume()),
+    _current_side_volume(_assembly.sideElemVolume())
 {
 }
 
@@ -107,7 +108,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     RankTwoTensor sts_init_local = _rot_static.transpose() * _sts_init[_qp] * _rot_static;
     RealVectorValue local_normal(1.0,0.0,0.0);
 
-    std::cout<<_rot_static<<std::endl;
+    //std::cout<<_rot_static<<std::endl;
 
     //Local Traction
     RealVectorValue traction_local =  sts_init_local * local_normal;
@@ -124,8 +125,6 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     // std::cout<<"T1: "<<T1_o<<" "<<T1_o_old<<std::endl;
     // std::cout<<"T2: "<<T2_o<<" "<<T2_o_old<<std::endl;
     // std::cout<<"T3: "<<T3_o<<" "<<T3_o_old<<std::endl;
-
-    Real area = _nodal_area[_qp];
 
     //*Restoration Force*
 
@@ -187,24 +186,30 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     Real R_minus_local_y = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
     Real R_minus_local_z = R_minus_local_dip_stsdivcomp + R_minus_local_dip_dampingcomp;
 
+    //
+    // std::cout<<_current_elem_volume<<" "<<_neighbor_elem_volume<<" "<<_current_side_volume<<std::endl;
+
     //Compute node mass //equal length tetrahedron
-    Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
+    //Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
+    Real M_plus  = _density[_qp] * _current_elem_volume;
+    Real M_minus = _density[_qp] * _neighbor_elem_volume;
+    Real area    = _current_side_volume;
 
     //Compute sticking stress
-    Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area * area) + (R_plus_local_x - R_minus_local_x)/(2*area * area) + T1_o;
-    Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area * area) + (R_plus_local_z - R_minus_local_z)/(2*area * area) + T3_o;
-    Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area * area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area * area ) ) - T2_o ;
+    Real T1 =   (1/_dt)*M_plus*M_minus*displacement_jump_rate(1)/(area*(M_plus+M_minus)) + (M_minus*R_plus_local_x - M_plus*R_minus_local_x)/(area*(M_plus+M_minus)) + T1_o;
+    Real T3 =   (1/_dt)*M_plus*M_minus*displacement_jump_rate(2)/(area*(M_plus+M_minus)) + (M_minus*R_plus_local_z - M_plus*R_minus_local_z)/(area*(M_plus+M_minus)) + T3_o;
+    Real T2 =  -(1/_dt)*M_plus*M_minus*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(area*(M_plus+M_minus)) + ( (M_plus*R_minus_local_y - M_minus*R_plus_local_y) / (area*(M_plus+M_minus)) ) - T2_o ;
 
     //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
     //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
     //get current slip components
-    Real slip_along_normal = displacement_jump(0);
-    Real slip_along_strike = displacement_jump(1);
-    Real slip_along_dip    = displacement_jump(2);
+    Real slip_rate_along_normal_absolute = abs(displacement_jump_rate(0));
+    Real slip_rate_along_strike_absolute = abs(displacement_jump_rate(1));
+    Real slip_rate_along_dip_absolute    = abs(displacement_jump_rate(2));
     //get slip absolute difference value compared with previous step
-    Real slip_diff_along_normal = abs(slip_along_normal-_slip_along_normal_old[_qp]);
-    Real slip_diff_along_strike = abs(slip_along_strike-_slip_along_strike_old[_qp]);
-    Real slip_diff_along_dip    = abs(slip_along_dip-_slip_along_dip_old[_qp]);
+    Real slip_diff_along_normal = slip_rate_along_normal_absolute * _dt;
+    Real slip_diff_along_strike = slip_rate_along_strike_absolute * _dt;
+    Real slip_diff_along_dip    = slip_rate_along_dip_absolute * _dt;
     //update accumulated slip
     Real accumulated_slip_along_normal = _accumulated_slip_along_normal_old[_qp] + slip_diff_along_normal;
     Real accumulated_slip_along_strike = _accumulated_slip_along_strike_old[_qp] + slip_diff_along_strike;
@@ -215,10 +220,6 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     _accumulated_slip_along_normal[_qp] = accumulated_slip_along_normal;
     _accumulated_slip_along_strike[_qp] = accumulated_slip_along_strike;
     _accumulated_slip_along_dip[_qp] = accumulated_slip_along_dip; 
-    //update slip conponents
-    _slip_along_normal[_qp] = slip_along_normal;
-    _slip_along_strike[_qp] = slip_along_strike;
-    _slip_along_dip[_qp] = slip_along_dip;
 
     //region overstress nuleation, same as tpv205, tpv14
     if ( !_T_coupled ){
