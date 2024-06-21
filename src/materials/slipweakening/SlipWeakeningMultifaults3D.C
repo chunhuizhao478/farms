@@ -191,14 +191,24 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
     //Compute node mass //equal length tetrahedron
     //Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
-    Real M_plus  = _density[_qp] * _current_elem_volume  / 2;
-    Real M_minus = M_plus;
-    Real area    = _current_side_volume;
+    //Real M_plus  = _density[_qp] * _current_elem_volume  / 2;
+    //Real M_minus = M_plus;
+    //Real area    = _current_side_volume;
 
     //Compute sticking stress
-    Real T1 =   (1/_dt)*M_plus*M_minus*displacement_jump_rate(1)/(area*(M_plus+M_minus)) + (M_minus*R_plus_local_x - M_plus*R_minus_local_x)/(area*(M_plus+M_minus)) + T1_o;
-    Real T3 =   (1/_dt)*M_plus*M_minus*displacement_jump_rate(2)/(area*(M_plus+M_minus)) + (M_minus*R_plus_local_z - M_plus*R_minus_local_z)/(area*(M_plus+M_minus)) + T3_o;
-    Real T2 =  -(1/_dt)*M_plus*M_minus*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(area*(M_plus+M_minus)) + ( (M_plus*R_minus_local_y - M_minus*R_plus_local_y) / (area*(M_plus+M_minus)) ) - T2_o ;
+    //Real T1 =   (1/_dt)*M_plus*M_minus*displacement_jump_rate(1)/(area*(M_plus+M_minus)) + (M_minus*R_plus_local_x - M_plus*R_minus_local_x)/(area*(M_plus+M_minus)) + T1_o;
+    //Real T3 =   (1/_dt)*M_plus*M_minus*displacement_jump_rate(2)/(area*(M_plus+M_minus)) + (M_minus*R_plus_local_z - M_plus*R_minus_local_z)/(area*(M_plus+M_minus)) + T3_o;
+    //Real T2 =  -(1/_dt)*M_plus*M_minus*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(area*(M_plus+M_minus)) + ( (M_plus*R_minus_local_y - M_minus*R_plus_local_y) / (area*(M_plus+M_minus)) ) - T2_o ;
+
+    Real area = 200;
+
+    //Compute node mass //equal length tetrahedron
+    Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
+
+    //Compute sticking stress
+    Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area*area) + (R_plus_local_x - R_minus_local_x)/(2*area*area) + T1_o;
+    Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area*area) + (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
+    Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area*area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area*area ) ) - T2_o ;
 
     //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
     //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
