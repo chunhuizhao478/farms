@@ -203,9 +203,9 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
     //Compute node mass //equal length tetrahedron
     //Real M = _density[_qp] * sqrt(3) / 8 * area * area * area / 3;
-    Real M = _density[_qp] * area * area * area / ( 6 * sqrt(2) ) / 2;
+    Real M = _density[_qp] * area * area * area / ( 6 * sqrt(2) ) / 4;
 
-    Real area_of_triangle = sqrt(3) / 4 * area * area;
+    Real area_of_triangle = sqrt(3) / 4 * area * area / 3;
 
     //Compute sticking stress
     Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area_of_triangle) + (R_plus_local_x - R_minus_local_x)/(2*area_of_triangle) + T1_o;
