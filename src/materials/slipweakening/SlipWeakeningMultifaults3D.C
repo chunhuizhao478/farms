@@ -220,30 +220,30 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area*area) + (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
     Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area*area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area*area ) ) - T2_o ;
 
-    //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
-    //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
-    //get current slip components
-    //Real slip_along_normal = displacement_jump(0);
-    Real slip_along_strike = displacement_jump(1);
-    Real slip_along_dip    = displacement_jump(2);
-    //get slip absolute difference value compared with previous step
-    //Real slip_diff_along_normal = abs(slip_along_normal-_slip_along_normal_old[_qp]);
-    Real slip_diff_along_strike = abs(slip_along_strike-_slip_along_strike_old[_qp]);
-    Real slip_diff_along_dip    = abs(slip_along_dip-_slip_along_dip_old[_qp]);
-    //update accumulated slip
-    //Real accumulated_slip_along_normal = _accumulated_slip_along_normal_old[_qp] + slip_diff_along_normal;
-    Real accumulated_slip_along_strike = _accumulated_slip_along_strike_old[_qp] + slip_diff_along_strike;
-    Real accumulated_slip_along_dip = _accumulated_slip_along_dip_old[_qp] + slip_diff_along_dip;
-    //compute total distance using accumulated slip
-    Real total_distance = sqrt(accumulated_slip_along_strike*accumulated_slip_along_strike+accumulated_slip_along_dip*accumulated_slip_along_dip);
-    //update accumulated slip components
-    //_accumulated_slip_along_normal[_qp] = accumulated_slip_along_normal;
-    _accumulated_slip_along_strike[_qp] = accumulated_slip_along_strike;
-    _accumulated_slip_along_dip[_qp] = accumulated_slip_along_dip; 
-    //update slip conponents
-    //_slip_along_normal[_qp] = slip_along_normal;
-    _slip_along_strike[_qp] = slip_along_strike;
-    _slip_along_dip[_qp] = slip_along_dip;
+    // //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
+    // //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
+    // //get current slip components
+    // //Real slip_along_normal = displacement_jump(0);
+    // Real slip_along_strike = displacement_jump(1);
+    // Real slip_along_dip    = displacement_jump(2);
+    // //get slip absolute difference value compared with previous step
+    // //Real slip_diff_along_normal = abs(slip_along_normal-_slip_along_normal_old[_qp]);
+    // Real slip_diff_along_strike = abs(slip_along_strike-_slip_along_strike_old[_qp]);
+    // Real slip_diff_along_dip    = abs(slip_along_dip-_slip_along_dip_old[_qp]);
+    // //update accumulated slip
+    // //Real accumulated_slip_along_normal = _accumulated_slip_along_normal_old[_qp] + slip_diff_along_normal;
+    // Real accumulated_slip_along_strike = _accumulated_slip_along_strike_old[_qp] + slip_diff_along_strike;
+    // Real accumulated_slip_along_dip = _accumulated_slip_along_dip_old[_qp] + slip_diff_along_dip;
+    // //compute total distance using accumulated slip
+    // Real total_distance = sqrt(accumulated_slip_along_strike*accumulated_slip_along_strike+accumulated_slip_along_dip*accumulated_slip_along_dip);
+    // //update accumulated slip components
+    // //_accumulated_slip_along_normal[_qp] = accumulated_slip_along_normal;
+    // _accumulated_slip_along_strike[_qp] = accumulated_slip_along_strike;
+    // _accumulated_slip_along_dip[_qp] = accumulated_slip_along_dip; 
+    // //update slip conponents
+    // //_slip_along_normal[_qp] = slip_along_normal;
+    // _slip_along_strike[_qp] = slip_along_strike;
+    // _slip_along_dip[_qp] = slip_along_dip;
 
     //region overstress nuleation, same as tpv205, tpv14
     if ( !_T_coupled ){
@@ -258,17 +258,17 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
       //Compute friction strength
       //In Seisol documentation states: tau = -C - min(0,sigma_N) * (mu_s - (mu_s - mu_d)/dc * min(total distance,dc))
-      tau_f = (mu_s - (mu_s - mu_d)*std::min(total_distance,Dc)/Dc)*(-T2);
+      //tau_f = (mu_s - (mu_s - mu_d)*std::min(total_distance,Dc)/Dc)*(-T2);
 
       //Compute friction strength
-      // if (std::norm(displacement_jump) < Dc)
-      // {
-      //   tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
-      // }
-      // else
-      // {
-      //   tau_f = mu_d * (-T2);
-      // }
+      if (std::norm(displacement_jump) < Dc)
+      {
+        tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
+      }
+      else
+      {
+        tau_f = mu_d * (-T2);
+      }
 
     }
     //region with forced rupture time nucleation, same as tpv24
@@ -332,7 +332,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
     traction(0) = T2+T2_o; 
     traction(1) = -T1+T1_o; 
-    traction(2) = -T3+T3_o;
+    traction(2) = T3-T3_o;
 
     _interface_traction[_qp] = traction;
     _dinterface_traction_djump[_qp] = 0;
