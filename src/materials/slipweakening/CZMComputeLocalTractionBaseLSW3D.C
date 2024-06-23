@@ -30,7 +30,9 @@ CZMComputeLocalTractionBaseLSW3D::CZMComputeLocalTractionBaseLSW3D(const InputPa
     _accumulated_slip_along_dip(declarePropertyByName<Real>("accumulated_slip_along_dip")),
     _slip_along_normal(declarePropertyByName<Real>("slip_along_normal")),
     _slip_along_strike(declarePropertyByName<Real>("slip_along_strike")),
-    _slip_along_dip(declarePropertyByName<Real>("slip_along_dip"))  
+    _slip_along_dip(declarePropertyByName<Real>("slip_along_dip")),
+    _jump_track_dip(declarePropertyByName<Real>("jump_track_dip")),
+    _T3(declarePropertyByName<Real>("T3"))
 {
 }
 
@@ -46,6 +48,9 @@ CZMComputeLocalTractionBaseLSW3D::initQpStatefulProperties()
   _slip_along_normal[_qp] = 0.0;
   _slip_along_strike[_qp] = 0.0;
   _slip_along_dip[_qp] = 0.0;
+
+  _jump_track_dip[_qp] = 0.0;
+  _T3[_qp] = 0.0;
 
 }
 

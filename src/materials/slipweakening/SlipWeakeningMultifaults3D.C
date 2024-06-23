@@ -71,7 +71,9 @@ SlipWeakeningMultifaults3D::SlipWeakeningMultifaults3D(const InputParameters & p
     _slip_along_dip_old(getMaterialPropertyOldByName<Real>("slip_along_dip")),
     _current_elem_volume(_assembly.elemVolume()),
     _neighbor_elem_volume(_assembly.neighborVolume()),
-    _current_side_volume(_assembly.sideElemVolume())
+    _current_side_volume(_assembly.sideElemVolume()),
+    _jump_track_dip_old(getMaterialPropertyOldByName<Real>("jump_track_dip")),
+    _T3_old(getMaterialPropertyOldByName<Real>("T3"))
 {
 }
 
@@ -220,6 +222,24 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
     Real T3 =   (1/_dt)*M*displacement_jump_rate(2)/(2*area*area) + (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
     Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area*area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area*area ) ) - T2_o ;
 
+    // Check reversal of T3
+    Real jump_track_dip = _jump_track_dip_old[_qp]; //get old dip jump at traction direction switch
+    Real jump_effective_dip = 0.0; //initialize effective jump along dip direction
+    Real jump_absolute = 0.0; //initialize absolute jump which will be feed into slip weakening law
+    if ( T3 * _T3_old[_qp] < 0 ){ //if there is traction direction switch, update track dip
+      jump_track_dip = displacement_jump(2);
+    }
+
+    //calculate effective jump for dip direction
+    jump_effective_dip = displacement_jump(2) - jump_track_dip;
+
+    //calculate absolute jump
+    jump_absolute = std::sqrt(displacement_jump(1)*displacement_jump(1)+jump_effective_dip*jump_effective_dip);
+
+    //save material properties
+    _T3[_qp] = T3;
+    _jump_track_dip[_qp] = jump_track_dip;
+
     // //Note: The distance that the node has slipped is path-integrated. For example, if the node slips 0.4 m in one
     // //direction and then 0.1 m in the opposite direction, the value of is 0.5 m (and not 0.3 m).
     // //get current slip components
@@ -261,9 +281,18 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
       //tau_f = (mu_s - (mu_s - mu_d)*std::min(total_distance,Dc)/Dc)*(-T2);
 
       //Compute friction strength
-      if (std::norm(displacement_jump) < Dc)
+      // if (std::norm(displacement_jump) < Dc)
+      // {
+      //   tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
+      // }
+      // else
+      // {
+      //   tau_f = mu_d * (-T2);
+      // }
+
+      if (jump_absolute < Dc)
       {
-        tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump)/Dc)*(-T2); // square for shear component
+        tau_f = (mu_s - (mu_s - mu_d)*jump_absolute/Dc)*(-T2); // square for shear component
       }
       else
       {

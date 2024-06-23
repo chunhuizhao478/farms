@@ -75,4 +75,7 @@ protected:
   /// The volume (or length) of the current side
   const Real & _current_side_volume;
 
+  const MaterialProperty<Real> & _jump_track_dip_old;
+  const MaterialProperty<Real> & _T3_old;
+
 };

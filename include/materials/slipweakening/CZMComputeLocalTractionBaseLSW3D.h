@@ -47,4 +47,7 @@ protected:
   MaterialProperty<Real> & _slip_along_strike;
   MaterialProperty<Real> & _slip_along_dip;
 
+  MaterialProperty<Real> & _jump_track_dip;
+  MaterialProperty<Real> & _T3;
+
 };
