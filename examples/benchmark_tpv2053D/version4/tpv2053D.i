@@ -34,7 +34,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 1.0
+    q = 0.2
     
     #characteristic length (m)
     Dc = 0.4
@@ -524,5 +524,5 @@
 [Outputs]
     exodus = true
     interval = 40
-    show = 'vel_slipweakening_x disp_slipweakening_x traction_x jump_x mu_s tangent_jump_rate'
+    show = 'vel_slipweakening_x vel_slipweakening_z disp_slipweakening_x disp_slipweakening_z traction_x traction_z jump_x jump_z mu_s tangent_jump_rate'
 []
