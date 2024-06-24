@@ -219,7 +219,7 @@ SlipWeakeningMultifaults3D::computeInterfaceTractionAndDerivatives()
 
     //Compute sticking stress
     Real T1 =   (1/_dt)*M*displacement_jump_rate(1)/(2*area*area) + (R_plus_local_x - R_minus_local_x)/(2*area*area) + T1_o;
-    Real T3 =  -(1/_dt)*M*displacement_jump_rate(2)/(2*area*area) - (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
+    Real T3 =  -(1/_dt)*M*displacement_jump_rate(2)/(2*area*area) + (R_plus_local_z - R_minus_local_z)/(2*area*area) + T3_o;
     Real T2 =  -(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area*area) + ( (R_minus_local_y - R_plus_local_y) / ( 2*area*area ) ) - T2_o ;
 
     // Check reversal of T3
