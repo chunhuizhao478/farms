@@ -110,11 +110,11 @@ def PlotPtrVal(nc,save_folder_output_file_path,plot_var_name,ptr_coord,showfig=F
     ptr_slip_valhist = 2 * abs( arr_param_disp[:,idc] )
 
     #
-    np.savetxt(save_folder_output_file_path+'/sliprate_strike'+str(ptr_x/1000)+'_dip'+str(ptr_z/1000)+'.txt',
+    np.savetxt(save_folder_output_file_path+'/sliprate_strike'+str(ptr_x/1000)+'_dip'+str(ptr_y/1000)+'.txt',
                 ptr_sliprate_valhist,
                 fmt='%.7f',
                 newline=" ")
-    np.savetxt(save_folder_output_file_path+'/slip_strike'+str(ptr_x/1000)+'_dip'+str(ptr_z/1000)+'.txt',
+    np.savetxt(save_folder_output_file_path+'/slip_strike'+str(ptr_x/1000)+'_dip'+str(ptr_y/1000)+'.txt',
                 ptr_slip_valhist,
                 fmt='%.7f',
                 newline=" ")
@@ -139,7 +139,8 @@ def helper_find_nearest(array_x, value_x, array_y, value_y, array_z, value_z):
     return closest_index
 
 #file path
-exodus_file_path = "/Users/zhaoc/Downloads/tpv2053D_out.e"
+# exodus_file_path = "/Users/andyz/Downloads/tpv2053D_out.e"
+exodus_file_path = "/Users/andyz/projects/farms_benchmark/examples/benchmark_tpv2053D/version5/tpv2053D_out.e"
 save_folder_output_file_path = "./farms_data"
 
 #read exodus file
@@ -152,22 +153,22 @@ decodeflag = "name_nod_var"
 plot_var_name = ["vel_slipweakening_x","disp_slipweakening_x"]
 
 #strike,dip
-given_coord_list = [[0     , 0 ,-0    ],
-                    [0     , 0 ,-3000 ],
-                    [0     , 0 ,-7500 ],
-                    [0     , 0 ,-12000],
-                    [4500  , 0 ,-0    ],
-                    [4500  , 0 ,-7500 ],
-                    [-4500 , 0 ,-0    ],
-                    [-4500 , 0 ,-7500 ],
-                    [7500  , 0 ,-0    ],
-                    [7500  , 0 ,-7500 ],
-                    [-7500 , 0 ,-0    ],
-                    [-7500 , 0 ,-7500 ],
-                    [12000 , 0 ,-0    ],
-                    [12000 , 0 ,-7500 ],
-                    [-12000, 0 ,-0    ],
-                    [-12000, 0 ,-7500 ]]
+given_coord_list = [[0     , -0    , 0],
+                    [0     , -3000 , 0],
+                    [0     , -7500 , 0],
+                    [0     , -12000, 0],
+                    [4500  , -0    , 0],
+                    [4500  , -7500 , 0],
+                    [-4500 , -0    , 0],
+                    [-4500 , -7500 , 0],
+                    [7500  , -0    , 0],
+                    [7500  , -7500 , 0],
+                    [-7500 , -0    , 0],
+                    [-7500 , -7500 , 0],
+                    [12000 , -0    , 0],
+                    [12000 , -7500 , 0],
+                    [-12000, -0    , 0],
+                    [-12000, -7500 , 0]]
 
 ##Decode name
 DecodeName(nc, decodeflag ,save_folder_output_file_path)

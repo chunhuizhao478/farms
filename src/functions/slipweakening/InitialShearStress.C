@@ -27,8 +27,8 @@ InitialShearStress::value(Real /*t*/, const Point & p) const
 {
 
   Real x_coord = p(0); //along the x direction
-  // Real y_coord = p(1); //along the y direction
-  Real z_coord = p(2); //along the z direction
+  Real y_coord = p(1); //along the y direction
+  //Real z_coord = p(2); //along the z direction
 
   Real T1_o = 0.0;
 
@@ -40,15 +40,15 @@ InitialShearStress::value(Real /*t*/, const Point & p) const
   if ( _benchmark == tpv205 ){
     
     //tpv205
-    if ((x_coord<=(0.0+1.5e3))&&(x_coord>=(0.0-1.5e3))&& (z_coord<=(-7.5e3+1.5e3))&&(z_coord>=(-7.5e3-1.5e3)))
+    if ((x_coord<=(0.0+1.5e3))&&(x_coord>=(0.0-1.5e3))&& (y_coord<=(-7.5e3+1.5e3))&&(y_coord>=(-7.5e3-1.5e3)))
     {
         T1_o = 81.6e6;
     }
-    else if ((x_coord<=(-7.5e3+1.5e3))&&(x_coord>=(-7.5e3-1.5e3)) && (z_coord<=(-7.5e3+1.5e3))&&(z_coord>=(-7.5e3-1.5e3)))
+    else if ((x_coord<=(-7.5e3+1.5e3))&&(x_coord>=(-7.5e3-1.5e3)) && (y_coord<=(-7.5e3+1.5e3))&&(y_coord>=(-7.5e3-1.5e3)))
     {
         T1_o = 78.0e6;
     }
-    else if ((x_coord<=(7.5e3+1.5e3))&&(x_coord>=(7.5e3-1.5e3)) && (z_coord<=(-7.5e3+1.5e3))&&(z_coord>=(-7.5e3-1.5e3)))
+    else if ((x_coord<=(7.5e3+1.5e3))&&(x_coord>=(7.5e3-1.5e3)) && (y_coord<=(-7.5e3+1.5e3))&&(y_coord>=(-7.5e3-1.5e3)))
     {
         T1_o = 62.0e6;
     }
@@ -60,7 +60,7 @@ InitialShearStress::value(Real /*t*/, const Point & p) const
   else if ( _benchmark == tpv14 ){
 
     //tpv14
-    if ((x_coord<=(-8e3+1.5e3))&&(x_coord>=(-8e3-1.5e3))&& (z_coord<=(-7.5e3+1.5e3))&&(z_coord>=(-7.5e3-1.5e3))){
+    if ((x_coord<=(-8e3+1.5e3))&&(x_coord>=(-8e3-1.5e3))&& (y_coord<=(-7.5e3+1.5e3))&&(y_coord>=(-7.5e3-1.5e3))){
         T1_o = 81.6e6;
     }
     else{
