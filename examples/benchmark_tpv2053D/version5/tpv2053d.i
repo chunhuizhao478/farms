@@ -38,7 +38,7 @@
     q = 1.0
     
     #characteristic length (m)
-    Dc = 0.4
+    # Dc = 0.4
     
 []
 
@@ -274,81 +274,81 @@
       coupled = disp_z
       execute_on = 'TIMESTEP_BEGIN'
     []
-    #
-    [XJump]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_global
-        variable = jump_x
-        component = 0
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [YJump]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_global
-        variable = jump_y
-        component = 1
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [ZJump]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_global
-        variable = jump_z
-        component = 2
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    #
-    [XJumpRate]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_rate_global
-        variable = jump_rate_x
-        component = 0
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [YJumpRate]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_rate_global
-        variable = jump_rate_y
-        component = 1
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [ZJumpRate]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_rate_global
-        variable = jump_rate_z
-        component = 2
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []    
-    #
-    [TractionX]
-        type = MaterialRealVectorValueAux
-        property = traction_on_interface
-        variable = traction_x
-        component = 0
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'        
-    []
-    [TractionY]
-        type = MaterialRealVectorValueAux
-        property = traction_on_interface
-        variable = traction_y
-        component = 1
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [TractionZ]
-        type = MaterialRealVectorValueAux
-        property = traction_on_interface
-        variable = traction_z
-        component = 2
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []        
+    # #
+    # [XJump]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_global
+    #     variable = jump_x
+    #     component = 0
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [YJump]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_global
+    #     variable = jump_y
+    #     component = 1
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [ZJump]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_global
+    #     variable = jump_z
+    #     component = 2
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # #
+    # [XJumpRate]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_rate_global
+    #     variable = jump_rate_x
+    #     component = 0
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [YJumpRate]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_rate_global
+    #     variable = jump_rate_y
+    #     component = 1
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [ZJumpRate]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_rate_global
+    #     variable = jump_rate_z
+    #     component = 2
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []    
+    # #
+    # [TractionX]
+    #     type = MaterialRealVectorValueAux
+    #     property = traction_on_interface
+    #     variable = traction_x
+    #     component = 0
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'        
+    # []
+    # [TractionY]
+    #     type = MaterialRealVectorValueAux
+    #     property = traction_on_interface
+    #     variable = traction_y
+    #     component = 1
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [TractionZ]
+    #     type = MaterialRealVectorValueAux
+    #     property = traction_on_interface
+    #     variable = traction_z
+    #     component = 2
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []        
     #
     [Residual_x]
       type = ProjectionAux
@@ -556,22 +556,22 @@
       shear_modulus = 32.04e9
       lambda = 32.04e9
     []
-    [./czm_mat]
-        type = FarmsSlipWeakeningCZM
-        disp_slipweakening_x     = disp_slipweakening_x
-        disp_slipweakening_y     = disp_slipweakening_y
-        disp_slipweakening_z     = disp_slipweakening_z
-        reaction_slipweakening_x = resid_slipweakening_x
-        reaction_slipweakening_y = resid_slipweakening_y
-        reaction_slipweakening_z = resid_slipweakening_z
-        reaction_damp_x = resid_damp_sw_x
-        reaction_damp_y = resid_damp_sw_y
-        reaction_damp_z = resid_damp_sw_z
-        elem_length = elem_length
-        mu_d = mu_d
-        mu_s = mu_s
-        boundary = 'Block2_Block3'
-    [../]
+    # [./czm_mat]
+    #     type = FarmsSlipWeakeningCZM
+    #     disp_slipweakening_x     = disp_slipweakening_x
+    #     disp_slipweakening_y     = disp_slipweakening_y
+    #     disp_slipweakening_z     = disp_slipweakening_z
+    #     reaction_slipweakening_x = resid_slipweakening_x
+    #     reaction_slipweakening_y = resid_slipweakening_y
+    #     reaction_slipweakening_z = resid_slipweakening_z
+    #     reaction_damp_x = resid_damp_sw_x
+    #     reaction_damp_y = resid_damp_sw_y
+    #     reaction_damp_z = resid_damp_sw_z
+    #     elem_length = elem_length
+    #     mu_d = mu_d
+    #     mu_s = mu_s
+    #     boundary = 'Block2_Block3'
+    # [../]
     [./static_initial_stress_tensor_slipweakening]
         type = GenericFunctionRankTwoTensor
         tensor_name = static_initial_stress_tensor_slipweakening
