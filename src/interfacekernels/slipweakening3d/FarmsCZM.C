@@ -45,3 +45,10 @@ FarmsCZM::computeQpResidual(Moose::DGResidualType type)
 
   return r;
 }
+
+Real
+FarmsCZM::computeQpJacobian(Moose::DGJacobianType type)
+{
+  Real jac = 0;
+  return jac;
+}

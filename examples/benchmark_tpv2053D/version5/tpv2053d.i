@@ -521,26 +521,26 @@
     []
 []
 
-[InterfaceKernels]
-    [czm_interface_kernel_x]
-        type = FarmsCZM
-        variable = disp_x
-        neighbor_var = disp_x
-        boundary = 'Block2_Block3'
-    []
-    [czm_interface_kernel_y]
-        type = FarmsCZM
-        variable = disp_y
-        neighbor_var = disp_y
-        boundary = 'Block2_Block3'
-    []
-    [czm_interface_kernel_z]
-        type = FarmsCZM
-        variable = disp_z
-        neighbor_var = disp_z
-        boundary = 'Block2_Block3'
-    []
-[]
+# [InterfaceKernels]
+#     [czm_interface_kernel_x]
+#         type = FarmsCZM
+#         variable = disp_x
+#         neighbor_var = disp_x
+#         boundary = 'Block2_Block3'
+#     []
+#     [czm_interface_kernel_y]
+#         type = FarmsCZM
+#         variable = disp_y
+#         neighbor_var = disp_y
+#         boundary = 'Block2_Block3'
+#     []
+#     [czm_interface_kernel_z]
+#         type = FarmsCZM
+#         variable = disp_z
+#         neighbor_var = disp_z
+#         boundary = 'Block2_Block3'
+#     []
+# []
 
 [Materials]
     [stress]
