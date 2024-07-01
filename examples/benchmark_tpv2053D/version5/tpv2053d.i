@@ -38,7 +38,7 @@
     q = 1.0
     
     #characteristic length (m)
-    # Dc = 0.4
+    Dc = 0.4
     
 []
 
