@@ -22,8 +22,6 @@ public:
 
 protected:
   virtual Real computeQpResidual(Moose::DGResidualType type) override;
-  virtual Real computeQpJacobian(Moose::DGJacobianType type) override;
-  virtual Real computeQpOffDiagJacobian(Moose::DGJacobianType type, unsigned int jvar) override;
 
   const MaterialProperty<RealVectorValue> & _traction_on_interface;
   const MaterialProperty<RealTensorValue> & _material_tangent_modulus_on_interface;
