@@ -7,8 +7,8 @@
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
-      #   file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
+    #   file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
+      file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
