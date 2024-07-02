@@ -70,19 +70,21 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _Co_coupled(isCoupled("cohesion")),
   _T_coupled(isCoupled("forced_rupture_time")),
   _Co(_Co_coupled ? &coupledValue("cohesion") : nullptr),
-  _T(_T_coupled ? &coupledValue("forced_rupture_time") : nullptr),
-  _accumulated_slip_along_normal_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_normal")),
-  _accumulated_slip_along_strike_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_strike")),
-  _accumulated_slip_along_dip_old(getMaterialPropertyOldByName<Real>("accumulated_slip_along_dip")),
-  _slip_along_normal_old(getMaterialPropertyOldByName<Real>("slip_along_normal")),
-  _slip_along_strike_old(getMaterialPropertyOldByName<Real>("slip_along_strike")),
-  _slip_along_dip_old(getMaterialPropertyOldByName<Real>("slip_along_dip"))
+  _T(_T_coupled ? &coupledValue("forced_rupture_time") : nullptr)
 {
 }
 
 void
 FarmsSlipWeakeningCZM::initQpStatefulProperties()
-{}
+{
+  RealTensorValue zero_realtensorvalue(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+  RealVectorValue zero_realvectorvalue(0.0,0.0,0.0);
+  _rotation_matrix[_qp] = zero_realtensorvalue;
+  _material_tangent_modulus_on_interface[_qp] = zero_realtensorvalue;
+  _traction_on_interface[_qp] = zero_realvectorvalue;
+  _displacement_jump_global[_qp] = zero_realvectorvalue;
+  _displacement_jump_rate_global[_qp] = zero_realvectorvalue;
+}
 
 RealVectorValue
 FarmsSlipWeakeningCZM::computeTraction()
@@ -215,14 +217,14 @@ FarmsSlipWeakeningCZM::computeTraction()
   }  
 
   //Assign back traction in CZM
-  RealVectorValue traction_local(0.0);
+  RealVectorValue traction_local(0.0,0.0,0.0);
 
   traction_local(0) = Tstrike - T_strike_o; 
   traction_local(1) = Tdip    - T_dip_o; 
   traction_local(2) = Tnormal - T_normal_o;
 
   //Rotate back traction difference to global coordinates
-  RealVectorValue traction_global(0.0);
+  RealVectorValue traction_global(0.0,0.0,0.0);
   traction_global = LocaltoGlobalVector(traction_local, _rot[_qp]);
 
   return traction_global;
