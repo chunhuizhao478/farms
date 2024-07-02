@@ -70,12 +70,4 @@ protected:
 
   const VariableValue * const _Co;
   const VariableValue * const _T;
-
-  const MaterialProperty<Real> & _accumulated_slip_along_normal_old;
-  const MaterialProperty<Real> & _accumulated_slip_along_strike_old;
-  const MaterialProperty<Real> & _accumulated_slip_along_dip_old;
-
-  const MaterialProperty<Real> & _slip_along_normal_old;
-  const MaterialProperty<Real> & _slip_along_strike_old;
-  const MaterialProperty<Real> & _slip_along_dip_old;
 };

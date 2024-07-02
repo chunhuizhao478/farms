@@ -22,10 +22,10 @@ FarmsSlipWeakeningBase::FarmsSlipWeakeningBase(const InputParameters & parameter
     _normals(_assembly.normals()),
     _traction_on_interface(declarePropertyByName<RealVectorValue>("traction_on_interface")),
     _material_tangent_modulus_on_interface(
-        declarePropertyByName<RealTensorValue>("material_tangent_modulus_on_interface")),
-    _rotation_matrix(declarePropertyByName<RealTensorValue>("rotation_matrix")),
-    _displacement_jump_global(declarePropertyByName<RealVectorValue>("displacement_jump_global")),
-    _displacement_jump_rate_global(declarePropertyByName<RealVectorValue>("displacement_jump_rate_global"))
+        declareProperty<RealTensorValue>("material_tangent_modulus_on_interface")),
+    _rotation_matrix(declareProperty<RealTensorValue>("rotation_matrix")),
+    _displacement_jump_global(declareProperty<RealVectorValue>("displacement_jump_global")),
+    _displacement_jump_rate_global(declareProperty<RealVectorValue>("displacement_jump_rate_global"))
 {
 }
 
@@ -49,17 +49,21 @@ FarmsSlipWeakeningBase::computeQpProperties()
 RealTensorValue
 FarmsSlipWeakeningBase::computeRotationMatrix(const RealVectorValue n_vector)
 {
-  RealVectorValue n_vector_x(0.0);
-  RealVectorValue n_vector_y(0.0);
-  RealTensorValue Q_mat(0.0);
+  RealVectorValue n_vector_x(0.0,0.0,0.0);
+  RealVectorValue n_vector_y(0.0,0.0,0.0);
+  RealTensorValue Q_mat(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
   
   Real sum_power = n_vector(0) * n_vector(0) + n_vector(1) * n_vector(1);
 
   if (sum_power < 1.e-8) {
-      n_vector_x = {1.0, 0.0, 0.0};
-      n_vector_y = {0.0, 1.0, 0.0};
+      n_vector_x(0) = 1.0;
+      n_vector_x(1) = 0.0;
+      n_vector_x(2) = 0.0;
+      n_vector_y(0) = 0.0;
+      n_vector_y(1) = 1.0; 
+      n_vector_y(2) = 0.0;
   } else {
-      RealVectorValue global_z(0.0);
+      RealVectorValue global_z(0.0,0.0,0.0);
       global_z(0) = 0.0;
       global_z(1) = 0.0;
       global_z(2) = 1.0;
@@ -81,7 +85,7 @@ FarmsSlipWeakeningBase::computeRotationMatrix(const RealVectorValue n_vector)
 RealVectorValue
 FarmsSlipWeakeningBase::normalize(const RealVectorValue v)
 { 
-  RealVectorValue v_normalized(0.0);
+  RealVectorValue v_normalized(0.0,0.0,0.0);
   Real norm = std::sqrt(v(0) * v(0) + v(1) * v(1) + v(2) * v(2));
   v_normalized(0) = v(0) / norm;
   v_normalized(1) = v(1) / norm;
@@ -92,7 +96,7 @@ FarmsSlipWeakeningBase::normalize(const RealVectorValue v)
 RealVectorValue
 FarmsSlipWeakeningBase::crossProduct(const RealVectorValue a, const RealVectorValue b)
 {
-  RealVectorValue c_crossproduct(0.0);
+  RealVectorValue c_crossproduct(0.0,0.0,0.0);
   c_crossproduct(0) = a(1) * b(2) - a(2) * b(1);
   c_crossproduct(1) = a(2) * b(0) - a(0) * b(2);
   c_crossproduct(2) = a(0) * b(1) - a(1) * b(0);
@@ -129,7 +133,7 @@ FarmsSlipWeakeningBase::LocaltoGlobalMatrix(const RealTensorValue localMat, cons
 RealTensorValue
 FarmsSlipWeakeningBase::MatrixTranspose(const RealTensorValue Q)
 {
-  RealTensorValue Q_T(0.0);
+  RealTensorValue Q_T(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
   for (unsigned int i = 0; i < 3; ++i) {
       for (unsigned int j = 0; j < 3; ++j) {
           Q_T(j,i) = Q(i,j);
@@ -141,7 +145,7 @@ FarmsSlipWeakeningBase::MatrixTranspose(const RealTensorValue Q)
 RealVectorValue
 FarmsSlipWeakeningBase::MatrixVectorMultiply(const RealTensorValue matrix, const RealVectorValue vec)
 {
-  RealVectorValue result_vec(0.0);
+  RealVectorValue result_vec(0.0,0.0,0.0);
   for (unsigned int i = 0; i < 3; ++i) {
       result_vec(i) = matrix(i,0) * vec(0) + matrix(i,1) * vec(1) + matrix(i,2) * vec(2);
   }
@@ -151,7 +155,7 @@ FarmsSlipWeakeningBase::MatrixVectorMultiply(const RealTensorValue matrix, const
 RealTensorValue
 FarmsSlipWeakeningBase::MatrixMatrixMultiply(const RealTensorValue matA, const RealTensorValue matB)
 {
-  RealTensorValue result_mat(0.0);
+  RealTensorValue result_mat(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
   for (unsigned int i = 0; i < 3; ++i) {
       for (unsigned int j = 0; j < 3; ++j) {
           for (unsigned int k = 0; k < 3; ++k) {
@@ -165,7 +169,7 @@ FarmsSlipWeakeningBase::MatrixMatrixMultiply(const RealTensorValue matA, const R
 RealTensorValue
 FarmsSlipWeakeningBase::RankTwoTensor2RealTensorValue(const RankTwoTensor mat)
 {
-  RealTensorValue result_mat(0.0);
+  RealTensorValue result_mat(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
   for (unsigned int i = 0; i < 3; ++i){
     for (unsigned int j = 0; j < 3; ++j){
       result_mat(i, j) = mat(i, j);
