@@ -5,29 +5,21 @@
 ##########################################################
 
 [Mesh]
-    [./msh]
-      type = FileMeshGenerator
-      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
-      # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
-    []
-    [./new_block_1]
-      type = ParsedSubdomainMeshGenerator
-      input = msh
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
-      block_id = 2
-    []
-    [./new_block_2]
-        type = ParsedSubdomainMeshGenerator
-        input = new_block_1
-        combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
-        block_id = 3
-    []       
-    [./split_1]
-        type = BreakMeshByBlockGenerator
-        input = new_block_2
-        split_interface = true
-        block_pairs = '2 3'
-    []     
+  [./msh]
+    type = GeneratedMeshGenerator
+    dim = 3
+    nx = 2
+    ny =1
+    nz =1
+    subdomain_ids = '2 3'
+  []       
+  [sideset]
+    type = SideSetsBetweenSubdomainsGenerator
+    input = msh
+    primary_block = 2
+    paired_block = 3
+    new_boundary = Block2_Block3
+  []
 []
 
 [GlobalParams]
@@ -234,7 +226,7 @@
 []
 
 [Problem]
-    extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag restore_dampz_tag'
+  extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag restore_dampz_tag'
 []
 
 [AuxKernels]
@@ -274,81 +266,81 @@
       coupled = disp_z
       execute_on = 'TIMESTEP_BEGIN'
     []
-    #
-    [XJump]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_global
-        variable = jump_x
-        component = 0
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [YJump]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_global
-        variable = jump_y
-        component = 1
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [ZJump]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_global
-        variable = jump_z
-        component = 2
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    #
-    [XJumpRate]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_rate_global
-        variable = jump_rate_x
-        component = 0
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [YJumpRate]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_rate_global
-        variable = jump_rate_y
-        component = 1
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [ZJumpRate]
-        type = MaterialRealVectorValueAux
-        property = displacement_jump_rate_global
-        variable = jump_rate_z
-        component = 2
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []    
-    #
-    [TractionX]
-        type = MaterialRealVectorValueAux
-        property = traction_on_interface
-        variable = traction_x
-        component = 0
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'        
-    []
-    [TractionY]
-        type = MaterialRealVectorValueAux
-        property = traction_on_interface
-        variable = traction_y
-        component = 1
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []
-    [TractionZ]
-        type = MaterialRealVectorValueAux
-        property = traction_on_interface
-        variable = traction_z
-        component = 2
-        execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
-    []        
+    # #
+    # [XJump]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_global
+    #     variable = jump_x
+    #     component = 0
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [YJump]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_global
+    #     variable = jump_y
+    #     component = 1
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [ZJump]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_global
+    #     variable = jump_z
+    #     component = 2
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # #
+    # [XJumpRate]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_rate_global
+    #     variable = jump_rate_x
+    #     component = 0
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [YJumpRate]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_rate_global
+    #     variable = jump_rate_y
+    #     component = 1
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [ZJumpRate]
+    #     type = MaterialRealVectorValueAux
+    #     property = displacement_jump_rate_global
+    #     variable = jump_rate_z
+    #     component = 2
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []    
+    # #
+    # [TractionX]
+    #     type = MaterialRealVectorValueAux
+    #     property = traction_on_interface
+    #     variable = traction_x
+    #     component = 0
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'        
+    # []
+    # [TractionY]
+    #     type = MaterialRealVectorValueAux
+    #     property = traction_on_interface
+    #     variable = traction_y
+    #     component = 1
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []
+    # [TractionZ]
+    #     type = MaterialRealVectorValueAux
+    #     property = traction_on_interface
+    #     variable = traction_z
+    #     component = 2
+    #     execute_on = 'TIMESTEP_END'
+    #     boundary = 'Block2_Block3'
+    # []        
     #
     [Residual_x]
       type = ProjectionAux
