@@ -122,13 +122,14 @@ FarmsSlipWeakeningCZM::computeTraction()
   Real T_normal_o = traction_init_local(2);
 
   //*Restoration Force*
+  //The force acts opposite to the elastic displacement to pull it back to original position
   //Stress Divergence Components (label as stsdivcomp)
   //--------------------------------------------------------------------------------------------------//  
 
   ///Define in global coordinate
   //current time step 
-  RealVectorValue R_plus_global_stsdivcomp(_reaction_slipweakening_x[_qp],_reaction_slipweakening_y[_qp], _reaction_slipweakening_z[_qp]);
-  RealVectorValue R_minus_global_stsdivcomp(_reaction_slipweakening_neighbor_x[_qp],_reaction_slipweakening_neighbor_y[_qp], _reaction_slipweakening_neighbor_z[_qp]);
+  RealVectorValue R_plus_global_stsdivcomp(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], -_reaction_slipweakening_z[_qp]);
+  RealVectorValue R_minus_global_stsdivcomp(-_reaction_slipweakening_neighbor_x[_qp],-_reaction_slipweakening_neighbor_y[_qp], -_reaction_slipweakening_neighbor_z[_qp]);
 
   ///Rotate in local coordinate
   //current time step
@@ -151,8 +152,8 @@ FarmsSlipWeakeningCZM::computeTraction()
 
   ///Define in global coordinate
   //current time step 
-  RealVectorValue R_plus_global_dampingcomp(_reaction_damp_x[_qp],_reaction_damp_y[_qp], _reaction_damp_z[_qp]);
-  RealVectorValue R_minus_global_dampingcomp(_reaction_damp_neighbor_x[_qp],_reaction_damp_neighbor_y[_qp], _reaction_damp_neighbor_z[_qp]);  
+  RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],-_reaction_damp_y[_qp], -_reaction_damp_z[_qp]);
+  RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],-_reaction_damp_neighbor_y[_qp], -_reaction_damp_neighbor_z[_qp]);  
 
   ///Rotate in local coordinate
   //current time step
@@ -220,7 +221,7 @@ FarmsSlipWeakeningCZM::computeTraction()
   RealVectorValue traction_local(0.0,0.0,0.0);
 
   traction_local(0) = Tstrike - T_strike_o; 
-  traction_local(1) = Tdip    - T_dip_o; 
+  traction_local(1) = -Tdip   + T_dip_o; 
   traction_local(2) = Tnormal - T_normal_o;
 
   //Rotate back traction difference to global coordinates
