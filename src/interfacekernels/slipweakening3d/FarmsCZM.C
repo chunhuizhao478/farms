@@ -36,10 +36,10 @@ FarmsCZM::computeQpResidual(Moose::DGResidualType type)
   switch (type)
   {
     case Moose::Element:
-      r *= _test[_i][_qp];
+      r *= -_test[_i][_qp];
       break;
     case Moose::Neighbor:
-      r *= -_test_neighbor[_i][_qp];
+      r *= _test_neighbor[_i][_qp];
       break;
   }
 
