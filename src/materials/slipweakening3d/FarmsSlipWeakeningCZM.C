@@ -127,8 +127,8 @@ FarmsSlipWeakeningCZM::computeTraction()
 
   ///Define in global coordinate
   //current time step 
-  RealVectorValue R_plus_global_stsdivcomp(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], -_reaction_slipweakening_z[_qp]);
-  RealVectorValue R_minus_global_stsdivcomp(-_reaction_slipweakening_neighbor_x[_qp],-_reaction_slipweakening_neighbor_y[_qp], -_reaction_slipweakening_neighbor_z[_qp]);
+  RealVectorValue R_plus_global_stsdivcomp(_reaction_slipweakening_x[_qp],_reaction_slipweakening_y[_qp], _reaction_slipweakening_z[_qp]);
+  RealVectorValue R_minus_global_stsdivcomp(_reaction_slipweakening_neighbor_x[_qp],_reaction_slipweakening_neighbor_y[_qp], _reaction_slipweakening_neighbor_z[_qp]);
 
   ///Rotate in local coordinate
   //current time step
@@ -151,8 +151,8 @@ FarmsSlipWeakeningCZM::computeTraction()
 
   ///Define in global coordinate
   //current time step 
-  RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],-_reaction_damp_y[_qp], -_reaction_damp_z[_qp]);
-  RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],-_reaction_damp_neighbor_y[_qp], -_reaction_damp_neighbor_z[_qp]);  
+  RealVectorValue R_plus_global_dampingcomp(_reaction_damp_x[_qp],_reaction_damp_y[_qp], _reaction_damp_z[_qp]);
+  RealVectorValue R_minus_global_dampingcomp(_reaction_damp_neighbor_x[_qp],_reaction_damp_neighbor_y[_qp], _reaction_damp_neighbor_z[_qp]);  
 
   ///Rotate in local coordinate
   //current time step
