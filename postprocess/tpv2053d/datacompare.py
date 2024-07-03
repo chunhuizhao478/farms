@@ -106,5 +106,7 @@ for i in range(num_of_file):
     farms_slip = np.loadtxt(farms_slip_path)
     farms_sliprate = np.loadtxt(farms_sliprate_path)
 
+    print(farms_sliprate_path)
+
     ##plot
     plotfigure(benchmark,time,farms_sliprate,farms_slip,benchmark_label,farms_label,xcoord_i,zcoord_i,benchmark_code)
