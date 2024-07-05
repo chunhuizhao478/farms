@@ -14,8 +14,7 @@ InputParameters
 FarmsSlipWeakeningCZM::validParams()
 {
   InputParameters params = FarmsSlipWeakeningBase::validParams();
-  params.addClassDescription("Linear mixed extrinsic cohesive law of "
-                             "Ortiz-Pandolfi model");
+  params.addClassDescription("Linear Slip Weakening Friction Law");
   params.addParam<Real>("Dc", 1.0, "Value of characteristic length");
   params.addRequiredCoupledVar("disp_slipweakening_x","displacement in x dir");
   params.addRequiredCoupledVar("disp_slipweakening_y","displacement in y dir");
@@ -258,18 +257,34 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   RealVectorValue traction_global(0.0,0.0,0.0);
   _traction_on_interface[_qp] = LocaltoGlobalVector(traction_local, _rot[_qp]);
 
-  //Compute velocities and displacements on both sides
-  RealVectorValue du_plus  =  _displacements_plus_old[_qp] - _displacements_plus_older[_qp]  + _dt * _dt / M * ( R_plus_local_vec - elem_length * elem_length * ( traction_local )  );
-  RealVectorValue du_minus = _displacements_minus_old[_qp] - _displacements_minus_older[_qp] + _dt * _dt / M * ( R_minus_local_vec + elem_length * elem_length * ( traction_local ) );
+  // //Compute velocities and displacements on both sides
+  // RealVectorValue du_plus  =  _displacements_plus_old[_qp] - _displacements_plus_older[_qp]  + _dt * _dt / M * ( R_plus_local_vec - elem_length * elem_length * ( traction_local )  );
+  // RealVectorValue du_minus = _displacements_minus_old[_qp] - _displacements_minus_older[_qp] + _dt * _dt / M * ( R_minus_local_vec + elem_length * elem_length * ( traction_local ) );
   
-  RealVectorValue  u_plus_local_tplusdt  =  _displacements_plus_old[_qp] + du_plus;
-  RealVectorValue  u_minus_local_tplusdt = _displacements_minus_old[_qp] + du_minus;
+  // RealVectorValue  u_plus_local_tplusdt  =  _displacements_plus_old[_qp] + du_plus;
+  // RealVectorValue  u_minus_local_tplusdt = _displacements_minus_old[_qp] + du_minus;
+
+  // //Rotate back to global coordinates
+  // _displacements_plus_global[_qp]  = LocaltoGlobalVector( u_plus_local_tplusdt, _rot[_qp]);
+  // _displacements_minus_global[_qp] = LocaltoGlobalVector(u_minus_local_tplusdt, _rot[_qp]);
+
+  // //save local quantities
+  // _displacements_plus_local[_qp]  = u_plus_local_tplusdt;
+  // _displacements_minus_local[_qp] = u_minus_local_tplusdt;
+
+  //Compute velocities and displacements on both sides
+  RealVectorValue  v_plus_local_tplusdtover2 =     _velocities_plus_old[_qp] + _dt * 1.0/M * ( R_plus_local_vec - elem_length * elem_length * ( traction_local ) );
+  RealVectorValue v_minus_local_tplusdtover2 =    _velocities_minus_old[_qp] + _dt * 1.0/M * ( R_minus_local_vec + elem_length * elem_length * ( traction_local ) );
+  RealVectorValue  u_plus_local_tplusdt      =  _displacements_plus_old[_qp] + _dt * v_plus_local_tplusdtover2;
+  RealVectorValue  u_minus_local_tplusdt     = _displacements_minus_old[_qp] + _dt * v_minus_local_tplusdtover2;
 
   //Rotate back to global coordinates
   _displacements_plus_global[_qp]  = LocaltoGlobalVector( u_plus_local_tplusdt, _rot[_qp]);
   _displacements_minus_global[_qp] = LocaltoGlobalVector(u_minus_local_tplusdt, _rot[_qp]);
 
   //save local quantities
+  _velocities_plus_local[_qp]     = v_plus_local_tplusdtover2;
+  _velocities_minus_local[_qp]    = v_minus_local_tplusdtover2;
   _displacements_plus_local[_qp]  = u_plus_local_tplusdt;
   _displacements_minus_local[_qp] = u_minus_local_tplusdt;
 
