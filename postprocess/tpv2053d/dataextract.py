@@ -139,8 +139,8 @@ def helper_find_nearest(array_x, value_x, array_y, value_y, array_z, value_z):
     return closest_index
 
 #file path
-exodus_file_path = "/Users/andyz/Downloads/tpv2053D_out.e"
-# exodus_file_path = "/Users/andyz/projects/farms_benchmark/examples/benchmark_tpv2053D/version5/tpv2053D_out.e"
+# exodus_file_path = "/Users/andyz/Downloads/tpv2053D_out.e"
+exodus_file_path = "/Users/andyz/projects/farms_benchmark/examples/benchmark_tpv2053D/version6/main_out.e"
 save_folder_output_file_path = "./farms_data"
 
 #read exodus file
@@ -150,7 +150,7 @@ nc = netCDF4.Dataset(exodus_file_path)
 decodeflag = "name_nod_var"
 
 #plot variable names
-plot_var_name = ["vel_slipweakening_x","disp_slipweakening_x"]
+plot_var_name = ["vel_slipweakening_x","disp_x"]
 
 #strike,dip
 given_coord_list = [[0     , -0    , 0],
