@@ -391,7 +391,7 @@
 [Outputs]
     exodus = true
     interval = 40
-    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_x disp_y disp_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_x disp_y disp_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z'
 []
 
 [MultiApps]
