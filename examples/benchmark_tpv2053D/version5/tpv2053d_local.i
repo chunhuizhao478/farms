@@ -13,13 +13,13 @@
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
+      combinatorial_geometry = 'x >= -7500 & x <= 7500 & y >= -15000 & z < 0'
       block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
+        combinatorial_geometry = 'x >= -7500 & x <= 7500 & y >= -15000 & z > 0'
         block_id = 3
     []       
     [./split_1]
@@ -28,6 +28,17 @@
         split_interface = true
         block_pairs = '2 3'
     []      
+    [./sidesets]
+      input = split_1
+      type = SideSetsFromNormalsGenerator
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0
+                  0 0 -1
+                  0 0 1'
+      new_boundary = 'left right bottom top back front'
+    []    
 []
 
 [GlobalParams]
@@ -643,6 +654,208 @@
         vector_tag = 'restore_dampz_tag'
         force_preaux = true
         execute_on = 'TIMESTEP_END'
+    []
+[]
+
+[BCs]
+      ##non-reflecting bc
+    #   [./dashpot_top_x]
+    #     type = NonReflectDashpotBC3d
+    #     component = 0
+    #     variable = disp_x
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     disp_z = disp_z
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = top
+    # []
+    # [./dashpot_top_y]
+    #     type = NonReflectDashpotBC3d
+    #     component = 1
+    #     variable = disp_y
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     disp_z = disp_z
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = top
+    # []
+    # [./dashpot_top_z]
+    #     type = NonReflectDashpotBC3d
+    #     component = 2
+    #     variable = disp_z
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     disp_z = disp_z
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = top
+    # []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_bottom_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_front_x]
+      type = NonReflectDashpotBC3d
+      component = 0
+      variable = disp_x
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = front
+    []
+    [./dashpot_front_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = front
+    []
+    [./dashpot_front_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = front
+    []
+    [./dashpot_back_x]
+      type = NonReflectDashpotBC3d
+      component = 0
+      variable = disp_x
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = back
+    []
+    [./dashpot_back_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = back
+    []
+    [./dashpot_back_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = back
     []
 []
 
