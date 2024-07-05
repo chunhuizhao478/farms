@@ -179,7 +179,7 @@
     [./Master]
         [./all]
             strain = SMALL
-            add_variables = true
+            displacements = 'disp_x disp_y disp_z'
             generate_output = 'stress_xx stress_yy stress_xy strain_xx strain_xy strain_yy'
             extra_vector_tags = 'restore_tag'
         [../]
@@ -305,6 +305,7 @@
       type = ComputeIsotropicElasticityTensor
       shear_modulus = 32.04e9
       lambda = 32.04e9
+      use_displaced_mesh = false
     []
 []
 
@@ -418,7 +419,7 @@
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
         source_variable = 'resid_x resid_y resid_z resid_damp_x resid_damp_y resid_damp_z disp_x disp_y disp_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z'
-        variable = 'resid_sub_x resid_sub_y resid_sub_z resid_damp_sub_x resid_damp_sub_y resid_damp_sub_z disp_sub_x disp_sub_y disp_sub_z traction_sub_x traction_sub_y traction_sub_z jump_sub_x jump_sub_y jump_sub_z jump_rate_sub_x jump_rate_sub_y jump_rate_sub_z'
+        variable = 'resid_sub_x resid_sub_y resid_sub_z resid_damp_sub_x resid_damp_sub_y resid_damp_sub_z disp_sw_sub_x disp_sw_sub_y disp_sw_sub_z traction_sub_x traction_sub_y traction_sub_z jump_sub_x jump_sub_y jump_sub_z jump_rate_sub_x jump_rate_sub_y jump_rate_sub_z'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []

@@ -82,6 +82,19 @@
         order = FIRST
         family = LAGRANGE
     []
+    #
+    [disp_sw_sub_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [disp_sw_sub_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [disp_sw_sub_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     [./resid_sub_x]
       order = FIRST
       family = LAGRANGE
@@ -406,9 +419,9 @@
     []
     [./czm_mat]
         type = FarmsSlipWeakeningCZM
-        disp_slipweakening_x     = disp_sub_x
-        disp_slipweakening_y     = disp_sub_y
-        disp_slipweakening_z     = disp_sub_z
+        disp_slipweakening_x     = disp_sw_sub_x
+        disp_slipweakening_y     = disp_sw_sub_y
+        disp_slipweakening_z     = disp_sw_sub_z
         reaction_slipweakening_x = resid_sub_x
         reaction_slipweakening_y = resid_sub_y
         reaction_slipweakening_z = resid_sub_z
@@ -495,6 +508,6 @@
     []
 []
 
-# [Outputs]
-#     exodus = true
-# []
+[Outputs]
+    exodus = true
+[]
