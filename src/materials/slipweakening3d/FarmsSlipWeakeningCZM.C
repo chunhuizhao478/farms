@@ -241,7 +241,16 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   //Compute fault traction
   if (std::sqrt(Tstrike*Tstrike + Tdip*Tdip)<tau_f)
   {
-  }else{
+    if ( abs_slip_total > Dc ){
+      Tstrike = tau_f*Tstrike/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
+      Tdip    = tau_f*Tdip/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
+    }
+    else{
+      Tstrike = Tstrike;
+      Tdip = Tdip;
+    }
+  }
+  else{
     Tstrike = tau_f*Tstrike/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
     Tdip    = tau_f*Tdip/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
   }  
