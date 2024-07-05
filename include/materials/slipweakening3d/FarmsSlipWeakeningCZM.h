@@ -73,6 +73,8 @@ protected:
 
   const MaterialProperty<RealVectorValue> & _displacements_plus_old;
   const MaterialProperty<RealVectorValue> & _displacements_minus_old;
+  const MaterialProperty<RealVectorValue> & _displacements_plus_older;
+  const MaterialProperty<RealVectorValue> & _displacements_minus_older;
   const MaterialProperty<RealVectorValue> & _velocities_plus_old;
   const MaterialProperty<RealVectorValue> & _velocities_minus_old;
 
