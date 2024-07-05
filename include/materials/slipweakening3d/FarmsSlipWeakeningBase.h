@@ -26,9 +26,9 @@ protected:
   const MooseArray<Point> & _normals;
 
   /**
-   * method returning the traction in the interface coordinate system.
+   * method returning the traction and displacements in the interface coordinate system.
    */ 
-  virtual RealVectorValue computeTraction() = 0;
+  virtual Real computeTractionAndDisplacements() = 0;
 
   /**
    * method returning the traction derivitaves wrt local displacement jump.
@@ -94,5 +94,26 @@ protected:
 
   /* the displacement jump rate in global */
   MaterialProperty<RealVectorValue> & _displacement_jump_rate_global;  
+
+  /* the displacements on the plus side (global) */
+  MaterialProperty<RealVectorValue> & _displacements_plus_global;
+
+  /* the displacements on the minus side (global) */
+  MaterialProperty<RealVectorValue> & _displacements_minus_global;  
+
+  /* the displacements on the plus side (local) */
+  MaterialProperty<RealVectorValue> & _displacements_plus_local;
+
+  /* the displacements on the minus side (local) */
+  MaterialProperty<RealVectorValue> & _displacements_minus_local;
+
+  /* the velocity on the plus side (local) */
+  MaterialProperty<RealVectorValue> & _velocities_plus_local;
+
+  /* the velocity on the minus side (local) */
+  MaterialProperty<RealVectorValue> & _velocities_minus_local;  
+
+  /* the absolute slip on the minus side (local) */
+  MaterialProperty<Real> & _absolute_slip;  
 
 };

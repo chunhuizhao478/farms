@@ -25,7 +25,14 @@ FarmsSlipWeakeningBase::FarmsSlipWeakeningBase(const InputParameters & parameter
         declareProperty<RealTensorValue>("material_tangent_modulus_on_interface")),
     _rotation_matrix(declareProperty<RealTensorValue>("rotation_matrix")),
     _displacement_jump_global(declareProperty<RealVectorValue>("displacement_jump_global")),
-    _displacement_jump_rate_global(declareProperty<RealVectorValue>("displacement_jump_rate_global"))
+    _displacement_jump_rate_global(declareProperty<RealVectorValue>("displacement_jump_rate_global")),
+    _displacements_plus_global(declareProperty<RealVectorValue>("displacements_plus_global")),
+    _displacements_minus_global(declareProperty<RealVectorValue>("displacements_minus_global")),
+    _displacements_plus_local(declareProperty<RealVectorValue>("displacements_plus_local")),
+    _displacements_minus_local(declareProperty<RealVectorValue>("displacements_minus_local")),
+    _velocities_plus_local(declareProperty<RealVectorValue>("velocities_plus_local")),
+    _velocities_minus_local(declareProperty<RealVectorValue>("velocities_minus_local")),
+    _absolute_slip(declareProperty<Real>("absolute_slip"))
 {
 }
 
@@ -40,8 +47,9 @@ FarmsSlipWeakeningBase::computeQpProperties()
 
   /**
    * Compute traction on the interface and its derivatives
+   * Compute displacements/velocities on the interface 
    */
-  _traction_on_interface[_qp] = computeTraction();
+  Real dummy = computeTractionAndDisplacements();
   _material_tangent_modulus_on_interface[_qp] = computeTractionDerivatives();
 
 }

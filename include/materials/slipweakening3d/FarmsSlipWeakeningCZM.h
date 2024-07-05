@@ -20,7 +20,7 @@ public:
   static InputParameters validParams();
   FarmsSlipWeakeningCZM(const InputParameters & parameters);
 protected:
-  virtual RealVectorValue computeTraction() override;
+  virtual Real computeTractionAndDisplacements() override;
   virtual RealTensorValue computeTractionDerivatives() override;
   virtual void initQpStatefulProperties() override;
   
@@ -70,4 +70,11 @@ protected:
 
   const VariableValue * const _Co;
   const VariableValue * const _T;
+
+  const MaterialProperty<RealVectorValue> & _displacements_plus_old;
+  const MaterialProperty<RealVectorValue> & _displacements_minus_old;
+  const MaterialProperty<RealVectorValue> & _velocities_plus_old;
+  const MaterialProperty<RealVectorValue> & _velocities_minus_old;
+
+  const MaterialProperty<Real> & _absolute_slip_old;
 };

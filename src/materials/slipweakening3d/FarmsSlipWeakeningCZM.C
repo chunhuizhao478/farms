@@ -37,7 +37,7 @@ FarmsSlipWeakeningCZM::validParams()
 FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   : FarmsSlipWeakeningBase(parameters),
   _Dc(getParam<Real>("Dc")),
-  _density(getMaterialPropertyByName<Real>("density")),
+  _density(getMaterialPropertyByName<Real>("nonADdensity")),
   _rot(getMaterialPropertyByName<RealTensorValue>("rotation_matrix")),
   _disp_slipweakening_x(coupledValue("disp_slipweakening_x")),
   _disp_slipweakening_neighbor_x(coupledNeighborValue("disp_slipweakening_x")),
@@ -70,7 +70,12 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _Co_coupled(isCoupled("cohesion")),
   _T_coupled(isCoupled("forced_rupture_time")),
   _Co(_Co_coupled ? &coupledValue("cohesion") : nullptr),
-  _T(_T_coupled ? &coupledValue("forced_rupture_time") : nullptr)
+  _T(_T_coupled ? &coupledValue("forced_rupture_time") : nullptr),
+  _displacements_plus_old(getMaterialPropertyOldByName<RealVectorValue>("displacements_plus_local")),
+  _displacements_minus_old(getMaterialPropertyOldByName<RealVectorValue>("displacements_minus_local")),
+  _velocities_plus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_plus_local")),
+  _velocities_minus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_minus_local")),
+  _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip"))
 {
 }
 
@@ -84,10 +89,16 @@ FarmsSlipWeakeningCZM::initQpStatefulProperties()
   _traction_on_interface[_qp] = zero_realvectorvalue;
   _displacement_jump_global[_qp] = zero_realvectorvalue;
   _displacement_jump_rate_global[_qp] = zero_realvectorvalue;
+  _displacements_plus_global[_qp] = zero_realvectorvalue;
+  _displacements_minus_global[_qp] = zero_realvectorvalue;
+  _displacements_plus_local[_qp] = zero_realvectorvalue;
+  _displacements_minus_local[_qp] = zero_realvectorvalue;
+  _velocities_plus_local[_qp] = zero_realvectorvalue;
+  _velocities_minus_local[_qp] = zero_realvectorvalue;
 }
 
-RealVectorValue
-FarmsSlipWeakeningCZM::computeTraction()
+Real
+FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 { 
   //Global Displacement Jump
   RealVectorValue displacement_jump_global(_disp_slipweakening_x[_qp]-_disp_slipweakening_neighbor_x[_qp],_disp_slipweakening_y[_qp]-_disp_slipweakening_neighbor_y[_qp],_disp_slipweakening_z[_qp]-_disp_slipweakening_neighbor_z[_qp]);
@@ -100,9 +111,13 @@ FarmsSlipWeakeningCZM::computeTraction()
   RealVectorValue displacement_jump_rate_global = (displacement_jump_global - displacement_jump_old_global)*(1/_dt);  
   _displacement_jump_rate_global[_qp] = displacement_jump_rate_global;
 
-  //Local Displacement Jump / Displacement Jump Rate
+  //Global Displacement Jump Difference
+  RealVectorValue displacement_jump_difference_global = displacement_jump_global - displacement_jump_old_global;
+
+  //Local Displacement Jump / Displacement Jump Rate / Displacement Jump Difference
   RealVectorValue displacement_jump_local = GlobaltoLocalVector(displacement_jump_global, _rot[_qp]);
   RealVectorValue displacement_jump_rate_local = GlobaltoLocalVector(displacement_jump_rate_global, _rot[_qp]);
+  RealVectorValue displacement_jump_difference_local = GlobaltoLocalVector(displacement_jump_difference_global, _rot[_qp]);
 
   //Parameter Initialization
   Real mu_s = _mu_s[_qp]; 
@@ -180,6 +195,10 @@ FarmsSlipWeakeningCZM::computeTraction()
   Real R_minus_local_dip    = R_minus_local_dip_stsdivcomp    + R_minus_local_dip_dampingcomp;  
   Real R_minus_local_normal = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
   
+  //save vector
+  RealVectorValue R_plus_local_vec(R_plus_local_strike,R_plus_local_dip,R_plus_local_normal);
+  RealVectorValue R_minus_local_vec(R_minus_local_strike,R_minus_local_dip,R_minus_local_normal); 
+
   //element length
   Real elem_length = _elem_length[_qp];
 
@@ -199,10 +218,19 @@ FarmsSlipWeakeningCZM::computeTraction()
     Tnormal = 0;
   }
 
+  //Compute absolute slip
+  Real abs_slip_strike_inc = std::abs(displacement_jump_difference_local(0));
+  Real abs_slip_dip_inc    = std::abs(displacement_jump_difference_local(1));
+  Real abs_slip_inc        = std::sqrt(abs_slip_strike_inc*abs_slip_strike_inc+abs_slip_dip_inc*abs_slip_dip_inc);
+  Real abs_slip_total      = _absolute_slip_old[_qp] + abs_slip_inc;
+
+  //save
+  _absolute_slip[_qp] = abs_slip_total;
+
   //Compute friction strength
-  if (std::norm(displacement_jump_local) < Dc)
+  if (abs_slip_total < Dc)
   {
-    tau_f = (mu_s - (mu_s - mu_d)*std::norm(displacement_jump_local)/Dc)*(-Tnormal); // square for shear component
+    tau_f = (mu_s - (mu_s - mu_d)*abs_slip_total/Dc)*(-Tnormal); // square for shear component
   }
   else
   {
@@ -221,14 +249,30 @@ FarmsSlipWeakeningCZM::computeTraction()
   RealVectorValue traction_local(0.0,0.0,0.0);
 
   traction_local(0) = Tstrike - T_strike_o; 
-  traction_local(1) = -Tdip   + T_dip_o; 
+  traction_local(1) = Tdip    - T_dip_o; 
   traction_local(2) = Tnormal - T_normal_o;
 
   //Rotate back traction difference to global coordinates
   RealVectorValue traction_global(0.0,0.0,0.0);
-  traction_global = LocaltoGlobalVector(traction_local, _rot[_qp]);
+  _traction_on_interface[_qp] = LocaltoGlobalVector(traction_local, _rot[_qp]);
 
-  return traction_global;
+  //Compute velocities and displacements on both sides
+  RealVectorValue  v_plus_local_tplusdtover2 =     _velocities_plus_old[_qp] + _dt * 1.0/M * ( R_plus_local_vec - elem_length * elem_length * ( traction_local ) );
+  RealVectorValue v_minus_local_tplusdtover2 =    _velocities_minus_old[_qp] + _dt * 1.0/M * ( R_minus_local_vec + elem_length * elem_length * ( traction_local ) );
+  RealVectorValue  u_plus_local_tplusdt      =  _displacements_plus_old[_qp] + _dt * v_plus_local_tplusdtover2;
+  RealVectorValue  u_minus_local_tplusdt     = _displacements_minus_old[_qp] + _dt * v_minus_local_tplusdtover2;
+
+  //Rotate back to global coordinates
+  _displacements_plus_global[_qp]  = LocaltoGlobalVector( u_plus_local_tplusdt, _rot[_qp]);
+  _displacements_minus_global[_qp] = LocaltoGlobalVector(u_minus_local_tplusdt, _rot[_qp]);
+
+  //save local quantities
+  _velocities_plus_local[_qp]     = v_plus_local_tplusdtover2;
+  _velocities_minus_local[_qp]    = v_minus_local_tplusdtover2;
+  _displacements_plus_local[_qp]  = u_plus_local_tplusdt;
+  _displacements_minus_local[_qp] = u_minus_local_tplusdt;
+
+  return 0.0;
 }
 
 RealTensorValue
