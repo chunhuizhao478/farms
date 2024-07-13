@@ -119,4 +119,10 @@ protected:
   /* marker for all elements below strength */
   MaterialProperty<Real> & _below_strength_marker;
 
+  /* the restoration force on primary surface */
+  MaterialProperty<RealVectorValue> & _R_plus_local_vec;
+
+  /* the restoration force on secondary surface */
+  MaterialProperty<RealVectorValue> & _R_minus_local_vec;
+
 };

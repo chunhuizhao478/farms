@@ -81,4 +81,8 @@ protected:
   const MaterialProperty<Real> & _absolute_slip_old;
 
   const MaterialProperty<Real> & _below_strength_marker_old; //this is used to retrieve the marker for all elements the traction is below strength
+
+  const MaterialProperty<RealVectorValue> & _R_plus_local_vec_old;
+
+  const MaterialProperty<RealVectorValue> & _R_minus_local_vec_old;
 };

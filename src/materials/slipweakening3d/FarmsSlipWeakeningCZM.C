@@ -77,7 +77,9 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _velocities_plus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_plus_local")),
   _velocities_minus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_minus_local")),
   _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip")),
-  _below_strength_marker_old(getMaterialPropertyOldByName<Real>("below_strength_marker"))
+  _below_strength_marker_old(getMaterialPropertyOldByName<Real>("below_strength_marker")),
+  _R_plus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_local_vec")),
+  _R_minus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_minus_vec"))
 {
 }
 
@@ -207,8 +209,22 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   Real R_minus_local_normal = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
   
   //save vector
-  RealVectorValue R_plus_local_vec(R_plus_local_strike,R_plus_local_dip,R_plus_local_normal);
-  RealVectorValue R_minus_local_vec(R_minus_local_strike,R_minus_local_dip,R_minus_local_normal); 
+  RealVectorValue R_plus_local_vec(0.0,0.0,0.0);
+  RealVectorValue R_minus_local_vec(0.0,0.0,0.0);
+  if ( _below_strength_marker_old[_qp] > 0.0 ){
+    R_plus_local_vec = _R_plus_local_vec_old[_qp];
+    R_minus_local_vec = _R_plus_local_vec_old[_qp];
+  }
+  else{
+    R_plus_local_vec(0)  = R_plus_local_strike;
+    R_plus_local_vec(1)  = R_plus_local_dip;
+    R_plus_local_vec(2)  = R_plus_local_normal;
+    R_minus_local_vec(0) = R_minus_local_strike;
+    R_minus_local_vec(1) = R_minus_local_dip;
+    R_minus_local_vec(2) = R_minus_local_normal; 
+  }
+  _R_plus_local_vec[_qp] = R_plus_local_vec;
+  _R_minus_local_vec[_qp] = R_minus_local_vec;
 
   //element length
   Real elem_length = _elem_length[_qp];
@@ -217,9 +233,9 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   Real M = _density[_qp] * elem_length * elem_length * elem_length / 8;
 
   //Compute sticking stress
-  Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*elem_length*elem_length) + (R_plus_local_strike - R_minus_local_strike)/(2*elem_length*elem_length) + T_strike_o;
-  Real Tdip    = (1/_dt)*M*displacement_jump_rate_local(1)/(2*elem_length*elem_length) + (R_plus_local_dip    - R_minus_local_dip   )/(2*elem_length*elem_length) + T_dip_o;
-  Real Tnormal = (1/_dt)*M*(displacement_jump_rate_local(2)+(1/_dt)*displacement_jump_local(2))/(2*elem_length*elem_length) + ( (R_plus_local_normal - R_minus_local_normal) / ( 2*elem_length*elem_length ) ) + T_normal_o ;  
+  Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*elem_length*elem_length) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*elem_length*elem_length) + T_strike_o;
+  Real Tdip    = (1/_dt)*M*displacement_jump_rate_local(1)/(2*elem_length*elem_length) + (R_plus_local_vec(1) - R_minus_local_vec(1))/(2*elem_length*elem_length) + T_dip_o;
+  Real Tnormal = (1/_dt)*M*(displacement_jump_rate_local(2)+(1/_dt)*displacement_jump_local(2))/(2*elem_length*elem_length) + ( (R_plus_local_vec(2) - R_minus_local_vec(2)) / ( 2*elem_length*elem_length ) ) + T_normal_o ;  
 
   //Compute fault traction
   //min(0,sigma_N)
