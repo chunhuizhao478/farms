@@ -13,13 +13,13 @@
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -20000 & x <= 20000 & y >= -25000 & z < 0'
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
       block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -20000 & x <= 20000 & y >= -25000 & z > 0'
+        combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
         block_id = 3
     []       
     [./split_1]

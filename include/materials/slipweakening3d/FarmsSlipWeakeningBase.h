@@ -116,4 +116,7 @@ protected:
   /* the absolute slip on the minus side (local) */
   MaterialProperty<Real> & _absolute_slip;  
 
+  /* marker for all elements below strength */
+  MaterialProperty<Real> & _below_strength_marker;
+
 };
