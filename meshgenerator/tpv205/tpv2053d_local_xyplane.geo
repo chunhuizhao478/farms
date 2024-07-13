@@ -38,7 +38,7 @@
 lc = 5e3;
 lc_fault = 200; //change this!!!
 
-Fault_length = 15e3;
+Fault_length = 30e3;
 Fault_width = 15e3;
 Fault_dip = 90*Pi/180.;
 
@@ -48,14 +48,14 @@ Width_nucl = 0.5*Fault_width;
 R_nucl = 1.5e3;
 lc_nucl = 200; //change this!!!
 
-Xmax = 8e3;
+Xmax = 30e3;
 Xmin = -Xmax;
 
 Ymax = 0;
-Ymin = -16e3;
+Ymin = -30e3;
 
-Zmax =  Xmax;
-Zmin = -Xmax;
+Zmax =  Xmax/2;
+Zmin = -Xmax/2;
 
 // Create the Volume
 Point(1) = {Xmin, 0, Zmin, lc};
