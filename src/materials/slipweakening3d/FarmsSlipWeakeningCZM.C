@@ -76,7 +76,8 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _displacements_minus_older(getMaterialPropertyOlderByName<RealVectorValue>("displacements_minus_local")),
   _velocities_plus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_plus_local")),
   _velocities_minus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_minus_local")),
-  _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip"))
+  _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip")),
+  _below_strength_marker_old(getMaterialPropertyOldByName<Real>("below_strength_marker"))
 {
 }
 
@@ -103,10 +104,19 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 { 
   //Global Displacement Jump
   RealVectorValue displacement_jump_global(_disp_slipweakening_x[_qp]-_disp_slipweakening_neighbor_x[_qp],_disp_slipweakening_y[_qp]-_disp_slipweakening_neighbor_y[_qp],_disp_slipweakening_z[_qp]-_disp_slipweakening_neighbor_z[_qp]);
-  _displacement_jump_global[_qp] = displacement_jump_global;
 
   //Global Displacement Jump Old
   RealVectorValue displacement_jump_old_global(_disp_slipweakening_x_old[_qp]-_disp_slipweakening_neighbor_x_old[_qp],_disp_slipweakening_y_old[_qp]-_disp_slipweakening_neighbor_y_old[_qp],_disp_slipweakening_z_old[_qp]-_disp_slipweakening_neighbor_z_old[_qp]);
+
+  //Check The Displacement Jump for element traction below the strength
+  if ( _below_strength_marker_old[_qp] > 0.0 ){ //traction below strength
+    for ( int dir = 0; dir < 2; dir++){ //loop over strike, dip
+      displacement_jump_global(dir) = displacement_jump_old_global(dir); //no update on displacement jump
+    }
+  }
+
+  //Save new jump global
+  _displacement_jump_global[_qp] = displacement_jump_global;
 
   //Global Displacement Jump Rate
   RealVectorValue displacement_jump_rate_global = (displacement_jump_global - displacement_jump_old_global)*(1/_dt);  
@@ -239,20 +249,17 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   }  
 
   //Compute fault traction
+  //Note: This condition applies in two situations: (1) fault not activated (2) fault activates but below the strength
+  //Both should constraint zero displacement jump rate and no update on the displacement jump
+  //Let's mark these elements using _below_strength_marker = "1"
   if (std::sqrt(Tstrike*Tstrike + Tdip*Tdip)<tau_f)
   {
-    if ( abs_slip_total > Dc ){
-      Tstrike = tau_f*Tstrike/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
-      Tdip    = tau_f*Tdip/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
-    }
-    else{
-      Tstrike = Tstrike;
-      Tdip = Tdip;
-    }
+    _below_strength_marker[_qp] = 1.0;
   }
   else{
     Tstrike = tau_f*Tstrike/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
     Tdip    = tau_f*Tdip/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
+    _below_strength_marker[_qp] = 0.0;    
   }  
 
   //Assign back traction in CZM
