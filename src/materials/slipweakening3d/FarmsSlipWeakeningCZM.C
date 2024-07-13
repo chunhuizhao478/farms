@@ -110,8 +110,8 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 
   //Check The Displacement Jump for element traction below the strength
   if ( _below_strength_marker_old[_qp] > 0.0 ){ //traction below strength
-    for ( int dir = 0; dir < 2; dir++){ //loop over strike, dip
-      displacement_jump_global(dir) = displacement_jump_old_global(dir); //no update on displacement jump
+    for ( int dir = 0; dir < 3; dir++){ //loop over global coordinates
+      displacement_jump_global(dir) = displacement_jump_old_global(dir); //no update on displacement jump, thus zero slip rate
     }
   }
 
