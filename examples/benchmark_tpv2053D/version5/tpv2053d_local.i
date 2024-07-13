@@ -13,13 +13,13 @@
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -7500 & x <= 7500 & y >= -15000 & z < 0'
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
       block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -7500 & x <= 7500 & y >= -15000 & z > 0'
+        combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
         block_id = 3
     []       
     [./split_1]
@@ -861,9 +861,9 @@
 
 [Executioner]
     type = Transient
-    dt = 0.0025
+    dt = 0.005
     end_time = 12.0
-    # num_steps = 10
+    num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -873,6 +873,6 @@
 
 [Outputs]
     exodus = true
-    interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z'
+    interval = 1
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
 []
