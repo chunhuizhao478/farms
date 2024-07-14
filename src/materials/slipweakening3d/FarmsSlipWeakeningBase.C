@@ -21,6 +21,8 @@ FarmsSlipWeakeningBase::FarmsSlipWeakeningBase(const InputParameters & parameter
   : InterfaceMaterial(parameters),
     _normals(_assembly.normals()),
     _traction_on_interface(declarePropertyByName<RealVectorValue>("traction_on_interface")),
+    _traction_total_global(declarePropertyByName<RealVectorValue>("traction_total_global")),
+    _traction_total_local(declarePropertyByName<RealVectorValue>("traction_total_local")),
     _material_tangent_modulus_on_interface(
         declareProperty<RealTensorValue>("material_tangent_modulus_on_interface")),
     _rotation_matrix(declareProperty<RealTensorValue>("rotation_matrix")),
@@ -33,7 +35,7 @@ FarmsSlipWeakeningBase::FarmsSlipWeakeningBase(const InputParameters & parameter
     _velocities_plus_local(declareProperty<RealVectorValue>("velocities_plus_local")),
     _velocities_minus_local(declareProperty<RealVectorValue>("velocities_minus_local")),
     _absolute_slip(declareProperty<Real>("absolute_slip")),
-    _below_strength_marker(declareProperty<Real>("below_strength_marker")),
+    _below_strength_marker(declareProperty<RealVectorValue>("below_strength_marker")),
     _R_plus_local_vec(declareProperty<RealVectorValue>("R_plus_local_vec")),
     _R_minus_local_vec(declareProperty<RealVectorValue>("R_plus_minus_vec"))
 {
