@@ -80,8 +80,14 @@ protected:
   //RankTwoTensor to RealTensorValue
   virtual RealTensorValue RankTwoTensor2RealTensorValue(const RankTwoTensor mat);
 
-  /* the value of the traction in global */ 
+  /* the value of the traction in global (difference) */ 
   MaterialProperty<RealVectorValue> & _traction_on_interface;
+
+  /* the value of the traction in global (total) */
+  MaterialProperty<RealVectorValue> & _traction_total_global;
+
+  /* the value of the traction in local (total) */
+  MaterialProperty<RealVectorValue> & _traction_total_local;
 
   /* the tangent modulus on interface */
   MaterialProperty<RealTensorValue> & _material_tangent_modulus_on_interface;
@@ -117,7 +123,7 @@ protected:
   MaterialProperty<Real> & _absolute_slip;  
 
   /* marker for all elements below strength */
-  MaterialProperty<Real> & _below_strength_marker;
+  MaterialProperty<RealVectorValue> & _below_strength_marker;
 
   /* the restoration force on primary surface */
   MaterialProperty<RealVectorValue> & _R_plus_local_vec;

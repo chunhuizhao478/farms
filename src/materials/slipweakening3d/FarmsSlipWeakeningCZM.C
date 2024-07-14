@@ -77,9 +77,10 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _velocities_plus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_plus_local")),
   _velocities_minus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_minus_local")),
   _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip")),
-  _below_strength_marker_old(getMaterialPropertyOldByName<Real>("below_strength_marker")),
+  _below_strength_marker_old(getMaterialPropertyOldByName<RealVectorValue>("below_strength_marker")),
   _R_plus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_local_vec")),
-  _R_minus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_minus_vec"))
+  _R_minus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_minus_vec")),
+  _traction_total_local_old(getMaterialPropertyOldByName<RealVectorValue>("traction_total_local"))
 {
 }
 
@@ -109,15 +110,6 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 
   //Global Displacement Jump Old
   RealVectorValue displacement_jump_old_global(_disp_slipweakening_x_old[_qp]-_disp_slipweakening_neighbor_x_old[_qp],_disp_slipweakening_y_old[_qp]-_disp_slipweakening_neighbor_y_old[_qp],_disp_slipweakening_z_old[_qp]-_disp_slipweakening_neighbor_z_old[_qp]);
-
-  //Check The Displacement Jump for element traction below the strength
-  if ( _below_strength_marker_old[_qp] > 0.0 ){ //traction below strength
-    for ( int dir = 0; dir < 3; dir++){ //loop over global coordinates
-      displacement_jump_global(dir) = displacement_jump_old_global(dir); //no update on displacement jump, thus zero slip rate
-    }
-  }
-
-  //Save new jump global
   _displacement_jump_global[_qp] = displacement_jump_global;
 
   //Global Displacement Jump Rate
@@ -129,8 +121,18 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 
   //Local Displacement Jump / Displacement Jump Rate / Displacement Jump Difference
   RealVectorValue displacement_jump_local = GlobaltoLocalVector(displacement_jump_global, _rot[_qp]);
+  RealVectorValue displacement_jump_local_old  = GlobaltoLocalVector(displacement_jump_old_global, _rot[_qp]);
   RealVectorValue displacement_jump_rate_local = GlobaltoLocalVector(displacement_jump_rate_global, _rot[_qp]);
   RealVectorValue displacement_jump_difference_local = GlobaltoLocalVector(displacement_jump_difference_global, _rot[_qp]);
+
+  //check if there is slip misalignment
+  if ( ( _traction_total_local_old[_qp](0) * displacement_jump_rate_local(0) < 0 ) || ( _traction_total_local_old[_qp](1) * displacement_jump_rate_local(1) < 0 ) ){
+    for ( int dir = 0; dir < 2; dir++ ){ //we set all slip rate components to zero, slip to old slip values
+      displacement_jump_local(dir) = displacement_jump_local_old(dir);
+      displacement_jump_rate_local(dir) = 0.0;
+      displacement_jump_difference_local(dir) = 0.0;
+    }
+  }
 
   //Parameter Initialization
   Real mu_s = _mu_s[_qp]; 
@@ -209,22 +211,8 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   Real R_minus_local_normal = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
   
   //save vector
-  RealVectorValue R_plus_local_vec(0.0,0.0,0.0);
-  RealVectorValue R_minus_local_vec(0.0,0.0,0.0);
-  if ( _below_strength_marker_old[_qp] > 0.0 ){
-    R_plus_local_vec = _R_plus_local_vec_old[_qp];
-    R_minus_local_vec = _R_plus_local_vec_old[_qp];
-  }
-  else{
-    R_plus_local_vec(0)  = R_plus_local_strike;
-    R_plus_local_vec(1)  = R_plus_local_dip;
-    R_plus_local_vec(2)  = R_plus_local_normal;
-    R_minus_local_vec(0) = R_minus_local_strike;
-    R_minus_local_vec(1) = R_minus_local_dip;
-    R_minus_local_vec(2) = R_minus_local_normal; 
-  }
-  _R_plus_local_vec[_qp] = R_plus_local_vec;
-  _R_minus_local_vec[_qp] = R_minus_local_vec;
+  RealVectorValue R_plus_local_vec(R_plus_local_strike,R_plus_local_dip,R_plus_local_normal);
+  RealVectorValue R_minus_local_vec(R_minus_local_strike,R_minus_local_dip,R_minus_local_normal);
 
   //element length
   Real elem_length = _elem_length[_qp];
@@ -270,13 +258,18 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   //Let's mark these elements using _below_strength_marker = "1"
   if (std::sqrt(Tstrike*Tstrike + Tdip*Tdip)<tau_f)
   {
-    _below_strength_marker[_qp] = 1.0;
   }
   else{
     Tstrike = tau_f*Tstrike/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
-    Tdip    = tau_f*Tdip/std::sqrt(Tstrike*Tstrike + Tdip*Tdip);
-    _below_strength_marker[_qp] = 0.0;    
+    Tdip    = tau_f*Tdip/std::sqrt(Tstrike*Tstrike + Tdip*Tdip); 
   }  
+
+  //Assemble local total traction vector
+  RealVectorValue traction_local_total(Tstrike,Tdip,Tnormal);
+  _traction_total_local[_qp] = traction_local_total;
+
+  //Rotate back the global traction vector
+  _traction_total_global[_qp] = LocaltoGlobalVector(traction_local_total, _rot[_qp]);
 
   //Assign back traction in CZM
   RealVectorValue traction_local(0.0,0.0,0.0);
