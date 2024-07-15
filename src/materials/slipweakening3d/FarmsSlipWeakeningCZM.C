@@ -126,8 +126,8 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   RealVectorValue displacement_jump_difference_local = GlobaltoLocalVector(displacement_jump_difference_global, _rot[_qp]);
 
   //check if there is slip misalignment
-  if ( ( _traction_total_local_old[_qp](0) * displacement_jump_rate_local(0) < 0 ) || ( _traction_total_local_old[_qp](1) * displacement_jump_rate_local(1) < 0 ) ){
-    for ( int dir = 0; dir < 2; dir++ ){ //we set all slip rate components to zero, slip to old slip values
+  for ( int dir = 0; dir < 2; dir++ ){ //we set all slip rate components to zero, slip to old slip values
+    if ( ( _traction_total_local_old[_qp](dir) * displacement_jump_rate_local(dir) < 0 ) ){
       displacement_jump_local(dir) = displacement_jump_local_old(dir);
       displacement_jump_rate_local(dir) = 0.0;
       displacement_jump_difference_local(dir) = 0.0;

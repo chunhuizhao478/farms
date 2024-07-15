@@ -327,7 +327,7 @@
     #
     [TractionX]
         type = MaterialRealVectorValueAux
-        property = traction_on_interface
+        property = traction_total_local
         variable = traction_x
         component = 0
         execute_on = 'TIMESTEP_END'
@@ -335,7 +335,7 @@
     []
     [TractionY]
         type = MaterialRealVectorValueAux
-        property = traction_on_interface
+        property = traction_total_local
         variable = traction_y
         component = 1
         execute_on = 'TIMESTEP_END'
@@ -343,7 +343,7 @@
     []
     [TractionZ]
         type = MaterialRealVectorValueAux
-        property = traction_on_interface
+        property = traction_total_local
         variable = traction_z
         component = 2
         execute_on = 'TIMESTEP_END'
