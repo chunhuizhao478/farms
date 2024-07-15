@@ -493,7 +493,8 @@
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 1
-        cutback_factor_at_failure = 0.1
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 5
         growth_factor = 2
         enable = true
     []
@@ -506,7 +507,7 @@
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 1
     # show = 'alpha_in B_in xi_old mu_old disp_x disp_y vel_x vel_y'    
 []
 

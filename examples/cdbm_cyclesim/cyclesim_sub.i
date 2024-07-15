@@ -53,11 +53,11 @@
     xi_min = -1.8
   
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1
   
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 100
+    CdCb_multiplier = 1
   
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     CBCBH_multiplier = 0.0
@@ -221,7 +221,8 @@
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 1
-        cutback_factor_at_failure = 0.1
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 5
         growth_factor = 2
         enable = true
     []

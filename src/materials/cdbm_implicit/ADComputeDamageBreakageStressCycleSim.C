@@ -310,15 +310,15 @@ ADComputeDamageBreakageStressCycleSim::computeQpStress()
     //sts_total, stress are updated
     //feed total stress
     ADRankTwoTensor stress_total_out;
-    stress_total_out(0,0) = ( 1 - B ) * ( ( lambda - gamma_damaged / xi_out ) * I1_out + ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps11e_out ) + B * ( ( 2 * _a2 + _a1 / xi_out + 3 * _a3 * xi_out ) * I1_out + ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps11e_out );
-    stress_total_out(1,1) = ( 1 - B ) * ( ( lambda - gamma_damaged / xi_out ) * I1_out + ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps22e_out ) + B * ( ( 2 * _a2 + _a1 / xi_out + 3 * _a3 * xi_out ) * I1_out + ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps22e_out );
-    stress_total_out(2,2) = ( 1 - B ) * ( ( lambda - gamma_damaged / xi_out ) * I1_out + ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps33e_out ) + B * ( ( 2 * _a2 + _a1 / xi_out + 3 * _a3 * xi_out ) * I1_out + ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps33e_out );
-    stress_total_out(0,1) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps12e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps12e_out );
-    stress_total_out(1,0) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps12e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps12e_out );
-    stress_total_out(0,2) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps13e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps13e_out );
-    stress_total_out(2,0) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps13e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps13e_out );
-    stress_total_out(1,2) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps23e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps23e_out );
-    stress_total_out(2,1) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps23e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps23e_out );
+    stress_total_out(0,0) = ( 1 - B ) * ( ( lambda - gamma_damaged / xi_out ) * I1_out + ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps11e_out ) + B * ( ( 2 * _a2 + _a1 / xi_out + 3 * _a3 * xi_out ) * I1_out + ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps11e_out ) - _D * _alpha_grad_x[_qp] * _alpha_grad_x[_qp];
+    stress_total_out(1,1) = ( 1 - B ) * ( ( lambda - gamma_damaged / xi_out ) * I1_out + ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps22e_out ) + B * ( ( 2 * _a2 + _a1 / xi_out + 3 * _a3 * xi_out ) * I1_out + ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps22e_out ) - _D * _alpha_grad_y[_qp] * _alpha_grad_y[_qp];
+    stress_total_out(2,2) = ( 1 - B ) * ( ( lambda - gamma_damaged / xi_out ) * I1_out + ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps33e_out ) + B * ( ( 2 * _a2 + _a1 / xi_out + 3 * _a3 * xi_out ) * I1_out + ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps33e_out ) - _D * _alpha_grad_z[_qp] * _alpha_grad_z[_qp];
+    stress_total_out(0,1) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps12e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps12e_out ) - _D * _alpha_grad_x[_qp] * _alpha_grad_y[_qp];
+    stress_total_out(1,0) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps12e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps12e_out ) - _D * _alpha_grad_y[_qp] * _alpha_grad_x[_qp];
+    stress_total_out(0,2) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps13e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps13e_out ) - _D * _alpha_grad_x[_qp] * _alpha_grad_z[_qp];
+    stress_total_out(2,0) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps13e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps13e_out ) - _D * _alpha_grad_z[_qp] * _alpha_grad_x[_qp];
+    stress_total_out(1,2) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps23e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps23e_out ) - _D * _alpha_grad_y[_qp] * _alpha_grad_z[_qp];
+    stress_total_out(2,1) = ( 1 - B ) * ( ( 2 * shear_modulus - gamma_damaged * xi_out ) * eps23e_out ) + B * ( ( 2 * _a0 + _a1 * xi_out - _a3 * std::pow(xi_out,3) ) * eps23e_out ) - _D * _alpha_grad_z[_qp] * _alpha_grad_y[_qp];
 
     //_sts_total[_qp] = stress_total_out;
 

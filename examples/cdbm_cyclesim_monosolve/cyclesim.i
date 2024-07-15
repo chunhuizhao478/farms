@@ -78,7 +78,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-15
+    C_g = 1e-5
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -446,7 +446,7 @@
         block = 0
     []
     [strain]
-        type = ADComputeSmallStrain
+        type = ADComputeFiniteStrain
         displacements = 'disp_x disp_y'
     []
     [density]
@@ -569,7 +569,7 @@
   
 [Executioner]
     type = Transient
-    solve_type = 'PJFNK'
+    solve_type = Newton
     start_time = 0
     end_time = 1e10
     # num_steps = 1
