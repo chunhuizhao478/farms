@@ -79,7 +79,7 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip")),
   _below_strength_marker_old(getMaterialPropertyOldByName<RealVectorValue>("below_strength_marker")),
   _R_plus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_local_vec")),
-  _R_minus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_minus_vec")),
+  _R_minus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_minus_local_vec")),
   _traction_total_local_old(getMaterialPropertyOldByName<RealVectorValue>("traction_total_local"))
 {
 }
