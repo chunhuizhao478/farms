@@ -37,7 +37,7 @@ FarmsSlipWeakeningBase::FarmsSlipWeakeningBase(const InputParameters & parameter
     _absolute_slip(declareProperty<Real>("absolute_slip")),
     _below_strength_marker(declareProperty<RealVectorValue>("below_strength_marker")),
     _R_plus_local_vec(declareProperty<RealVectorValue>("R_plus_local_vec")),
-    _R_minus_local_vec(declareProperty<RealVectorValue>("R_plus_minus_vec"))
+    _R_minus_local_vec(declareProperty<RealVectorValue>("R_minus_local_vec"))
 {
 }
 
