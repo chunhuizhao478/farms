@@ -670,7 +670,7 @@
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 40
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z check_function_initial_stress_xz'
 []
 
