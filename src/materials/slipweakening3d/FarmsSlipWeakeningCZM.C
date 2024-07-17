@@ -15,7 +15,7 @@ FarmsSlipWeakeningCZM::validParams()
 {
   InputParameters params = FarmsSlipWeakeningBase::validParams();
   params.addClassDescription("Linear Slip Weakening Friction Law");
-  params.addParam<Real>("Dc", 1.0, "Value of characteristic length");
+  params.addParam<Real>("Dc", 0.4, "Value of characteristic length");
   params.addRequiredCoupledVar("disp_slipweakening_x","displacement in x dir");
   params.addRequiredCoupledVar("disp_slipweakening_y","displacement in y dir");
   params.addRequiredCoupledVar("disp_slipweakening_z","displacement in z dir");
@@ -106,13 +106,19 @@ Real
 FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 { 
   //Global Displacement Jump
-  RealVectorValue displacement_jump_global(_disp_slipweakening_x[_qp]-_disp_slipweakening_neighbor_x[_qp],_disp_slipweakening_y[_qp]-_disp_slipweakening_neighbor_y[_qp],_disp_slipweakening_z[_qp]-_disp_slipweakening_neighbor_z[_qp]);
+  RealVectorValue displacement_jump_global(_disp_slipweakening_x[_qp]-_disp_slipweakening_neighbor_x[_qp],
+                                           _disp_slipweakening_y[_qp]-_disp_slipweakening_neighbor_y[_qp],
+                                           _disp_slipweakening_z[_qp]-_disp_slipweakening_neighbor_z[_qp]);
 
   //Global Displacement Jump Old
-  RealVectorValue displacement_jump_old_global(_disp_slipweakening_x_old[_qp]-_disp_slipweakening_neighbor_x_old[_qp],_disp_slipweakening_y_old[_qp]-_disp_slipweakening_neighbor_y_old[_qp],_disp_slipweakening_z_old[_qp]-_disp_slipweakening_neighbor_z_old[_qp]);
+  RealVectorValue displacement_jump_old_global(_disp_slipweakening_x_old[_qp]-_disp_slipweakening_neighbor_x_old[_qp],
+                                               _disp_slipweakening_y_old[_qp]-_disp_slipweakening_neighbor_y_old[_qp],
+                                               _disp_slipweakening_z_old[_qp]-_disp_slipweakening_neighbor_z_old[_qp]);
+
   _displacement_jump_global[_qp] = displacement_jump_global;
 
   //Global Displacement Jump Rate
+  //u_dot_t-dt/2 = ( u_t - u_t-dt ) / dt
   RealVectorValue displacement_jump_rate_global = (displacement_jump_global - displacement_jump_old_global)*(1/_dt);  
   _displacement_jump_rate_global[_qp] = displacement_jump_rate_global;
 
@@ -158,8 +164,12 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 
   ///Define in global coordinate
   //current time step 
-  RealVectorValue R_plus_global_stsdivcomp(-_reaction_slipweakening_x[_qp],-_reaction_slipweakening_y[_qp], -_reaction_slipweakening_z[_qp]);
-  RealVectorValue R_minus_global_stsdivcomp(-_reaction_slipweakening_neighbor_x[_qp],-_reaction_slipweakening_neighbor_y[_qp], -_reaction_slipweakening_neighbor_z[_qp]);
+  RealVectorValue R_plus_global_stsdivcomp(-_reaction_slipweakening_x[_qp],
+                                           -_reaction_slipweakening_y[_qp], 
+                                           -_reaction_slipweakening_z[_qp]);
+  RealVectorValue R_minus_global_stsdivcomp(-_reaction_slipweakening_neighbor_x[_qp],
+                                            -_reaction_slipweakening_neighbor_y[_qp],
+                                            -_reaction_slipweakening_neighbor_z[_qp]);
 
   ///Rotate in local coordinate
   //current time step
@@ -182,8 +192,12 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
 
   ///Define in global coordinate
   //current time step 
-  RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],-_reaction_damp_y[_qp], -_reaction_damp_z[_qp]);
-  RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],-_reaction_damp_neighbor_y[_qp], -_reaction_damp_neighbor_z[_qp]);  
+  RealVectorValue R_plus_global_dampingcomp(-_reaction_damp_x[_qp],
+                                            -_reaction_damp_y[_qp],
+                                            -_reaction_damp_z[_qp]);
+  RealVectorValue R_minus_global_dampingcomp(-_reaction_damp_neighbor_x[_qp],
+                                             -_reaction_damp_neighbor_y[_qp],
+                                             -_reaction_damp_neighbor_z[_qp]);  
 
   ///Rotate in local coordinate
   //current time step
