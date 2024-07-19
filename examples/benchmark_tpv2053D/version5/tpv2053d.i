@@ -7,7 +7,7 @@
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
+      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane_refined.msh'
       # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
     []
     [./new_block_1]
