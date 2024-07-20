@@ -11,7 +11,6 @@
 #include "RankTwoTensor.h"
 #include "SymmetricRankTwoTensor.h"
 
-//template <typename RankTwoTensor>
 InputParameters
 ADComputeDamageBreakageStressBase::validParams()
 {
@@ -27,9 +26,6 @@ ADComputeDamageBreakageStressBase::validParams()
       "extra_stress_names",
       std::vector<MaterialPropertyName>(),
       "Material property names of rank two tensors to be added to the stress.");
-  params.addRequiredParam<Real>("xi_0", "strain invariants ratio: onset of damage evolution");
-  params.addRequiredParam<Real>( "gamma_damaged_r", "coefficient of damage solid modulus");
-  params.addRequiredCoupledVar("initial_alpha", "initial distribution of alpha");
   return params;
 }
 
@@ -42,22 +38,15 @@ ADComputeDamageBreakageStressBase::ADComputeDamageBreakageStressBase(const Input
     _elastic_strain(declareADProperty<RankTwoTensor>(_base_name + "elastic_strain")),
     _extra_stresses(getParam<std::vector<MaterialPropertyName>>("extra_stress_names").size()),
     _alpha_damagedvar(declareADProperty<Real>("alpha_damagedvar")),
-    _B(declareADProperty<Real>("B")),
+    _B_breakagevar(declareADProperty<Real>("B_breakagevar")),
     _xi(declareADProperty<Real>("xi")),
     _I1(declareADProperty<Real>("I1")),
     _I2(declareADProperty<Real>("I2")),
-    _lambda(declareADProperty<Real>("lambda")),
     _shear_modulus(declareADProperty<Real>("shear_modulus")),
     _gamma_damaged(declareADProperty<Real>("gamma_damaged")),
-    _principal_strain(declareADProperty<Real>("principal_strain")),
     _eps_p(declareADProperty<RankTwoTensor>("eps_p")),
     _eps_e(declareADProperty<RankTwoTensor>("eps_e")),
-    _eps_total(declareADProperty<RankTwoTensor>("eps_total")),
-    _eps_total_init(declareADProperty<RankTwoTensor>("eps_total_init")),
-    _sts_total(declareADProperty<RankTwoTensor>("sts_total")),
-    _static_initial_stress_tensor(getADMaterialProperty<RankTwoTensor>("static_initial_stress_tensor")),
-    _lambda_o(getParam<Real>("lambda_o")),
-    _shear_modulus_o(getParam<Real>("shear_modulus_o"))
+    _sigma_d(declareADProperty<RankTwoTensor>("sigma_d"))
 {
   if (getParam<bool>("use_displaced_mesh"))
     mooseError("The stress calculator needs to run on the undisplaced mesh.");
@@ -87,6 +76,3 @@ ADComputeDamageBreakageStressBase::computeQpProperties()
   for (MooseIndex(_extra_stresses) i = 0; i < _extra_stresses.size(); ++i)
     _stress[_qp] += (*_extra_stresses[i])[_qp];
 }
-
-//template class ADComputeDamageBreakageStressBaseTempl<RankTwoTensor>;
-//template class ADComputeDamageBreakageStressBaseTempl<SymmetricRankTwoTensor>;

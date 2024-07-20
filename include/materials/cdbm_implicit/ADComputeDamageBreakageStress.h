@@ -28,23 +28,11 @@ public:
 protected:
   virtual void computeQpStress() override;
 
-  /// Function: Compute initial strain based on initial stress
-  // void setupInitial();
-
-  /// Name of the elasticity tensor material property
-  //const std::string _elasticity_tensor_name;
-
-  /// Elasticity tensor material property
-  //const ADMaterialProperty<RankFourTensor> & _elasticity_tensor;
-
   //additional parameters
-  //initial stress tensor
-  const ADMaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
 
-  //initial strain tensor
-  const ADMaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;  
+  ADReal _lambda_o;
+  ADReal _shear_modulus_o;
 
-  /// additional variables
   /// strain invariants ratio: onset of damage evolution
   ADReal _xi_0;
 
@@ -78,40 +66,36 @@ protected:
   /// coefficient of power law indexes
   ADReal _m2;
 
-  /// get old parameters : see definitions in "adComputeDamageBreakageStressBase"
+  /// coefficient of positive damage evolution
+  ADReal _Cd_constant;
+
+  /// coefficient of healing of damage evolution
+  ADReal _C1;
+
+  /// coefficient of healing of damage evolution
+  ADReal _C2;
+
+  /// coefficient of width of transitional region
+  ADReal _beta_width;
+
+  /// coefficient of multiplier between Cd and Cb
+  ADReal _CdCb_multiplier;
+
+  /// coefficient of CBH constant
+  ADReal _CBH_constant;
+
+  /// get material prop
+  const MaterialProperty<Real> & _initial_damage;
+
+  /// get old parameters : see definitions in "ADComputeDamageBreakageStressBase"
   const MaterialProperty<Real> & _alpha_damagedvar_old;
-  const MaterialProperty<Real> & _B_old;
+  const MaterialProperty<Real> & _B_breakagevar_old;
   const MaterialProperty<Real> & _xi_old;
-  const MaterialProperty<Real> & _I1_old;
   const MaterialProperty<Real> & _I2_old;
-  const MaterialProperty<Real> & _lambda_old;
   const MaterialProperty<Real> & _shear_modulus_old;
   const MaterialProperty<Real> & _gamma_damaged_old;
-  const MaterialProperty<RankTwoTensor> & _eps_total_old;
-  const MaterialProperty<RankTwoTensor> & _mechanical_strain_old;
   const MaterialProperty<RankTwoTensor> & _eps_p_old;
   const MaterialProperty<RankTwoTensor> & _eps_e_old;
+  const MaterialProperty<RankTwoTensor> & _sigma_d_old;
 
-  /// updated damage and breakage parameters computed from subApp
-  //Note: pass reference(&) instead of value, otherwise it may occur segmentation fault 11 error
-  const ADVariableValue & _alpha_in;
-  const ADVariableValue & _B_in;
-
-  //add grad term
-  const ADVariableValue & _alpha_grad_x;
-  const ADVariableValue & _alpha_grad_y;
-  const ADVariableValue & _alpha_grad_z;
-
-  /// density
-  const ADMaterialProperty<Real> & _density_old;
-
-  /// diffusion coefficient
-  ADReal _D;
-  
-  // usingComputeDamageBreakageStressBaseMembers;
 };
-
-//typedef ADComputeDamageBreakageStress<RankTwoTensor, RankFourTensor, Real>
-//    ADComputeDamageBreakageStress;
-//typedef ADComputeDamageBreakageStress<SymmetricRankTwoTensor, SymmetricRankFourTensor>
-//    ADSymmetricDamageBreakageStress;
