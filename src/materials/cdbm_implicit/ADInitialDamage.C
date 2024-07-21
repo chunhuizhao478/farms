@@ -25,14 +25,15 @@ ADInitialDamage::validParams()
 
 ADInitialDamage::ADInitialDamage(const InputParameters & parameters)
   : ADMaterial(parameters),
-  _initial_damage(declareADProperty<Real>("initial_damage"))
+  _initial_damage(declareADProperty<Real>("initial_damage")),
+  _initial_damage_old(getMaterialPropertyOldByName<Real>("initial_damage"))
 {
 }
 
 void
-ADInitialDamage::computeQpProperties()
+ADInitialDamage::initQpStatefulProperties()
 {
- 
+
   Real xcoord = _q_point[_qp](0);
   Real ycoord = _q_point[_qp](1);
   Real zcoord = _q_point[_qp](2);
@@ -55,4 +56,10 @@ ADInitialDamage::computeQpProperties()
   //
   _initial_damage[_qp] = alpha_o;
 
+}
+
+void
+ADInitialDamage::computeQpProperties()
+{
+  _initial_damage[_qp] = _initial_damage_old[_qp];
 }

@@ -51,27 +51,27 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    # Cd_constant = 10
+    Cd_constant = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    # CdCb_multiplier = 100
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    # CBH_constant = 1e4
+    CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    # C_1 = 1e-5
+    C_1 = 300
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    # C_2 = 20
+    C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    # beta_width = 0.03 #1e-3
+    beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-5
+    C_g = 1e-15
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -104,9 +104,6 @@
     a1 = -21.341e9
     a2 = 19.028e9
     a3 = -4.924e9
-  
-    #diffusion coefficient #for structural stress coupling
-    D = 0
   
 []
 
@@ -149,19 +146,6 @@
     [accel_z]
         order = FIRST
         family = LAGRANGE
-    []
-    #damage-breakage model
-    [alpha]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [B]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [aux_strain_xx]
-        order = CONSTANT
-        family = MONOMIAL    
     []
 []
 
@@ -255,12 +239,6 @@
         acceleration = accel_z
         gamma = 0.5
         execute_on = timestep_end
-    []
-    [getstrain]
-        type = FunctionAux
-        variable = aux_strain_xx
-        function = func_strain_xx
-        execute_on = "INITIAL"
     []
 []
 
@@ -393,16 +371,15 @@
   
 [Executioner]
     type = Transient
-    solve_type = Newton
+    solve_type = PJFNK
     start_time = 0
     end_time = 800
-    num_steps = 1
+    num_steps = 1000
     l_max_its = 10
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    timestep_tolerance = 1e-6
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
@@ -414,94 +391,212 @@
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 10
     # show = 'alpha B disp_x disp_y disp_z vel_x vel_y vel_z'
     print_linear_residuals=true
 []
 
-# [BCs]
-#     [./dashpot_top_x]
-#         type = NonReflectDashpotBC
-#         component = 0
-#         variable = disp_x
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = top
-#     []
-#     [./dashpot_top_y]
-#         type = NonReflectDashpotBC
-#         component = 1
-#         variable = disp_y
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = top
-#     []
-#     [./dashpot_bottom_x]
-#         type = NonReflectDashpotBC
-#         component = 0
-#         variable = disp_x
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = bottom
-#     []
-#     [./dashpot_bottom_y]
-#         type = NonReflectDashpotBC
-#         component = 1
-#         variable = disp_y
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = bottom
-#     []
-#     [./dashpot_left_x]
-#         type = NonReflectDashpotBC
-#         component = 0
-#         variable = disp_x
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = left
-#     []
-#     [./dashpot_left_y]
-#         type = NonReflectDashpotBC
-#         component = 1
-#         variable = disp_y
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = left
-#     []
-#     [./dashpot_right_x]
-#         type = NonReflectDashpotBC
-#         component = 0
-#         variable = disp_x
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = right
-#     []
-#     [./dashpot_right_y]
-#         type = NonReflectDashpotBC
-#         component = 1
-#         variable = disp_y
-#         disp_x = disp_x
-#         disp_y = disp_y
-#         p_wave_speed = 5773.50
-#         shear_wave_speed = 3333.33
-#         boundary = right
-#     []
-#     #
-# []
+[BCs]
+    [./dashpot_top_x]
+        type = ADNonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = ADNonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = top
+    []
+    [./dashpot_top_z]
+        type = ADNonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = ADNonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = ADNonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = bottom
+    []
+    [./dashpot_bottom_z]
+        type = ADNonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = ADNonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = ADNonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = left
+    []
+    [./dashpot_left_z]
+        type = ADNonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = ADNonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = ADNonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = right
+    []
+    [./dashpot_right_z]
+        type = ADNonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = right
+    []
+    [./dashpot_back_x]
+        type = ADNonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = back
+    []
+    [./dashpot_back_y]
+        type = ADNonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = back
+    []
+    [./dashpot_back_z]
+        type = ADNonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = back
+    []
+    [./dashpot_front_x]
+        type = ADNonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = front
+    []
+    [./dashpot_front_y]
+        type = ADNonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = front
+    []
+    [./dashpot_front_z]
+        type = ADNonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 5773.50
+        shear_wave_speed = 3333.33
+        boundary = front
+    []
+    #
+[]
 
 [ICs]
     [disp_x_ic]

@@ -46,7 +46,8 @@ ADComputeDamageBreakageStressBase::ADComputeDamageBreakageStressBase(const Input
     _gamma_damaged(declareADProperty<Real>("gamma_damaged")),
     _eps_p(declareADProperty<RankTwoTensor>("eps_p")),
     _eps_e(declareADProperty<RankTwoTensor>("eps_e")),
-    _sigma_d(declareADProperty<RankTwoTensor>("sigma_d"))
+    _sigma_d(declareADProperty<RankTwoTensor>("sigma_d")),
+    _initial_damage(getADMaterialProperty<Real>("initial_damage"))
 {
   if (getParam<bool>("use_displaced_mesh"))
     mooseError("The stress calculator needs to run on the undisplaced mesh.");
@@ -63,6 +64,9 @@ ADComputeDamageBreakageStressBase::initQpStatefulProperties()
 {
   _elastic_strain[_qp].zero();
   _stress[_qp].zero(); 
+
+  //set initial damage
+  _alpha_damagedvar[_qp] = _initial_damage[_qp];
 
 }
 

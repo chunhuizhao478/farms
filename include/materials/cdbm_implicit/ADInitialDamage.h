@@ -24,9 +24,14 @@ public:
 
   virtual void computeQpProperties() override;
 
+  virtual void initQpStatefulProperties() override;
+
 protected:
 
   /// Material property initial damage profile
   ADMaterialProperty<Real> & _initial_damage;
+
+  /// Material property initial damage profile old
+  const MaterialProperty<Real> & _initial_damage_old;
 
 };

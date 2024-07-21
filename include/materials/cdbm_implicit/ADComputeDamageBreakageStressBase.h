@@ -63,4 +63,7 @@ protected:
   /// deviatoric stress
   ADMaterialProperty<RankTwoTensor> & _sigma_d;
 
+  /// initial damage
+  const ADMaterialProperty<Real> & _initial_damage;
+
 };
