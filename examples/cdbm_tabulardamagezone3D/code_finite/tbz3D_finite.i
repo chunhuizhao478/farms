@@ -72,7 +72,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-15
+    C_g = 1e-5
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -255,7 +255,6 @@
 [Materials]
     [damagestress]
         type = ADComputeFiniteStrainDamageBreakageStress
-        extra_stress_names = stress_function
         outputs = exodus
     []
     [strain]
@@ -272,183 +271,9 @@
         prop_names = 'nonADdensity'
         prop_values = '2700'
     []
-    [./strain_from_initial_strain]
-        type = ADComputeEigenstrainFromSolution
-        initial_strain = 'func_strain_xx func_strain_xy func_strain_xz  
-                          func_strain_xy func_strain_yy func_strain_yz 
-                          func_strain_xz func_strain_yz func_strain_zz'
-        eigenstrain_name = ini_strain
-    [../]
-    [./stress_function]
-        type = GenericFunctionRankTwoTensor
-        tensor_name = stress_function
-        tensor_functions = 'func_stress_xx func_stress_xy func_stress_xz  
-                            func_stress_xy func_stress_yy func_stress_yz 
-                            func_stress_xz func_stress_yz func_stress_zz'
-    [../]
     [initialdamage]
         type = ADInitialDamage
     []     
-[]
-
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = 'disp_x disp_y disp_z'
-      timestep = LATEST
-      force_preaux = true
-    [../]
-    #add initial strain components
-    [load_strain_xx]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_00
-      timestep = LATEST
-      force_preaux = true
-    []
-    [load_strain_xy]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_01
-      timestep = LATEST
-      force_preaux = true
-    []
-    [load_strain_xz]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_02
-      timestep = LATEST
-      force_preaux = true
-    []
-    [load_strain_yy]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_11
-      timestep = LATEST
-      force_preaux = true
-    [] 
-    [load_strain_yz]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_12
-      timestep = LATEST
-      force_preaux = true
-    []  
-    [load_strain_zz]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_22
-      timestep = LATEST
-      force_preaux = true
-    []  
-    #add initial stress components
-    [load_stress_xx]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_00
-        timestep = LATEST
-        force_preaux = true
-    []
-    [load_stress_xy]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_01
-        timestep = LATEST
-        force_preaux = true
-    []
-    [load_stress_xz]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_02
-        timestep = LATEST
-        force_preaux = true
-    []
-    [load_stress_yy]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_11
-        timestep = LATEST
-        force_preaux = true
-    [] 
-    [load_stress_yz]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_12
-        timestep = LATEST
-        force_preaux = true
-    []  
-    [load_stress_zz]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_22
-        timestep = LATEST
-        force_preaux = true
-    [] 
-[]
-
-[Functions]
-     [func_strain_xx]
-      type = SolutionFunction
-      solution = load_strain_xx
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_strain_xy]
-      type = SolutionFunction
-      solution = load_strain_xy
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_strain_xz]
-      type = SolutionFunction
-      solution = load_strain_xz
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_strain_yy]
-      type = SolutionFunction
-      solution = load_strain_yy
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_strain_yz]
-      type = SolutionFunction
-      solution = load_strain_yz
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_strain_zz]
-      type = SolutionFunction
-      solution = load_strain_zz
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../] 
-    #
-    [func_stress_xx]
-        type = SolutionFunction
-        solution = load_stress_xx
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_stress_xy]
-        type = SolutionFunction
-        solution = load_stress_xy
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_stress_xz]
-        type = SolutionFunction
-        solution = load_stress_xz
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_stress_yy]
-        type = SolutionFunction
-        solution = load_stress_yy
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_stress_yz]
-        type = SolutionFunction
-        solution = load_stress_yz
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]
-    [func_stress_zz]
-        type = SolutionFunction
-        solution = load_stress_zz
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    [../]   
 []
 
 [Preconditioning]
@@ -480,232 +305,118 @@
     []
 []  
 
+[Controls] # turns off inertial terms for the first time step
+    [period0]
+        type = TimePeriod
+        disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z'
+        start_time = -1e-8
+        end_time = 1e-4 # dt used in the simulation
+    []
+    [period1]
+        type = TimePeriod
+        disable_objects = '*/pressure_right */pressure_left */pressure_front */pressure_back */pressure_top */pressure_bottom'
+        depends_on = period0
+        start_time = 2e-4
+    []
+[]
+
 [Outputs]
     exodus = true
     interval = 10
-    # show = 'alpha B disp_x disp_y disp_z vel_x vel_y vel_z'
+    show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z vel_x vel_y vel_z'
     print_linear_residuals=true
 []
 
+#We assume the simulation is loaded with compressive pressure and shear stress
 [BCs]
-    [./dashpot_top_x]
-        type = ADNonReflectDashpotBC3d
-        component = 0
+    [pressure_right]
+        type = ADPressure
         variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = top
-    []
-    [./dashpot_top_y]
-        type = ADNonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = top
-    []
-    [./dashpot_top_z]
-        type = ADNonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = top
-    []
-    [./dashpot_bottom_x]
-        type = ADNonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = bottom
-    []
-    [./dashpot_bottom_y]
-        type = ADNonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = bottom
-    []
-    [./dashpot_bottom_z]
-        type = ADNonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = bottom
-    []
-    [./dashpot_left_x]
-        type = ADNonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = left
-    []
-    [./dashpot_left_y]
-        type = ADNonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = left
-    []
-    [./dashpot_left_z]
-        type = ADNonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = left
-    []
-    [./dashpot_right_x]
-        type = ADNonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
+        displacements = 'disp_x disp_y disp_z'
         boundary = right
+        factor = 50e6
     []
-    [./dashpot_right_y]
-        type = ADNonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = right
-    []
-    [./dashpot_right_z]
-        type = ADNonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = right
-    []
-    [./dashpot_back_x]
-        type = ADNonReflectDashpotBC3d
-        component = 0
+    [pressure_left]
+        type = ADPressure
         variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = back
+        displacements = 'disp_x disp_y disp_z'
+        boundary = left
+        factor = 50e6
     []
-    [./dashpot_back_y]
-        type = ADNonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = back
-    []
-    [./dashpot_back_z]
-        type = ADNonReflectDashpotBC3d
-        component = 2
+    [pressure_front]
+        type = ADPressure
         variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = back
-    []
-    [./dashpot_front_x]
-        type = ADNonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
+        displacements = 'disp_x disp_y disp_z'
         boundary = front
+        factor = 50e6
     []
-    [./dashpot_front_y]
-        type = ADNonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = front
-    []
-    [./dashpot_front_z]
-        type = ADNonReflectDashpotBC3d
-        component = 2
+    [pressure_back]
+        type = ADPressure
         variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = front
+        displacements = 'disp_x disp_y disp_z'
+        boundary = back
+        factor = 50e6        
+    []
+    [pressure_top]
+        type = ADPressure
+        variable = disp_y
+        displacements = 'disp_x disp_y disp_z'
+        boundary = top
+        factor = 50e6         
+    []
+    [pressure_bottom]
+        type = ADPressure
+        variable = disp_y
+        displacements = 'disp_x disp_y disp_z'
+        boundary = bottom
+        factor = 50e6         
     []
     #
-[]
-
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
+    [pressure_shear_front]
+        type = ADNeumannBC
+        variable = disp_x
+        displacements = 'disp_x disp_y disp_z'
+        boundary = front
+        value = 30e6
     []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
+    [pressure_shear_back]
+        type = ADNeumannBC
+        variable = disp_x
+        displacements = 'disp_x disp_y disp_z'
+        boundary = back
+        value = -30e6        
     []
-    [disp_z_ic]
-      type = SolutionIC
-      variable = disp_z
-      solution_uo = init_sol_components
-      from_variable = disp_z
+    [pressure_shear_left]
+        type = ADNeumannBC
+        variable = disp_z
+        displacements = 'disp_x disp_y disp_z'
+        boundary = left
+        value = -30e6
+    []
+    [pressure_shear_right]
+        type = ADNeumannBC
+        variable = disp_z
+        displacements = 'disp_x disp_y disp_z'
+        boundary = right
+        value = 30e6        
+    []
+    #
+    [fix_ptr_x]
+        type = ADDirichletBC
+        variable = disp_x
+        value = 0
+        boundary = corner_ptr
+    []
+    [fix_ptr_y]
+        type = ADDirichletBC
+        variable = disp_y
+        value = 0
+        boundary = corner_ptr
+    []
+    [fix_ptr_z]
+        type = ADDirichletBC
+        variable = disp_z
+        value = 0
+        boundary = corner_ptr
     []
 []

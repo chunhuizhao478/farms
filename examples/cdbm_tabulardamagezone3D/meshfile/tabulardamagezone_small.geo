@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 lc1 = 50;
-lc2 = 0.25;
+lc2 = 0.5;
 
 //length of large box
 Lbox_length_x = 200;

@@ -113,4 +113,6 @@ protected:
   const MaterialProperty<RankTwoTensor> & _sigma_d_old;
   const MaterialProperty<RankTwoTensor> & _mechanical_strain_old;
 
+  int & _step;
+
 };

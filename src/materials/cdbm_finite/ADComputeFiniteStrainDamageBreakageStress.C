@@ -85,7 +85,8 @@ ADComputeFiniteStrainDamageBreakageStress::ADComputeFiniteStrainDamageBreakageSt
     _eps_p_old(getMaterialPropertyOld<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOld<RankTwoTensor>("eps_e")),
     _sigma_d_old(getMaterialPropertyOld<RankTwoTensor>("sigma_d")),
-    _mechanical_strain_old(getMaterialPropertyOld<RankTwoTensor>("mechanical_strain"))
+    _mechanical_strain_old(getMaterialPropertyOld<RankTwoTensor>("mechanical_strain")),
+    _step(_fe_problem.timeStep())
 {
 }
 
@@ -170,72 +171,89 @@ ADComputeFiniteStrainDamageBreakageStress::computeQpStress()
   _shear_modulus[_qp] = shear_modulus;
   _gamma_damaged[_qp] = gamma_damaged;
 
-  /* compute strain */
-  ADRankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_breakagevar_old[_qp],_m1) * _sigma_d_old[_qp];
-  ADRankTwoTensor eps_e = _strain_increment[_qp] + _mechanical_strain_old[_qp] - eps_p;
-  ADReal I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
-  ADReal I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
-  ADReal xi = -1.0;
+  if (_step == 1){
 
-  //Represent sigma (solid(s) + granular(b))
-  ADRankTwoTensor sigma_s;
-  ADRankTwoTensor sigma_b;
-  ADRankTwoTensor sigma_total;
-  ADRankTwoTensor sigma_d;
-  const auto I = ADRankTwoTensor::Identity();
+    // stress = C * e
+    _stress[_qp](0,0) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](0,0);
+    _stress[_qp](1,1) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](1,1);
+    _stress[_qp](2,2) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](2,2);
+    _stress[_qp](0,1) = 2 * shear_modulus * _mechanical_strain[_qp](0,1); _stress[_qp](1,0) = 2 * shear_modulus * _mechanical_strain[_qp](1,0);
+    _stress[_qp](0,2) = 2 * shear_modulus * _mechanical_strain[_qp](0,2); _stress[_qp](2,0) = 2 * shear_modulus * _mechanical_strain[_qp](2,0);
+    _stress[_qp](1,2) = 2 * shear_modulus * _mechanical_strain[_qp](1,2); _stress[_qp](2,1) = 2 * shear_modulus * _mechanical_strain[_qp](2,1);
 
-  sigma_s(0,0) = ( _lambda_o - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps_e(0,0);
-  sigma_b(0,0) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,0);
-  sigma_s(1,1) = ( _lambda_o - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps_e(1,1);
-  sigma_b(1,1) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,1);
-  sigma_s(2,2) = ( _lambda_o - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps_e(2,2);
-  sigma_b(2,2) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,2);
-  sigma_s(0,1)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(0,1); sigma_s(1,0)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(1,0);
-  sigma_b(0,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,1); sigma_b(1,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,0);
-  sigma_s(0,2)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(0,2); sigma_s(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
-  sigma_b(0,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,2); sigma_b(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
-  sigma_s(1,2)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(1,2); sigma_s(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
-  sigma_b(1,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,2); sigma_b(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
-  
-  sigma_total = (1 - _B_breakagevar_old[_qp]) * sigma_s + _B_breakagevar_old[_qp] * sigma_b;
-  sigma_d = sigma_total - 1/3 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
+    // Assign value for elastic strain, which is equal to the mechanical strain
+    _elastic_strain[_qp] = _mechanical_strain[_qp];
 
-  _eps_p[_qp] = eps_p;
-  _eps_e[_qp] = eps_e;
-  _I1[_qp] = I1;
-  _I2[_qp] = I2;
-  _xi[_qp] = xi;
-  _sigma_d[_qp] = sigma_d;
+  }
+  else{
 
-  // stress = C * e
-  ADRankTwoTensor intermediate_stress;
-  intermediate_stress = sigma_total;
+    /* compute strain */
+    ADRankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_breakagevar_old[_qp],_m1) * _sigma_d_old[_qp];
+    ADRankTwoTensor eps_e = _strain_increment[_qp] + _mechanical_strain_old[_qp] - eps_p;
+    ADReal I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
+    ADReal I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
+    ADReal xi = I1/std::sqrt(I2);
 
-  // Calculate the stress in the intermediate configuration
-  //   ADRankTwoTensor intermediate_stress;
+    //Represent sigma (solid(s) + granular(b))
+    ADRankTwoTensor sigma_s;
+    ADRankTwoTensor sigma_b;
+    ADRankTwoTensor sigma_total;
+    ADRankTwoTensor sigma_d;
+    const auto I = ADRankTwoTensor::Identity();
 
-  //   if (hasGuaranteedMaterialProperty(_elasticity_tensor_name, Guarantee::ISOTROPIC))
-  // intermediate_stress =
-  //     _elasticity_tensor[_qp] * (_strain_increment[_qp] + _elastic_strain_old[_qp]);
-  //   else
-  //   {
-  //     // Rotate elasticity tensor to the intermediate configuration
-  //     // That is, elasticity tensor is defined in the previous time step
-  //     // This is consistent with the definition of strain increment
-  //     // The stress is projected onto the current configuration a few lines below
-  //     auto elasticity_tensor_rotated = _elasticity_tensor[_qp];
-  //     elasticity_tensor_rotated.rotate(_rotation_total_old[_qp]);
+    sigma_s(0,0) = ( _lambda_o - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps_e(0,0);
+    sigma_b(0,0) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,0);
+    sigma_s(1,1) = ( _lambda_o - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps_e(1,1);
+    sigma_b(1,1) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,1);
+    sigma_s(2,2) = ( _lambda_o - gamma_damaged / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged * xi ) * eps_e(2,2);
+    sigma_b(2,2) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,2);
+    sigma_s(0,1)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(0,1); sigma_s(1,0)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(1,0);
+    sigma_b(0,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,1); sigma_b(1,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,0);
+    sigma_s(0,2)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(0,2); sigma_s(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
+    sigma_b(0,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,2); sigma_b(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
+    sigma_s(1,2)  = ( 2 * shear_modulus - gamma_damaged * xi    ) * eps_e(1,2); sigma_s(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
+    sigma_b(1,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,2); sigma_b(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
+    
+    sigma_total = (1 - _B_breakagevar_old[_qp]) * sigma_s + _B_breakagevar_old[_qp] * sigma_b;
+    sigma_d = sigma_total - 1/3 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
 
-  //     intermediate_stress =
-  //         elasticity_tensor_rotated * (_elastic_strain_old[_qp] + _strain_increment[_qp]);
+    _eps_p[_qp] = eps_p;
+    _eps_e[_qp] = eps_e;
+    _I1[_qp] = I1;
+    _I2[_qp] = I2;
+    _xi[_qp] = xi;
+    _sigma_d[_qp] = sigma_d;
 
-  //     // Update current total rotation matrix to be used in next step
-  //     _rotation_total[_qp] = _rotation_increment[_qp] * _rotation_total_old[_qp];
-  //   }
-  // Rotate the stress state to the current configuration
-  _stress[_qp] = intermediate_stress;
-  _stress[_qp].rotate(_rotation_increment[_qp]);
+    // stress = C * e
+    ADRankTwoTensor intermediate_stress;
+    intermediate_stress = sigma_total;
 
-  // Assign value for elastic strain, which is equal to the mechanical strain
-  _elastic_strain[_qp] = _mechanical_strain[_qp];
+    // Calculate the stress in the intermediate configuration
+    //   ADRankTwoTensor intermediate_stress;
+
+    //   if (hasGuaranteedMaterialProperty(_elasticity_tensor_name, Guarantee::ISOTROPIC))
+    // intermediate_stress =
+    //     _elasticity_tensor[_qp] * (_strain_increment[_qp] + _elastic_strain_old[_qp]);
+    //   else
+    //   {
+    //     // Rotate elasticity tensor to the intermediate configuration
+    //     // That is, elasticity tensor is defined in the previous time step
+    //     // This is consistent with the definition of strain increment
+    //     // The stress is projected onto the current configuration a few lines below
+    //     auto elasticity_tensor_rotated = _elasticity_tensor[_qp];
+    //     elasticity_tensor_rotated.rotate(_rotation_total_old[_qp]);
+
+    //     intermediate_stress =
+    //         elasticity_tensor_rotated * (_elastic_strain_old[_qp] + _strain_increment[_qp]);
+
+    //     // Update current total rotation matrix to be used in next step
+    //     _rotation_total[_qp] = _rotation_increment[_qp] * _rotation_total_old[_qp];
+    //   }
+    // Rotate the stress state to the current configuration
+    _stress[_qp] = intermediate_stress;
+    _stress[_qp].rotate(_rotation_increment[_qp]);
+
+    // Assign value for elastic strain, which is equal to the mechanical strain
+    _elastic_strain[_qp] = _mechanical_strain[_qp];
+  }
 }
