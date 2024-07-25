@@ -295,11 +295,11 @@
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 10
-    nl_abs_tol = 1e-8
+    nl_abs_tol = 1e-6
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-4
+    dt = 1e-5
     [TimeIntegrator]
         type = NewmarkBeta
     []
@@ -322,8 +322,8 @@
 
 [Outputs]
     exodus = true
-    interval = 10
-    show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z vel_x vel_y vel_z'
+    interval = 100
+    show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z vel_x vel_y vel_z shear_modulus'
     print_linear_residuals=true
 []
 
