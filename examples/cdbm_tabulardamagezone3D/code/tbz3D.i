@@ -21,7 +21,8 @@
         coord = '-100 -100 -100'
         new_boundary = corner_ptr
         input = sidesets
-    []      
+    []
+    displacements = 'disp_x disp_y disp_z'      
 []
 
 [GlobalParams]
@@ -155,18 +156,21 @@
         displacements = 'disp_x disp_y disp_z'
         variable = disp_x
         component = 0
+        use_displaced_mesh = true
     []
     [dispkernel_y]
         type = ADDynamicStressDivergenceTensors
         displacements = 'disp_x disp_y disp_z'
         variable = disp_y
         component = 1
+        use_displaced_mesh = true
     []
     [dispkernel_z]
         type = ADDynamicStressDivergenceTensors
         displacements = 'disp_x disp_y disp_z'
         variable = disp_z
         component = 2
+        use_displaced_mesh = true
     []
     [inertia_x]
         type = ADInertialForce
@@ -175,6 +179,7 @@
         acceleration = accel_x
         beta = 0.25
         gamma = 0.5
+        use_displaced_mesh = true
     []
     [inertia_y]
         type = ADInertialForce
@@ -183,6 +188,7 @@
         acceleration = accel_y
         beta = 0.25
         gamma = 0.5
+        use_displaced_mesh = true
     []
     [inertia_z]
         type = ADInertialForce
@@ -191,6 +197,7 @@
         acceleration = accel_z
         beta = 0.25
         gamma = 0.5
+        use_displaced_mesh = true
     []
 []
 
