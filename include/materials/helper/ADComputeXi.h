@@ -29,6 +29,10 @@ protected:
   /// @brief Define the xi as material property
   ADMaterialProperty<Real> & _xi;
 
+  ADMaterialProperty<Real> & _I1;
+
+  ADMaterialProperty<Real> & _I2;
+
   /// elastic strain
   const ADMaterialProperty<RankTwoTensor> & _mechanical_strain;
 
