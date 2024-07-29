@@ -230,6 +230,19 @@ ADComputeFiniteStrainDamageBreakageStress::computeQpStress()
     _eps_e[_qp] = eps_e;
     _I1[_qp] = I1;
     _I2[_qp] = I2;
+
+    //------------------------------------------------//
+    //hardcode
+    Real xcoord = _q_point[_qp](0);
+    Real ycoord = _q_point[_qp](1);
+    Real zcoord = _q_point[_qp](2);
+    //
+    //note: hardcode coordinates
+    if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 && zcoord >= -0.5 && zcoord <= 0.5 ){
+      xi = 1.0;
+    } 
+    //------------------------------------------------//
+
     _xi[_qp] = xi;
     _sigma_d[_qp] = sigma_d;
 
