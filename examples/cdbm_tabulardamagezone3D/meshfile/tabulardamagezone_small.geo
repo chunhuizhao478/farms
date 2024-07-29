@@ -1,26 +1,27 @@
 SetFactory("OpenCASCADE");
 
-lc1 = 50;
-lc2 = 0.5;
+lc1 = 50; lc2 = 0.4;
 
 //length of large box
-Lbox_length_x = 200;
-Lbox_length_y = 200;
-Lbox_length_z = 200;
+Lbox_length_x = 1000; Lbox_length_y = 1000; Lbox_length_z = 1000;
 
 //length of small box
-Sbox_length_x = 60; 
-Sbox_length_y = 10;
-Sbox_length_z = 1;
+Sbox_length_x = 60;  Sbox_length_y = 10; Sbox_length_z = 1;
 
-// Define the larger box (Box 2)
+// Define the larger box (Box 1)
 Box(1) = {-Lbox_length_x/2, -Lbox_length_y/2, -Lbox_length_z/2, Lbox_length_x, Lbox_length_y, Lbox_length_z};
 
-// Define the smaller box (Box 1) and length it inside the larger box
+// Define the smaller box (Box 2) and place it at the center of the larger box
 Box(2) = {-Sbox_length_x/2, -Sbox_length_y/2, -Sbox_length_z/2, Sbox_length_x, Sbox_length_y, Sbox_length_z};
 
-// Embed the smaller box inside the larger box
-BooleanFragments { Volume{1}; Delete; } { Volume{2}; Delete; }
+// Define the nucleation box (Box 3) and place it at the center of the larger box
+center_x = -Sbox_length_x/2+6; center_y = 0; center_z = 0;
+nucl_radius = 2;
+double_nucl_radius = 2 * nucl_radius;
+Box(3) = {center_x-nucl_radius, center_y-nucl_radius, center_z-Sbox_length_z/2, double_nucl_radius, double_nucl_radius, Sbox_length_z};
+
+// Boolean operation to fragment all volumes
+BooleanFragments{ Volume{1,2,3}; Delete; }{}
 
 // Define mesh sizes using Box field for smaller box
 Field[1] = Box;
@@ -36,8 +37,11 @@ Field[1].Thickness = 10;
 
 Background Field = 1;
 
-// // Mark the smaller box as a physical volume
-// Physical Volume("SmallerBox") = {2};
+// Label each volume separately
+volumes[] = Volume{:};
+For i In {0:#volumes[]-1}
+    Physical Volume(Sprintf("Volume_%g", i+1)) = {volumes[i]};
+EndFor
 
-// // If needed, mark the larger box as a physical volume
-// Physical Volume("LargerBox") = {1};
+// Print the number of volumes created
+Printf("Number of volumes created: %g", #volumes[]);

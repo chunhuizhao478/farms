@@ -42,12 +42,7 @@ ADInitialDamage::initQpStatefulProperties()
   //note: hardcode coordinates
   Real alpha_o = 0.0;
   if (xcoord >= -30 && xcoord <= 30 && ycoord >= -5 && ycoord <= 5 && zcoord >= -0.5 && zcoord <= 0.5){
-    if ( xcoord >= -25 && xcoord <= -20 && ycoord >= -2.5 && ycoord <= 2.5 ){
-      alpha_o = 0.8;
-    }
-    else{
-      alpha_o = 0.7;
-    }
+    alpha_o = 0.7;
   }
   else{
     alpha_o = 0.0;
@@ -61,5 +56,30 @@ ADInitialDamage::initQpStatefulProperties()
 void
 ADInitialDamage::computeQpProperties()
 {
-  _initial_damage[_qp] = _initial_damage_old[_qp];
+
+  Real xcoord = _q_point[_qp](0);
+  Real ycoord = _q_point[_qp](1);
+  Real zcoord = _q_point[_qp](2);
+
+  //
+  //note: hardcode coordinates
+  Real alpha_o = 0.0;
+  if (xcoord >= -30 && xcoord <= 30 && ycoord >= -5 && ycoord <= 5 && zcoord >= -0.5 && zcoord <= 0.5){
+    if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 ){
+      if (_t <= 1e-3){
+        alpha_o = 0.7 + (0.8 - 0.7) / 1e-3 * _t;
+      }
+      else{
+        alpha_o = 0.8;
+      }
+    }
+    else{
+      alpha_o = 0.7;
+    }
+  }
+  else{
+    alpha_o = 0.0;
+  }  
+
+  _initial_damage[_qp] = alpha_o;
 }

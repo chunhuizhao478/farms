@@ -106,72 +106,16 @@ void
 ADComputeFiniteStrainDamageBreakageStress::computeQpStress()
 {
 
-  /* compute alpha */
-  //compute forcing term
-  ADReal alpha_forcingterm;
-  if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
-  }
-  else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
-    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
-  }
-  else{
-    mooseError("xi_old is OUT-OF-RANGE!.");   
-  }
-
-  //update alpha at current time
-  ADReal alpha_damagedvar = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
-
-  //check alpha within range
-  if ( alpha_damagedvar < 0 ){ alpha_damagedvar = 0.0; }
-  else if ( alpha_damagedvar > 1 ){ alpha_damagedvar = 1.0; }
-  else{} 
-
-  //check below initial damage (fix initial damage)
-  if ( alpha_damagedvar < _initial_damage[_qp] ){ alpha_damagedvar = _initial_damage[_qp]; }
-  else{}
-
-  _alpha_damagedvar[_qp] = alpha_damagedvar;
-
-  /* compute B */
-  ADReal C_B = _CdCb_multiplier * _Cd_constant;
-
-  //alphacr function
-  ADReal alphacr;
-  if ( _xi_old[_qp] < _xi_0 ){ alphacr = 1.0;} 
-  else if ( _xi_old[_qp] > _xi_0 && _xi_old[_qp] <= _xi_1 ){ alphacr = ((_xi_old[_qp]*2.76e5-7.100521107637101e2*_xi_old[_qp]*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e2*std::pow(_xi_old[_qp],3)*1.25e2+std::pow(_xi_old[_qp],3)*4.6e4+std::sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(_xi_old[_qp]*-1.44e3-std::pow(_xi_old[_qp],2)*2.1e3+std::pow(_xi_old[_qp],3)*5.6e2+std::pow(_xi_old[_qp],4)*3.0e2+std::pow(_xi_old[_qp],6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(_xi_old[_qp]*3.837588e7-7.100521107637101e2*_xi_old[_qp]*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*std::pow(_xi_old[_qp],2)*2.76e4+std::pow(_xi_old[_qp],2)*2.3984925e7-3.517789e6);}
-  else if ( _xi_old[_qp] > _xi_1 && _xi_old[_qp] <= _xi_max ){ alphacr = 6.0e10/(7.100521107637101e2*1.627118644067797e8+_xi_old[_qp]*(7.100521107637101e2*1.016949152542373e8-3.742372881355932e10)-5.987796610169492e10);}
-  else{std::cout<<"xi: "<<_xi_old[_qp]<<std::endl;mooseError("xi exceeds the maximum allowable range!");}
-
-  //compute forcing func
-  ADReal Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
-  ADReal B_forcingterm;
-  if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-    B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
-  }
-  else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d );
-  }
-  else{
-    mooseError("xi_old is OUT-OF-RANGE!.");
-  }
-
-  ADReal B_damagedvar = _B_breakagevar_old[_qp] + _dt * B_forcingterm;
-
-  //check breakage within range
-  if ( B_damagedvar < 0 ){ B_damagedvar = 0.0; }
-  else if ( B_damagedvar > 1 ){ B_damagedvar = 1.0; }
-  else{}   
-
-  _B_breakagevar[_qp] = B_damagedvar;
-
-  /* update modulus */
-  ADReal shear_modulus = _shear_modulus_o + _alpha_damagedvar_old[_qp] * _xi_0 * _gamma_damaged_r;
-  ADReal gamma_damaged = _alpha_damagedvar_old[_qp] * _gamma_damaged_r;
-  _shear_modulus[_qp] = shear_modulus;
-  _gamma_damaged[_qp] = gamma_damaged;
-
   if (_step == 1){
+
+    _alpha_damagedvar[_qp] = _initial_damage[_qp];
+    _B_breakagevar[_qp] = 0.0;
+
+    /* update modulus */
+    ADReal shear_modulus = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * _gamma_damaged_r;
+    ADReal gamma_damaged = _initial_damage[_qp] * _gamma_damaged_r;
+    _shear_modulus[_qp] = shear_modulus;
+    _gamma_damaged[_qp] = gamma_damaged;  
 
     // stress = C * e
     _stress[_qp](0,0) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](0,0);
@@ -186,6 +130,71 @@ ADComputeFiniteStrainDamageBreakageStress::computeQpStress()
 
   }
   else{
+
+    /* compute alpha */
+    //compute forcing term
+    ADReal alpha_forcingterm;
+    if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
+      alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+    }
+    else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
+      alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+    }
+    else{
+      mooseError("xi_old is OUT-OF-RANGE!.");   
+    }
+
+    //update alpha at current time
+    ADReal alpha_damagedvar = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
+
+    //check alpha within range
+    if ( alpha_damagedvar < 0 ){ alpha_damagedvar = 0.0; }
+    else if ( alpha_damagedvar > 1 ){ alpha_damagedvar = 1.0; }
+    else{} 
+
+    //check below initial damage (fix initial damage)
+    if ( alpha_damagedvar < _initial_damage[_qp] ){ alpha_damagedvar = _initial_damage[_qp]; }
+    else{}
+
+    _alpha_damagedvar[_qp] = alpha_damagedvar;
+
+    /* compute B */
+    ADReal C_B = _CdCb_multiplier * _Cd_constant;
+
+    //alphacr function
+    ADReal alphacr;
+    if ( _xi_old[_qp] < _xi_0 ){ alphacr = 1.0;} 
+    else if ( _xi_old[_qp] > _xi_0 && _xi_old[_qp] <= _xi_1 ){ alphacr = ((_xi_old[_qp]*2.76e5-7.100521107637101e2*_xi_old[_qp]*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e2*std::pow(_xi_old[_qp],3)*1.25e2+std::pow(_xi_old[_qp],3)*4.6e4+std::sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(_xi_old[_qp]*-1.44e3-std::pow(_xi_old[_qp],2)*2.1e3+std::pow(_xi_old[_qp],3)*5.6e2+std::pow(_xi_old[_qp],4)*3.0e2+std::pow(_xi_old[_qp],6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(_xi_old[_qp]*3.837588e7-7.100521107637101e2*_xi_old[_qp]*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*std::pow(_xi_old[_qp],2)*2.76e4+std::pow(_xi_old[_qp],2)*2.3984925e7-3.517789e6);}
+    else if ( _xi_old[_qp] > _xi_1 && _xi_old[_qp] <= _xi_max ){ alphacr = 6.0e10/(7.100521107637101e2*1.627118644067797e8+_xi_old[_qp]*(7.100521107637101e2*1.016949152542373e8-3.742372881355932e10)-5.987796610169492e10);}
+    else{std::cout<<"xi: "<<_xi_old[_qp]<<std::endl;mooseError("xi exceeds the maximum allowable range!");}
+
+    //compute forcing func
+    ADReal Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
+    ADReal B_forcingterm;
+    if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
+      B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
+    }
+    else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
+      B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d );
+    }
+    else{
+      mooseError("xi_old is OUT-OF-RANGE!.");
+    }
+
+    ADReal B_damagedvar = _B_breakagevar_old[_qp] + _dt * B_forcingterm;
+
+    //check breakage within range
+    if ( B_damagedvar < 0 ){ B_damagedvar = 0.0; }
+    else if ( B_damagedvar > 1 ){ B_damagedvar = 1.0; }
+    else{}   
+
+    _B_breakagevar[_qp] = B_damagedvar;
+
+    /* update modulus */
+    ADReal shear_modulus = _shear_modulus_o + _alpha_damagedvar_old[_qp] * _xi_0 * _gamma_damaged_r;
+    ADReal gamma_damaged = _alpha_damagedvar_old[_qp] * _gamma_damaged_r;
+    _shear_modulus[_qp] = shear_modulus;
+    _gamma_damaged[_qp] = gamma_damaged;
 
     /* compute strain */
     ADRankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_breakagevar_old[_qp],_m1) * _sigma_d_old[_qp];
