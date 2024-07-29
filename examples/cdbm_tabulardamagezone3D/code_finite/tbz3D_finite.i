@@ -319,7 +319,7 @@
 
 [Outputs]
     exodus = true
-    interval = 10
+    interval = 1
     show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z vel_x vel_y vel_z shear_modulus initial_damage xi'
     print_linear_residuals=true
 []

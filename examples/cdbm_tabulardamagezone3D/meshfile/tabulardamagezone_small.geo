@@ -20,8 +20,12 @@ nucl_radius = 2;
 double_nucl_radius = 2 * nucl_radius;
 Box(3) = {center_x-nucl_radius, center_y-nucl_radius, center_z-Sbox_length_z/2, double_nucl_radius, double_nucl_radius, Sbox_length_z};
 
+Box(4) = {-Sbox_length_x/2, -Sbox_length_y/2, -Sbox_length_z/2-Sbox_length_z, Sbox_length_x, Sbox_length_y, Sbox_length_z};
+
+Box(5) = {-Sbox_length_x/2, -Sbox_length_y/2, -Sbox_length_z/2+Sbox_length_z, Sbox_length_x, Sbox_length_y, Sbox_length_z};
+
 // Boolean operation to fragment all volumes
-BooleanFragments{ Volume{1,2,3}; Delete; }{}
+BooleanFragments{ Volume{1,2,3,4,5}; Delete; }{}
 
 // Define mesh sizes using Box field for smaller box
 Field[1] = Box;
@@ -31,8 +35,8 @@ Field[1].XMin = -Sbox_length_x/2;
 Field[1].XMax = Sbox_length_x/2;
 Field[1].YMin = -Sbox_length_y/2;
 Field[1].YMax = Sbox_length_y/2;
-Field[1].ZMin = -Sbox_length_z/2;
-Field[1].ZMax = Sbox_length_z/2;
+Field[1].ZMin = -Sbox_length_z/2-Sbox_length_z;
+Field[1].ZMax = Sbox_length_z/2+Sbox_length_z;
 Field[1].Thickness = 10;
 
 Background Field = 1;
