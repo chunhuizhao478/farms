@@ -7,8 +7,8 @@
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      # file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
-      file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
+      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
+      # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -46,7 +46,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 1.0
+    q = 0.0
     
     #characteristic length (m)
     Dc = 0.4
@@ -66,18 +66,6 @@
       order = FIRST
       family = LAGRANGE
     []
-    [./resid_slipweakening_x]
-        order = FIRST
-        family = LAGRANGE
-    [../]
-    [./resid_slipweakening_y]
-        order = FIRST
-        family = LAGRANGE
-    [../]
-    [./resid_slipweakening_z]
-        order = FIRST
-        family = LAGRANGE
-    [../]
     #restoration force for damping (tag after solve)
     [./resid_damp_x]
       order = FIRST
@@ -91,18 +79,6 @@
         order = FIRST
         family = LAGRANGE
     [../] 
-    [./resid_damp_sw_x]
-      order = FIRST
-      family = LAGRANGE
-    [../]
-    [./resid_damp_sw_y]
-        order = FIRST
-        family = LAGRANGE
-    [../] 
-    [./resid_damp_sw_z]
-        order = FIRST
-        family = LAGRANGE
-    [../]
     [./disp_slipweakening_x]
         order = FIRST
         family = LAGRANGE
@@ -204,44 +180,18 @@
         order = CONSTANT
         family = MONOMIAL
     []    
-    #
-    [./check_function_initial_stress_xx]
-      order = FIRST
-      family = LAGRANGE      
-    []
-    [./check_function_initial_stress_xy]
-      order = FIRST
-      family = LAGRANGE      
-    []
-    [./check_function_initial_stress_xz]
-        order = FIRST
-        family = LAGRANGE      
-    []
-    [./check_function_initial_stress_yy]
-      order = FIRST
-      family = LAGRANGE      
-    []
-    [./check_function_initial_stress_yz]
-        order = FIRST
-        family = LAGRANGE      
-    []
-    [./check_function_initial_stress_zz]
-      order = FIRST
-      family = LAGRANGE      
-    []
 []
 
-[Modules]
-    [./TensorMechanics]
-    [./Master]
-        [./all]
-            strain = SMALL
-            add_variables = true
-            generate_output = 'stress_xx stress_yy stress_xy strain_xx strain_xy strain_yy'
-            extra_vector_tags = 'restore_tag'
-        [../]
+[Physics]
+  [SolidMechanics]
+    [QuasiStatic]
+      [./all]
+        strain = SMALL
+        add_variables = true
+        extra_vector_tags = 'restore_tag'
+      [../]
     [../]
-    [../]
+  [../]
 []
 
 [Problem]
@@ -253,37 +203,37 @@
       type = ProjectionAux
       variable = disp_slipweakening_x
       v = disp_x
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
     []
     [Displacement_y]
       type = ProjectionAux
       variable = disp_slipweakening_y
       v = disp_y
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
     []
     [Displacement_z]
       type = ProjectionAux
       variable = disp_slipweakening_z
       v = disp_z
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
     []
     [Vel_x]
         type = CompVarRate
         variable = vel_slipweakening_x
         coupled = disp_x
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [Vel_y]
         type = CompVarRate
         variable = vel_slipweakening_y
         coupled = disp_y
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [Vel_z]
       type = CompVarRate
       variable = vel_slipweakening_z
       coupled = disp_z
-      execute_on = 'TIMESTEP_BEGIN'
+      execute_on = 'TIMESTEP_END'
     []
     #
     [XJump]
@@ -361,24 +311,6 @@
         boundary = 'Block2_Block3'
     []        
     #
-    [Residual_x]
-      type = ProjectionAux
-      variable = resid_slipweakening_x
-      v = resid_x
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-    [Residual_y]
-      type = ProjectionAux
-      variable = resid_slipweakening_y
-      v = resid_y
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-    [Residual_z]
-      type = ProjectionAux
-      variable = resid_slipweakening_z
-      v = resid_z
-      execute_on = 'TIMESTEP_BEGIN'
-    []
     [restore_x]
       type = TagVectorAux
       vector_tag = 'restore_tag'
@@ -401,25 +333,6 @@
       execute_on = 'TIMESTEP_END'
     []
     #damping
-    #
-    [Residual_damp_x]
-      type = ProjectionAux
-      variable = resid_damp_sw_x
-      v = resid_damp_x
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-    [Residual_damp_y]
-      type = ProjectionAux
-      variable = resid_damp_sw_y
-      v = resid_damp_y
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-    [Residual_damp_z]
-      type = ProjectionAux
-      variable = resid_damp_sw_z
-      v = resid_damp_z
-      execute_on = 'TIMESTEP_BEGIN'
-    []
     [restore_dampx]
       type = TagVectorAux
       vector_tag = 'restore_dampx_tag'
@@ -445,54 +358,18 @@
       type = FunctionAux
       variable = mu_s
       function = func_static_friction_coeff_mus
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+      execute_on = 'INITIAL TIMESTEP_END'
     []
     [DynamicFricCoeff]
       type = FunctionAux
       variable = mu_d
       function = func_dynamic_friction_coeff_mud
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
+      execute_on = 'INITIAL TIMESTEP_END'
     []
     [elem_length]
       type = ConstantAux
       variable = elem_length
       value = 200
-    []
-    [checkxx]
-      type = FunctionAux
-      variable = check_function_initial_stress_xx
-      function = func_initial_stress_xx
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [checkxy]
-      type = FunctionAux
-      variable = check_function_initial_stress_xy
-      function = func_initial_stress_xy
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [checkxz]
-      type = FunctionAux
-      variable = check_function_initial_stress_xz
-      function = func_initial_stress_xz
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [checkyy]
-      type = FunctionAux
-      variable = check_function_initial_stress_yy
-      function = func_initial_stress_yy
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [checkyz]
-      type = FunctionAux
-      variable = check_function_initial_stress_yz
-      function = func_initial_stress_yz
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [checkzz]
-      type = FunctionAux
-      variable = check_function_initial_stress_zz
-      function = func_initial_stress_zz
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []
 
@@ -572,12 +449,15 @@
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         disp_slipweakening_z     = disp_slipweakening_z
-        reaction_slipweakening_x = resid_slipweakening_x
-        reaction_slipweakening_y = resid_slipweakening_y
-        reaction_slipweakening_z = resid_slipweakening_z
-        reaction_damp_x = resid_damp_sw_x
-        reaction_damp_y = resid_damp_sw_y
-        reaction_damp_z = resid_damp_sw_z
+        vel_slipweakening_x      = vel_slipweakening_x
+        vel_slipweakening_y      = vel_slipweakening_y
+        vel_slipweakening_z      = vel_slipweakening_z
+        reaction_slipweakening_x = resid_x
+        reaction_slipweakening_y = resid_y
+        reaction_slipweakening_z = resid_z
+        reaction_damp_x = resid_damp_x
+        reaction_damp_y = resid_damp_y
+        reaction_damp_z = resid_damp_z
         elem_length = elem_length
         mu_d = mu_d
         mu_s = mu_s
@@ -657,213 +537,11 @@
     []
 []
 
-[BCs]
-      ##non-reflecting bc
-    #   [./dashpot_top_x]
-    #     type = NonReflectDashpotBC3d
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     disp_z = disp_z
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = top
-    # []
-    # [./dashpot_top_y]
-    #     type = NonReflectDashpotBC3d
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     disp_z = disp_z
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = top
-    # []
-    # [./dashpot_top_z]
-    #     type = NonReflectDashpotBC3d
-    #     component = 2
-    #     variable = disp_z
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     disp_z = disp_z
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = top
-    # []
-    [./dashpot_bottom_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = bottom
-    []
-    [./dashpot_bottom_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = bottom
-    []
-    [./dashpot_bottom_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = bottom
-    []
-    [./dashpot_left_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = left
-    []
-    [./dashpot_left_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = left
-    []
-    [./dashpot_left_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = left
-    []
-    [./dashpot_right_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = right
-    []
-    [./dashpot_right_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = right
-    []
-    [./dashpot_right_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = right
-    []
-    [./dashpot_front_x]
-      type = NonReflectDashpotBC3d
-      component = 0
-      variable = disp_x
-      disp_x = disp_x
-      disp_y = disp_y
-      disp_z = disp_z
-      p_wave_speed = 6000
-      shear_wave_speed = 3464
-      boundary = front
-    []
-    [./dashpot_front_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = front
-    []
-    [./dashpot_front_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = front
-    []
-    [./dashpot_back_x]
-      type = NonReflectDashpotBC3d
-      component = 0
-      variable = disp_x
-      disp_x = disp_x
-      disp_y = disp_y
-      disp_z = disp_z
-      p_wave_speed = 6000
-      shear_wave_speed = 3464
-      boundary = back
-    []
-    [./dashpot_back_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = back
-    []
-    [./dashpot_back_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 6000
-        shear_wave_speed = 3464
-        boundary = back
-    []
-[]
-
 [Executioner]
     type = Transient
-    dt = 0.005
+    dt = 0.0025
     end_time = 12.0
-    num_steps = 1
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -873,6 +551,6 @@
 
 [Outputs]
     exodus = true
-    interval = 1
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
+    interval = 40
+    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
 []

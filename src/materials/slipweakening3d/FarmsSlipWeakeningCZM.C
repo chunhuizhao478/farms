@@ -19,6 +19,9 @@ FarmsSlipWeakeningCZM::validParams()
   params.addRequiredCoupledVar("disp_slipweakening_x","displacement in x dir");
   params.addRequiredCoupledVar("disp_slipweakening_y","displacement in y dir");
   params.addRequiredCoupledVar("disp_slipweakening_z","displacement in z dir");
+  params.addRequiredCoupledVar("vel_slipweakening_x","velocity in x dir");
+  params.addRequiredCoupledVar("vel_slipweakening_y","velocity in y dir");
+  params.addRequiredCoupledVar("vel_slipweakening_z","velocity in z dir");
   params.addRequiredCoupledVar("reaction_slipweakening_x","reaction in x dir");
   params.addRequiredCoupledVar("reaction_slipweakening_y","reaction in y dir");
   params.addRequiredCoupledVar("reaction_slipweakening_z","reaction in z dir");
@@ -44,6 +47,12 @@ FarmsSlipWeakeningCZM::FarmsSlipWeakeningCZM(const InputParameters & parameters)
   _disp_slipweakening_neighbor_y(coupledNeighborValue("disp_slipweakening_y")),
   _disp_slipweakening_z(coupledValue("disp_slipweakening_z")),
   _disp_slipweakening_neighbor_z(coupledNeighborValue("disp_slipweakening_z")),
+  _vel_slipweakening_x(coupledValue("vel_slipweakening_x")),
+  _vel_slipweakening_neighbor_x(coupledNeighborValue("vel_slipweakening_x")),
+  _vel_slipweakening_y(coupledValue("vel_slipweakening_y")),
+  _vel_slipweakening_neighbor_y(coupledNeighborValue("vel_slipweakening_y")),
+  _vel_slipweakening_z(coupledValue("vel_slipweakening_z")),
+  _vel_slipweakening_neighbor_z(coupledNeighborValue("vel_slipweakening_z")),
   _reaction_slipweakening_x(coupledValue("reaction_slipweakening_x")),
   _reaction_slipweakening_neighbor_x(coupledNeighborValue("reaction_slipweakening_x")),
   _reaction_slipweakening_y(coupledValue("reaction_slipweakening_y")),
@@ -111,34 +120,16 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
                                            _disp_slipweakening_z[_qp]-_disp_slipweakening_neighbor_z[_qp]);
 
   //Global Displacement Jump Old
-  RealVectorValue displacement_jump_old_global(_disp_slipweakening_x_old[_qp]-_disp_slipweakening_neighbor_x_old[_qp],
-                                               _disp_slipweakening_y_old[_qp]-_disp_slipweakening_neighbor_y_old[_qp],
-                                               _disp_slipweakening_z_old[_qp]-_disp_slipweakening_neighbor_z_old[_qp]);
+  RealVectorValue displacement_jump_rate_global(_vel_slipweakening_x[_qp]-_vel_slipweakening_neighbor_x[_qp],
+                                                _vel_slipweakening_y[_qp]-_vel_slipweakening_neighbor_y[_qp],
+                                                _vel_slipweakening_z[_qp]-_vel_slipweakening_neighbor_z[_qp]);
 
   _displacement_jump_global[_qp] = displacement_jump_global;
-
-  //Global Displacement Jump Rate
-  //u_dot_t-dt/2 = ( u_t - u_t-dt ) / dt
-  RealVectorValue displacement_jump_rate_global = (displacement_jump_global - displacement_jump_old_global)*(1/_dt);  
   _displacement_jump_rate_global[_qp] = displacement_jump_rate_global;
-
-  //Global Displacement Jump Difference
-  RealVectorValue displacement_jump_difference_global = displacement_jump_global - displacement_jump_old_global;
 
   //Local Displacement Jump / Displacement Jump Rate / Displacement Jump Difference
   RealVectorValue displacement_jump_local = GlobaltoLocalVector(displacement_jump_global, _rot[_qp]);
-  RealVectorValue displacement_jump_local_old  = GlobaltoLocalVector(displacement_jump_old_global, _rot[_qp]);
   RealVectorValue displacement_jump_rate_local = GlobaltoLocalVector(displacement_jump_rate_global, _rot[_qp]);
-  RealVectorValue displacement_jump_difference_local = GlobaltoLocalVector(displacement_jump_difference_global, _rot[_qp]);
-
-  //check if there is slip misalignment
-  for ( int dir = 0; dir < 2; dir++ ){ //we set all slip rate components to zero, slip to old slip values
-    if ( ( _traction_total_local_old[_qp](dir) * displacement_jump_rate_local(dir) < 0 ) ){
-      displacement_jump_local(dir) = displacement_jump_local_old(dir);
-      displacement_jump_rate_local(dir) = 0.0;
-      displacement_jump_difference_local(dir) = 0.0;
-    }
-  }
 
   //Parameter Initialization
   Real mu_s = _mu_s[_qp]; 
@@ -247,19 +238,11 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
     Tnormal = 0;
   }
 
-  //Compute absolute slip
-  Real abs_slip_strike_inc = std::abs(displacement_jump_difference_local(0));
-  Real abs_slip_dip_inc    = std::abs(displacement_jump_difference_local(1));
-  Real abs_slip_inc        = std::sqrt(abs_slip_strike_inc*abs_slip_strike_inc+abs_slip_dip_inc*abs_slip_dip_inc);
-  Real abs_slip_total      = _absolute_slip_old[_qp] + abs_slip_inc;
-
-  //save
-  _absolute_slip[_qp] = abs_slip_total;
-
+  Real slip_total = std::sqrt(displacement_jump_rate_local(0)*displacement_jump_rate_local(0)+displacement_jump_rate_local(1)*displacement_jump_rate_local(1));
   //Compute friction strength
-  if (abs_slip_total < Dc)
+  if (slip_total < Dc)
   {
-    tau_f = (mu_s - (mu_s - mu_d)*abs_slip_total/Dc)*(-Tnormal); // square for shear component
+    tau_f = (mu_s - (mu_s - mu_d)*slip_total/Dc)*(-Tnormal); // square for shear component
   }
   else
   {
@@ -295,37 +278,6 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   //Rotate back traction difference to global coordinates
   RealVectorValue traction_global(0.0,0.0,0.0);
   _traction_on_interface[_qp] = LocaltoGlobalVector(traction_local, _rot[_qp]);
-
-  // //Compute velocities and displacements on both sides
-  // RealVectorValue du_plus  =  _displacements_plus_old[_qp] - _displacements_plus_older[_qp]  + _dt * _dt / M * ( R_plus_local_vec - elem_length * elem_length * ( traction_local )  );
-  // RealVectorValue du_minus = _displacements_minus_old[_qp] - _displacements_minus_older[_qp] + _dt * _dt / M * ( R_minus_local_vec + elem_length * elem_length * ( traction_local ) );
-  
-  // RealVectorValue  u_plus_local_tplusdt  =  _displacements_plus_old[_qp] + du_plus;
-  // RealVectorValue  u_minus_local_tplusdt = _displacements_minus_old[_qp] + du_minus;
-
-  // //Rotate back to global coordinates
-  // _displacements_plus_global[_qp]  = LocaltoGlobalVector( u_plus_local_tplusdt, _rot[_qp]);
-  // _displacements_minus_global[_qp] = LocaltoGlobalVector(u_minus_local_tplusdt, _rot[_qp]);
-
-  // //save local quantities
-  // _displacements_plus_local[_qp]  = u_plus_local_tplusdt;
-  // _displacements_minus_local[_qp] = u_minus_local_tplusdt;
-
-  //Compute velocities and displacements on both sides
-  RealVectorValue  v_plus_local_tplusdtover2 =     _velocities_plus_old[_qp] + _dt * 1.0/M * ( R_plus_local_vec - elem_length * elem_length * ( traction_local ) );
-  RealVectorValue v_minus_local_tplusdtover2 =    _velocities_minus_old[_qp] + _dt * 1.0/M * ( R_minus_local_vec + elem_length * elem_length * ( traction_local ) );
-  RealVectorValue  u_plus_local_tplusdt      =  _displacements_plus_old[_qp] + _dt * v_plus_local_tplusdtover2;
-  RealVectorValue  u_minus_local_tplusdt     = _displacements_minus_old[_qp] + _dt * v_minus_local_tplusdtover2;
-
-  //Rotate back to global coordinates
-  _displacements_plus_global[_qp]  = LocaltoGlobalVector( u_plus_local_tplusdt, _rot[_qp]);
-  _displacements_minus_global[_qp] = LocaltoGlobalVector(u_minus_local_tplusdt, _rot[_qp]);
-
-  //save local quantities
-  _velocities_plus_local[_qp]     = v_plus_local_tplusdtover2;
-  _velocities_minus_local[_qp]    = v_minus_local_tplusdtover2;
-  _displacements_plus_local[_qp]  = u_plus_local_tplusdt;
-  _displacements_minus_local[_qp] = u_minus_local_tplusdt;
 
   return 0.0;
 }
