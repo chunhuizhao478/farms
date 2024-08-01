@@ -276,7 +276,6 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
   traction_local(2) = Tnormal - T_normal_o;
 
   //Rotate back traction difference to global coordinates
-  RealVectorValue traction_global(0.0,0.0,0.0);
   _traction_on_interface[_qp] = LocaltoGlobalVector(traction_local, _rot[_qp]);
 
   return 0.0;
