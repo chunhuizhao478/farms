@@ -37,6 +37,13 @@ protected:
   const VariableValue & _disp_slipweakening_z;
   const VariableValue & _disp_slipweakening_neighbor_z;
 
+  const VariableValue & _vel_slipweakening_x;
+  const VariableValue & _vel_slipweakening_neighbor_x;
+  const VariableValue & _vel_slipweakening_y;
+  const VariableValue & _vel_slipweakening_neighbor_y;
+  const VariableValue & _vel_slipweakening_z;
+  const VariableValue & _vel_slipweakening_neighbor_z;
+
   const VariableValue & _reaction_slipweakening_x;
   const VariableValue & _reaction_slipweakening_neighbor_x;
   const VariableValue & _reaction_slipweakening_y;
