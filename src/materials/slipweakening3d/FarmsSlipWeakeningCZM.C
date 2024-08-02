@@ -238,7 +238,7 @@ FarmsSlipWeakeningCZM::computeTractionAndDisplacements()
     Tnormal = 0;
   }
 
-  Real slip_total = std::sqrt(displacement_jump_rate_local(0)*displacement_jump_rate_local(0)+displacement_jump_rate_local(1)*displacement_jump_rate_local(1));
+  Real slip_total = std::sqrt(displacement_jump_local(0)*displacement_jump_local(0)+displacement_jump_local(1)*displacement_jump_local(1));
   //Compute friction strength
   if (slip_total < Dc)
   {
