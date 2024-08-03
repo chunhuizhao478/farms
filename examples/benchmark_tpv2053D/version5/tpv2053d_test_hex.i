@@ -6,9 +6,17 @@
 
 [Mesh]
     [./msh]
-      type = FileMeshGenerator
-      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
-      # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
+      type = GeneratedMeshGenerator
+      dim = 3
+      xmin = -20000
+      xmax = 20000
+      ymin = -20000
+      ymax = 0
+      zmin = -20000
+      zmax = 20000
+      nx = 200
+      ny = 100
+      nz = 200
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -541,7 +549,7 @@
     type = Transient
     dt = 0.0025
     end_time = 12.0
-    # num_steps = 10
+    # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -551,6 +559,180 @@
 
 [Outputs]
     exodus = true
-    interval = 40
+    time_step_interval = 40
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
+[]
+
+[BCs]
+  ##non-reflecting bc
+  #
+  [./dashpot_bottom_x]
+      type = NonReflectDashpotBC3d
+      component = 0
+      variable = disp_x
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = bottom
+  []
+  [./dashpot_bottom_y]
+      type = NonReflectDashpotBC3d
+      component = 1
+      variable = disp_y
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = bottom
+  []
+  [./dashpot_bottom_z]
+      type = NonReflectDashpotBC3d
+      component = 2
+      variable = disp_z
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = bottom
+  []
+  #
+  [./dashpot_left_x]
+      type = NonReflectDashpotBC3d
+      component = 0
+      variable = disp_x
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = left
+  []
+  [./dashpot_left_y]
+      type = NonReflectDashpotBC3d
+      component = 1
+      variable = disp_y
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = left
+  []
+  [./dashpot_left_z]
+      type = NonReflectDashpotBC3d
+      component = 2
+      variable = disp_z
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = left
+  []
+  #
+  [./dashpot_right_x]
+      type = NonReflectDashpotBC3d
+      component = 0
+      variable = disp_x
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = right
+  []
+  [./dashpot_right_y]
+      type = NonReflectDashpotBC3d
+      component = 1
+      variable = disp_y
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = right
+  []
+  [./dashpot_right_z]
+      type = NonReflectDashpotBC3d
+      component = 2
+      variable = disp_z
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = right
+  []
+  #
+  [./dashpot_front_x]
+    type = NonReflectDashpotBC3d
+    component = 0
+    variable = disp_x
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z
+    p_wave_speed = 6000
+    shear_wave_speed = 3464
+    boundary = front
+  []
+  [./dashpot_front_y]
+    type = NonReflectDashpotBC3d
+    component = 1
+    variable = disp_y
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z
+    p_wave_speed = 6000
+    shear_wave_speed = 3464
+    boundary = front
+  []
+  [./dashpot_front_z]
+      type = NonReflectDashpotBC3d
+      component = 2
+      variable = disp_z
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = front
+  []
+  #
+  [./dashpot_back_x]
+      type = NonReflectDashpotBC3d
+      component = 0
+      variable = disp_x
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = back
+  []
+  [./dashpot_back_y]
+      type = NonReflectDashpotBC3d
+      component = 1
+      variable = disp_y
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = back
+  []
+  [./dashpot_back_z]
+      type = NonReflectDashpotBC3d
+      component = 2
+      variable = disp_z
+      disp_x = disp_x
+      disp_y = disp_y
+      disp_z = disp_z
+      p_wave_speed = 6000
+      shear_wave_speed = 3464
+      boundary = back
+  []
 []
