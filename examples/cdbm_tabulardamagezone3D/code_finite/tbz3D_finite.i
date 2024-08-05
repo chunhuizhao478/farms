@@ -71,7 +71,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-5
+    C_g = 1e-15
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -296,7 +296,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-4
+    dt = 1e-5
     [TimeIntegrator]
         type = NewmarkBeta
     []
@@ -307,19 +307,19 @@
         type = TimePeriod
         disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z'
         start_time = -1e-8
-        end_time = 1e-4 # dt used in the simulation
+        end_time = 1e-5 # dt used in the simulation
     []
     [period1]
         type = TimePeriod
         disable_objects = '*/pressure_right */pressure_left */pressure_front */pressure_back */pressure_top */pressure_bottom'
         depends_on = period0
-        start_time = 2e-4
+        start_time = 2e-5
     []
 []
 
 [Outputs]
     exodus = true
-    interval = 1
+    interval = 10
     show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z vel_x vel_y vel_z shear_modulus initial_damage xi'
     print_linear_residuals=true
 []

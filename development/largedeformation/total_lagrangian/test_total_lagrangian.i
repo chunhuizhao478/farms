@@ -66,28 +66,25 @@
 
 [Kernels]
     [dispkernel_x]
-        type = ADDynamicStressDivergenceTensors
-        displacements = 'disp_x disp_y disp_z'
+        type = TotalLagrangianStressDivergence
         variable = disp_x
         component = 0
-        static_initialization = true
+        large_kinematics = true
     []
     [dispkernel_y]
-        type = ADDynamicStressDivergenceTensors
-        displacements = 'disp_x disp_y disp_z'
+        type = TotalLagrangianStressDivergence
         variable = disp_y
         component = 1
-        static_initialization = true
+        large_kinematics = true
     []
     [dispkernel_z]
-        type = ADDynamicStressDivergenceTensors
-        displacements = 'disp_x disp_y disp_z'
+        type = TotalLagrangianStressDivergence
         variable = disp_z
         component = 2
-        static_initialization = true
+        large_kinematics = true
     []
     [inertia_x]
-        type = ADInertialForce
+        type = InertialForce
         variable = disp_x
         velocity = vel_x
         acceleration = accel_x
@@ -96,7 +93,7 @@
         use_displaced_mesh = true
     []
     [inertia_y]
-        type = ADInertialForce
+        type = InertialForce
         variable = disp_y
         velocity = vel_y
         acceleration = accel_y
@@ -105,7 +102,7 @@
         use_displaced_mesh = true
     []
     [inertia_z]
-        type = ADInertialForce
+        type = InertialForce
         variable = disp_z
         velocity = vel_z
         acceleration = accel_z
@@ -164,21 +161,21 @@
 []
 
 [Materials]
-    [damagestress]
-        type = ADComputeFiniteStrainElasticStress
-        outputs = exodus
-    []
-    [strain]
-        type = ADComputeFiniteStrain
-        displacements = 'disp_x disp_y disp_z'
+    [compute_stress]
+        type = ComputeLagrangianLinearElasticStress
+        large_kinematics = true
+      []
+    [compute_strain]
+        type = ComputeLagrangianStrain
+        large_kinematics = true
     []
     [density]
-        type = ADGenericConstantMaterial
+        type = GenericConstantMaterial
         prop_names = 'density'
         prop_values = '2700'
     []
     [./elasticity_volume_1]
-        type = ADComputeIsotropicElasticityTensor
+        type = ComputeIsotropicElasticityTensor
         shear_modulus = 7.7376e9
         lambda = 30e9
     [../]   

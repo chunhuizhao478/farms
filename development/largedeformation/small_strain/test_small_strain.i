@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/tabulardamagezone_small.msh'
+        file =  '../meshfile/tabulardamagezone_small_refine.msh'
     []
     [./sidesets]
         input = msh
@@ -165,11 +165,11 @@
 
 [Materials]
     [damagestress]
-        type = ADComputeFiniteStrainElasticStress
+        type = ADComputeLinearElasticStress
         outputs = exodus
     []
     [strain]
-        type = ADComputeFiniteStrain
+        type = ADComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
     []
     [density]

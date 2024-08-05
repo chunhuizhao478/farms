@@ -256,6 +256,7 @@
     [strain]
         type = ADComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
+        outputs = exodus
     []
     [density]
         type = ADGenericConstantMaterial
@@ -317,7 +318,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-4
+    dt = 1e-3
     [TimeIntegrator]
         type = NewmarkBeta
     []
@@ -328,20 +329,20 @@
         type = TimePeriod
         disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z'
         start_time = -1e-8
-        end_time = 1e-4 # dt used in the simulation
+        end_time = 1e-3 # dt used in the simulation
     []
     [period1]
         type = TimePeriod
         disable_objects = '*/pressure_right */pressure_left */pressure_front */pressure_back */pressure_top */pressure_bottom'
         depends_on = period0
-        start_time = 2e-4
+        start_time = 2e-3
     []
 []
 
 [Outputs]
     exodus = true
-    interval = 10
-    # show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z vel_x vel_y vel_z shear_modulus initial_damage xi'
+    interval = 1
+    show = 'alpha_damagedvar B_breakagevar disp_x disp_y disp_z shear_modulus initial_damage xi eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22'
     print_linear_residuals=true
 []
 
