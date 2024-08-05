@@ -412,7 +412,7 @@
     type = Transient
     dt = 1e-5
     end_time = 1.0
-    num_steps = 100
+    # num_steps = 10000
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -422,7 +422,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 20
+    time_step_interval = 100
 []
   
 [BCs]
