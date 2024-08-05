@@ -169,12 +169,12 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        # output_properties = 'B alpha_damagedvar xi'
+        output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
     []
     [strain]
         type = ComputeSmallStrain
-        outputs = exodus
+        # outputs = exodus
     []
     [density]
         type = GenericConstantMaterial
@@ -422,7 +422,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 10
+    time_step_interval = 20
 []
   
 [BCs]
