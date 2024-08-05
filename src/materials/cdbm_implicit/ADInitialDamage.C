@@ -43,16 +43,17 @@ ADInitialDamage::initQpStatefulProperties()
   Real alpha_o = 0.0;
   if (xcoord >= -30 && xcoord <= 30 && ycoord >= -5 && ycoord <= 5 && zcoord >= -0.5 && zcoord <= 0.5){
     if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 ){
-      Real center_x = -24; Real center_y = 0;
-      Real L = 4.0;
-      Real A = 1.0; Real sigma = 0.8;
-      Real D = std::sqrt((center_x-xcoord)*(center_x-xcoord)+(center_y-ycoord)*(center_y-ycoord));
-      Real V = A * std::exp(-D*D/(2*sigma*sigma));
-      Real Vmax = A;
-      Real d_max = (L * std::sqrt(2))/2;
-      Real Vmin = A * std::exp(-(d_max*d_max)/(2*sigma*sigma));
-      Real Vnormalized = (V - Vmin) / (Vmax - Vmin);
-      alpha_o = Vnormalized * ( 0.8 - 0.7 ) + 0.7;
+      // Real center_x = -24; Real center_y = 0;
+      // Real L = 4.0;
+      // Real A = 1.0; Real sigma = 0.8;
+      // Real D = std::sqrt((center_x-xcoord)*(center_x-xcoord)+(center_y-ycoord)*(center_y-ycoord));
+      // Real V = A * std::exp(-D*D/(2*sigma*sigma));
+      // Real Vmax = A;
+      // Real d_max = (L * std::sqrt(2))/2;
+      // Real Vmin = A * std::exp(-(d_max*d_max)/(2*sigma*sigma));
+      // Real Vnormalized = (V - Vmin) / (Vmax - Vmin);
+      // alpha_o = Vnormalized * ( 0.8 - 0.7 ) + 0.7;
+      alpha_o = 0.85;
     }
     else{
       alpha_o = 0.7;
@@ -80,16 +81,17 @@ ADInitialDamage::computeQpProperties()
   Real alpha_o = 0.0;
   if (xcoord >= -30 && xcoord <= 30 && ycoord >= -5 && ycoord <= 5 && zcoord >= -0.5 && zcoord <= 0.5){
     if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 ){
-      Real center_x = -24; Real center_y = 0;
-      Real L = 4.0;
-      Real A = 1.0; Real sigma = 0.8;
-      Real D = std::sqrt((center_x-xcoord)*(center_x-xcoord)+(center_y-ycoord)*(center_y-ycoord));
-      Real V = A * std::exp(-D*D/(2*sigma*sigma));
-      Real Vmax = A;
-      Real d_max = (L * std::sqrt(2))/2;
-      Real Vmin = A * std::exp(-(d_max*d_max)/(2*sigma*sigma));
-      Real Vnormalized = (V - Vmin) / (Vmax - Vmin);
-      alpha_o = Vnormalized * ( 0.8 - 0.7 ) + 0.7;
+      // Real center_x = -24; Real center_y = 0;
+      // Real L = 4.0;
+      // Real A = 1.0; Real sigma = 0.8;
+      // Real D = std::sqrt((center_x-xcoord)*(center_x-xcoord)+(center_y-ycoord)*(center_y-ycoord));
+      // Real V = A * std::exp(-D*D/(2*sigma*sigma));
+      // Real Vmax = A;
+      // Real d_max = (L * std::sqrt(2))/2;
+      // Real Vmin = A * std::exp(-(d_max*d_max)/(2*sigma*sigma));
+      // Real Vnormalized = (V - Vmin) / (Vmax - Vmin);
+      // alpha_o = Vnormalized * ( 0.8 - 0.7 ) + 0.7;
+      alpha_o = 0.85;
     }
     else{
       alpha_o = 0.7;

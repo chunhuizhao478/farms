@@ -167,7 +167,7 @@ ADComputeSmallStrainDamageBreakageStress::computeQpStress()
       B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
     }
     else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-      B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d );
+      B_forcingterm = 0.0; //1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
     }
     else{
       mooseError("xi_old is OUT-OF-RANGE!.");
