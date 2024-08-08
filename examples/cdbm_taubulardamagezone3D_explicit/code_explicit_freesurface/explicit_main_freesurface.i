@@ -225,7 +225,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_refined/static_solve_refined_out.e'
+      mesh = '../static_solve_freesurface/static_solve_freesurface_out.e'
       system_variables = 'disp_x disp_y disp_z I1_initial I2_initial xi_initial initial_damage mechanical_strain_00 mechanical_strain_01 mechanical_strain_02 mechanical_strain_11 mechanical_strain_12 mechanical_strain_22 stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
       timestep = LATEST
       force_preaux = true
