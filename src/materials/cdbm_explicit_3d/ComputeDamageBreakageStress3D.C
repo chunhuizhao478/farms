@@ -184,10 +184,10 @@ ComputeDamageBreakageStress3D::computeQpStress()
   _alpha_damagedvar[_qp] = alpha_out;
 
   //grad_alpha
-  Real alpha_grad_x = _alpha_grad_x[_qp];
-  Real alpha_grad_y = _alpha_grad_y[_qp];
-  Real alpha_grad_z = _alpha_grad_z[_qp];
-  Real D = _D;
+  // Real alpha_grad_x = _alpha_grad_x[_qp];
+  // Real alpha_grad_y = _alpha_grad_y[_qp];
+  // Real alpha_grad_z = _alpha_grad_z[_qp];
+  // Real D = _D;
 
   /* compute B */
   Real C_B = _CdCb_multiplier * _Cd_constant;
