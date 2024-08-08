@@ -225,159 +225,85 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = 'disp_x disp_y disp_z I1_initial I2_initial xi_initial initial_damage'
+      mesh = '../static_solve_refined/static_solve_refined_out.e'
+      system_variables = 'disp_x disp_y disp_z I1_initial I2_initial xi_initial initial_damage mechanical_strain_00 mechanical_strain_01 mechanical_strain_02 mechanical_strain_11 mechanical_strain_12 mechanical_strain_22 stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
       timestep = LATEST
       force_preaux = true
     [../]
-    #add initial strain components
-    [load_strain_xx]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_00
-      timestep = LATEST
-      force_preaux = true
-    []
-    [load_strain_xy]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_01
-      timestep = LATEST
-      force_preaux = true
-    []
-    [load_strain_xz]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_02
-      timestep = LATEST
-      force_preaux = true
-    []
-    [load_strain_yy]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_11
-      timestep = LATEST
-      force_preaux = true
-    [] 
-    [load_strain_yz]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_12
-      timestep = LATEST
-      force_preaux = true
-    []  
-    [load_strain_zz]
-      type = SolutionUserObject
-      mesh = ../static_solve/static_solve_out.e
-      system_variables = mechanical_strain_22
-      timestep = LATEST
-      force_preaux = true
-    []  
-    #add initial stress components
-    [load_stress_xx]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_00
-        timestep = LATEST
-        force_preaux = true
-    []
-    [load_stress_xy]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_01
-        timestep = LATEST
-        force_preaux = true
-    []
-    [load_stress_xz]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_02
-        timestep = LATEST
-        force_preaux = true
-    []
-    [load_stress_yy]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_11
-        timestep = LATEST
-        force_preaux = true
-    [] 
-    [load_stress_yz]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_12
-        timestep = LATEST
-        force_preaux = true
-    []  
-    [load_stress_zz]
-        type = SolutionUserObject
-        mesh = ../static_solve/static_solve_out.e
-        system_variables = stress_22
-        timestep = LATEST
-        force_preaux = true
-    [] 
 []
   
 [Functions]
     [func_strain_xx]
       type = SolutionFunction
-      solution = load_strain_xx
+      solution = init_sol_components
+      from_variable = mechanical_strain_00
       execute_on = 'INITIAL'
     [../]
     [func_strain_xy]
       type = SolutionFunction
-      solution = load_strain_xy
+      solution = init_sol_components
+      from_variable = mechanical_strain_01
       execute_on = 'INITIAL'
     [../]
     [func_strain_xz]
       type = SolutionFunction
-      solution = load_strain_xz
+      solution = init_sol_components
+      from_variable = mechanical_strain_02
       execute_on = 'INITIAL'
     [../]
     [func_strain_yy]
       type = SolutionFunction
-      solution = load_strain_yy
+      solution = init_sol_components
+      from_variable = mechanical_strain_11
       execute_on = 'INITIAL'
     [../]
     [func_strain_yz]
       type = SolutionFunction
-      solution = load_strain_yz
+      solution = init_sol_components
+      from_variable = mechanical_strain_12
       execute_on = 'INITIAL'
     [../]
     [func_strain_zz]
       type = SolutionFunction
-      solution = load_strain_zz
+      solution = init_sol_components
+      from_variable = mechanical_strain_22
       execute_on = 'INITIAL'
     []
     #
     [func_stress_xx]
         type = SolutionFunction
-        solution = load_stress_xx
+        solution = init_sol_components
+        from_variable = stress_00
         execute_on = 'INITIAL'
     [../]
     [func_stress_xy]
         type = SolutionFunction
-        solution = load_stress_xy
+        solution = init_sol_components
+        from_variable = stress_01
         execute_on = 'INITIAL'
     [../]
     [func_stress_xz]
         type = SolutionFunction
-        solution = load_stress_xz
+        solution = init_sol_components
+        from_variable = stress_02
         execute_on = 'INITIAL'
     [../]
     [func_stress_yy]
         type = SolutionFunction
-        solution = load_stress_yy
+        solution = init_sol_components
+        from_variable = stress_11
         execute_on = 'INITIAL'
     [../]
     [func_stress_yz]
         type = SolutionFunction
-        solution = load_stress_yz
+        solution = init_sol_components
+        from_variable = stress_12
         execute_on = 'INITIAL'
     [../]
     [func_stress_zz]
         type = SolutionFunction
-        solution = load_stress_zz
+        solution = init_sol_components
+        from_variable = stress_22
         execute_on = 'INITIAL'
     [../] 
     #
