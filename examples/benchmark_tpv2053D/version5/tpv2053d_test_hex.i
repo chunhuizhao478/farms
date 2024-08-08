@@ -8,45 +8,65 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -16000
-      xmax = 16000
-      ymin = -16000
+      xmin = -32000
+      xmax = 32000
+      ymin = -64000
       ymax = 0
-      zmin = -16000
-      zmax = 16000
-      nx = 160
-      ny = 80
-      nz = 160
+      zmin = -32000
+      zmax = 32000
+      nx = 20
+      ny = 20
+      nz = 20
+      subdomain_ids = 1
+    []
+    [./fault_area_block_1]
+      type = SubdomainBoundingBoxGenerator
+      input = msh
+      block_id = 2
+      bottom_left = '-22000 -22000 12800'
+      top_right = '22000 0 -12800'
+      location = INSIDE
+    []
+    [./refine_fault_area_block_1]
+      type = RefineBlockGenerator
+      input = fault_area_block_1
+      block = '2'
+      refinement = '1'
+      enable_neighbor_refinement = false
+    []
+    [./fault_area_block_2]
+      type = SubdomainBoundingBoxGenerator
+      input = refine_fault_area_block_1
+      block_id = 3
+      bottom_left = '-20000 -20000 3200'
+      top_right = '20000 0 -3200'
+      location = INSIDE
+    []
+    [./refine_fault_area_block_2]
+      type = RefineBlockGenerator
+      input = fault_area_block_2
+      block = '3'
+      refinement = '1'
+      enable_neighbor_refinement = false
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
-      input = msh
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
-      block_id = 2
+      input = refine_fault_area_block_2
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0 & z > -800'
+      block_id = 5
     []
     [./new_block_2]
-        type = ParsedSubdomainMeshGenerator
-        input = new_block_1
-        combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
-        block_id = 3
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0 & z < 800'
+      block_id = 6
     []       
     [./split_1]
-        type = BreakMeshByBlockGenerator
-        input = new_block_2
-        split_interface = true
-        block_pairs = '2 3'
+      type = BreakMeshByBlockGenerator
+      input = new_block_2
+      split_interface = true
+      block_pairs = '5 6'
     []      
-    [./sidesets]
-      input = split_1
-      type = SideSetsFromNormalsGenerator
-      normals = '-1 0 0
-                  1 0 0
-                  0 -1 0
-                  0 1 0
-                  0 0 -1
-                  0 0 1'
-      new_boundary = 'left right bottom top back front'
-    []    
 []
 
 [GlobalParams]
@@ -250,7 +270,7 @@
         variable = jump_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [YJump]
         type = MaterialRealVectorValueAux
@@ -258,7 +278,7 @@
         variable = jump_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [ZJump]
         type = MaterialRealVectorValueAux
@@ -266,7 +286,7 @@
         variable = jump_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     #
     [XJumpRate]
@@ -275,7 +295,7 @@
         variable = jump_rate_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [YJumpRate]
         type = MaterialRealVectorValueAux
@@ -283,7 +303,7 @@
         variable = jump_rate_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [ZJumpRate]
         type = MaterialRealVectorValueAux
@@ -291,7 +311,7 @@
         variable = jump_rate_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []    
     #
     [TractionX]
@@ -300,7 +320,7 @@
         variable = traction_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'        
+        boundary = 'Block5_Block6'        
     []
     [TractionY]
         type = MaterialRealVectorValueAux
@@ -308,7 +328,7 @@
         variable = traction_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [TractionZ]
         type = MaterialRealVectorValueAux
@@ -316,7 +336,7 @@
         variable = traction_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []        
     #
     [restore_x]
@@ -422,19 +442,19 @@
         type = FarmsCZM
         variable = disp_x
         neighbor_var = disp_x
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [czm_interface_kernel_y]
         type = FarmsCZM
         variable = disp_y
         neighbor_var = disp_y
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
     [czm_interface_kernel_z]
         type = FarmsCZM
         variable = disp_z
         neighbor_var = disp_z
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     []
 []
 
@@ -469,7 +489,7 @@
         elem_length = elem_length
         mu_d = mu_d
         mu_s = mu_s
-        boundary = 'Block2_Block3'
+        boundary = 'Block5_Block6'
     [../]
     [./static_initial_stress_tensor_slipweakening]
         type = GenericFunctionRankTwoTensor
