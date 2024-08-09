@@ -1,0 +1,76 @@
+//* This file is part of the MOOSE framework
+//* https://www.mooseframework.org
+//*
+//* All rights reserved, see COPYRIGHT for full restrictions
+//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+
+#include "DamageBreakageMaterial.h"
+
+/**
+ *  Material used in damage-breakage large deformation formulation
+ *  Created by Chunhui Zhao, Aug 5th, 2024
+ */
+registerMooseObject("farmsApp", DamageBreakageMaterial);
+
+InputParameters
+DamageBreakageMaterial::validParams()
+{
+  InputParameters params = Material::validParams();
+  params.addClassDescription("Material used in three field poro dynamics simulations");
+  params.addRequiredParam<Real>(        "lambda_o", "initial lambda constant value");
+  params.addRequiredParam<Real>( "shear_modulus_o", "initial shear modulus value");
+  params.addRequiredParam<Real>(            "xi_0", "strain invariants ratio: onset of damage evolution");
+  params.addRequiredParam<Real>(            "xi_d", "strain invariants ratio: onset of breakage healing");
+  params.addRequiredParam<Real>(            "xi_1", "critical point of three phases");
+  params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
+  params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
+  params.addRequiredParam<Real>( "gamma_damaged_r", "coefficient of damage solid modulus");
+  params.addRequiredParam<Real>(              "m1", "coefficient of std::power law indexes");
+  params.addRequiredParam<Real>(              "m2", "coefficient of std::power law indexes");
+  params.addRequiredParam<Real>(     "Cd_constant", "coefficient gives positive damage evolution");
+  params.addRequiredParam<Real>(             "C_1", "coefficient of healing for damage evolution");
+  params.addRequiredParam<Real>(             "C_2", "coefficient of healing for damage evolution");
+  params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
+  params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
+  params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
+  return params;
+}
+
+DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameters)
+  : Material(parameters),
+  _alpha_damagedvar(declareMaterialProperty<Real>("alpha_damagedvar")),
+  _B_damagedvar(declareMaterialProperty<Real>("B_damagedvar")),
+  _shear_modulus(declareMaterialProperty<Real>("shear_modulus")),
+  _damaged_modulus(declareMateralProperty<Real>("damaged_modulus")),
+  _alpha_damagedvar_old(getMaterialPropertyOldByName<Real>("alpha_damagedvar")),
+  _B_damagedvar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
+  _I1_old(getMaterialPropertyOldByName<Real>("I1")),
+  _I2_old(getMaterialPropertyOldByName<Real>("I2")),
+  _xi_old(getMaterialPropertyOldByName<Real>("xi")),
+  _lambda_o(getParam<Real>("lambda_o")),
+  _shear_modulus_o(getParam<Real>("shear_modulus_o")),
+  _xi_0(getParam<Real>("xi_0")),
+  _xi_d(getParam<Real>("xi_d")),
+  _xi_1(getParam<Real>("xi_1")),
+  _xi_min(getParam<Real>("xi_min")),
+  _xi_max(getParam<Real>("xi_max")),
+  _gamma_damaged_r(getParam<Real>("gamma_damaged_r")),
+  _m1(getParam<Real>("m1")),
+  _m2(getParam<Real>("m2")),
+  _Cd_constant(getParam<Real>("Cd_constant")), 
+  _C1(getParam<Real>("C_1")),
+  _C2(getParam<Real>("C_2")),
+  _beta_width(getParam<Real>("beta_width")),
+  _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
+  _CBH_constant(getParam<Real>("CBH_constant"))
+{
+}
+
+void
+DamageBreakageMaterial::computeQpProperties()
+{
+
+}
