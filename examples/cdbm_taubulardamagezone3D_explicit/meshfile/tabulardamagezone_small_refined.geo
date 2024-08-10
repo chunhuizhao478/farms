@@ -18,7 +18,7 @@ Box(2) = {-Sbox_length_x/2, -Sbox_length_y/2, -Sbox_length_z/2, Sbox_length_x, S
 center_x = -Sbox_length_x/2+6; center_y = 0; center_z = 0;
 nucl_radius = 2;
 double_nucl_radius = 2 * nucl_radius;
-Box(3) = {center_x-nucl_radius, center_y-nucl_radius, center_z-Sbox_length_z/2, double_nucl_radius, double_nucl_radius, Sbox_length_z};
+Box(3) = {center_x-nucl_radius, center_y-nucl_radius, center_z-Sbox_length_z/10, double_nucl_radius, double_nucl_radius, Sbox_length_z/5};
 
 // Box(4) = {-Sbox_length_x/2, -Sbox_length_y/2, -Sbox_length_z/2-Sbox_length_z, Sbox_length_x, Sbox_length_y, Sbox_length_z};
 

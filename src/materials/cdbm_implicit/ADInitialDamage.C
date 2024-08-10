@@ -42,7 +42,7 @@ ADInitialDamage::initQpStatefulProperties()
   //note: hardcode coordinates
   Real alpha_o = 0.0;
   if (xcoord >= -30 && xcoord <= 30 && ycoord >= -5 && ycoord <= 5 && zcoord >= -0.5 && zcoord <= 0.5){
-    if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 ){
+    if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 && zcoord >= -0.1 && zcoord <= 0.1){
       // Real center_x = -24; Real center_y = 0;
       // Real L = 4.0;
       // Real A = 1.0; Real sigma = 0.8;
@@ -80,7 +80,7 @@ ADInitialDamage::computeQpProperties()
   //note: hardcode coordinates
   Real alpha_o = 0.0;
   if (xcoord >= -30 && xcoord <= 30 && ycoord >= -5 && ycoord <= 5 && zcoord >= -0.5 && zcoord <= 0.5){
-    if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 ){
+    if ( xcoord >= -26 && xcoord <= -22 && ycoord >= -2 && ycoord <= 2 && zcoord >= -0.1 && zcoord <= 0.1 ){
       // Real center_x = -24; Real center_y = 0;
       // Real L = 4.0;
       // Real A = 1.0; Real sigma = 0.8;

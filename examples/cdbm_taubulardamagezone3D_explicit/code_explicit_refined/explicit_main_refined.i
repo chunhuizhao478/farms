@@ -43,7 +43,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1000
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -336,7 +336,7 @@
 #0.4/5773
 [Executioner]
     type = Transient
-    dt = 1e-5
+    dt = 1e-4
     end_time = 1.0
     # num_steps = 10000
     [TimeIntegrator]
@@ -348,7 +348,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 10
 []
   
 [BCs]
