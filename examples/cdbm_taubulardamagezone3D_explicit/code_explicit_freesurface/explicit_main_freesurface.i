@@ -336,7 +336,7 @@
 #0.4/5773
 [Executioner]
     type = Transient
-    dt = 1e-5
+    dt = 1e-4
     end_time = 1.0
     # num_steps = 10000
     [TimeIntegrator]
@@ -352,39 +352,6 @@
 []
   
 [BCs]
-    [./dashpot_top_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = top
-    []
-    [./dashpot_top_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = top
-    []
-    [./dashpot_top_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.50
-        shear_wave_speed = 3333.33
-        boundary = top
-    []
     [./dashpot_bottom_x]
         type = NonReflectDashpotBC3d
         component = 0
