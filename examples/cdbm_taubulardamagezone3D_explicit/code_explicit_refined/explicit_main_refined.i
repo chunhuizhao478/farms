@@ -336,7 +336,7 @@
 #0.4/5773
 [Executioner]
     type = Transient
-    dt = 5e-5
+    dt = 1e-5
     end_time = 1.0
     # num_steps = 10000
     [TimeIntegrator]
@@ -348,7 +348,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1000
 []
   
 [BCs]
