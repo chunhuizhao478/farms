@@ -445,7 +445,7 @@
       lambda = 32.04e9
     []
     [./czm_mat]
-        type = FarmsSlipWeakeningCZM
+        type = FarmsSlipWeakeningCZMTet
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         disp_slipweakening_z     = disp_slipweakening_z
