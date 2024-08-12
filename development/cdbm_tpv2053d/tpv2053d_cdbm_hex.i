@@ -4,7 +4,7 @@
 # x - strike; y - dip; z - normal
 ##########################################################
 
-[Mesh]
+  [Mesh]
     [./msh]
       type = GeneratedMeshGenerator
       dim = 3
@@ -23,8 +23,8 @@
       type = SubdomainBoundingBoxGenerator
       input = msh
       block_id = 2
-      bottom_left = '-22400 -20000 6400'
-      top_right = '22400 0 -6400'
+      bottom_left = '-22000 -22000 12800'
+      top_right = '22000 0 -12800'
       location = INSIDE
     []
     [./refine_fault_area_block_1]
@@ -38,8 +38,8 @@
       type = SubdomainBoundingBoxGenerator
       input = refine_fault_area_block_1
       block_id = 3
-      bottom_left = '-17600 -17600 2000'
-      top_right = '17600 0 -2000'
+      bottom_left = '-20000 -20000 8000'
+      top_right = '20000 0 -8000'
       location = INSIDE
     []
     [./refine_fault_area_block_2]
@@ -49,31 +49,16 @@
       refinement = '1'
       enable_neighbor_refinement = false
     []
-    [./fault_area_block_3]
-      type = SubdomainBoundingBoxGenerator
-      input = refine_fault_area_block_2
-      block_id = 4
-      bottom_left = '-15400 -15400 400'
-      top_right = '15400 0 -400'
-      location = INSIDE
-    []
-    [./refine_fault_area_block_3]
-      type = RefineBlockGenerator
-      input = fault_area_block_3
-      block = '4'
-      refinement = '1'
-      enable_neighbor_refinement = false
-    []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
-      input = refine_fault_area_block_3
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0 & z > -400'
+      input = refine_fault_area_block_2
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0 & z > -800'
       block_id = 5
     []
     [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0 & z < 400'
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0 & z < 800'
       block_id = 6
     []       
     [./split_1]
@@ -82,7 +67,7 @@
       split_interface = true
       block_pairs = '5 6'
     []      
-[]
+  []
 
 [GlobalParams]
     ##------------slip weakening------------##
@@ -528,7 +513,7 @@
     [elem_length]
       type = ConstantAux
       variable = elem_length
-      value = 100
+      value = 200
     []
     #obtain parameters from MaterialRealAux
     [get_xi_old]
