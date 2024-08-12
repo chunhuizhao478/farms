@@ -223,12 +223,12 @@ FarmsSlipWeakeningCZMTet::computeTractionAndDisplacements()
   Real elem_length = _elem_length[_qp];
 
   //Compute node mass //equal length tetrahedron
-  Real M = _density[_qp] * elem_length * elem_length * elem_length * sqrt(2) / 48;
+  Real M = _density[_qp] * elem_length * elem_length * elem_length / 2;
 
   //Compute sticking stress
-  Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*elem_length*elem_length*sqrt(3)/4) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*elem_length*elem_length*sqrt(3)/4) + T_strike_o;
-  Real Tdip    = (1/_dt)*M*displacement_jump_rate_local(1)/(2*elem_length*elem_length*sqrt(3)/4) + (R_plus_local_vec(1) - R_minus_local_vec(1))/(2*elem_length*elem_length*sqrt(3)/4) + T_dip_o;
-  Real Tnormal = (1/_dt)*M*(displacement_jump_rate_local(2)+(1/_dt)*displacement_jump_local(2))/(2*elem_length*elem_length*sqrt(3)/4) + ( (R_plus_local_vec(2) - R_minus_local_vec(2)) / ( 2*elem_length*elem_length*sqrt(3)/4 ) ) + T_normal_o ;  
+  Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*elem_length*elem_length) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*elem_length*elem_length) + T_strike_o;
+  Real Tdip    = (1/_dt)*M*displacement_jump_rate_local(1)/(2*elem_length*elem_length) + (R_plus_local_vec(1) - R_minus_local_vec(1))/(2*elem_length*elem_length) + T_dip_o;
+  Real Tnormal = (1/_dt)*M*(displacement_jump_rate_local(2)+(1/_dt)*displacement_jump_local(2))/(2*elem_length*elem_length) + ( (R_plus_local_vec(2) - R_minus_local_vec(2)) / ( 2*elem_length*elem_length ) ) + T_normal_o ;  
 
   //Compute fault traction
   //min(0,sigma_N)
