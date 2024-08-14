@@ -8,15 +8,15 @@
   [./msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -30000
-    xmax = 30000
-    ymin = -30000
+    xmin = -22400
+    xmax = 22400
+    ymin = -22000
     ymax = 0
-    zmin = -21000
-    zmax = 21000
-    nx = 300
-    ny = 150
-    nz = 210
+    zmin = -14000
+    zmax = 14000
+    nx = 224
+    ny = 110
+    nz = 140
     subdomain_ids = 1
   []
   [./new_block_1]
@@ -55,7 +55,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 1.0
+    q = 0.4
     
     #characteristic length (m)
     Dc = 0.4
