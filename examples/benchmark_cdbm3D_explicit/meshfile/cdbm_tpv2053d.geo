@@ -31,15 +31,21 @@ Box(2) = {-Fault_length/2, 0-Fault_width, -Fault_thickness/2, Fault_length, Faul
 // Create a nucleation patch
 Box(3) = {X_nucl-R_nucl/2, -Width_nucl-R_nucl/2, -thickness_nucl/2, R_nucl, R_nucl, thickness_nucl};
 
+// Create a damage box
+damage_xdist = 80000;
+damage_ydist = 50000;
+damage_zdist = 40000;
+Box(4) = {-damage_xdist/2, -damage_ydist, -damage_zdist/2, damage_xdist, damage_ydist, damage_zdist};
+
 // Boolean operation to fragment all volumes
-BooleanFragments{ Volume{1,2,3}; Delete; }{}
+BooleanFragments{ Volume{1,2,3,4}; Delete; }{}
 
 // Define mesh sizes using a progression field for smooth transition
 
 // Field 1: Mesh size inside the fault zone
 Field[1] = Box;
 Field[1].VIn = lc_fault;
-Field[1].VOut = lc;
+Field[1].VOut = lc/2;
 Field[1].XMin = -Fault_length/2;
 Field[1].XMax = Fault_length/2;
 Field[1].YMin = 0-Fault_width;

@@ -69,17 +69,28 @@ ADInitialDamageBenchmark::computeQpProperties()
   Real alpha_o = 0.0;
   
   //restrict ourselves to fault plane only, but extend damage along normal direction with exponential decaying
-  if ( (xcoord >= _fault_plane[0]) && (xcoord <= _fault_plane[1]) && (ycoord >= _fault_plane[2]) && (ycoord <= _fault_plane[3]) && (zcoord >= -500) && (zcoord < 500) )
+  if ((ycoord >= _fault_plane[2]) && (ycoord <= _fault_plane[3]))
   { 
     //set a constant damage value for nucleation region
     if ( (xcoord >= _nucl_center[0] - 0.5 * _nucl_distance) && (xcoord <= _nucl_center[0] + 0.5 * _nucl_distance) && (ycoord >= _nucl_center[1] - 0.5 * _nucl_distance) && (ycoord <= _nucl_center[1] + 0.5 * _nucl_distance) && (zcoord >= _nucl_center[2] - 0.5 * _nucl_thickness) && (zcoord <= _nucl_center[2] + 0.5 * _nucl_thickness) ){
       alpha_o = _nucl_damage;
     } 
-    else{ //set a exponential decaying 
-      // alpha_o = std::max(_peak_damage * exp(-1.0*(zcoord*zcoord)/(_sigma*_sigma)),0.0);
-      alpha_o = 0.0;
+    else{ //set a exponential decaying around the fault
+      //end of fault left
+      if (xcoord < _fault_plane[0]){
+        Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(zcoord - 0,2));
+        alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
+      }
+      //end of fault right
+      else if (xcoord > _fault_plane[1]){
+        Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(zcoord - 0,2));
+        alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
+      }
+      //along the fault
+      else{
+        alpha_o = std::max(_peak_damage * exp(-1.0*(zcoord*zcoord)/(_sigma*_sigma)),0.0);
+      }
     }
   }
-
-  _initial_damage[_qp] = alpha_o;
+  _initial_damage[_qp] = alpha_o; 
 }

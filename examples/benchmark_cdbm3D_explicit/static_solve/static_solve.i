@@ -18,7 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-60000  -60000  -60000'
+        coord = '-60000  -60000  -60000;
+                  60000  -60000  -60000;
+                 -60000  -60000   60000;
+                  60000  -60000   60000'
         new_boundary = corner_ptr
         input = sidesets
     []     
@@ -97,7 +100,7 @@
         nucl_thickness = 100
         nucl_damage = 0.8
         e_damage = 0.7
-        e_sigma = 1e3
+        e_sigma = 1e4
         outputs = exodus
     []  
 []  
@@ -114,7 +117,7 @@
   
 [Executioner]
     type = Steady
-    solve_type = LINEAR
+    solve_type = NEWTON
     l_max_its = 10
     l_tol = 1e-6
     nl_rel_tol = 1e-8
@@ -122,6 +125,8 @@
     nl_max_its = 10
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+    automatic_scaling = true
+    line_search = basic
 []  
 
 [Outputs]
