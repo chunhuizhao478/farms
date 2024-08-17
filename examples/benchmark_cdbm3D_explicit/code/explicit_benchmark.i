@@ -348,7 +348,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 1000
+    time_step_interval = 50
 []
   
 [BCs]
