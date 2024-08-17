@@ -65,7 +65,8 @@ protected:
   const VariableValue & _disp_slipweakening_z_old;
   const VariableValue & _disp_slipweakening_neighbor_z_old;
 
-  const VariableValue & _elem_length;
+  const VariableValue & _nodal_area;
+  const VariableValue & _nodal_volume;
 
   const VariableValue & _mu_s;
   const VariableValue & _mu_d;

@@ -5,69 +5,40 @@
 ##########################################################
 
 [Mesh]
-  [./msh]
-    type = GeneratedMeshGenerator
-    dim = 3
-    xmin = -32000
-    xmax = 32000
-    ymin = -64000
-    ymax = 0
-    zmin = -32000
-    zmax = 32000
-    nx = 20
-    ny = 20
-    nz = 20
-    subdomain_ids = 1
-    elem_type = HEX8
-  []
-  [./fault_area_block_1]
-    type = SubdomainBoundingBoxGenerator
-    input = msh
-    block_id = 2
-    bottom_left = '-22000 -22000 12800'
-    top_right = '22000 0 -12800'
-    location = INSIDE
-  []
-  [./refine_fault_area_block_1]
-    type = RefineBlockGenerator
-    input = fault_area_block_1
-    block = '2'
-    refinement = '1'
-    enable_neighbor_refinement = false
-  []
-  [./fault_area_block_2]
-    type = SubdomainBoundingBoxGenerator
-    input = refine_fault_area_block_1
-    block_id = 3
-    bottom_left = '-20000 -20000 3200'
-    top_right = '20000 0 -3200'
-    location = INSIDE
-  []
-  [./refine_fault_area_block_2]
-    type = RefineBlockGenerator
-    input = fault_area_block_2
-    block = '3'
-    refinement = '1'
-    enable_neighbor_refinement = false
-  []
-  [./new_block_1]
-    type = ParsedSubdomainMeshGenerator
-    input = refine_fault_area_block_2
-    combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0 & z > -800'
-    block_id = 5
-  []
-  [./new_block_2]
-    type = ParsedSubdomainMeshGenerator
-    input = new_block_1
-    combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0 & z < 800'
-    block_id = 6
-  []       
-  [./split_1]
-    type = BreakMeshByBlockGenerator
-    input = new_block_2
-    split_interface = true
-    block_pairs = '5 6'
-  []      
+    [./msh]
+      type = FileMeshGenerator
+      file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
+      # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
+    []
+    [./new_block_1]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
+      block_id = 2
+    []
+    [./new_block_2]
+        type = ParsedSubdomainMeshGenerator
+        input = new_block_1
+        combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
+        block_id = 3
+    []       
+    [./split_1]
+        type = BreakMeshByBlockGenerator
+        input = new_block_2
+        split_interface = true
+        block_pairs = '2 3'
+    []      
+    [./sidesets]
+      input = split_1
+      type = SideSetsFromNormalsGenerator
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0
+                  0 0 -1
+                  0 0 1'
+      new_boundary = 'left right bottom top back front'
+    []    
 []
 
 [GlobalParams]
@@ -75,7 +46,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 1.0
+    q = 0.4
     
     #characteristic length (m)
     Dc = 0.4
@@ -208,6 +179,15 @@
     [traction_z]
         order = CONSTANT
         family = MONOMIAL
+    []
+    #nodal area and nodal volume
+    [nodal_area]
+      order = FIRST
+      family = LAGRANGE  
+    []
+    [nodal_volume]
+      order = FIRST
+      family = LAGRANGE      
     []    
 []
 
@@ -271,7 +251,7 @@
         variable = jump_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [YJump]
         type = MaterialRealVectorValueAux
@@ -279,7 +259,7 @@
         variable = jump_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [ZJump]
         type = MaterialRealVectorValueAux
@@ -287,7 +267,7 @@
         variable = jump_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     #
     [XJumpRate]
@@ -296,7 +276,7 @@
         variable = jump_rate_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [YJumpRate]
         type = MaterialRealVectorValueAux
@@ -304,7 +284,7 @@
         variable = jump_rate_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [ZJumpRate]
         type = MaterialRealVectorValueAux
@@ -312,7 +292,7 @@
         variable = jump_rate_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []    
     #
     [TractionX]
@@ -321,7 +301,7 @@
         variable = traction_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'        
+        boundary = 'Block2_Block3'        
     []
     [TractionY]
         type = MaterialRealVectorValueAux
@@ -329,7 +309,7 @@
         variable = traction_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [TractionZ]
         type = MaterialRealVectorValueAux
@@ -337,7 +317,7 @@
         variable = traction_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []        
     #
     [restore_x]
@@ -395,11 +375,21 @@
       function = func_dynamic_friction_coeff_mud
       execute_on = 'INITIAL TIMESTEP_END'
     []
-    [elem_length]
-      type = ConstantAux
-      variable = elem_length
-      value = 200
+    #get nodal volume and nodal area
+    [get_nodal_volume]
+      type = SolutionAux
+      variable = nodal_volume
+      solution = load_nodal_volume_and_area
+      from_variable = nodal_volume
+      execute_on = 'INITIAL'
     []
+    [get_nodal_area]
+      type = SolutionAux
+      variable = nodal_volume
+      solution = load_nodal_volume_and_area
+      from_variable = nodal_area
+      execute_on = 'INITIAL'
+    []    
 []
 
 [Kernels]
@@ -443,19 +433,19 @@
         type = FarmsCZM
         variable = disp_x
         neighbor_var = disp_x
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [czm_interface_kernel_y]
         type = FarmsCZM
         variable = disp_y
         neighbor_var = disp_y
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [czm_interface_kernel_z]
         type = FarmsCZM
         variable = disp_z
         neighbor_var = disp_z
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
 []
 
@@ -474,7 +464,7 @@
       lambda = 32.04e9
     []
     [./czm_mat]
-        type = FarmsSlipWeakeningCZM
+        type = FarmsSlipWeakeningCZMTet
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         disp_slipweakening_z     = disp_slipweakening_z
@@ -487,10 +477,11 @@
         reaction_damp_x = resid_damp_x
         reaction_damp_y = resid_damp_y
         reaction_damp_z = resid_damp_z
-        elem_length = elem_length
+        nodal_volume = nodal_volume
+        nodal_area = nodal_area
         mu_d = mu_d
         mu_s = mu_s
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     [../]
     [./static_initial_stress_tensor_slipweakening]
         type = GenericFunctionRankTwoTensor
@@ -564,13 +555,22 @@
         force_preaux = true
         execute_on = 'TIMESTEP_END'
     []
+    #load nodal volume and nodal area
+    [load_nodal_volume_and_area]
+      type = SolutionUserObject
+      mesh = './tet_massmatrix/tpv2053d_tet_massmatrix_check_out.e'
+      system_variables = 'nodal_area nodal_volume'
+      timestep = LATEST
+      force_preaux = true
+      execute_on = 'INITIAL'
+    []
 []
 
 [Executioner]
     type = Transient
-    dt = 0.001
+    dt = 0.0025
     end_time = 12.0
-    # num_steps = 1
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -580,6 +580,8 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 100
+    interval = 40
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
 []
+
+
