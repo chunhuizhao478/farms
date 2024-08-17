@@ -367,13 +367,13 @@
       type = FunctionAux
       variable = mu_s
       function = func_static_friction_coeff_mus
-      execute_on = 'INITIAL TIMESTEP_END'
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     [DynamicFricCoeff]
       type = FunctionAux
       variable = mu_d
       function = func_dynamic_friction_coeff_mud
-      execute_on = 'INITIAL TIMESTEP_END'
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     [elem_length]
       type = ConstantAux

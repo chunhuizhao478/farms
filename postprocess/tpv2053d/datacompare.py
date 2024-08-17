@@ -7,6 +7,7 @@ benchmark_code = "TPV205"
 
 #read benchmark data
 benchmark_label = "benchmark-eqsim-200m"
+benchmark_label_100m = "benchmark-eqsim-100m"
 
 #read farms data
 farms_label = "farms-200m"
@@ -37,7 +38,7 @@ def find_and_read_file(filename, search_directory):
     return None
 
 #define plot function
-def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, benchmark_label, farms_label, strike_value, dip_value, benchmark_code):
+def plotfigure(benchmark_data, benchmark_data_100m, time, farms_sliprate_data, farms_slip_data, farms_traction_data, benchmark_label, benchmark_label_100m, farms_label, strike_value, dip_value, benchmark_code):
 
     ## check if dir exists, create one if not
     saved_path = "./outputs/strike"+str(strike_value)+"_dip"+str(dip_value)+"/"
@@ -50,6 +51,7 @@ def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, bench
     plt.figure()
     plt.plot(time[:datalen],farms_slip_data,'g-',label=farms_label)
     plt.plot(benchmark_data[:,0],benchmark_data[:,1],'r-',label=benchmark_label)
+    plt.plot(benchmark_data_100m[:,0],benchmark_data_100m[:,1],'b-',label=benchmark_label_100m)
     plt.title(benchmark_code+" slip time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
     plt.legend()
     plt.xlabel("time (s)")
@@ -61,12 +63,25 @@ def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, bench
     plt.figure()
     plt.plot(time[:datalen],farms_sliprate_data,'g-',label=farms_label)
     plt.plot(benchmark_data[:,0],benchmark_data[:,2],'r-',label=benchmark_label)
+    plt.plot(benchmark_data_100m[:,0],benchmark_data_100m[:,2],'b-',label=benchmark_label_100m)
     plt.title(benchmark_code+" slip rate time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
     plt.legend()
     plt.xlabel("time (s)")
     plt.ylabel("slip rate (m/s)")
     plt.savefig(saved_path+"/sliprate.png")
     plt.show()   
+
+    ## traction
+    plt.figure()
+    plt.plot(time[:datalen],farms_traction_data/1e6+benchmark_data[0,3],'g-',label=farms_label)
+    plt.plot(benchmark_data[:,0],benchmark_data[:,3],'r-',label=benchmark_label)
+    plt.plot(benchmark_data_100m[:,0],benchmark_data_100m[:,3],'b-',label=benchmark_label_100m)
+    plt.title(benchmark_code+" slip rate time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
+    plt.legend()
+    plt.xlabel("time (s)")
+    plt.ylabel("traction (MPa)")
+    plt.savefig(saved_path+"/traction.png")
+    plt.show()  
 
 #strike,dip
 given_coord_list = [[0     , 0 ,-0    ],
@@ -98,15 +113,19 @@ for i in range(num_of_file):
     zcoord_i = given_coord_list[i][2] / 1000
 
     #file path
-    benchmark_path = "./benchmark_data/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
-    farms_slip_path = "./farms_data/slip_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
-    farms_sliprate_path = "./farms_data/sliprate_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    benchmark_path = "./benchmark_data/200m/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    benchmark_path_100m = "./benchmark_data/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_slip_path = "./farms_data_elemental/jump_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_sliprate_path = "./farms_data_elemental/jump_rate_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_traction_path = "./farms_data_elemental/traction_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
 
     benchmark = np.loadtxt(benchmark_path)
+    benchmark_100m = np.loadtxt(benchmark_path_100m)
     farms_slip = np.loadtxt(farms_slip_path)
     farms_sliprate = np.loadtxt(farms_sliprate_path)
+    farms_traction = np.loadtxt(farms_traction_path)
 
     print(farms_sliprate_path)
 
     ##plot
-    plotfigure(benchmark,time,farms_sliprate,farms_slip,benchmark_label,farms_label,xcoord_i,zcoord_i,benchmark_code)
+    plotfigure(benchmark,benchmark_100m,time,farms_sliprate,farms_slip,farms_traction,benchmark_label,benchmark_label_100m,farms_label,xcoord_i,zcoord_i,benchmark_code)

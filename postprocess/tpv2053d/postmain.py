@@ -7,11 +7,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 import postprocess.postfunc as postfunc
 
 #parameters
-plotvar = ["jump_x","jump_rate_x"]
+plotvar = ["jump_x","jump_rate_x","traction_x"]
 save_file_path = "./results"
 dim = 3
 node_per_elem = 8 #hex8 #4 #tet4
-elemblock_ind = 4 #primary surface associated blocks
+elemblock_ind = 2 #primary surface associated blocks
 
 #whether to save the folder results
 rename_folder = True
@@ -37,7 +37,7 @@ ptr_coords = [[0     , -0    , 0],
 
 #multiple files
 decodeflags = ["name_elem_var"]
-file_paths = ["/Users/zhaoc/Downloads/tpv2053d/tpv2053d_test_hex_out.e"]
+file_paths = ["/Users/andyz/Downloads/tpv2053d/tpv2053d_test_hex_uniform_out.e"]
 
 if __name__ == '__main__':
 

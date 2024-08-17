@@ -14,26 +14,26 @@
   [./msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -2
-    xmax = 2
-    ymin = -4
+    xmin = -4
+    xmax = 4
+    ymin = -8
     ymax = 0
-    zmin = -2
-    zmax = 2
-    nx = 2
-    ny = 2
-    nz = 2
+    zmin = -4
+    zmax = 4
+    nx = 4
+    ny = 4
+    nz = 4
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= -1 & x <= 1 & y >= -4 & z < 0 '
+    combinatorial_geometry = 'z < 0 '
     block_id = 5
   []
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'x >= -1 & x <= 1 & y >= -4 & z > 0'
+    combinatorial_geometry = 'z > 0'
     block_id = 6
   []       
   [./split_1]
