@@ -8,58 +8,28 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -32000
-      xmax = 32000
-      ymin = -64000
+      xmin = -22500
+      xmax = 22500
+      ymin = -22000
       ymax = 0
-      zmin = -32000
-      zmax = 32000
-      nx = 20
-      ny = 20
-      nz = 20
+      zmin = -14000
+      zmax = 14000
+      nx = 225
+      ny = 110
+      nz = 140
       subdomain_ids = 1
-    []
-    [./fault_area_block_1]
-      type = SubdomainBoundingBoxGenerator
-      input = msh
-      block_id = 2
-      bottom_left = '-16000 -16000 3200'
-      top_right = '16000 0 -3200'
-      location = INSIDE
-    []
-    [./refine_fault_area_block_1]
-      type = RefineBlockGenerator
-      input = fault_area_block_1
-      block = '2'
-      refinement = '1'
-      enable_neighbor_refinement = false
-    []
-    [./fault_area_block_2]
-      type = SubdomainBoundingBoxGenerator
-      input = refine_fault_area_block_1
-      block_id = 3
-      bottom_left = '-15200 -15200 800'
-      top_right = '15200 0 -800'
-      location = INSIDE
-    []
-    [./refine_fault_area_block_2]
-      type = RefineBlockGenerator
-      input = fault_area_block_2
-      block = '3'
-      refinement = '1'
-      enable_neighbor_refinement = false
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
-      input = refine_fault_area_block_2
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0 & z > -800'
-      block_id = 4
+      input = msh
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
+      block_id = 2
     []
     [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0 & z < 800'
-      block_id = 5
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
+      block_id = 3
     []       
     [./split_1]
         type = BreakMeshByBlockGenerator
