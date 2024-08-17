@@ -23,7 +23,7 @@ with open(input_file, 'r') as file:
     for i in range(start_index, end_index):
         parts = lines[i].split()
         if len(parts) == 2:  # Ensure there are exactly two columns
-            value = int(parts[1])
+            value = float(parts[1])
             if value != 0:  # Keep only non-zero values
                 non_zero_values.append(str(value))
 

@@ -11,39 +11,41 @@
 ##########################################################
 
 [Mesh]
-    [./msh]
-      type = GeneratedMeshGenerator
-      dim = 3
-      xmin = -4
-      xmax = 4
-      ymin = -8
-      ymax = 0
-      zmin = -4
-      zmax = 4
-      nx = 4
-      ny = 4
-      nz = 4
-      elem_type = TET4
-    []
-    [./new_block_1]
-      type = ParsedSubdomainMeshGenerator
-      input = msh
-      combinatorial_geometry = 'z < 0 '
-      block_id = 5
-    []
-    [./new_block_2]
+  [./msh]
+    type = FileMeshGenerator
+    file =  '../../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
+    # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
+  []
+  [./new_block_1]
+    type = ParsedSubdomainMeshGenerator
+    input = msh
+    combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
+    block_id = 2
+  []
+  [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'z > 0'
-      block_id = 6
-    []       
-    [./split_1]
+      combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
+      block_id = 3
+  []       
+  [./split_1]
       type = BreakMeshByBlockGenerator
       input = new_block_2
       split_interface = true
-      block_pairs = '5 6'
-    []      
-  []
+      block_pairs = '2 3'
+  []      
+  [./sidesets]
+    input = split_1
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0
+                0 0 -1
+                0 0 1'
+    new_boundary = 'left right bottom top back front'
+  []    
+[]
   
   [GlobalParams]
       ##------------slip weakening------------##
@@ -88,7 +90,6 @@
   [Executioner]
       type = Transient
       dt = 1
-      end_time = 12.0
       num_steps = 1
       [TimeIntegrator]
           type = CentralDifference
@@ -105,14 +106,14 @@
     []
     [./nodal_area]
         type = NodalArea
-        variable = nodearea
-        boundary = 'Block5_Block6'
+        variable = nodal_area
+        boundary = 'Block2_Block3'
         execute_on = 'initial timestep_end'
     [../]
   []
 
   [Functions]
-    [node]
+    [nodal_volume]
         type = PiecewiseConstantFromCSV
         read_prop_user_object = 'reader_node'
         read_type = 'node'
@@ -122,21 +123,21 @@
   []
 
   [AuxVariables]
-    [nodemass]
+    [nodal_volume]
         order = FIRST
         family = LAGRANGE
     []
-    [nodearea]
+    [nodal_area]
         order = FIRST
         family = LAGRANGE        
     []
   []
 
   [AuxKernels]
-    [nodemass]
+    [nodal_volume]
         type = FunctionAux
-        variable = nodemass
-        function = node
+        variable = nodal_volume
+        function = nodal_volume
     []
   []
   
