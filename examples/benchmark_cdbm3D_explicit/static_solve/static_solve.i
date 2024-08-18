@@ -97,7 +97,7 @@
         nucl_center = '0 -7500 0'
         fault_plane = '-15000 15000 -15000 0'
         nucl_distance = 1500
-        nucl_thickness = 100
+        nucl_thickness = 1000
         nucl_damage = 0.85
         e_damage = 0.7
         e_sigma = 1e4

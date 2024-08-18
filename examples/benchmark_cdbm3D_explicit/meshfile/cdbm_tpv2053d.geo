@@ -1,6 +1,6 @@
 SetFactory("OpenCASCADE");
 
-lc = 5e3;
+lc = 2.5e3;
 lc_fault = 100; // Fine mesh in the fault zone
 
 Fault_length = 30e3;
@@ -12,7 +12,7 @@ Fault_dip = 90*Pi/180.;
 X_nucl = 0e3;
 Width_nucl = 0.5*Fault_width;
 R_nucl = 1.5e3;
-thickness_nucl = 100;
+thickness_nucl = 1000;
 
 Xmax = 60e3;
 Xmin = -Xmax;
