@@ -28,8 +28,7 @@ FarmsSlipWeakeningCZMTet::validParams()
   params.addRequiredCoupledVar("reaction_damp_x","reaction damping in x dir");
   params.addRequiredCoupledVar("reaction_damp_y","reaction damping in y dir");
   params.addRequiredCoupledVar("reaction_damp_z","reaction damping in z dir");
-  params.addRequiredCoupledVar("nodal_area","nodal area of a point");
-  params.addRequiredCoupledVar("nodal_volume","nodal volume of a point");
+  params.addRequiredCoupledVar("elem_length","length of a element");
   params.addRequiredCoupledVar("mu_s","static friction coefficient spatial distribution");
   params.addRequiredCoupledVar("mu_d","dynamic friction coefficient spatial distribution");
   params.addCoupledVar("cohesion","cohesion in shear stress");
@@ -72,8 +71,7 @@ FarmsSlipWeakeningCZMTet::FarmsSlipWeakeningCZMTet(const InputParameters & param
   _disp_slipweakening_neighbor_y_old(coupledNeighborValueOld("disp_slipweakening_y")),
   _disp_slipweakening_z_old(coupledValueOld("disp_slipweakening_z")),
   _disp_slipweakening_neighbor_z_old(coupledNeighborValueOld("disp_slipweakening_z")),
-  _nodal_area(coupledValue("nodal_area")),
-  _nodal_volume(coupledValue("nodal_volume")),
+  _elem_length(coupledValue("elem_length")),
   _mu_s(coupledValue("mu_s")),
   _mu_d(coupledValue("mu_d")),
   _sts_init(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor_slipweakening")),
@@ -221,16 +219,24 @@ FarmsSlipWeakeningCZMTet::computeTractionAndDisplacements()
   RealVectorValue R_plus_local_vec(R_plus_local_strike,R_plus_local_dip,R_plus_local_normal);
   RealVectorValue R_minus_local_vec(R_minus_local_strike,R_minus_local_dip,R_minus_local_normal);
 
-  //check if received zero
-  if ( (_nodal_volume[_qp] == 0.0) || (_nodal_area[_qp] == 0.0) ){mooseError("FarmsSlipWeakeningCZNTet: nodal area or nodal volume receive zero");}
+  //element length
+  Real elem_length = _elem_length[_qp];
 
-  //Compute node mass
-  Real M = _density[_qp] * _nodal_volume[_qp];
+  //Compute node mass //equal length tetrahedron
+  Real M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 6;
+  Real A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 6;
+
+  //HARDCODE Condition for surface nodes
+  Real ycoord = _q_point[_qp](1);
+  if ( ycoord > -100 ){
+    M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 3;
+    A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 3;
+  }
 
   //Compute sticking stress
-  Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*_nodal_area[_qp]) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*_nodal_area[_qp]) + T_strike_o;
-  Real Tdip    = (1/_dt)*M*displacement_jump_rate_local(1)/(2*_nodal_area[_qp]) + (R_plus_local_vec(1) - R_minus_local_vec(1))/(2*_nodal_area[_qp]) + T_dip_o;
-  Real Tnormal = (1/_dt)*M*(displacement_jump_rate_local(2)+(1/_dt)*displacement_jump_local(2))/(2*_nodal_area[_qp]) + ( (R_plus_local_vec(2) - R_minus_local_vec(2)) / ( 2*_nodal_area[_qp] ) ) + T_normal_o ;  
+  Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*A) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*A) + T_strike_o;
+  Real Tdip    = (1/_dt)*M*displacement_jump_rate_local(1)/(2*A) + (R_plus_local_vec(1) - R_minus_local_vec(1))/(2*A) + T_dip_o;
+  Real Tnormal = (1/_dt)*M*(displacement_jump_rate_local(2)+(1/_dt)*displacement_jump_local(2))/(2*A) + ( (R_plus_local_vec(2) - R_minus_local_vec(2)) / ( 2*A ) ) + T_normal_o ;  
 
   //Compute fault traction
   //min(0,sigma_N)
