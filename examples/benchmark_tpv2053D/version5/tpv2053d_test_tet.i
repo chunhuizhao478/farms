@@ -382,14 +382,7 @@
       solution = load_nodal_volume_and_area
       from_variable = nodal_volume
       execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [get_nodal_area]
-      type = SolutionAux
-      variable = nodal_area
-      solution = load_nodal_volume_and_area
-      from_variable = nodal_area
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []    
+    []   
 []
 
 [Kernels]
@@ -564,13 +557,20 @@
       force_preaux = true
       execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #
+    [./nodal_area]
+      type = NodalArea
+      variable = nodal_area
+      boundary = 'Block2_Block3'
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [../]
 []
 
 [Executioner]
     type = Transient
     dt = 0.0025
     end_time = 12.0
-    # num_steps = 10
+    # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
