@@ -221,6 +221,9 @@ FarmsSlipWeakeningCZMTet::computeTractionAndDisplacements()
   RealVectorValue R_plus_local_vec(R_plus_local_strike,R_plus_local_dip,R_plus_local_normal);
   RealVectorValue R_minus_local_vec(R_minus_local_strike,R_minus_local_dip,R_minus_local_normal);
 
+  //check if received zero
+  if ( (_nodal_volume[_qp] == 0.0) || (_nodal_area[_qp] == 0.0) ){mooseError("FarmsSlipWeakeningCZNTet: nodal area or nodal volume receive zero");}
+
   //Compute node mass
   Real M = _density[_qp] * _nodal_volume[_qp];
 

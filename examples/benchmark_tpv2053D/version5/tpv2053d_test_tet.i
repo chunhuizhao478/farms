@@ -381,14 +381,14 @@
       variable = nodal_volume
       solution = load_nodal_volume_and_area
       from_variable = nodal_volume
-      execute_on = 'INITIAL'
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
     [get_nodal_area]
       type = SolutionAux
-      variable = nodal_volume
+      variable = nodal_area
       solution = load_nodal_volume_and_area
       from_variable = nodal_area
-      execute_on = 'INITIAL'
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []    
 []
 
@@ -562,7 +562,7 @@
       system_variables = 'nodal_area nodal_volume'
       timestep = LATEST
       force_preaux = true
-      execute_on = 'INITIAL'
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []
 
@@ -581,7 +581,7 @@
 [Outputs]
     exodus = true
     interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z nodal_area nodal_volume'
 []
 
 
