@@ -19,11 +19,11 @@ InitialCohesionTPV243D::value(Real /*t*/, const Point & p) const
 {
   
   //the coordinate follows benchmark
-  Real z_coord = p(2); //along the slip direction
+  Real y_coord = p(1); //along the dip direction
   Real Co = 0;
 
-  if ( abs(z_coord) <= 4000 ){
-    Co = 0.30 * 1e6 + ( 0.000675 * 1e6 ) * ( 4000 - abs(z_coord) );
+  if ( abs(y_coord) <= 4000 ){
+    Co = 0.30 * 1e6 + ( 0.000675 * 1e6 ) * ( 4000 - abs(y_coord) );
   }
   else{
     Co = 0.30 * 1e6;

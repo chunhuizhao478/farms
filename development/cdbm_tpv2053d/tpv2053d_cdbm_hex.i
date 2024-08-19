@@ -8,15 +8,15 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -20000
-      xmax = 20000
+      xmin = -18000
+      xmax = 18000
       ymin = -20000
       ymax = 0
-      zmin = -14000
-      zmax = 14000
-      nx = 200
+      zmin = -10000
+      zmax = 10000
+      nx = 180
       ny = 100
-      nz = 140
+      nz = 100
       subdomain_ids = 1
     []
     [./new_block_1]
@@ -305,6 +305,40 @@
       order = CONSTANT
       family = MONOMIAL
     []
+    #
+    [./check_function_initial_stress_xx]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_xy]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_xz]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_yy]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_yz]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    [./check_function_initial_stress_zz]
+      order = FIRST
+      family = LAGRANGE      
+    []
+    #
+    [cohesion_aux]
+      order = FIRST
+      family = LAGRANGE         
+    []
+    [forced_rupture_time_aux]
+      order = FIRST
+      family = LAGRANGE      
+    []
 []
 
 [Physics]
@@ -367,7 +401,7 @@
         variable = jump_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [YJump]
         type = MaterialRealVectorValueAux
@@ -375,7 +409,7 @@
         variable = jump_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [ZJump]
         type = MaterialRealVectorValueAux
@@ -383,7 +417,7 @@
         variable = jump_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     #
     [XJumpRate]
@@ -392,7 +426,7 @@
         variable = jump_rate_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [YJumpRate]
         type = MaterialRealVectorValueAux
@@ -400,7 +434,7 @@
         variable = jump_rate_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [ZJumpRate]
         type = MaterialRealVectorValueAux
@@ -408,7 +442,7 @@
         variable = jump_rate_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []    
     #
     [TractionX]
@@ -417,7 +451,7 @@
         variable = traction_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'        
+        boundary = 'Block2_Block3'        
     []
     [TractionY]
         type = MaterialRealVectorValueAux
@@ -425,7 +459,7 @@
         variable = traction_y
         component = 1
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [TractionZ]
         type = MaterialRealVectorValueAux
@@ -433,7 +467,7 @@
         variable = traction_z
         component = 2
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []        
     #
     [restore_x]
@@ -527,6 +561,58 @@
         variable = gamma_old
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #
+    #cohesion
+    [cohesion]
+      type = FunctionAux
+      variable = cohesion_aux
+      function = func_initial_cohesion
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #forced_rupture_time
+    [forced_rupture_time]
+      type = FunctionAux
+      variable = forced_rupture_time_aux
+      function = func_forced_rupture_time
+      execute_on = 'INITIAL TIMESTEP_BEGIN'      
+    []
+    #
+    [checkxx]
+      type = FunctionAux
+      variable = check_function_initial_stress_xx
+      function = func_initial_stress_xx
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkxy]
+      type = FunctionAux
+      variable = check_function_initial_stress_xy
+      function = func_initial_stress_xy
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkxz]
+      type = FunctionAux
+      variable = check_function_initial_stress_xz
+      function = func_initial_stress_xz
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkyy]
+      type = FunctionAux
+      variable = check_function_initial_stress_yy
+      function = func_initial_stress_yy
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkyz]
+      type = FunctionAux
+      variable = check_function_initial_stress_yz
+      function = func_initial_stress_yz
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [checkzz]
+      type = FunctionAux
+      variable = check_function_initial_stress_zz
+      function = func_initial_stress_zz
+      execute_on = 'INITIAL TIMESTEP_BEGIN'
+    [] 
 []
 
 [Kernels]
@@ -570,19 +656,19 @@
         type = FarmsCZM
         variable = disp_x
         neighbor_var = disp_x
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [czm_interface_kernel_y]
         type = FarmsCZM
         variable = disp_y
         neighbor_var = disp_y
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
     [czm_interface_kernel_z]
         type = FarmsCZM
         variable = disp_z
         neighbor_var = disp_z
-        boundary = 'Block5_Block6'
+        boundary = 'Block2_Block3'
     []
 []
 
@@ -609,7 +695,7 @@
       lambda = 32.04e9
     []
     [./czm_mat]
-        type = FarmsSlipWeakeningCZM
+        type = FarmsSlipWeakeningCZMcdbm
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
         disp_slipweakening_z     = disp_slipweakening_z
@@ -625,7 +711,9 @@
         elem_length = elem_length
         mu_d = mu_d
         mu_s = mu_s
-        boundary = 'Block5_Block6'
+        cohesion = cohesion_aux
+        forced_rupture_time = forced_rupture_time_aux
+        boundary = 'Block2_Block3'
     [../]
     [./static_initial_stress_tensor_slipweakening]
         type = GenericFunctionRankTwoTensor
@@ -644,40 +732,57 @@
 []
 
 [Functions]
-    [func_static_friction_coeff_mus]
-       type = InitialStaticFrictionCoeff
-    []
-    #mud constant value
-    [func_dynamic_friction_coeff_mud]
-        type = ConstantFunction
-        value = 0.525
-    []
-    #Note:restrict stress variation along the fault only
-    #this function is used in czm only
-    [./func_initial_stress_xx]
-        type = ConstantFunction
-        value = 0
-    []
-    [./func_initial_stress_xy]
-        type = ConstantFunction
-        value = 0
-    []
-    [./func_initial_stress_xz]
-      type = InitialShearStress
-      benchmark_type = tpv205
-    []
-    [./func_initial_stress_yy]
+  [func_static_friction_coeff_mus]
+     type = InitialStaticFrictionCoeffTPV243D
+  []
+  #mud constant value: 0.4
+  [func_dynamic_friction_coeff_mud]
       type = ConstantFunction
-      value = 0
-    []
-    [./func_initial_stress_yz]
-        type = ConstantFunction
-        value = 0
-    []
-    [./func_initial_stress_zz]
-      type = ConstantFunction
-      value = -120e6
-    []
+      value = 0.12
+  []
+  #Note:restrict stress variation along the fault only
+  #this function is used in czm only
+  [./func_initial_stress_xx]
+    type = InitialStressTPV243D
+    i = 1
+    j = 1
+  []
+  [./func_initial_stress_xy]
+    type = InitialStressTPV243D
+    i = 1
+    j = 2
+  []
+  [./func_initial_stress_xz]
+    type = InitialStressTPV243D
+    i = 1
+    j = 3
+  []  
+  [./func_initial_stress_yy]
+    type = InitialStressTPV243D
+    i = 2
+    j = 2
+  []
+  [./func_initial_stress_yz]
+    type = InitialStressTPV243D
+    i = 2
+    j = 3
+  []  
+  [./func_initial_stress_zz]
+    type = InitialStressTPV243D
+    i = 3
+    j = 3
+  []
+  [./func_initial_cohesion]
+    type = InitialCohesionTPV243D
+  []
+  [./func_forced_rupture_time]
+    type = ForcedRuptureTimeTPV243D
+    loc_x = 0
+    loc_y = -7500
+    loc_z = 0
+    r_crit = 4000
+    Vs = 3464
+  []
 []
 
 [UserObjects]
@@ -723,7 +828,7 @@
 [Outputs]
     exodus = true
     time_step_interval = 50
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s alpha_in B_in'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s alpha_in B_in xi_old'
 []
 
 [MultiApps]
