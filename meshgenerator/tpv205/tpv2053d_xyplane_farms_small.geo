@@ -48,7 +48,7 @@ Width_nucl = 0.5*Fault_width;
 R_nucl = 1.5e3;
 lc_nucl = 200; //change this!!!
 
-Xmax = 80e3;
+Xmax = 60e3;
 Xmin = -Xmax;
 
 Ymax = 0;
