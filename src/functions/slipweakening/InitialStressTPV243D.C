@@ -23,7 +23,7 @@ InitialStressTPV243D::value(Real /*t*/, const Point & p) const
 {
   
   //the coordinate follows benchmark
-  Real z_coord = p(2); //along the slip direction
+  Real y_coord = p(1); //along the dip direction
   Real To = 0;
   Real fluid_density = 1000; //kg/m^3 fluid density
   Real rock_density = 2670; //kg/m^3 rock density
@@ -37,13 +37,13 @@ InitialStressTPV243D::value(Real /*t*/, const Point & p) const
   Real sigma23 = 0;
 
   //Pf
-  Real Pf = fluid_density * gravity * abs(z_coord);
+  Real Pf = fluid_density * gravity * abs(y_coord);
 
   //sigma11
-  sigma11 = -1 * rock_density * gravity * abs(z_coord);
+  sigma11 = -1 * rock_density * gravity * abs(y_coord);
 
   //sigma22
-  if ( abs(z_coord) <= 15600 ) {
+  if ( abs(y_coord) <= 15600 ) {
     sigma22 = b22 * ( sigma11 + Pf ) - Pf;
   }
   else{
@@ -51,7 +51,7 @@ InitialStressTPV243D::value(Real /*t*/, const Point & p) const
   }
 
   //sigma33
-  if ( abs(z_coord) <= 15600 ) {
+  if ( abs(y_coord) <= 15600 ) {
     sigma33 = b33 * ( sigma11 + Pf ) - Pf;
   }
   else{
@@ -59,7 +59,7 @@ InitialStressTPV243D::value(Real /*t*/, const Point & p) const
   } 
 
   //sigma23
-  if ( abs(z_coord) <= 15600 ) {
+  if ( abs(y_coord) <= 15600 ) {
     sigma23 = b23 * ( sigma11 + Pf );
   }
   else{
@@ -67,15 +67,14 @@ InitialStressTPV243D::value(Real /*t*/, const Point & p) const
   } 
 
   //convert benchmark coordinate to problem definition coordinate
-  //problem -> benchmark
-  //3 -> 1
-  //1 -> 2
-  //2 -> 3
+  //benchmark description: 1: dip, 2: strike, 3: normal
+  //problem setup: 1: strike, 2: dip, 3: normal
+  //so just replace 1 -> 2 and 2 -> 1 
 
   if ( _i == 1 && _j == 1 ){ To = sigma22; }
-  else if ( _i == 2 && _j == 2 ){ To = sigma33; }
-  else if ( _i == 3 && _j == 3 ){ To = sigma11; }
-  else if ( ( _i == 1 && _j == 2 ) || ( _i == 2 && _j == 1 ) ){ To = sigma23; }
+  else if ( _i == 2 && _j == 2 ){ To = sigma11; }
+  else if ( _i == 3 && _j == 3 ){ To = sigma33; }
+  else if ( ( _i == 1 && _j == 3 ) || ( _i == 3 && _j == 1 ) ){ To = sigma23; }
   else{ To = 0.0; }
 
   return To;
