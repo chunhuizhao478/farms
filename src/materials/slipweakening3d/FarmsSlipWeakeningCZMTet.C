@@ -227,11 +227,11 @@ FarmsSlipWeakeningCZMTet::computeTractionAndDisplacements()
   Real A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 6;
 
   //HARDCODE Condition for surface nodes
-  // Real ycoord = _q_point[_qp](1);
-  // if ( ycoord > -100 ){
-  //   M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 3;
-  //   A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 3;
-  // }
+  Real ycoord = _q_point[_qp](1);
+  if ( ycoord > -100 ){
+    M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 3;
+    A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 3;
+  }
 
   //Compute sticking stress
   Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*A) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*A) + T_strike_o;
