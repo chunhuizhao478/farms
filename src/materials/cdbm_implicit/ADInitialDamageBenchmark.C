@@ -92,5 +92,20 @@ ADInitialDamageBenchmark::computeQpProperties()
       }
     }
   }
+  //set gradual decrease to lower fault boundary
+  if ((xcoord >= _fault_plane[0]) && (xcoord <= _fault_plane[1]) && (ycoord < _fault_plane[2])){
+    Real r = std::sqrt(pow(ycoord - _fault_plane[2],2) + pow(zcoord - 0,2));
+    alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
+  }
+  //set gradual decrease to corner
+  if ((xcoord < _fault_plane[0]) && (ycoord < _fault_plane[2])){
+    Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(ycoord - _fault_plane[2],2) + pow(zcoord - 0,2));
+    alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
+  }
+  //set gradual decrease to corner
+  if ((xcoord > _fault_plane[1]) && (ycoord < _fault_plane[2])){
+    Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(ycoord - _fault_plane[2],2) + pow(zcoord - 0,2));
+    alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
+  }    
   _initial_damage[_qp] = alpha_o; 
 }
