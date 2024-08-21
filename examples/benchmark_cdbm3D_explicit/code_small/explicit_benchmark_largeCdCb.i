@@ -16,10 +16,10 @@
     []    
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-30000  -30000  -30000;
-                  30000  -30000  -30000;
-                 -30000  -30000   30000;
-                  30000  -30000   30000'
+        coord = '-20000  -20000  -20000;
+                  20000  -20000  -20000;
+                 -20000  -20000   20000;
+                  20000  -20000   20000'
         new_boundary = corner_ptr
         input = sidesets
     [] 
@@ -52,11 +52,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1e7
+    CdCb_multiplier = 1000
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -132,6 +132,33 @@
     [alpha_grad_y]
     []    
     [alpha_grad_z]
+    []
+    [vel_x]
+    []  
+    [vel_y]
+    []
+    [vel_z]
+    []
+[]
+
+[AuxKernels]
+    [Vel_x]
+        type = CompVarRate
+        variable = vel_x
+        coupled = disp_x
+        execute_on = 'TIMESTEP_END'
+    []
+    [Vel_y]
+        type = CompVarRate
+        variable = vel_y
+        coupled = disp_y
+        execute_on = 'TIMESTEP_END'
+    []
+    [Vel_z]
+      type = CompVarRate
+      variable = vel_z
+      coupled = disp_z
+      execute_on = 'TIMESTEP_END'
     []
 []
   
@@ -345,7 +372,7 @@
 #0.4/5773
 [Executioner]
     type = Transient
-    dt = 1e-5
+    dt = 1e-4
     end_time = 1.0
     # num_steps = 10000
     [TimeIntegrator]
@@ -357,99 +384,207 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 50
+    time_step_interval = 1
 []
-  
+
 [BCs]
-    [pressure_right]
-        type = Pressure
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC3d
+        component = 0
         variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = right
-        factor = 50e6
-    []
-    [pressure_left]
-        type = Pressure
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = left
-        factor = 50e6
-    []
-    [pressure_front]
-        type = Pressure
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = front
-        factor = 50e6
-    []
-    [pressure_back]
-        type = Pressure
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = back
-        factor = 50e6        
-    []
-    [pressure_top]
-        type = Pressure
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
         boundary = top
-        factor = 50e6         
     []
-    [pressure_bottom]
-        type = Pressure
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC3d
+        component = 1
         variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_top_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
         boundary = bottom
-        factor = 50e6         
     []
-    #
-    [pressure_shear_front]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = front
-        value = 30e6
-    []
-    [pressure_shear_back]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = back
-        value = -30e6   
-    []
-    [pressure_shear_left]
-        type = NeumannBC
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = left
-        value = -30e6
-    []
-    [pressure_shear_right]
-        type = NeumannBC
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = right
-        value = 30e6     
-    []
-    #
-    [fix_ptr_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = corner_ptr
-    []
-    [fix_ptr_y]
-        type = DirichletBC
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC3d
+        component = 1
         variable = disp_y
-        value = 0
-        boundary = corner_ptr
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
     []
-    [fix_ptr_z]
-        type = DirichletBC
+    [./dashpot_bottom_z]
+        type = NonReflectDashpotBC3d
+        component = 2
         variable = disp_z
-        value = 0
-        boundary = corner_ptr
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_left_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_right_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = right
+    []
+    [./dashpot_back_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = back
+    []
+    [./dashpot_back_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = back
+    []
+    [./dashpot_back_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = back
+    []
+    [./dashpot_front_x]
+        type = NonReflectDashpotBC3d
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = front
+    []
+    [./dashpot_front_y]
+        type = NonReflectDashpotBC3d
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = front
+    []
+    [./dashpot_front_z]
+        type = NonReflectDashpotBC3d
+        component = 2
+        variable = disp_z
+        disp_x = disp_x
+        disp_y = disp_y
+        disp_z = disp_z
+        p_wave_speed = 6000
+        shear_wave_speed = 3464
+        boundary = front
     []
 []
 

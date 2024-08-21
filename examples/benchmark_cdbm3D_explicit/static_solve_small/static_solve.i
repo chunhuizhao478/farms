@@ -18,10 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-30000  -30000  -30000;
-                  30000  -30000  -30000;
-                 -30000  -30000   30000;
-                  30000  -30000   30000'
+        coord = '-20000  -20000  -20000;
+                  20000  -20000  -20000;
+                 -20000  -20000   20000;
+                  20000  -20000   20000'
         new_boundary = corner_ptr
         input = sidesets
     []     
@@ -98,8 +98,8 @@
         fault_plane = '-15000 15000 -15000 0'
         nucl_distance = 1500
         nucl_thickness = 1000
-        nucl_damage = 0.85
-        e_damage = 0.6
+        nucl_damage = 0.9
+        e_damage = 0.7
         e_sigma = 2.5e3
         outputs = exodus
     []  

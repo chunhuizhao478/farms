@@ -202,11 +202,22 @@ ComputeDamageBreakageStress3D::computeQpStress()
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
   Real B_forcingterm;
+  // if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
+  //   B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
+  // }
+  // else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
+  //   B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
+  // }
+  // else{
+  //   mooseError("xi_old is OUT-OF-RANGE!.");
+  // }
+
+  //ggw183
   if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-    B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
+    B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(1000); //could heal if xi < xi_0
   }
   else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
+    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(1000);
   }
   else{
     mooseError("xi_old is OUT-OF-RANGE!.");
