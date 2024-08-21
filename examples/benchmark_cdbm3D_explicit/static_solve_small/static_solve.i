@@ -183,7 +183,7 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 50e6
+        value = 30e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
