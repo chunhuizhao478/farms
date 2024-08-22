@@ -255,7 +255,7 @@ ComputeDamageBreakageStress3D::computeQpStress()
   /* compute strain */
   RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_old[_qp],_m1) * _sigma_d_old[_qp];
   RankTwoTensor eps_e = _mechanical_strain[_qp] - eps_p;
-  
+
   Real I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
   Real I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
   Real xi = I1/std::sqrt(I2);
