@@ -27,7 +27,6 @@ protected:
   virtual void computeQpStress() override;
 
   /// Material property initial damage profile
-  const ADMaterialProperty<Real> & _initial_damage;
 
   /// initial lambda value 
   Real _lambda_o;
@@ -40,5 +39,7 @@ protected:
 
   /// gamma_damage_r value
   Real _gamma_damage_r;
+
+  Real _initial_damage_val;
 
 };
