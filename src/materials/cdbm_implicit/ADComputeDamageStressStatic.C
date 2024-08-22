@@ -20,16 +20,17 @@ ADComputeDamageStressStatic::validParams()
   params.addRequiredParam<Real>("shear_modulus_o","initial shear modulus value");
   params.addRequiredParam<Real>("xi_o","xi_o value");
   params.addRequiredParam<Real>("gamma_damaged_r","gamma_damage_r value");
+  params.addRequiredParam<Real>("initial_damage","initial damage value");
   return params;
 }
 
 ADComputeDamageStressStatic::ADComputeDamageStressStatic(const InputParameters & parameters)
   : ADComputeStressBase(parameters),
-  _initial_damage(getADMaterialProperty<Real>("initial_damage")),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_o(getParam<Real>("xi_o")),
-  _gamma_damage_r(getParam<Real>("gamma_damaged_r"))  
+  _gamma_damage_r(getParam<Real>("gamma_damaged_r")),
+  _initial_damage_val(getParam<Real>("initial_damage"))   
 {
 }
 
@@ -52,7 +53,7 @@ ADComputeDamageStressStatic::computeQpStress()
 {
   
   // Evaluate shear modulus
-  ADReal shear_modulus = _shear_modulus_o + _xi_o * _initial_damage[_qp] * _gamma_damage_r;
+  ADReal shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val * _gamma_damage_r;
 
   // stress = C * e
   _stress[_qp](0,0) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](0,0);

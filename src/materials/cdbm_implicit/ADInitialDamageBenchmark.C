@@ -75,37 +75,29 @@ ADInitialDamageBenchmark::computeQpProperties()
     if ( (xcoord >= _nucl_center[0] - 0.5 * _nucl_distance) && (xcoord <= _nucl_center[0] + 0.5 * _nucl_distance) && (ycoord >= _nucl_center[1] - 0.5 * _nucl_distance) && (ycoord <= _nucl_center[1] + 0.5 * _nucl_distance) && (zcoord >= _nucl_center[2] - 0.5 * _nucl_thickness) && (zcoord <= _nucl_center[2] + 0.5 * _nucl_thickness) ){
       alpha_o = _nucl_damage;
     } 
-    else{ //set a exponential decaying around the fault
-      //end of fault left
-      if (xcoord < _fault_plane[0]){
-        Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(zcoord - 0,2));
-        alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
-      }
-      //end of fault right
-      else if (xcoord > _fault_plane[1]){
-        Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(zcoord - 0,2));
-        alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
-      }
-      //along the fault
-      else{
+    else{
         alpha_o = std::max(_peak_damage * exp(-1.0*(zcoord*zcoord)/(_sigma*_sigma)),0.0);
-      }
     }
   }
   //set gradual decrease to lower fault boundary
-  if ((xcoord >= _fault_plane[0]) && (xcoord <= _fault_plane[1]) && (ycoord < _fault_plane[2])){
+  if ((xcoord >= _fault_plane[0]) && (xcoord <= _fault_plane[1]) && (ycoord <= _fault_plane[2])){
     Real r = std::sqrt(pow(ycoord - _fault_plane[2],2) + pow(zcoord - 0,2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }
-  //set gradual decrease to corner
-  if ((xcoord < _fault_plane[0]) && (ycoord < _fault_plane[2])){
-    Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(ycoord - _fault_plane[2],2) + pow(zcoord - 0,2));
+  //set gradual decrease to upper fault boundary
+  if ((xcoord >= _fault_plane[0]) && (xcoord <= _fault_plane[1]) && (ycoord >= _fault_plane[3])){
+    Real r = std::sqrt(pow(ycoord - _fault_plane[3],2) + pow(zcoord - 0,2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }
-  //set gradual decrease to corner
-  if ((xcoord > _fault_plane[1]) && (ycoord < _fault_plane[2])){
-    Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(ycoord - _fault_plane[2],2) + pow(zcoord - 0,2));
+  //set gradual decrease to left fault boundary
+  if ((ycoord >= _fault_plane[2]) && (ycoord <= _fault_plane[3]) && (xcoord <= _fault_plane[0])){
+    Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(zcoord - 0,2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
-  }    
+  }
+  //set gradual decrease to right fault boundary
+  if ((ycoord >= _fault_plane[2]) && (ycoord <= _fault_plane[3]) && (xcoord >= _fault_plane[1])){
+    Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(zcoord - 0,2));
+    alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
+  }  
   _initial_damage[_qp] = alpha_o; 
 }
