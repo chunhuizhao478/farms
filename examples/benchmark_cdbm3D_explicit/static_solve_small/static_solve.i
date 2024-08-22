@@ -80,27 +80,38 @@
         displacements = 'disp_x disp_y disp_z'
         outputs = exodus
     [] 
-    [stress]
+    [stress_nucleation]
         type = ADComputeDamageStressStatic
         lambda_o = 30e9
         shear_modulus_o = 30e9
         xi_o = -0.8
         gamma_damaged_r = 34.785e9
+        initial_damage = 0.8
         outputs = exodus
+        block = 1
+    []
+    [stress_block]
+        type = ADComputeDamageStressStatic
+        lambda_o = 30e9
+        shear_modulus_o = 30e9
+        xi_o = -0.8
+        gamma_damaged_r = 34.785e9
+        initial_damage = 0
+        outputs = exodus
+        block = 2
+    []
+    [stress_damage_strip]
+        type = ADComputeDamageStressStatic
+        lambda_o = 30e9
+        shear_modulus_o = 30e9
+        xi_o = -0.8
+        gamma_damaged_r = 34.785e9
+        initial_damage = 0.7
+        outputs = exodus
+        block = 3
     []
     [getxi]
         type = ADComputeXi
-        outputs = exodus
-    []
-    [initialdamage]
-        type = ADInitialDamageBenchmark
-        nucl_center = '0 -7500 0'
-        fault_plane = '-15000 15000 -15000 0'
-        nucl_distance = 1500
-        nucl_thickness = 1000
-        nucl_damage = 0.9
-        e_damage = 0.7
-        e_sigma = 2.5e3
         outputs = exodus
     []  
 []  
