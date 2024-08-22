@@ -18,10 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-20000  -20000  -20000;
-                  20000  -20000  -20000;
-                 -20000  -20000   20000;
-                  20000  -20000   20000'
+        coord = '-8000  -8000  -8000;
+                  8000  -8000  -8000;
+                 -8000  -8000   8000;
+                  8000  -8000   8000'
         new_boundary = corner_ptr
         input = sidesets
     []     
@@ -132,7 +132,7 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         block = 3
-        prop_values = 0.4
+        prop_values = 0.7
         outputs = exodus
     []
 []  

@@ -16,10 +16,10 @@
     []    
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-20000  -20000  -20000;
-                  20000  -20000  -20000;
-                 -20000  -20000   20000;
-                  20000  -20000   20000'
+        coord = '-8000  -8000  -8000;
+                  8000  -8000  -8000;
+                 -8000  -8000   8000;
+                  8000  -8000   8000'
         new_boundary = corner_ptr
         input = sidesets
     [] 
@@ -52,11 +52,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 100
+    Cd_constant = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1e5
+    CdCb_multiplier = 1e9
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -72,7 +72,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-8
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -374,7 +374,7 @@
     type = Transient
     dt = 1e-4
     end_time = 1.0
-    # num_steps = 10000
+    # num_steps = 8000
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -384,7 +384,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 50
+    time_step_interval = 1
     [sample_snapshots]
         type = Exodus
         interval = 200
