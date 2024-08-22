@@ -132,7 +132,7 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         block = 3
-        prop_values = 0.7
+        prop_values = 0.4
         outputs = exodus
     []
 []  
@@ -172,42 +172,42 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        factor = 50e6
+        factor = 135e6
     []
     [pressure_left]
         type = ADPressure
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        factor = 50e6
+        factor = 135e6
     []
     [pressure_front]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        factor = 50e6
+        factor = 120e6
     []
     [pressure_back]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        factor = 50e6        
+        factor = 120e6        
     []
     [pressure_top]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = top
-        factor = 50e6         
+        factor = 127.5e6         
     []
     [pressure_bottom]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = bottom
-        factor = 50e6         
+        factor = 127.5e6              
     []
     #
     [pressure_shear_front]
@@ -215,28 +215,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 30e6
+        value = 70e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -30e6   
+        value = -70e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -30e6
+        value = -70e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 30e6     
+        value = 70e6     
     []
     #
     [fix_ptr_x]
