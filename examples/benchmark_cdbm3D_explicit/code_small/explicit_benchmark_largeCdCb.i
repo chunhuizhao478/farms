@@ -384,7 +384,16 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 50
+    [sample_snapshots]
+        type = Exodus
+        interval = 200
+    []
+    [snapshots]
+        type = Exodus
+        interval = 50
+        overwrite = true
+    []
 []
 
 [BCs]
