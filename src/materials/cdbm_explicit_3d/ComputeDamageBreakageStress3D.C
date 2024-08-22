@@ -202,26 +202,26 @@ ComputeDamageBreakageStress3D::computeQpStress()
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
   Real B_forcingterm;
-  // if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-  //   B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
-  // }
-  // else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-  //   B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
-  // }
-  // else{
-  //   mooseError("xi_old is OUT-OF-RANGE!.");
-  // }
-
-  //ggw183
   if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-    B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(_lambda_o); //could heal if xi < xi_0
+    B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
   }
   else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(_lambda_o);
+    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
   }
   else{
     mooseError("xi_old is OUT-OF-RANGE!.");
   }
+
+  //ggw183
+  // if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
+  //   B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(1); //could heal if xi < xi_0
+  // }
+  // else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
+  //   B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(1);
+  // }
+  // else{
+  //   mooseError("xi_old is OUT-OF-RANGE!.");
+  // }
 
   Real B_out = _B_old[_qp] + _dt * B_forcingterm;
 
@@ -255,6 +255,7 @@ ComputeDamageBreakageStress3D::computeQpStress()
   /* compute strain */
   RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_old[_qp],_m1) * _sigma_d_old[_qp];
   RankTwoTensor eps_e = _mechanical_strain[_qp] - eps_p;
+  
   Real I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
   Real I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
   Real xi = I1/std::sqrt(I2);
@@ -268,16 +269,30 @@ ComputeDamageBreakageStress3D::computeQpStress()
 
   sigma_s(0,0) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus_out - gamma_damaged_out * xi ) * eps_e(0,0);
   sigma_b(0,0) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,0);
+  
   sigma_s(1,1) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus_out - gamma_damaged_out * xi ) * eps_e(1,1);
   sigma_b(1,1) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,1);
+  
   sigma_s(2,2) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus_out - gamma_damaged_out * xi ) * eps_e(2,2);
   sigma_b(2,2) = ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * I1 + ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,2);
-  sigma_s(0,1)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(0,1); sigma_s(1,0)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(1,0);
-  sigma_b(0,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,1); sigma_b(1,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,0);
-  sigma_s(0,2)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(0,2); sigma_s(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
-  sigma_b(0,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,2); sigma_b(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
-  sigma_s(1,2)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(1,2); sigma_s(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
-  sigma_b(1,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,2); sigma_b(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
+  
+  sigma_s(0,1)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(0,1); 
+  sigma_s(1,0)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(1,0);
+  
+  sigma_b(0,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,1); 
+  sigma_b(1,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,0);
+  
+  sigma_s(0,2)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(0,2); 
+  sigma_s(2,0)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(2,0);
+  
+  sigma_b(0,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(0,2); 
+  sigma_b(2,0)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,0);
+  
+  sigma_s(1,2)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(1,2); 
+  sigma_s(2,1)  = ( 2 * shear_modulus_out - gamma_damaged_out * xi    ) * eps_e(2,1);
+  
+  sigma_b(1,2)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(1,2); 
+  sigma_b(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
   
   sigma_total = (1 - _B_old[_qp]) * sigma_s + _B_old[_qp] * sigma_b;
   sigma_d = sigma_total - 1/3 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
