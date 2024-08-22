@@ -13,7 +13,7 @@ X_nucl = 0e3-Fault_length/3;
 R_nucl = 1.5e3;
 thickness_nucl = 1000;
 
-Xmax = 60e3;
+Xmax = 30e3;
 Xmin = -Xmax;
 
 Ymax = 0;
