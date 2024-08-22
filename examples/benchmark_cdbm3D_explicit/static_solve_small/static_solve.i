@@ -113,7 +113,28 @@
     [getxi]
         type = ADComputeXi
         outputs = exodus
-    []  
+    []
+    [initial_damage_block1]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = 1
+        prop_values = 0.8
+        outputs = exodus
+    [] 
+    [initial_damage_block2]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = 2
+        prop_values = 0
+        outputs = exodus
+    [] 
+    [initial_damage_block3]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = 3
+        prop_values = 0.7
+        outputs = exodus
+    []
 []  
 
 [Functions]
