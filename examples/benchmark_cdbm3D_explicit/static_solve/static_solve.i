@@ -100,7 +100,7 @@
         nucl_thickness = 1000
         nucl_damage = 0.85
         e_damage = 0.7
-        e_sigma = 1e4
+        e_sigma = 2.5e3
         outputs = exodus
     []  
 []  
@@ -183,7 +183,7 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 50e6
+        value = 30e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
