@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_buried.msh'
+        file =  '../meshfile/cdbm_tpv2053d_buried_small.msh'
     []
     [./sidesets]
         input = msh
