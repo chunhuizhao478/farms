@@ -88,9 +88,9 @@ ComputeDamageBreakageStress3D::ComputeDamageBreakageStress3D(const InputParamete
     _D(getParam<Real>("D")),
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
     _static_initial_strain_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_strain_tensor")),
-    _I1_initial(getMaterialPropertyByName<Real>("I1_initial")),
-    _I2_initial(getMaterialPropertyByName<Real>("I2_initial")),
-    _xi_initial(getMaterialPropertyByName<Real>("xi_initial")),
+    // _I1_initial(getMaterialPropertyByName<Real>("I1_initial")),
+    // _I2_initial(getMaterialPropertyByName<Real>("I2_initial")),
+    // _xi_initial(getMaterialPropertyByName<Real>("xi_initial")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
     _Cd_constant(getParam<Real>("Cd_constant")),
     _C1(getParam<Real>("C_1")),
@@ -133,9 +133,14 @@ ComputeDamageBreakageStress3D::computeQpStress()
     _alpha_damagedvar[_qp] = _initial_damage[_qp];
     _B[_qp] = 0.0;
 
-    _xi[_qp] = _xi_initial[_qp];
-    _I1[_qp] = _I1_initial[_qp];
-    _I2[_qp] = _I2_initial[_qp];
+    RankTwoTensor eps = _static_initial_strain_tensor[_qp];
+    Real I1_initial = eps(0,0) + eps(1,1) + eps(2,2);
+    Real I2_initial = eps(0,0) * eps(0,0) + eps(1,1) * eps(1,1) + eps(2,2) * eps(2,2) + 2 * eps(0,1) * eps(0,1) + 2 * eps(0,2) * eps(0,2) + 2 * eps(1,2) * eps(1,2);
+    Real xi_initial = I1_initial / sqrt(I2_initial);
+
+    _xi[_qp] = xi_initial;
+    _I1[_qp] = I1_initial;
+    _I2[_qp] = I2_initial;
 
     /// lambda (first lame const)
     _lambda[_qp] = _lambda_o;

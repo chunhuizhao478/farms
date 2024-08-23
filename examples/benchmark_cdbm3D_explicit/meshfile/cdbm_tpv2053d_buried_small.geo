@@ -6,6 +6,7 @@ lc_fault = 200; // Fine mesh in the fault zone
 Fault_length = 8e3;
 Fault_width = 4e3;
 Fault_thickness = 1e3;
+Damage_thickness = 8e3;
 Fault_dip = 90*Pi/180.;
 
 // Nucleation in X,Z local coordinates
@@ -33,8 +34,11 @@ Box(2) = {-Fault_length/2, Ymin/2-Fault_width/2, -Fault_thickness/2, Fault_lengt
 // Create a nucleation patch
 Box(3) = {X_nucl-R_nucl/2, Width_nucl-R_nucl/2, -thickness_nucl/2, R_nucl, R_nucl, thickness_nucl};
 
+// Create a cdbm allowable region
+Box(4) = {-Fault_length/2, Ymin/2-Fault_width/2, -Damage_thickness/2, Fault_length, Fault_width, Damage_thickness};
+
 // Boolean operation to fragment all volumes
-BooleanFragments{ Volume{1,2,3}; Delete; }{}
+BooleanFragments{ Volume{1,2,3,4}; Delete; }{}
 
 // Define mesh sizes using a progression field for smooth transition
 

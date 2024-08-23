@@ -106,9 +106,9 @@ protected:
   /// Get initial values
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
   const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
-  const MaterialProperty<Real> & _I1_initial;
-  const MaterialProperty<Real> & _I2_initial;
-  const MaterialProperty<Real> & _xi_initial;
+  // const MaterialProperty<Real> & _I1_initial;
+  // const MaterialProperty<Real> & _I2_initial;
+  // const MaterialProperty<Real> & _xi_initial;
   const MaterialProperty<Real> & _initial_damage;
 
   /// coefficient of positive damage evolution

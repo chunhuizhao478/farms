@@ -52,11 +52,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1e7
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1e5
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -207,9 +207,15 @@
         alpha_grad_z = alpha_grad_z
         output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
+        block = '1 3 4 5'
+    []
+    [stress_elastic]
+        type = ComputeLinearElasticStress
+        block = '2'
     []
     [strain]
         type = ComputeSmallStrain
+        eigenstrain_names = static_initial_strain_tensor
         # outputs = exodus
     []
     [density]
@@ -228,145 +234,82 @@
         tensor_functions = 'func_stress_xx     func_stress_xy      func_stress_xz 
                             func_stress_xy     func_stress_yy      func_stress_yz
                             func_stress_xz     func_stress_yz      func_stress_zz'
+        # outputs = exodus
     [../]
-    [./static_initial_strain_tensor]
-        type = GenericFunctionRankTwoTensor
-        tensor_name = static_initial_strain_tensor
-        tensor_functions = 'func_strain_xx     func_strain_xy      func_strain_xz 
-                            func_strain_xy     func_strain_yy      func_strain_yz
-                            func_strain_xz     func_strain_yz      func_strain_zz'
-    [../]
-    [./I1_initial]
-        type = GenericFunctionMaterial
-        prop_names = I1_initial
-        prop_values = func_I1  
+    [elasticity]
+        type = ComputeIsotropicElasticityTensor
+        shear_modulus = 30e9
+        lambda = 30e9
     []
-    [./I2_initial]
-        type = GenericFunctionMaterial
-        prop_names = I2_initial
-        prop_values = func_I2 
-    []  
-    [./xi_initial]
-        type = GenericFunctionMaterial
-        prop_names = xi_initial
-        prop_values = func_xi
-    []  
-    [./initial_damage]
-        type = GenericFunctionMaterial
-        prop_names = initial_damage
-        prop_values = func_initial_damage
+    [./static_initial_strain_tensor]
+        type = ComputeEigenstrainFromInitialStress
+        eigenstrain_name = static_initial_strain_tensor
+        initial_stress='func_stress_xx     func_stress_xy      func_stress_xz 
+                        func_stress_xy     func_stress_yy      func_stress_yz
+                        func_stress_xz     func_stress_yz      func_stress_zz'
+        # outputs = exodus
+    [../] 
+    [./initial_damage_B1]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = '1'
+        prop_values = '0.8'
+        outputs = exodus
     [] 
-[]
-
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = '../static_solve_buried_small/static_solve_out.e'
-      system_variables = 'disp_x disp_y disp_z I1_initial I2_initial xi_initial initial_damage mechanical_strain_00 mechanical_strain_01 mechanical_strain_02 mechanical_strain_11 mechanical_strain_12 mechanical_strain_22 stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
-      timestep = LATEST
-      force_preaux = true
-    [../]
+    [./initial_damage_B2]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = '2'
+        prop_values = '0'
+        outputs = exodus
+    [] 
+    [./initial_damage_B3]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = '3'
+        prop_values = '0'
+        outputs = exodus
+    [] 
+    [./initial_damage_B4]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = '4'
+        prop_values = '0'
+        outputs = exodus
+    [] 
+    [./initial_damage_B5]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        block = '5'
+        prop_values = '0'
+        outputs = exodus
+    [] 
 []
   
 [Functions]
-    [func_strain_xx]
-      type = SolutionFunction
-      solution = init_sol_components
-      from_variable = mechanical_strain_00
-      execute_on = 'INITIAL'
-    [../]
-    [func_strain_xy]
-      type = SolutionFunction
-      solution = init_sol_components
-      from_variable = mechanical_strain_01
-      execute_on = 'INITIAL'
-    [../]
-    [func_strain_xz]
-      type = SolutionFunction
-      solution = init_sol_components
-      from_variable = mechanical_strain_02
-      execute_on = 'INITIAL'
-    [../]
-    [func_strain_yy]
-      type = SolutionFunction
-      solution = init_sol_components
-      from_variable = mechanical_strain_11
-      execute_on = 'INITIAL'
-    [../]
-    [func_strain_yz]
-      type = SolutionFunction
-      solution = init_sol_components
-      from_variable = mechanical_strain_12
-      execute_on = 'INITIAL'
-    [../]
-    [func_strain_zz]
-      type = SolutionFunction
-      solution = init_sol_components
-      from_variable = mechanical_strain_22
-      execute_on = 'INITIAL'
-    []
-    #
     [func_stress_xx]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = stress_00
-        execute_on = 'INITIAL'
+        type = ConstantFunction
+        value = -135e6
     [../]
     [func_stress_xy]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = stress_01
-        execute_on = 'INITIAL'
+        type = ConstantFunction
+        value = 0
     [../]
     [func_stress_xz]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = stress_02
-        execute_on = 'INITIAL'
+        type = InitialShearStress3D
     [../]
     [func_stress_yy]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = stress_11
-        execute_on = 'INITIAL'
+        type = ConstantFunction
+        value = -58.75e6
     [../]
     [func_stress_yz]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = stress_12
-        execute_on = 'INITIAL'
+        type = ConstantFunction
+        value = 0
     [../]
     [func_stress_zz]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = stress_22
-        execute_on = 'INITIAL'
-    [../] 
-    #
-    [func_I1]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = I1_initial
-        execute_on = 'INITIAL'
-    [../] 
-    [func_I2]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = I2_initial
-        execute_on = 'INITIAL'
-    [../] 
-    [func_xi]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = xi_initial
-        execute_on = 'INITIAL'
-    [../]   
-    [func_initial_damage]
-        type = SolutionFunction
-        solution = init_sol_components
-        from_variable = initial_damage
-        execute_on = 'INITIAL'
-    [../]   
+        type = ConstantFunction
+        value = -100e6
+    [../]  
 []
 
 #0.4/5773
@@ -384,7 +327,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 20
     [sample_snapshots]
         type = Exodus
         interval = 200
@@ -594,26 +537,5 @@
         p_wave_speed = 6000
         shear_wave_speed = 3464
         boundary = front
-    []
-[]
-
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-    [disp_z_ic]
-      type = SolutionIC
-      variable = disp_z
-      solution_uo = init_sol_components
-      from_variable = disp_z
     []
 []
