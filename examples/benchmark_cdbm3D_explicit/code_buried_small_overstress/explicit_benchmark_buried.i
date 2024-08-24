@@ -52,7 +52,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e7
+    Cd_constant = 1e5
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -247,7 +247,7 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         block = '3'
-        prop_values = '0'
+        prop_values = '0.7'
         outputs = exodus
     [] 
     [./initial_damage_B4]
