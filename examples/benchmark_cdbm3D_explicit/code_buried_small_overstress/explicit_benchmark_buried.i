@@ -205,7 +205,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        # output_properties = 'B alpha_damagedvar xi'
+        output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
     []
     [strain]
@@ -307,7 +307,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 20
+    time_step_interval = 50
     [sample_snapshots]
         type = Exodus
         interval = 200
