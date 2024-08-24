@@ -52,11 +52,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1e6
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1e5
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -265,6 +265,7 @@
       system_variables = 'disp_x disp_y disp_z I1_initial I2_initial xi_initial initial_damage mechanical_strain_00 mechanical_strain_01 mechanical_strain_02 mechanical_strain_11 mechanical_strain_12 mechanical_strain_22 stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
       timestep = LATEST
       force_preaux = true
+      execute_on = 'INITIAL'
     [../]
 []
   

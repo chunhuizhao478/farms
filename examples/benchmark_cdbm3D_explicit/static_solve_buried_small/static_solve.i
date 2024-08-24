@@ -81,60 +81,28 @@
         outputs = exodus
     [] 
     [stress_nucleation]
-        type = ADComputeDamageStressStatic
+        type = ADComputeDamageStressStaticDistribution
         lambda_o = 30e9
         shear_modulus_o = 30e9
         xi_o = -0.8
         gamma_damaged_r = 34.785e9
-        initial_damage = 0.85
         outputs = exodus
-        block = 1
-    []
-    [stress_block]
-        type = ADComputeDamageStressStatic
-        lambda_o = 30e9
-        shear_modulus_o = 30e9
-        xi_o = -0.8
-        gamma_damaged_r = 34.785e9
-        initial_damage = 0
-        outputs = exodus
-        block = 2
-    []
-    [stress_damage_strip]
-        type = ADComputeDamageStressStatic
-        lambda_o = 30e9
-        shear_modulus_o = 30e9
-        xi_o = -0.8
-        gamma_damaged_r = 34.785e9
-        initial_damage = 0.7
-        outputs = exodus
-        block = 3
     []
     [getxi]
         type = ADComputeXi
         outputs = exodus
     []
-    [initial_damage_block1]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = 1
-        prop_values = 0.85
+    [initialdamage]
+        type = ADInitialDamageBenchmark
+        nucl_center = '-2666.7 -4000 0'
+        fault_plane = '-4000 4000 -6000 -2000'
+        nucl_distance = 400
+        nucl_thickness = 1000
+        nucl_damage = 0.85
+        e_damage = 0.7
+        e_sigma = 1e3
         outputs = exodus
     [] 
-    [initial_damage_block2]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = 2
-        prop_values = 0
-        outputs = exodus
-    [] 
-    [initial_damage_block3]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = 3
-        prop_values = 0.7
-        outputs = exodus
-    []
 []  
 
 [Functions]
@@ -172,42 +140,42 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        factor = 135e6
+        factor = 50e6
     []
     [pressure_left]
         type = ADPressure
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        factor = 135e6
+        factor = 50e6
     []
     [pressure_front]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        factor = 120e6
+        factor = 50e6
     []
     [pressure_back]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        factor = 120e6        
+        factor = 50e6        
     []
     [pressure_top]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = top
-        factor = 127.5e6         
+        factor = 50e6         
     []
     [pressure_bottom]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = bottom
-        factor = 127.5e6              
+        factor = 50e6              
     []
     #
     [pressure_shear_front]
@@ -215,28 +183,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 70e6
+        value = 24e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -70e6   
+        value = -24e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -70e6
+        value = -24e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 70e6     
+        value = 24e6     
     []
     #
     [fix_ptr_x]
