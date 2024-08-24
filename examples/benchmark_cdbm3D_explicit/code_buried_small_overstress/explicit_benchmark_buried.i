@@ -253,7 +253,7 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         block = '1'
-        prop_values = '0.8'
+        prop_values = '0'
         outputs = exodus
     [] 
     [./initial_damage_B2]
