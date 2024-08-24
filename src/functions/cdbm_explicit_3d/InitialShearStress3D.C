@@ -6,30 +6,33 @@ InputParameters
 InitialShearStress3D::validParams()
 {
   InputParameters params = Function::validParams();
+  params.addRequiredParam<std::vector<Real>>("nucl_center", "nucleation center (x,y,z)");
+  params.addRequiredParam<Real>("e_sigma","the standard deviation used in apply damage value normal to the fault (exponential decay)");
+  params.addRequiredParam<Real>("min_val","min value");
+  params.addRequiredParam<Real>("max_val","max value");
   return params;
 }
 
 InitialShearStress3D::InitialShearStress3D(const InputParameters & parameters)
-  : Function(parameters)
+  : Function(parameters),
+  _nucl_center(getParam<std::vector<Real>>("nucl_center")),
+  _sigma(getParam<Real>("e_sigma")),
+  _min_val(getParam<Real>("min_val")),
+  _max_val(getParam<Real>("max_val"))
 {
 }
 
 Real
 InitialShearStress3D::value(Real /*t*/, const Point & p) const
 {
-  Real x_coord = p(0); //along the strike direction
-  Real y_coord = p(1); //along the dip direction
-  Real z_coord = p(2); //along the normal direction
+  Real xcoord = p(0); //along the strike direction
+  Real ycoord = p(1); //along the dip direction
+  Real zcoord = p(2); //along the normal direction
 
   Real T1_o = 0;
 
-  if (x_coord >= -2870 and x_coord <= -2465 and y_coord >= -4200 and y_coord <= -3800 and z_coord >= -500 and z_coord <= 500)
-  {
-    T1_o = 81.6e6;
-  }
-  else{
-    T1_o = 70e6;
-  }
+  Real r = std::sqrt(pow(xcoord - _nucl_center[0],2) + pow(ycoord - _nucl_center[1],2) + pow(zcoord - _nucl_center[2],2));
+  T1_o = _min_val + std::max((_max_val-_min_val) * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   
   return T1_o;
 

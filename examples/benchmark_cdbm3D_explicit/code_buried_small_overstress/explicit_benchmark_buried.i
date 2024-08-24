@@ -52,7 +52,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e5
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -264,14 +264,21 @@
     #     prop_values = '0'
     #     outputs = exodus
     # [] 
+    # [initial_damage]
+    #     type = InitialDamageBenchmark
+    #     nucl_center = '-2666.7 -4000 0'
+    #     fault_plane = '-4000 4000 -6000 -2000'
+    #     nucl_distance = 400
+    #     nucl_thickness = 1000
+    #     nucl_damage = 0.85
+    #     e_damage = 0.7
+    #     e_sigma = 1e3
+    #     outputs = exodus
+    # []
     [initial_damage]
-        type = InitialDamageBenchmark
+        type = InitialDamageBenchmarkSperical
         nucl_center = '-2666.7 -4000 0'
-        fault_plane = '-4000 4000 -6000 -2000'
-        nucl_distance = 400
-        nucl_thickness = 1000
-        nucl_damage = 0.85
-        e_damage = 0.7
+        e_damage = 0.85
         e_sigma = 1e3
         outputs = exodus
     []
@@ -288,6 +295,10 @@
     [../]
     [func_stress_xz]
         type = InitialShearStress3D
+        nucl_center = '-2666.7 -4000 0'
+        e_sigma = 1e3
+        min_val = 70e6
+        max_val = 85e6
     [../]
     [func_stress_yy]
         type = ConstantFunction
@@ -318,7 +329,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 200
+    time_step_interval = 1
     [sample_snapshots]
         type = Exodus
         interval = 200
