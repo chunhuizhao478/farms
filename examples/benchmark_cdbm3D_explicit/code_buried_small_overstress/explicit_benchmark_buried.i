@@ -201,22 +201,15 @@
 [Materials]
     #damage breakage model
     [stress_medium]
-        type = ComputeDamageBreakageStress3D
+        type = ComputeDamageBreakageStress3Doverstress
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi'
+        # output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
-        block = '1 3 4 5'
-    []
-    [stress_elastic]
-        type = ComputeLinearElasticStress
-        block = '2'
     []
     [strain]
         type = ComputeSmallStrain
-        eigenstrain_names = static_initial_strain_tensor
-        # outputs = exodus
     []
     [density]
         type = GenericConstantMaterial
@@ -236,24 +229,11 @@
                             func_stress_xz     func_stress_yz      func_stress_zz'
         # outputs = exodus
     [../]
-    [elasticity]
-        type = ComputeIsotropicElasticityTensor
-        shear_modulus = 30e9
-        lambda = 30e9
-    []
-    [./static_initial_strain_tensor]
-        type = ComputeEigenstrainFromInitialStress
-        eigenstrain_name = static_initial_strain_tensor
-        initial_stress='func_stress_xx     func_stress_xy      func_stress_xz 
-                        func_stress_xy     func_stress_yy      func_stress_yz
-                        func_stress_xz     func_stress_yz      func_stress_zz'
-        # outputs = exodus
-    [../] 
     [./initial_damage_B1]
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         block = '1'
-        prop_values = '0'
+        prop_values = '0.8'
         outputs = exodus
     [] 
     [./initial_damage_B2]
