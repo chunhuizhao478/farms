@@ -52,7 +52,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -229,41 +229,52 @@
                             func_stress_xz     func_stress_yz      func_stress_zz'
         # outputs = exodus
     [../]
-    [./initial_damage_B1]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = '1'
-        prop_values = '0.8'
+    # [./initial_damage_B1]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     block = '1'
+    #     prop_values = '0.8'
+    #     outputs = exodus
+    # [] 
+    # [./initial_damage_B2]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     block = '2'
+    #     prop_values = '0'
+    #     outputs = exodus
+    # [] 
+    # [./initial_damage_B3]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     block = '3'
+    #     prop_values = '0.7'
+    #     outputs = exodus
+    # [] 
+    # [./initial_damage_B4]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     block = '4'
+    #     prop_values = '0'
+    #     outputs = exodus
+    # [] 
+    # [./initial_damage_B5]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     block = '5'
+    #     prop_values = '0'
+    #     outputs = exodus
+    # [] 
+    [initial_damage]
+        type = InitialDamageBenchmark
+        nucl_center = '-2666.7 -4000 0'
+        fault_plane = '-4000 4000 -6000 -2000'
+        nucl_distance = 400
+        nucl_thickness = 1000
+        nucl_damage = 0.85
+        e_damage = 0.7
+        e_sigma = 1e3
         outputs = exodus
-    [] 
-    [./initial_damage_B2]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = '2'
-        prop_values = '0'
-        outputs = exodus
-    [] 
-    [./initial_damage_B3]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = '3'
-        prop_values = '0.7'
-        outputs = exodus
-    [] 
-    [./initial_damage_B4]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = '4'
-        prop_values = '0'
-        outputs = exodus
-    [] 
-    [./initial_damage_B5]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        block = '5'
-        prop_values = '0'
-        outputs = exodus
-    [] 
+    []
 []
   
 [Functions]
@@ -307,7 +318,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 50
+    time_step_interval = 200
     [sample_snapshots]
         type = Exodus
         interval = 200
