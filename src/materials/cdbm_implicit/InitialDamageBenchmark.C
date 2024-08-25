@@ -42,7 +42,7 @@ InitialDamageBenchmark::InitialDamageBenchmark(const InputParameters & parameter
   _sigma(getParam<Real>("e_sigma"))
 {
   //in case I'm stupid
-  if (_fault_plane.size() != 4){ 
+  if (_fault_plane.size() != 6){ 
     mooseError("fault plane parameter must accept 4 numbers!");
   }
   if (_nucl_center.size() != 3){
@@ -76,7 +76,7 @@ InitialDamageBenchmark::computeQpProperties()
       alpha_o = _nucl_damage;
     } 
     else{
-        alpha_o = std::max(_peak_damage * exp(-1.0*(zcoord*zcoord)/(_sigma*_sigma)),0.0);
+      alpha_o = std::max(_peak_damage * exp(-1.0*(zcoord*zcoord)/(_sigma*_sigma)),0.0);
     }
   }
   //set gradual decrease to lower fault boundary
@@ -100,22 +100,22 @@ InitialDamageBenchmark::computeQpProperties()
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }
   //set gradual decrease to left upper node
-  if ((xcoord <= _fault_plane[0]) && (ycoord >= _fault_plane[3])){
+  if ((xcoord <= _fault_plane[0]) && (ycoord >= _fault_plane[3]) && (zcoord >= _fault_plane[4]) && (zcoord <= _fault_plane[5])){
     Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(ycoord - _fault_plane[3],2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }  
   //set gradual decrease to right upper node
-  if ((xcoord >= _fault_plane[1]) && (ycoord >= _fault_plane[3])){
+  if ((xcoord >= _fault_plane[1]) && (ycoord >= _fault_plane[3]) && (zcoord >= _fault_plane[4]) && (zcoord <= _fault_plane[5])){
     Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(ycoord - _fault_plane[3],2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }  
   //set gradual decrease to left bottom node
-  if ((xcoord <= _fault_plane[0]) && (ycoord <= _fault_plane[2])){
+  if ((xcoord <= _fault_plane[0]) && (ycoord <= _fault_plane[2]) && (zcoord >= _fault_plane[4]) && (zcoord <= _fault_plane[5])){
     Real r = std::sqrt(pow(xcoord - _fault_plane[0],2) + pow(ycoord - _fault_plane[2],2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }  
   //set gradual decrease to right upper node
-  if ((xcoord >= _fault_plane[1]) && (ycoord <= _fault_plane[2])){
+  if ((xcoord >= _fault_plane[1]) && (ycoord <= _fault_plane[2]) && (zcoord >= _fault_plane[4]) && (zcoord <= _fault_plane[5])){
     Real r = std::sqrt(pow(xcoord - _fault_plane[1],2) + pow(ycoord - _fault_plane[2],2));
     alpha_o = std::max(_peak_damage * exp(-1.0*(std::pow(r,2))/(_sigma*_sigma)),0.0);
   }  
