@@ -87,6 +87,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _sts_total;
   /// deviatoric stress tensor
   MaterialProperty<RankTwoTensor> & _sigma_d;
+  /// eq strain rate
+  MaterialProperty<Real> & _epsilon_eq;
   /// take initial value 
   /// lambda (first lame const)
   Real _lambda_o;

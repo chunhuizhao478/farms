@@ -44,6 +44,7 @@ ComputeGeneralDamageBreakageStressBase3D::ComputeGeneralDamageBreakageStressBase
     _eps_total(declareProperty<RankTwoTensor>("eps_total")),
     _sts_total(declareProperty<RankTwoTensor>("sts_total")),
     _sigma_d(declareProperty<RankTwoTensor>("sigma_d")),
+    _epsilon_eq(declareProperty<Real>("epsilon_eq")),
     _lambda_o(getParam<Real>("lambda_o")),
     _shear_modulus_o(getParam<Real>("shear_modulus_o"))
 {
