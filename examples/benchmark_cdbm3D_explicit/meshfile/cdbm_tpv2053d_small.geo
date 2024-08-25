@@ -1,6 +1,6 @@
 SetFactory("OpenCASCADE");
 
-lc = 2.5e3;
+lc = 1000;
 lc_fault = 200; // Fine mesh in the fault zone
 
 Fault_length = 10e3;
@@ -11,7 +11,7 @@ Fault_dip = 90*Pi/180.;
 // Nucleation in X,Z local coordinates
 X_nucl = 0e3;
 Width_nucl = 0.5*Fault_width;
-R_nucl = 600;
+R_nucl = 400;
 thickness_nucl = 1000;
 
 Xmax = 8e3;
