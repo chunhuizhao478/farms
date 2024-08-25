@@ -319,7 +319,7 @@
     type = Transient
     dt = 1e-4
     end_time = 10.0
-    num_steps = 1
+    # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
