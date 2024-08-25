@@ -54,14 +54,23 @@ ADComputeDamageStressStatic::computeQpStress()
   
   // Evaluate shear modulus
   ADReal shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val * _gamma_damage_r;
+  ADReal gamma_damaged_out = _initial_damage_val * _gamma_damage_r;
+
+  //
+  ADReal I1 = _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2);
+  ADReal I2 = _mechanical_strain[_qp](0,0) * _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) * _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) * _mechanical_strain[_qp](2,2) + 2 * _mechanical_strain[_qp](1,2) * _mechanical_strain[_qp](1,2) + 2 * _mechanical_strain[_qp](0,1) * _mechanical_strain[_qp](0,1) + 2 * _mechanical_strain[_qp](0,2) * _mechanical_strain[_qp](0,2);
+  ADReal xi = I1 / std::sqrt(I2);
 
   // stress = C * e
-  _stress[_qp](0,0) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](0,0);
-  _stress[_qp](1,1) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](1,1);
-  _stress[_qp](2,2) = _lambda_o * ( _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) ) + 2 * shear_modulus * _mechanical_strain[_qp](2,2);
-  _stress[_qp](0,1) = 2 * shear_modulus * _mechanical_strain[_qp](0,1); _stress[_qp](1,0) = 2 * shear_modulus * _mechanical_strain[_qp](1,0);
-  _stress[_qp](0,2) = 2 * shear_modulus * _mechanical_strain[_qp](0,2); _stress[_qp](2,0) = 2 * shear_modulus * _mechanical_strain[_qp](2,0);
-  _stress[_qp](1,2) = 2 * shear_modulus * _mechanical_strain[_qp](1,2); _stress[_qp](2,1) = 2 * shear_modulus * _mechanical_strain[_qp](2,1);
+  _stress[_qp](0,0) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](0,0);
+  _stress[_qp](1,1) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](1,1);
+  _stress[_qp](2,2) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](2,2);
+  _stress[_qp](0,1) = ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](0,1); 
+  _stress[_qp](1,0) = ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](1,0);
+  _stress[_qp](0,2) = ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](0,2); 
+  _stress[_qp](2,0) = ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](2,0);
+  _stress[_qp](1,2) = ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](1,2); 
+  _stress[_qp](2,1) = ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](2,1);
 
   // Assign value for elastic strain, which is equal to the mechanical strain
   _elastic_strain[_qp] = _mechanical_strain[_qp];
