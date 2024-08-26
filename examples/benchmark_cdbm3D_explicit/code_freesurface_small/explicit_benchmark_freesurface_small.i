@@ -205,7 +205,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi epsilon_eq'
+        output_properties = 'B alpha_damagedvar xi I1 I2'
         outputs = exodus
     []
     [strain]
