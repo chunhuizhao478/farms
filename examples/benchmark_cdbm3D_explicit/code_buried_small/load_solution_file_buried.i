@@ -1,4 +1,5 @@
 [Mesh]
+    type = FileMesh
     file = '../static_solve_buried_small/static_solve_out.e'
 []
 
