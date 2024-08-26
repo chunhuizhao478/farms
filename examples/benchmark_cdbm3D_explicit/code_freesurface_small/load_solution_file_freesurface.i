@@ -193,7 +193,7 @@
     [strain]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        outputs = exodus
+        # outputs = exodus
     [] 
     [density]
         type = GenericConstantMaterial
@@ -210,7 +210,7 @@
     []
     [getxi]
         type = ComputeXi
-        outputs = exodus
+        # outputs = exodus
     []  
     [initial_damage]
         type = InitialDamageBenchmark
@@ -238,7 +238,7 @@
 [Executioner]
     type = Transient
     dt = 1e-4
-    end_time = 1.0
+    end_time = 10.0
     # num_steps = 8000
     [TimeIntegrator]
         type = CentralDifference

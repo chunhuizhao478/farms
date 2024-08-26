@@ -193,7 +193,7 @@
     [strain]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        outputs = exodus
+        # outputs = exodus
     [] 
     [density]
         type = GenericConstantMaterial
@@ -210,7 +210,7 @@
     []
     [getxi]
         type = ComputeXi
-        outputs = exodus
+        # outputs = exodus
     []  
     [initialdamage]
         type = InitialDamageBenchmark
