@@ -94,12 +94,12 @@
     []
     [initialdamage]
         type = ADInitialDamageBenchmark
-        nucl_center = '-2666.7 -4000 0'
-        fault_plane = '-4000 4000 -6000 -2000'
+        nucl_center = '0 -4000 0'
+        fault_plane = '-4000 4000 -6000 -2000 -500 500'
         nucl_distance = 400
-        nucl_thickness = 1000
+        nucl_thickness = 400
         nucl_damage = 0.85
-        e_damage = 0.7
+        e_damage = 0.6
         e_sigma = 1e3
         outputs = exodus
     [] 
@@ -140,42 +140,42 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        factor = 50e6
+        factor = 135e6
     []
     [pressure_left]
         type = ADPressure
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        factor = 50e6
+        factor = 135e6
     []
     [pressure_front]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        factor = 50e6
+        factor = 120e6
     []
     [pressure_back]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        factor = 50e6        
+        factor = 120e6        
     []
     [pressure_top]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = top
-        factor = 50e6         
+        factor = 127.5e6         
     []
     [pressure_bottom]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = bottom
-        factor = 50e6              
+        factor = 127.5e6              
     []
     #
     [pressure_shear_front]
@@ -183,28 +183,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 24e6
+        value = 65e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -24e6   
+        value = -65e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -24e6
+        value = -65e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 24e6     
+        value = 65e6     
     []
     #
     [fix_ptr_x]

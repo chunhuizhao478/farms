@@ -7,14 +7,14 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ADComputeDamageStressStaticDistribution.h"
+#include "ComputeDamageStressStaticDistribution.h"
 
-registerMooseObject("farmsApp", ADComputeDamageStressStaticDistribution);
+registerMooseObject("farmsApp", ComputeDamageStressStaticDistribution);
 
 InputParameters
-ADComputeDamageStressStaticDistribution::validParams()
+ComputeDamageStressStaticDistribution::validParams()
 {
-  InputParameters params = ADComputeStressBase::validParams();
+  InputParameters params = ComputeStressBase::validParams();
   params.addClassDescription("Compute stress using elasticity for small strains");
   params.addRequiredParam<Real>("lambda_o","initial lambda value");
   params.addRequiredParam<Real>("shear_modulus_o","initial shear modulus value");
@@ -23,18 +23,18 @@ ADComputeDamageStressStaticDistribution::validParams()
   return params;
 }
 
-ADComputeDamageStressStaticDistribution::ADComputeDamageStressStaticDistribution(const InputParameters & parameters)
-  : ADComputeStressBase(parameters),
+ComputeDamageStressStaticDistribution::ComputeDamageStressStaticDistribution(const InputParameters & parameters)
+  : ComputeStressBase(parameters),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_o(getParam<Real>("xi_o")),
   _gamma_damage_r(getParam<Real>("gamma_damaged_r")),
-  _initial_damage_val(getADMaterialPropertyByName<Real>("initial_damage"))   
+  _initial_damage_val(getMaterialPropertyByName<Real>("initial_damage"))   
 {
 }
 
 void
-ADComputeDamageStressStaticDistribution::initialSetup()
+ComputeDamageStressStaticDistribution::initialSetup()
 {
   // _base_name + "unstabilized_deformation_gradient" is only declared if we're
   // using the Lagrangian kernels.  It's okay to invoke this small strain
@@ -48,18 +48,18 @@ ADComputeDamageStressStaticDistribution::initialSetup()
 }
 
 void
-ADComputeDamageStressStaticDistribution::computeQpStress()
+ComputeDamageStressStaticDistribution::computeQpStress()
 {
   
   // Evaluate shear modulus
-  ADReal shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val[_qp] * _gamma_damage_r;
-  ADReal gamma_damaged_out = _initial_damage_val[_qp] * _gamma_damage_r;
-
+  Real shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val[_qp] * _gamma_damage_r;
+  Real gamma_damaged_out = _initial_damage_val[_qp] * _gamma_damage_r;
+  
   //
   const Real epsilon = 1e-12;
-  ADReal I1 = epsilon + _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2);
-  ADReal I2 = epsilon + _mechanical_strain[_qp](0,0) * _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) * _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) * _mechanical_strain[_qp](2,2) + 2 * _mechanical_strain[_qp](1,2) * _mechanical_strain[_qp](1,2) + 2 * _mechanical_strain[_qp](0,1) * _mechanical_strain[_qp](0,1) + 2 * _mechanical_strain[_qp](0,2) * _mechanical_strain[_qp](0,2);
-  ADReal xi = I1 / std::sqrt(I2);
+  Real I1 = epsilon + _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2);
+  Real I2 = epsilon + _mechanical_strain[_qp](0,0) * _mechanical_strain[_qp](0,0) + _mechanical_strain[_qp](1,1) * _mechanical_strain[_qp](1,1) + _mechanical_strain[_qp](2,2) * _mechanical_strain[_qp](2,2) + 2 * _mechanical_strain[_qp](1,2) * _mechanical_strain[_qp](1,2) + 2 * _mechanical_strain[_qp](0,1) * _mechanical_strain[_qp](0,1) + 2 * _mechanical_strain[_qp](0,2) * _mechanical_strain[_qp](0,2);
+  Real xi = I1 / std::sqrt(I2);
 
   // stress = C * e
   _stress[_qp](0,0) = ( _lambda_o - gamma_damaged_out / xi ) * I1 + ( 2 * shear_modulus - gamma_damaged_out * xi ) * _mechanical_strain[_qp](0,0);
