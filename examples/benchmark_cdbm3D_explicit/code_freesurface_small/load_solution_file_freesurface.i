@@ -2,6 +2,7 @@
     [msh]
         type = FileMeshGenerator
         file = '../static_solve_small/static_solve_out.e'
+        use_for_exodus_restart = true
     []
 []
 

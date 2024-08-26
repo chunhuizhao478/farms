@@ -2,6 +2,7 @@
     [msh]
         type = FileMeshGenerator
         file = '../static_solve_buried_small/static_solve_out.e'
+        use_for_exodus_restart = true
     []
 []
 
@@ -32,7 +33,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 1e7
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
