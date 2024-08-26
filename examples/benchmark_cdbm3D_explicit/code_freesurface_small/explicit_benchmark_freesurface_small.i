@@ -52,7 +52,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 0
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -396,98 +396,98 @@
     []
 []
 
-[BCs]
-    [pressure_right]
-        type = Pressure
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = right
-        factor = 135e6
-    []
-    [pressure_left]
-        type = Pressure
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = left
-        factor = 135e6
-    []
-    [pressure_front]
-        type = Pressure
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = front
-        factor = 120e6
-    []
-    [pressure_back]
-        type = Pressure
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = back
-        factor = 120e6        
-    []
-    [pressure_top]
-        type = Pressure
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
-        boundary = top
-        factor = 127.5e6         
-    []
-    [pressure_bottom]
-        type = Pressure
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
-        boundary = bottom
-        factor = 127.5e6              
-    []
-    #
-    [pressure_shear_front]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = front
-        value = 65e6
-    []
-    [pressure_shear_back]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = back
-        value = -65e6   
-    []
-    [pressure_shear_left]
-        type = NeumannBC
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = left
-        value = -65e6
-    []
-    [pressure_shear_right]
-        type = NeumannBC
-        variable = disp_z
-        displacements = 'disp_x disp_y disp_z'
-        boundary = right
-        value = 65e6     
-    []
-    #
-    [fix_ptr_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = corner_ptr
-    []
-    [fix_ptr_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = corner_ptr
-    []
-    [fix_ptr_z]
-        type = DirichletBC
-        variable = disp_z
-        value = 0
-        boundary = corner_ptr
-    []
-[]
+# [BCs]
+#     [pressure_right]
+#         type = Pressure
+#         variable = disp_x
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = right
+#         factor = 135e6
+#     []
+#     [pressure_left]
+#         type = Pressure
+#         variable = disp_x
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = left
+#         factor = 135e6
+#     []
+#     [pressure_front]
+#         type = Pressure
+#         variable = disp_z
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = front
+#         factor = 120e6
+#     []
+#     [pressure_back]
+#         type = Pressure
+#         variable = disp_z
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = back
+#         factor = 120e6        
+#     []
+#     [pressure_top]
+#         type = Pressure
+#         variable = disp_y
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = top
+#         factor = 127.5e6         
+#     []
+#     [pressure_bottom]
+#         type = Pressure
+#         variable = disp_y
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = bottom
+#         factor = 127.5e6              
+#     []
+#     #
+#     [pressure_shear_front]
+#         type = NeumannBC
+#         variable = disp_x
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = front
+#         value = 65e6
+#     []
+#     [pressure_shear_back]
+#         type = NeumannBC
+#         variable = disp_x
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = back
+#         value = -65e6   
+#     []
+#     [pressure_shear_left]
+#         type = NeumannBC
+#         variable = disp_z
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = left
+#         value = -65e6
+#     []
+#     [pressure_shear_right]
+#         type = NeumannBC
+#         variable = disp_z
+#         displacements = 'disp_x disp_y disp_z'
+#         boundary = right
+#         value = 65e6     
+#     []
+#     #
+#     [fix_ptr_x]
+#         type = DirichletBC
+#         variable = disp_x
+#         value = 0
+#         boundary = corner_ptr
+#     []
+#     [fix_ptr_y]
+#         type = DirichletBC
+#         variable = disp_y
+#         value = 0
+#         boundary = corner_ptr
+#     []
+#     [fix_ptr_z]
+#         type = DirichletBC
+#         variable = disp_z
+#         value = 0
+#         boundary = corner_ptr
+#     []
+# []
 
 [ICs]
     [disp_x_ic]
