@@ -32,13 +32,14 @@ Box(1) = {Xmin, 0, Zmin, 2*Xmax, Ymin, 2*Zmax};
 Box(2) = {-Fault_length/2, Ymin/2-Fault_width/2, -Fault_thickness/2, Fault_length, Fault_width, Fault_thickness};
 
 // Create a nucleation patch
-Box(3) = {X_nucl-R_nucl/2, Width_nucl-R_nucl/2, -thickness_nucl/2, R_nucl, R_nucl, thickness_nucl};
+//Box(3) = {X_nucl-R_nucl/2, Width_nucl-R_nucl/2, -thickness_nucl/2, R_nucl, R_nucl, thickness_nucl};
+Box(3) = {-R_nucl/2, Width_nucl-R_nucl/2, -thickness_nucl/2, R_nucl, R_nucl, thickness_nucl};
 
 // Create a cdbm allowable region
-Box(4) = {-Fault_length/2, Ymin/2-Fault_width/2, -Damage_thickness/2, Fault_length, Fault_width, Damage_thickness};
+// Box(4) = {-Fault_length/2, Ymin/2-Fault_width/2, -Damage_thickness/2, Fault_length, Fault_width, Damage_thickness};
 
 // Boolean operation to fragment all volumes
-BooleanFragments{ Volume{1,2,3,4}; Delete; }{}
+BooleanFragments{ Volume{1,2,3}; Delete; }{}
 
 // Define mesh sizes using a progression field for smooth transition
 

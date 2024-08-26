@@ -384,7 +384,7 @@
   
 [Outputs]
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1
     [sample_snapshots]
         type = Exodus
         interval = 200
