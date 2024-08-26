@@ -1,6 +1,8 @@
 [Mesh]
-    type = FileMesh
-    file = '../static_solve_small/static_solve_out.e'
+    [msh]
+        type = FileMeshGenerator
+        file = '../static_solve_small/static_solve_out.e'
+    []
 []
 
 [GlobalParams]

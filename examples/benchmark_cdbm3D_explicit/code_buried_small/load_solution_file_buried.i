@@ -1,6 +1,8 @@
 [Mesh]
-    type = FileMesh
-    file = '../static_solve_buried_small/static_solve_out.e'
+    [msh]
+        type = FileMeshGenerator
+        file = '../static_solve_buried_small/static_solve_out.e'
+    []
 []
 
 [GlobalParams]
@@ -246,7 +248,7 @@
 
 [Outputs]
     exodus = true   
-    time_step_interval = 1
+    time_step_interval = 100
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
