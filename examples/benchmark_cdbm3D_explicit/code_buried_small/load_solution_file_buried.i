@@ -218,8 +218,8 @@
         fault_plane = '-4000 4000 -6000 -2000 -500 500'
         nucl_distance = 400
         nucl_thickness = 400
-        nucl_damage = 0.85
-        e_damage = 0.6
+        nucl_damage = 0.9
+        e_damage = 0.7
         e_sigma = 1e3
         outputs = exodus
     [] 
@@ -249,7 +249,7 @@
 
 [Outputs]
     exodus = true   
-    time_step_interval = 100
+    time_step_interval = 50
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
