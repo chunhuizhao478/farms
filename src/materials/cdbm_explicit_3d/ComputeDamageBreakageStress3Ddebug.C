@@ -86,11 +86,6 @@ ComputeDamageBreakageStress3Ddebug::ComputeDamageBreakageStress3Ddebug(const Inp
     _alpha_grad_z(coupledValue("alpha_grad_z")),
     _density_old(getMaterialPropertyOldByName<Real>("density")),
     _D(getParam<Real>("D")),
-    // _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
-    // _static_initial_strain_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_strain_tensor")),
-    // _I1_initial(getMaterialPropertyByName<Real>("I1_initial")),
-    // _I2_initial(getMaterialPropertyByName<Real>("I2_initial")),
-    // _xi_initial(getMaterialPropertyByName<Real>("xi_initial")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
     _Cd_constant(getParam<Real>("Cd_constant")),
     _C1(getParam<Real>("C_1")),
@@ -128,35 +123,6 @@ void
 ComputeDamageBreakageStress3Ddebug::computeQpStress()
 { 
   
-  // if ( _t == 0 ){
-
-  //   _alpha_damagedvar[_qp] = _initial_damage[_qp];
-  //   _B[_qp] = 0.0;
-
-  //   RankTwoTensor eps = _static_initial_strain_tensor[_qp];
-  //   Real I1_initial = eps(0,0) + eps(1,1) + eps(2,2);
-  //   Real I2_initial = eps(0,0) * eps(0,0) + eps(1,1) * eps(1,1) + eps(2,2) * eps(2,2) + 2 * eps(0,1) * eps(0,1) + 2 * eps(0,2) * eps(0,2) + 2 * eps(1,2) * eps(1,2);
-  //   Real xi_initial = I1_initial / sqrt(I2_initial);
-
-  //   _xi[_qp] = xi_initial;
-  //   _I1[_qp] = I1_initial;
-  //   _I2[_qp] = I2_initial;
-
-  //   /// lambda (first lame const)
-  //   _lambda[_qp] = _lambda_o;
-  //   /// mu (shear modulus)
-  //   _shear_modulus[_qp] = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * _gamma_damaged_r;
-  //   /// gamma_damaged (damage modulus)
-  //   _gamma_damaged[_qp] = _initial_damage[_qp] * _gamma_damaged_r;
-  //   /// initialize strain tensor eps_p eps_e eps_total xi I1 I2
-  //   _eps_p[_qp].zero();
-  //   _eps_e[_qp] = _static_initial_strain_tensor[_qp];
-  //   _eps_total[_qp] = _static_initial_strain_tensor[_qp];
-  //   _sts_total[_qp] = _static_initial_stress_tensor[_qp];
-  
-  // }
-  // else{
-  
   /* 
   compute alpha and B parameters
   */
@@ -188,12 +154,6 @@ ComputeDamageBreakageStress3Ddebug::computeQpStress()
 
   _alpha_damagedvar[_qp] = alpha_out;
 
-  //grad_alpha
-  // Real alpha_grad_x = _alpha_grad_x[_qp];
-  // Real alpha_grad_y = _alpha_grad_y[_qp];
-  // Real alpha_grad_z = _alpha_grad_z[_qp];
-  // Real D = _D;
-
   /* compute B */
   Real C_B = _CdCb_multiplier * _Cd_constant;
 
@@ -207,26 +167,26 @@ ComputeDamageBreakageStress3Ddebug::computeQpStress()
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
   Real B_forcingterm;
-  // if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-  //   B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
-  // }
-  // else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-  //   B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
-  // }
-  // else{
-  //   mooseError("xi_old is OUT-OF-RANGE!.");
-  // }
-
-  //ggw183
   if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-    B_forcingterm = 1.0 * C_B * Prob * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(_lambda_o); //could heal if xi < xi_0
+    B_forcingterm = 1.0 * C_B * Prob * (1-_B_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
   }
   else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(_lambda_o);
+    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d ); //close healing
   }
   else{
     mooseError("xi_old is OUT-OF-RANGE!.");
   }
+
+  //ggw183
+  // if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
+  //   B_forcingterm = 1.0 * C_B * Prob * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(_lambda_o); //could heal if xi < xi_0
+  // }
+  // else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
+  //   B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ((_shear_modulus_old[_qp]-_a0)-(_a1+_gamma_damaged_old[_qp])*_xi_old[_qp]+(0.5*_lambda_o-_a2)*_xi_old[_qp]*_xi_old[_qp]-(_a3)*_xi_old[_qp]*_xi_old[_qp]*_xi_old[_qp])/(_lambda_o);
+  // }
+  // else{
+  //   mooseError("xi_old is OUT-OF-RANGE!.");
+  // }
 
   Real B_out = _B_old[_qp] + _dt * B_forcingterm;
 
@@ -321,207 +281,5 @@ ComputeDamageBreakageStress3Ddebug::computeQpStress()
   RankTwoTensor epsilon_rate = (eps_p - _eps_p_old[_qp])/_dt;
   Real epsilon_eq = sqrt(2/3*(epsilon_rate(0,0)*epsilon_rate(0,0)+epsilon_rate(1,1)*epsilon_rate(1,1)+epsilon_rate(2,2)*epsilon_rate(2,2)+2*epsilon_rate(0,1)*epsilon_rate(0,1)+2*epsilon_rate(0,2)*epsilon_rate(0,2)+2*epsilon_rate(1,2)*epsilon_rate(1,2)));
   _epsilon_eq[_qp] = epsilon_eq;
-  // }
-}
 
-///Function: deltaij
-Real 
-ComputeDamageBreakageStress3Ddebug::deltaij(int i, int j)
-{
-  Real deltaij_out = 0.0;
-  if ( i == j )
-  {
-    deltaij_out = 1.0;
-  }
-  else
-  {
-    deltaij_out = 0.0;
-  }
-  return deltaij_out;
-}
-
-/// Function: epsilonij - take component of elastic strain
-Real 
-ComputeDamageBreakageStress3Ddebug::epsilonij(int i, 
-                                       int j,
-                                       Real eps11e_in,
-                                       Real eps22e_in,
-                                       Real eps12e_in,
-                                       Real eps33e_in,
-                                       Real eps13e_in,
-                                       Real eps23e_in)
-{ 
-  //take elastic strain
-  Real eps_e_out = 0.0;
-  if ( i == 1 && j == 1 )
-  {
-    eps_e_out = eps11e_in;
-  }
-  else if ( i == 2 && j == 2 )
-  {
-    eps_e_out = eps22e_in;
-  }
-  else if ( i == 3 && j == 3 )
-  {
-    eps_e_out = eps33e_in;
-  }
-  else if ( i == 1 && j == 2 )
-  {
-    eps_e_out = eps12e_in;
-  }
-  else if ( i == 1 && j == 3 )
-  {
-    eps_e_out = eps13e_in;
-  }
-  else if ( i == 2 && j == 3 )
-  {
-    eps_e_out = eps23e_in;
-  }
-  return eps_e_out;
-}
-
-/// Function: grad_alpha
-//Note: no grad in 33 direction
-Real 
-ComputeDamageBreakageStress3Ddebug::grad_alpha(int i, 
-                                          Real alpha_grad_x,
-                                          Real alpha_grad_y,
-                                          Real alpha_grad_z)
-{ 
-  //take alpha grad
-  Real alpha_grad_out = 0.0;
-  if ( i == 1 )
-  {
-    alpha_grad_out = alpha_grad_x;
-  }
-  else if ( i == 2 )
-  {
-    alpha_grad_out = alpha_grad_y;
-  }
-  else if ( i == 3 )
-  {
-    alpha_grad_out = alpha_grad_z;
-  }
-  return alpha_grad_out;
-}
-
-/// Function: compute stress components
-Real 
-ComputeDamageBreakageStress3Ddebug::computeStressComps(int i, 
-                                                int j,
-                                                Real xi_in,
-                                                Real I1_in,
-                                                Real B_in,
-                                                Real lambda_in,
-                                                Real gamma_damaged_in,
-                                                Real shear_modulus_in,
-                                                Real eps11e_in,
-                                                Real eps22e_in,
-                                                Real eps12e_in,
-                                                Real eps33e_in,
-                                                Real eps13e_in,
-                                                Real eps23e_in,
-                                                Real alpha_grad_x,
-                                                Real alpha_grad_y,
-                                                Real alpha_grad_z,
-                                                Real D)
-{
-  //Retrieve parameters
-  Real xi = xi_in;
-  Real I1 = I1_in;
-  Real B = B_in;
-  Real lambda = lambda_in;
-  Real gamma_damaged = gamma_damaged_in;
-  Real shear_modulus = shear_modulus_in;
-
-  //stress comps
-  Real stresscomp_s_out;
-  Real stresscomp_b_out;
-  Real stresscomp;
-
-  stresscomp_s_out = (lambda - gamma_damaged / xi) * I1 * deltaij(i,j) + ( 2 * shear_modulus - gamma_damaged * xi ) * epsilonij(i,j,eps11e_in,eps22e_in,eps12e_in,eps33e_in,eps13e_in,eps23e_in) - D * grad_alpha(i,alpha_grad_x,alpha_grad_y,alpha_grad_z) * grad_alpha(j,alpha_grad_x,alpha_grad_y,alpha_grad_z);
-  stresscomp_b_out = (2 * _a2 + _a1 / xi + 3 * _a3 * xi) * I1 * deltaij(i,j) + ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * epsilonij(i,j,eps11e_in,eps22e_in,eps12e_in,eps33e_in,eps13e_in,eps23e_in);
-
-  //
-  stresscomp = ( 1 - B ) * stresscomp_s_out + B * stresscomp_b_out;
-
-  return stresscomp;
-
-}
-
-///Function to compute initial strain based on initial stress 
-void
-ComputeDamageBreakageStress3Ddebug::setupInitial()
-{
-  // ///For isotropic material with all components of stress subject to small strain we consider 
-  // ///tensile/compressive stress leads to only tensile/compressive strain, shear stress produce
-  // ///shear strain: 
-  // ///eps_ii = 1/E * ( sigma_ii - nu * ( sigma_jj + sigma_kk) )
-  // ///eps_ij = 1/G * sigma_ij
-
-  // /// lambda (first lame const)
-  // _lambda[_qp] = _lambda_o;
-  // /// mu (shear modulus)
-  // _shear_modulus[_qp] = _shear_modulus_o;
-  // /// gamma_damaged (damage modulus)
-  // _gamma_damaged[_qp] = 0.0;
-
-  // //allpha, B
-  // _alpha_damagedvar[_qp] = 0.0;
-  // _B[_qp] = 0.0;
-
-  // //Convert (lambda_o,shear_modulus_o) to (youngs_modulus_o,poisson_ratio_o)
-  // Real youngs_modulus_o = _shear_modulus_o * ( 3 * _lambda_o + 2 * _shear_modulus_o ) / ( _lambda_o + _shear_modulus_o );
-  // Real poisson_ratio_o = _lambda_o / ( 2 * ( _lambda_o + _shear_modulus_o ));
-
-  // //Convert (lambda_o,shear_modulus_o) to (shear_wave_speed_o,pressure_wave_speed_o)
-  // // Real density_o = _density_old[_qp];
-  // // Real shear_wave_speed_o = sqrt( ( _shear_modulus_o ) / ( density_o ) );
-  // // Real pressure_wave_speed_o = sqrt( ( _lambda_o + 2 * _shear_modulus_o ) / ( density_o ) );
-
-  // //save
-  // // _shear_wave_speed[_qp] = shear_wave_speed_o;
-  // // _pressure_wave_speed[_qp] = pressure_wave_speed_o;
-
-  // //Get stress components
-  // RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
-
-  // //Get strain components
-  // RankTwoTensor strain_initial = _static_initial_strain_tensor[_qp];
-
-  // //Compute strain components
-  // Real eps11_init = strain_initial(0,0);
-  // Real eps22_init = strain_initial(0,1);
-  // Real eps12_init = strain_initial(0,2);
-  // Real eps13_init = strain_initial(1,2);
-  // Real eps23_init = strain_initial(1,1);
-  // Real eps33_init = strain_initial(2,2); 
-
-  // //Compute xi, I1, I2
-  // Real I1_init = eps11_init + eps22_init + eps33_init;
-  // Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + eps33_init * eps33_init + 2 * eps12_init * eps12_init + 2 * eps13_init * eps13_init + 2 * eps23_init * eps23_init;
-  // Real xi_init = I1_init / sqrt( I2_init );
-
-  // //Compute eps
-  // //eps_p
-  // _eps_p[_qp](0,0) = 0.0; _eps_p[_qp](0,1) = 0.0; _eps_p[_qp](0,2) = 0.0;
-  // _eps_p[_qp](1,0) = 0.0; _eps_p[_qp](1,1) = 0.0; _eps_p[_qp](1,2) = 0.0;
-  // _eps_p[_qp](2,0) = 0.0; _eps_p[_qp](2,1) = 0.0; _eps_p[_qp](2,2) = 0.0;
-  // //eps_e
-  // _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; _eps_e[_qp](0,2) = eps13_init;
-  // _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init; _eps_e[_qp](1,2) = eps23_init;
-  // _eps_e[_qp](2,0) = eps13_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
-  // //eps_total
-  // _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
-  // _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
-  // _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](2,1) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
-  // //sts_total
-  // _sts_total[_qp] = stress_initial;
-
-  // //I1
-  // _I1[_qp] = I1_init;
-  // //I2
-  // _I2[_qp] = I2_init;
-  // //xi
-  // _xi[_qp] = xi_init;
 }

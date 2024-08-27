@@ -32,17 +32,6 @@ protected:
   /// Function: Compute initial strain based on initial stress
   void setupInitial();
 
-  /// Name of the elasticity tensor material property
-  //const std::string _elasticity_tensor_name;
-  /// Elasticity tensor material property
-  //const MaterialProperty<RankFourTensor> & _elasticity_tensor;
-
-  //initial stress tensor
-  // const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
-
-  //initial strain tensor
-  //const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;  
-
   /// additional variables
   /// strain invariants ratio: onset of damage evolution
   Real _xi_0;
@@ -128,42 +117,4 @@ protected:
 
   /// coefficient of CBH constant
   Real _CBH_constant;
-
-  /// Function: deltaij
-  Real deltaij(int i, int j);
-
-  /// Function: epsilonij - take component of elastic strain
-  Real epsilonij(int i, 
-                 int j,
-                 Real eps11e_in,
-                 Real eps22e_in,
-                 Real eps12e_in,
-                 Real eps33e_in,
-                 Real eps13e_in,
-                 Real eps23e_in);
-
-  Real grad_alpha(int i, 
-                  Real alpha_grad_x,
-                  Real alpha_grad_y,
-                  Real alpha_grad_z);
-
-  /// Function: compute stress components
-  Real computeStressComps(int i, 
-                          int j,
-                          Real xi_in,
-                          Real I1_in,
-                          Real B_in,
-                          Real lambda_in,
-                          Real gamma_damaged_in,
-                          Real shear_modulus_in,
-                          Real eps11e_in,
-                          Real eps22e_in,
-                          Real eps12e_in,
-                          Real eps33e_in,
-                          Real eps13e_in,
-                          Real eps23e_in,
-                          Real alpha_grad_x,
-                          Real alpha_grad_y,
-                          Real alpha_grad_z,
-                          Real D);
 };
