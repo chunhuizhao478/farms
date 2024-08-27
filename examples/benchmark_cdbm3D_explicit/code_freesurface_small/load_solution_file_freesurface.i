@@ -4,6 +4,15 @@
         file = '../static_solve_small/static_solve_out.e'
         use_for_exodus_restart = true
     []
+    [./extranodeset1]
+        type = ExtraNodesetGenerator
+        coord = '-8000  -8000  -8000;
+                  8000  -8000  -8000;
+                 -8000  -8000   8000;
+                  8000  -8000   8000'
+        new_boundary = corner_ptr
+        input = msh
+    []
 []
 
 [GlobalParams]
@@ -127,6 +136,12 @@
     []
     [vel_z]
     []
+    [initial_damage_aux]
+        order = CONSTANT
+        family = MONOMIAL
+        initial_from_file_var = initial_damage
+        initial_from_file_timestep = LATEST
+    []
 []
 
 [AuxKernels]
@@ -207,20 +222,12 @@
         alpha_grad_z = alpha_grad_z
         output_properties = 'B alpha_damagedvar xi I1 I2'
         outputs = exodus
-    []
-    [getxi]
-        type = ComputeXi
-        # outputs = exodus
-    []  
+    [] 
     [initial_damage]
-        type = InitialDamageBenchmark
-        nucl_center = '0 -2500 0'
-        fault_plane = '-5000 5000 -5000 0 -500 500'
-        nucl_distance = 400
-        nucl_thickness = 400
-        nucl_damage = 0.9
-        e_damage = 0.7
-        e_sigma = 1e3
+        type = ParsedMaterial
+        property_name = initial_damage
+        coupled_variables = initial_damage_aux
+        expression = 'initial_damage_aux'
         outputs = exodus
     []
 []  
@@ -302,28 +309,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 65e6
+        value = 70e6
     []
     [pressure_shear_back]
         type = NeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -65e6   
+        value = -70e6   
     []
     [pressure_shear_left]
         type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -65e6
+        value = -70e6
     []
     [pressure_shear_right]
         type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 65e6     
+        value = 70e6     
     []
     #
     [fix_ptr_x]
