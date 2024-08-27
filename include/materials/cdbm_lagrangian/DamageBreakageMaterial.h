@@ -15,7 +15,7 @@
  *  Material used in damage-breakage large deformation formulation
  *  Created by Chunhui Zhao, Aug 5th, 2024
  */
-class DamageBreakageMaterial : public ADMaterial
+class DamageBreakageMaterial : public Material
 {
 public:
   static InputParameters validParams();
