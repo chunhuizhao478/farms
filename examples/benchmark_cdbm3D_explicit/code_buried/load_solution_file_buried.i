@@ -250,6 +250,15 @@
 [Outputs]
     exodus = true   
     time_step_interval = 100
+    [sample_snapshots]
+        type = Exodus
+        interval = 200
+    []
+    [snapshots]
+        type = Exodus
+        interval = 100
+        overwrite = true
+    []
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress

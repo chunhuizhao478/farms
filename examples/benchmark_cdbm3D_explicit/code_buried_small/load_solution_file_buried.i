@@ -208,10 +208,6 @@
         output_properties = 'B alpha_damagedvar xi I1 I2'
         outputs = exodus
     []
-    [getxi]
-        type = ComputeXi
-        # outputs = exodus
-    []  
     [initialdamage]
         type = InitialDamageBenchmark
         nucl_center = '0 -4000 0'

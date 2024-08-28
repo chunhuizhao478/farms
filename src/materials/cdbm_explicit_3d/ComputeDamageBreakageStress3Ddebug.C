@@ -87,6 +87,7 @@ ComputeDamageBreakageStress3Ddebug::ComputeDamageBreakageStress3Ddebug(const Inp
     _density_old(getMaterialPropertyOldByName<Real>("density")),
     _D(getParam<Real>("D")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
+    _damage_perturbation(getMaterialPropertyByName<Real>("damage_perturbation")),
     _Cd_constant(getParam<Real>("Cd_constant")),
     _C1(getParam<Real>("C_1")),
     _C2(getParam<Real>("C_2")),
@@ -116,6 +117,7 @@ ComputeDamageBreakageStress3Ddebug::initQpStatefulProperties()
 {
   _elastic_strain[_qp].zero();
   _stress[_qp].zero();
+  _alpha_damagedvar[_qp] = _initial_damage[_qp];
 
 }
 
@@ -149,7 +151,7 @@ ComputeDamageBreakageStress3Ddebug::computeQpStress()
   else{}       
 
   //check below initial damage (fix initial damage)
-  if ( alpha_out < _initial_damage[_qp] ){ alpha_out = _initial_damage[_qp]; }
+  if ( alpha_out < _initial_damage[_qp] + _damage_perturbation[_qp] ){ alpha_out = _initial_damage[_qp] + _damage_perturbation[_qp]; }
   else{}
 
   _alpha_damagedvar[_qp] = alpha_out;
@@ -196,7 +198,6 @@ ComputeDamageBreakageStress3Ddebug::computeQpStress()
   else{}   
 
   //save alpha and B
-  _alpha_damagedvar[_qp] = alpha_out;
   _B[_qp] = B_out;
 
   /*
@@ -275,7 +276,7 @@ ComputeDamageBreakageStress3Ddebug::computeQpStress()
   _stress[_qp] = sigma_total;
 
   // Assign value for elastic strain, which is equal to the mechanical strain
-  _elastic_strain[_qp] = _mechanical_strain[_qp];
+  _elastic_strain[_qp] = eps_e;
 
   //Compute equivalent strain rate
   RankTwoTensor epsilon_rate = (eps_p - _eps_p_old[_qp])/_dt;

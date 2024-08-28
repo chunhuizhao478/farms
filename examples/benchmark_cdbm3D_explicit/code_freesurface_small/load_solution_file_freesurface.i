@@ -220,7 +220,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi I1 I2'
+        output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
     [] 
     [initial_damage]
@@ -228,6 +228,14 @@
         property_name = initial_damage
         coupled_variables = initial_damage_aux
         expression = 'initial_damage_aux'
+        outputs = exodus
+    []
+    [damage_perturb]
+        type = DamagePerturbationSperical
+        nucl_center = '0 -2500 0'
+        e_damage = 0.7
+        e_sigma = 1e3
+        duration = 1e-1
         outputs = exodus
     []
 []  
@@ -246,7 +254,7 @@
     type = Transient
     dt = 1e-4
     end_time = 10.0
-    # num_steps = 8000
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -257,6 +265,15 @@
 [Outputs]
     exodus = true   
     time_step_interval = 100
+    [sample_snapshots]
+        type = Exodus
+        interval = 2000
+    []
+    [snapshots]
+        type = Exodus
+        interval = 1000
+        overwrite = true
+    []    
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
