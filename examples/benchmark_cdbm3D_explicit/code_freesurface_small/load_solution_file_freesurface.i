@@ -42,7 +42,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e6
+    Cd_constant = 1e5
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -233,9 +233,9 @@
     [damage_perturb]
         type = DamagePerturbationSperical
         nucl_center = '0 -2500 0'
-        e_damage = 0.7
-        e_sigma = 1e3
-        duration = 1e-1
+        e_damage = 0.3
+        e_sigma = 2.5e2
+        duration = 1e-3
         outputs = exodus
     []
 []  
@@ -267,11 +267,11 @@
     time_step_interval = 100
     [sample_snapshots]
         type = Exodus
-        interval = 2000
+        time_step_interval = 2000
     []
     [snapshots]
         type = Exodus
-        interval = 1000
+        time_step_interval = 1000
         overwrite = true
     []    
 []
