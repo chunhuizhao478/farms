@@ -98,8 +98,8 @@
         fault_plane = '-4000 4000 -6000 -2000 -500 500'
         nucl_distance = 400
         nucl_thickness = 400
-        nucl_damage = 0.9
-        e_damage = 0.7
+        nucl_damage = 0.1
+        e_damage = 0.1
         e_sigma = 1e3
         outputs = exodus
     [] 

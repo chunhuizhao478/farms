@@ -4,6 +4,15 @@
         file = '../static_solve_buried_small/static_solve_out.e'
         use_for_exodus_restart = true
     []
+    [./extranodeset1]
+        type = ExtraNodesetGenerator
+        coord = '-8000  -8000  -8000;
+                  8000  -8000  -8000;
+                 -8000  -8000   8000;
+                  8000  -8000   8000'
+        new_boundary = corner_ptr
+        input = msh
+    []
 []
 
 [GlobalParams]
@@ -33,7 +42,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 1e7
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -127,6 +136,12 @@
     []
     [vel_z]
     []
+    [initial_damage_aux]
+        order = CONSTANT
+        family = MONOMIAL
+        initial_from_file_var = initial_damage
+        initial_from_file_timestep = LATEST
+    []
 []
 
 [AuxKernels]
@@ -205,20 +220,24 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi I1 I2'
-        outputs = exodus
-    []
-    [initialdamage]
-        type = InitialDamageBenchmark
-        nucl_center = '0 -4000 0'
-        fault_plane = '-4000 4000 -6000 -2000 -500 500'
-        nucl_distance = 400
-        nucl_thickness = 400
-        nucl_damage = 0.9
-        e_damage = 0.7
-        e_sigma = 1e3
+        output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
     [] 
+    [initial_damage]
+        type = ParsedMaterial
+        property_name = initial_damage
+        coupled_variables = initial_damage_aux
+        expression = 'initial_damage_aux'
+        outputs = exodus
+    []
+    [damage_perturb]
+        type = DamagePerturbationSperical
+        nucl_center = '0 -4000 0'
+        e_damage = 0.7
+        e_sigma = 1e3
+        duration = 1e-1
+        outputs = exodus
+    []
 []  
 
 [Functions]
@@ -235,7 +254,7 @@
     type = Transient
     dt = 1e-4
     end_time = 10.0
-    # num_steps = 8000
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -245,7 +264,16 @@
 
 [Outputs]
     exodus = true   
-    time_step_interval = 50
+    time_step_interval = 100
+    [sample_snapshots]
+        type = Exodus
+        time_step_interval = 2000
+    []
+    [snapshots]
+        type = Exodus
+        time_step_interval = 1000
+        overwrite = true
+    []    
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
