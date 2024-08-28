@@ -84,6 +84,8 @@ SlipWeakeningMultifaults::computeInterfaceTractionAndDerivatives()
     Real T1_o = -traction_local(1); 
     Real T2_o = -traction_local(0); 
 
+    std::cout<<T1_o<<" "<<T2_o<<std::endl;
+
    Real area = _nodal_area[_qp];
 
    //Reaction force in local coordinate
