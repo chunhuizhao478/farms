@@ -1,0 +1,2 @@
+We maintain high damage within the damage strip, adjust the stresses such that the xi is below the threshold, then we nucleate the system by overstress (damage) within the nucleation patch
+Created By Chunhui Zhao, Aug 28th, 2024
