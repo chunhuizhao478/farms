@@ -233,9 +233,9 @@
     [damage_perturb]
         type = DamagePerturbationSperical
         nucl_center = '0 -2500 0'
-        e_damage = 0.3
-        e_sigma = 2.5e2
-        duration = 1e-3
+        e_damage = 0.7
+        e_sigma = 1e3
+        duration = 1e-1
         outputs = exodus
     []
 []  
