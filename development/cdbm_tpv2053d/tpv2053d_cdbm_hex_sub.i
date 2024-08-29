@@ -1,14 +1,14 @@
 [Mesh]
-  [./msh]
+  [msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -18000
-    xmax = 18000
-    ymin = -20000
+    xmin = -30000
+    xmax = 30000
+    ymin = -30000
     ymax = 0
-    zmin = -10000
-    zmax = 10000
-    nx = 180
+    zmin = -30000
+    zmax = 30000
+    nx = 100
     ny = 100
     nz = 100
     subdomain_ids = 1
@@ -16,20 +16,20 @@
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z < 0'
+    combinatorial_geometry = 'x >= -16000 & x <= 12000 & y > -15000 & z < 0'
     block_id = 2
   []
   [./new_block_2]
-    type = ParsedSubdomainMeshGenerator
-    input = new_block_1
-    combinatorial_geometry = 'x >= -15000 & x <= 15000 & y >= -15000 & z > 0'
-    block_id = 3
-  []       
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'x > -16000 & x < 12000 & y > -15000 & z > 0'
+      block_id = 3
+  []
   [./split_1]
-      type = BreakMeshByBlockGenerator
-      input = new_block_2
-      split_interface = true
-      block_pairs = '2 3'
+    type = BreakMeshByBlockGenerator
+    input = new_block_2
+    split_interface = true
+    block_pairs = '2 3'
   []      
   [./sidesets]
     input = split_1
@@ -41,7 +41,7 @@
                 0 0 -1
                 0 0 1'
     new_boundary = 'left right bottom top back front'
-  []      
+  []       
 []
   
   [GlobalParams]

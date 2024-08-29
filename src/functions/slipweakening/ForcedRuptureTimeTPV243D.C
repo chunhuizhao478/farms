@@ -30,8 +30,8 @@ ForcedRuptureTimeTPV243D::value(Real /*t*/, const Point & p) const
   
   //the coordinate follows benchmark
   Real x_coord = p(0); //along the strike direction
-  Real y_coord = p(1); //along the normal direction
-  Real z_coord = p(2); //along the slip direction
+  Real y_coord = p(1); //along the dip direction
+  Real z_coord = p(2); //along the normal direction
 
   Real r = sqrt( (x_coord - _loc_x) * (x_coord - _loc_x) + (y_coord - _loc_y) * (y_coord - _loc_y) + (z_coord - _loc_z) * (z_coord - _loc_z) );
   
