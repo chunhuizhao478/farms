@@ -96,10 +96,10 @@
         type = ADInitialDamageBenchmark
         nucl_center = '0 -15000 0'
         fault_plane = '-15000 15000 -22500 -7500 -500 500'
-        nucl_distance = 1500
+        nucl_distance = 400
         nucl_thickness = 400
-        nucl_damage = 0.85
-        e_damage = 0.6
+        nucl_damage = 0.7
+        e_damage = 0.7
         e_sigma = 1e3
         outputs = exodus
     []
@@ -183,28 +183,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 70e6
+        value = 60e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -70e6   
+        value = -60e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -70e6
+        value = -60e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 70e6     
+        value = 60e6     
     []
     #
     [fix_ptr_x]

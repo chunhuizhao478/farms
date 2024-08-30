@@ -37,7 +37,7 @@
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 100
+    CdCb_multiplier = 1000
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -127,6 +127,12 @@
     []
     [vel_z]
     []
+    [initial_damage_aux]
+        order = CONSTANT
+        family = MONOMIAL
+        initial_from_file_var = initial_damage
+        initial_from_file_timestep = LATEST
+    []
 []
 
 [AuxKernels]
@@ -205,24 +211,33 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi I1 I2'
-        outputs = exodus
-    []
-    [getxi]
-        type = ComputeXi
-        # outputs = exodus
-    []  
-    [initialdamage]
-        type = InitialDamageBenchmark
-        nucl_center = '0 -15000 0'
-        fault_plane = '-15000 15000 -22500 -7500 -500 500'
-        nucl_distance = 1500
-        nucl_thickness = 400
-        nucl_damage = 0.85
-        e_damage = 0.6
-        e_sigma = 1e3
+        output_properties = 'B alpha_damagedvar xi'
         outputs = exodus
     [] 
+    [initial_damage]
+        type = ParsedMaterial
+        property_name = initial_damage
+        coupled_variables = initial_damage_aux
+        expression = 'initial_damage_aux'
+        outputs = exodus
+    []
+    # [damage_perturb]
+    #     type = DamagePerturbationSperical
+    #     nucl_center = '0 -2500 0'
+    #     e_damage = 0.3
+    #     e_sigma = 1e3
+    #     duration = 1e-1
+    #     outputs = exodus
+    # []
+    [damage_perturb]
+        type = DamagePerturbationSquare
+        nucl_center = '0 -15000 0'
+        e_damage = 0.3
+        thickness = 400
+        length = 400
+        duration = 1e-1
+        outputs = exodus
+    []
 []  
 
 [Functions]
@@ -238,8 +253,8 @@
 [Executioner]
     type = Transient
     dt = 1e-4
-    end_time = 10.0
-    # num_steps = 8000
+    end_time = 50.0
+    # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -252,13 +267,13 @@
     time_step_interval = 100
     [sample_snapshots]
         type = Exodus
-        interval = 200
+        time_step_interval = 2000
     []
     [snapshots]
         type = Exodus
-        interval = 100
+        time_step_interval = 1000
         overwrite = true
-    []
+    []    
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
@@ -311,28 +326,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 70e6
+        value = 60e6
     []
     [pressure_shear_back]
         type = NeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -70e6   
+        value = -60e6   
     []
     [pressure_shear_left]
         type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -70e6
+        value = -60e6
     []
     [pressure_shear_right]
         type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 70e6     
+        value = 60e6     
     []
     #
     [fix_ptr_x]
