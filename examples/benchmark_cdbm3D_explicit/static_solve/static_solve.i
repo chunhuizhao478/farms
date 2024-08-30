@@ -81,7 +81,7 @@
         outputs = exodus
     [] 
     [stress]
-        type = ADComputeDamageStressStatic
+        type = ADComputeDamageStressStaticDistribution
         lambda_o = 30e9
         shear_modulus_o = 30e9
         xi_o = -0.8
@@ -98,23 +98,13 @@
         fault_plane = '-15000 15000 -15000 0'
         nucl_distance = 1500
         nucl_thickness = 1000
-        nucl_damage = 0.85
+        nucl_damage = 0.7
         e_damage = 0.7
         e_sigma = 2.5e3
         outputs = exodus
     []  
 []  
 
-[Functions]
-[]
-
-[Preconditioning]
-    [smp]
-      type = SMP
-      full = true
-    []
-[]
-  
 [Executioner]
     type = Steady
     solve_type = NEWTON
@@ -140,42 +130,42 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        factor = 50e6
+        factor = 135e6
     []
     [pressure_left]
         type = ADPressure
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        factor = 50e6
+        factor = 135e6
     []
     [pressure_front]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        factor = 50e6
+        factor = 120e6
     []
     [pressure_back]
         type = ADPressure
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        factor = 50e6        
+        factor = 120e6        
     []
     [pressure_top]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = top
-        factor = 50e6         
+        factor = 127.5e6         
     []
     [pressure_bottom]
         type = ADPressure
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = bottom
-        factor = 50e6         
+        factor = 127.5e6              
     []
     #
     [pressure_shear_front]
@@ -183,28 +173,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 30e6
+        value = 50e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -30e6   
+        value = -50e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -30e6
+        value = -50e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 30e6     
+        value = 50e6     
     []
     #
     [fix_ptr_x]
