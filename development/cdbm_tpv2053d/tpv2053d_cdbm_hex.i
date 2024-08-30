@@ -775,7 +775,6 @@
   [./func_initial_cohesion]
     type = InitialCohesionTPV243D
   []
-  #we ignore this for now
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = -8000
@@ -816,7 +815,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.0002
+    dt = 0.0025
     end_time = 12.0
     # num_steps = 1
     [TimeIntegrator]

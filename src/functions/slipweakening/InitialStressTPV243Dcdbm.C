@@ -67,10 +67,10 @@ InitialStressTPV243Dcdbm::value(Real /*t*/, const Point & p) const
   } 
 
   //overstress within the region
-  Real x_coord = p(0);
-  if (x_coord >= -9500 and x_coord <= -6500 and y_coord >= -11500 and y_coord <= -8500){
-    sigma23 = 5.7210e7;
-  }
+  // Real x_coord = p(0);
+  // if (x_coord >= -9500 and x_coord <= -6500 and y_coord >= -11500 and y_coord <= -8500){
+  //   sigma23 = 5.7210e7;
+  // }
 
   //convert benchmark coordinate to problem definition coordinate
   //benchmark description: 1: dip, 2: strike, 3: normal
