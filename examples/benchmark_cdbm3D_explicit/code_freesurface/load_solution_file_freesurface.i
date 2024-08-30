@@ -1,18 +1,18 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file = '../static_solve_small2/static_solve_out.e'
+        file = '../static_solve/static_solve_out.e'
         use_for_exodus_restart = true
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-8000  -8000  -8000;
-                  8000  -8000  -8000;
-                 -8000  -8000   8000;
-                  8000  -8000   8000'
+        coord = '-60000  -60000  -60000;
+                  60000  -60000  -60000;
+                 -60000  -60000   60000;
+                  60000  -60000   60000'
         new_boundary = corner_ptr
-        input = msh
-    []
+        input = sidesets
+    [] 
 []
 
 [GlobalParams]
@@ -42,11 +42,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e5
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1e4
+    CdCb_multiplier = 1000
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -230,11 +230,20 @@
         expression = 'initial_damage_aux'
         outputs = exodus
     []
+    # [damage_perturb]
+    #     type = DamagePerturbationSperical
+    #     nucl_center = '0 -2500 0'
+    #     e_damage = 0.3
+    #     e_sigma = 1e3
+    #     duration = 1e-1
+    #     outputs = exodus
+    # []
     [damage_perturb]
-        type = DamagePerturbationSperical
-        nucl_center = '0 -2500 0'
+        type = DamagePerturbationSquare
+        nucl_center = '0 -7500 0'
         e_damage = 0.3
-        e_sigma = 1e3
+        thickness = 400
+        length = 400
         duration = 1e-1
         outputs = exodus
     []
@@ -253,7 +262,7 @@
 [Executioner]
     type = Transient
     dt = 1e-4
-    end_time = 10.0
+    end_time = 50.0
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
