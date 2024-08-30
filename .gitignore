@@ -258,3 +258,10 @@ examples/benchmark_cdbm3D_explicit/code_freesurface_small/load_solution_file_fre
 examples/benchmark_cdbm3D_explicit/code_freesurface_small2/load_solution_file_freesurface_out_cp/7809-mesh.cpa.gz/1/split-1-0.gz
 examples/benchmark_cdbm3D_explicit/code_freesurface_small2/load_solution_file_freesurface_out_cp/7809-mesh.cpa.gz/1/header.gz
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_buried_small.msh
+examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_buried.msh
+examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d.msh
+examples/cdbm_taubulardamagezone3D_explicit/meshfile/tabulardamagezone_small_refined.msh
+examples/benchmark_cdbm3D_explicit/code_freesurface_small/load_solution_file_freesurface_out_cp/10623-mesh.cpa.gz/1/header.gz
+examples/benchmark_cdbm3D_explicit/code_freesurface_small/load_solution_file_freesurface_out_cp/10623-mesh.cpa.gz/1/split-1-0.gz
+examples/benchmark_cdbm3D_explicit/code_freesurface_small/load_solution_file_freesurface_out_cp/10940-mesh.cpa.gz/1/header.gz
+examples/benchmark_cdbm3D_explicit/code_freesurface_small/load_solution_file_freesurface_out_cp/10940-mesh.cpa.gz/1/split-1-0.gz

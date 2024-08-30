@@ -32,13 +32,13 @@ Box(2) = {-Fault_length/2, 0-Fault_width, -Fault_thickness/2, Fault_length, Faul
 Box(3) = {X_nucl-R_nucl/2, -Width_nucl-R_nucl/2, -thickness_nucl/2, R_nucl, R_nucl, thickness_nucl};
 
 // Create a damage box
-damage_xdist = 80000;
-damage_ydist = 50000;
-damage_zdist = 40000;
-Box(4) = {-damage_xdist/2, -damage_ydist, -damage_zdist/2, damage_xdist, damage_ydist, damage_zdist};
+// damage_xdist = 80000;
+// damage_ydist = 50000;
+// damage_zdist = 40000;
+// Box(4) = {-damage_xdist/2, -damage_ydist, -damage_zdist/2, damage_xdist, damage_ydist, damage_zdist};
 
 // Boolean operation to fragment all volumes
-BooleanFragments{ Volume{1,2,3,4}; Delete; }{}
+BooleanFragments{ Volume{1,2,3}; Delete; }{}
 
 // Define mesh sizes using a progression field for smooth transition
 
