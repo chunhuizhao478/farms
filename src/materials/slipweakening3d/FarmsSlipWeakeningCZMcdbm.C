@@ -287,17 +287,17 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
     //parameter f2
     //here we close the gradual reduction on mud, replace it by overstress
     Real f2 = 0.0;
-    // Real t0 = 0.5; //0.5;
-    // Real T = (*_T)[_qp];
-    // if ( _t < T ){
-    //   f2 = 0.0;
-    // }
-    // else if ( _t > T && _t < T + t0 ){
-    //   f2 = ( _t - T ) / t0;
-    // }
-    // else{
-    //   f2 = 1;
-    // }
+    Real t0 = 0.5; //0.5;
+    Real T = (*_T)[_qp];
+    if ( _t < T ){
+      f2 = 0.0;
+    }
+    else if ( _t > T && _t < T + t0 ){
+      f2 = ( _t - T ) / t0;
+    }
+    else{
+      f2 = 1;
+    }
 
     //if mu_s > 0.18, must be boundary location, set high mus without degradation
     Real mu = 0.0;
