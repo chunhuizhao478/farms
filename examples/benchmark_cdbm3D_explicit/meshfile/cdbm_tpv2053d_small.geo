@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 lc = 1000;
-lc_fault = 100; // Fine mesh in the fault zone
+lc_fault = 200; // Fine mesh in the fault zone
 
 Fault_length = 10e3;
 Fault_width = 5e3;

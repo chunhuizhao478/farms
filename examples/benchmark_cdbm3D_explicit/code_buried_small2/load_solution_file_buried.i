@@ -230,12 +230,21 @@
         expression = 'initial_damage_aux'
         outputs = exodus
     []
+    # [damage_perturb]
+    #     type = DamagePerturbationSperical
+    #     nucl_center = '0 -2500 0'
+    #     e_damage = 0.3
+    #     e_sigma = 1e3
+    #     duration = 1e-1
+    #     outputs = exodus
+    # []
     [damage_perturb]
-        type = DamagePerturbationSperical
+        type = DamagePerturbationSquare
         nucl_center = '0 -4000 0'
-        e_damage = 0.4
-        e_sigma = 1e3
-        duration = 1e-3
+        e_damage = 0.3
+        thickness = 400
+        length = 400
+        duration = 1e-1
         outputs = exodus
     []
 []  
@@ -322,32 +331,32 @@
     []
     #
     [pressure_shear_front]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 50e6
+        value = 60e6
     []
     [pressure_shear_back]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -50e6   
+        value = -60e6   
     []
     [pressure_shear_left]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -50e6
+        value = -60e6
     []
     [pressure_shear_right]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 50e6     
+        value = 60e6     
     []
     #
     [fix_ptr_x]
