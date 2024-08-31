@@ -2,15 +2,15 @@
   [msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -30000
-    xmax = 30000
-    ymin = -30000
+    xmin = -20000
+    xmax = 20000
+    ymin = -20000
     ymax = 0
-    zmin = -30000
-    zmax = 30000
-    nx = 100
+    zmin = -20000
+    zmax = 20000
+    nx = 200
     ny = 100
-    nz = 100
+    nz = 200
     subdomain_ids = 1
   []
   [./new_block_1]
