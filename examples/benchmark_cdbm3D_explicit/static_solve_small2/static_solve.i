@@ -18,10 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-8000  -8000  -8000;
-                  8000  -8000  -8000;
-                 -8000  -8000   8000;
-                  8000  -8000   8000'
+        coord = '-20000  -20000  -20000;
+                  20000  -20000  -20000;
+                 -20000  -20000   20000;
+                  20000  -20000   20000'
         new_boundary = corner_ptr
         input = sidesets
     []     
