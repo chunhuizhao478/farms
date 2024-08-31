@@ -1,7 +1,7 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file = '../static_solve_buried_small2/static_solve_out.e'
+        file = '../static_solve_buried_small3/static_solve_out.e'
         use_for_exodus_restart = true
     []
     [./extranodeset1]
@@ -241,7 +241,7 @@
     [damage_perturb]
         type = DamagePerturbationSquare
         nucl_center = '0 -10000 0'
-        e_damage = 0.3
+        e_damage = 0
         thickness = 400
         length = 400
         duration = 1e-1
