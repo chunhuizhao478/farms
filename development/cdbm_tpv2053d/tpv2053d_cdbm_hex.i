@@ -8,15 +8,15 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -30000
-      xmax = 30000
-      ymin = -30000
+      xmin = -20000
+      xmax = 20000
+      ymin = -20000
       ymax = 0
-      zmin = -30000
-      zmax = 30000
-      nx = 100
+      zmin = -20000
+      zmax = 20000
+      nx = 200
       ny = 100
-      nz = 100
+      nz = 200
       subdomain_ids = 1
     []
     [./new_block_1]
@@ -58,7 +58,7 @@
     q = 1.0
     
     #characteristic length (m) #this gives ~200m for resolve L_f
-    Dc = 0.85
+    Dc = 0.3
 
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -528,7 +528,7 @@
     [elem_length]
       type = ConstantAux
       variable = elem_length
-      value = 400
+      value = 200
     []
     #obtain parameters from MaterialRealAux
     [get_xi_old]
@@ -815,7 +815,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.0025
+    dt = 0.005
     end_time = 12.0
     # num_steps = 1
     [TimeIntegrator]
