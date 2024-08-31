@@ -272,3 +272,5 @@ examples/archive/cdbm_cyclesim2/meshfile/cyclesim.msh
 examples/archive/cdbm_cyclesim_monosolve/meshfile/cyclesim.msh
 examples/archive/cdbm_cyclesim_revert/meshfile/cyclesim.msh
 examples/archive/cdbm_tabulardamagezone/meshfile/tabulardamagezone.msh
+examples/archive/turkey_earthquake/junction_model/mesh/junctionfaults.msh
+examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_buried_small2.msh
