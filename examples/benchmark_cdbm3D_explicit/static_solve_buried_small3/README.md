@@ -1,0 +1,2 @@
+We maintain high damage within the damage strip, adjust the stresses such that the xi is below the threshold, then we nucleate the system by raising the boundary traction loading
+Created By Chunhui Zhao, Aug 30th, 2024
