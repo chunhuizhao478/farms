@@ -131,7 +131,7 @@
 
 [Outputs]
     exodus = true   
-    show = 'initial_damage xi_initial'
+    #show = 'initial_damage xi_initial'
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
