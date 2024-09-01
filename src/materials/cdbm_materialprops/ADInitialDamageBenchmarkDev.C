@@ -78,7 +78,7 @@ ADInitialDamageBenchmarkDev::computeQpProperties()
   Real r = dz;
 
   // Add some room
-  Real room = 1e3;
+  Real room = 0;
 
   // Restrict along x and y direction
   if (xcoord >= _fault_plane[0] - room && xcoord <= _fault_plane[1] + room && ycoord >= _fault_plane[2] - room && ycoord <= _fault_plane[3] + room){

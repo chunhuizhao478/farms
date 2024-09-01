@@ -6,12 +6,12 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-10000  -10000  -10000;
-                  10000  -10000  -10000;
-                 -10000  -10000   10000;
-                  10000  -10000   10000'
+        coord = '-8000  -8000  -8000;
+                  8000  -8000  -8000;
+                 -8000  -8000   8000;
+                  8000  -8000   8000'
         new_boundary = corner_ptr
-        input = msh
+        input = sidesets
     []  
 []
 
@@ -240,7 +240,7 @@
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -10000 0'
+        nucl_center = '0 -4000 0'
         e_damage = 0.3
         thickness = 100
         length = 400

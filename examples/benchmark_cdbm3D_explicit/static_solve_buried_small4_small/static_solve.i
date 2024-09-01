@@ -18,10 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-10000  -10000  -10000;
-                  10000  -10000  -10000;
-                 -10000  -10000   10000;
-                  10000  -10000   10000'
+        coord = '-8000  -8000  -8000;
+                  8000  -8000  -8000;
+                 -8000  -8000   8000;
+                  8000  -8000   8000'
         new_boundary = corner_ptr
         input = sidesets
     []     
@@ -94,8 +94,8 @@
     []
     [initialdamage]
         type = ADInitialDamageBenchmarkDev
-        nucl_center = '0 -10000 0'
-        fault_plane = '-4000 4000 -12000 -8000 -500 500'
+        nucl_center = '0 -4000 0'
+        fault_plane = '-2000 2000 -5000 -3000 -500 500'
         nucl_distance = 400
         nucl_thickness = 100
         nucl_damage = 0.7
@@ -184,28 +184,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 55e6
+        value = 60e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -55e6   
+        value = -60e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -55e6
+        value = -60e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 55e6     
+        value = 60e6     
     []
     #
     [fix_ptr_x]
