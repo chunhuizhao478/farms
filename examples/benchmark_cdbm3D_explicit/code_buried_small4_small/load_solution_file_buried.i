@@ -11,7 +11,7 @@
                  -8000  -8000   8000;
                   8000  -8000   8000'
         new_boundary = corner_ptr
-        input = sidesets
+        input = msh
     []  
 []
 
