@@ -558,7 +558,7 @@
     type = Transient
     dt = 0.0025
     end_time = 12.0
-    # num_steps = 1
+    num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -568,6 +568,6 @@
 #for cluster run
 [Outputs]
     exodus = true
-    interval = 40
+    interval = 1
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z mu_s'
 []

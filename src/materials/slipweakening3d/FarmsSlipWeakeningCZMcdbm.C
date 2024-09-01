@@ -299,20 +299,13 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
       f2 = 1;
     }
 
-    //if mu_s > 0.18, must be boundary location, set high mus without degradation
-    Real mu = 0.0;
-    if ( mu_s > 10 ){ //must be boundary elements, set high mus values
-      mu = mu_s * 1;
-    }
-    else{
-      mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
-    }
+    Real mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
 
     //Pf
-    Real z_coord = _q_point[_qp](2);
+    Real y_coord = _q_point[_qp](1);
     Real fluid_density = 1000; //kg/m^3 fluid density
     Real gravity = 9.8; //m/s^2
-    Real Pf = fluid_density * gravity * abs(z_coord);
+    Real Pf = fluid_density * gravity * abs(y_coord);
 
     //tau_f
     //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
