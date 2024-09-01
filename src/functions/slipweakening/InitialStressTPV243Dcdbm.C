@@ -28,7 +28,7 @@ InitialStressTPV243Dcdbm::value(Real /*t*/, const Point & p) const
   Real fluid_density = 1000; //kg/m^3 fluid density
   Real rock_density = 2670; //kg/m^3 rock density
   Real gravity = 9.8; //m/s^2
-  Real b22 = 0.926793; //0.926793; modify the coefficient to make xi larger #MODIFIED TPV24
+  Real b22 = 4.0; //0.926793; modify the coefficient to make xi larger #MODIFIED TPV24
   Real b33 = 1.073206;
   Real b23 = -0.169029; //-0.169029; modify May20
   Real sigma11 = 0;
