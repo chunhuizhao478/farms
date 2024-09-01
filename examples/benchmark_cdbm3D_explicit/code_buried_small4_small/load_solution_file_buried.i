@@ -1,7 +1,7 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file = '../static_solve_small4_small/static_solve_out.e'
+        file = '../static_solve_buried_small4_small/static_solve_out.e'
         use_for_exodus_restart = true
     []
     [./extranodeset1]
@@ -12,7 +12,7 @@
                   10000  -10000   10000'
         new_boundary = corner_ptr
         input = msh
-    [] 
+    []  
 []
 
 [GlobalParams]
@@ -240,7 +240,7 @@
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -2500 0'
+        nucl_center = '0 -10000 0'
         e_damage = 0.3
         thickness = 100
         length = 400
@@ -331,32 +331,32 @@
     []
     #
     [pressure_shear_front]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 45e6
+        value = 55e6
     []
     [pressure_shear_back]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -45e6   
+        value = -55e6   
     []
     [pressure_shear_left]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -45e6
+        value = -55e6
     []
     [pressure_shear_right]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 45e6     
+        value = 55e6     
     []
     #
     [fix_ptr_x]
