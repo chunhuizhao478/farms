@@ -93,7 +93,7 @@
         outputs = exodus
     []
     [initial_damage]
-        type = ADInitialDamageBenchmark
+        type = ADInitialDamageBenchmarkDev
         nucl_center = '0 -2500 0'
         fault_plane = '-5000 5000 -5000 0 -500 500'
         nucl_distance = 400
