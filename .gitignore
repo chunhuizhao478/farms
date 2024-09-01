@@ -275,3 +275,4 @@ examples/archive/cdbm_tabulardamagezone/meshfile/tabulardamagezone.msh
 examples/archive/turkey_earthquake/junction_model/mesh/junctionfaults.msh
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_buried_small2.msh
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_small2.msh
+examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_buried_small2_small.msh
