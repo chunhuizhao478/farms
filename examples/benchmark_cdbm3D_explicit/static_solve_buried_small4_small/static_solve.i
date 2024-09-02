@@ -99,7 +99,7 @@
         nucl_distance = 400
         nucl_thickness = 100
         nucl_damage = 0.7
-        e_damage = 0.7
+        e_damage = 0.5
         e_sigma = 5e2
         outputs = exodus
     [] 

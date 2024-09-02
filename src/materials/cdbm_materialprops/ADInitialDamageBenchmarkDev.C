@@ -82,7 +82,12 @@ ADInitialDamageBenchmarkDev::computeQpProperties()
 
   // Restrict along x and y direction
   if (xcoord >= _fault_plane[0] - room && xcoord <= _fault_plane[1] + room && ycoord >= _fault_plane[2] - room && ycoord <= _fault_plane[3] + room){
-    alpha_o = _peak_damage * std::exp(-1.0 * std::pow(r, 2) / (_sigma * _sigma));
+    if (zcoord >= -0.5 * _nucl_thickness && zcoord <= 0.5 * _nucl_thickness){ //set high damage strip
+      alpha_o = _nucl_damage;
+    }
+    else{
+      alpha_o = _peak_damage * std::exp(-1.0 * std::pow(r, 2) / (_sigma * _sigma));
+    }
   }
   else{
     alpha_o = 0.0;
