@@ -18,10 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-8000  -8000  -8000;
-                  8000  -8000  -8000;
-                 -8000  -8000   8000;
-                  8000  -8000   8000'
+        coord = '-20000  -20000  -20000;
+                  20000  -20000  -20000;
+                 -20000  -20000   20000;
+                  20000  -20000   20000'
         new_boundary = corner_ptr
         input = sidesets
     []     
@@ -94,8 +94,8 @@
     []
     [initialdamage]
         type = ADInitialDamageBenchmarkDev
-        nucl_center = '0 -4000 0'
-        fault_plane = '-2000 2000 -5000 -3000 -500 500'
+        nucl_center = '0 -10000 0'
+        fault_plane = '-2000 2000 -11000 -9000 -500 500'
         nucl_distance = 400
         nucl_thickness = 100
         nucl_damage = 0.7

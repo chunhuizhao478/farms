@@ -6,10 +6,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-8000  -8000  -8000;
-                  8000  -8000  -8000;
-                 -8000  -8000   8000;
-                  8000  -8000   8000'
+        coord = '-20000  -20000  -20000;
+                  20000  -20000  -20000;
+                 -20000  -20000   20000;
+                  20000  -20000   20000'
         new_boundary = corner_ptr
         input = msh
     []  
@@ -42,7 +42,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 10
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -240,7 +240,7 @@
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -4000 0'
+        nucl_center = '0 -10000 0'
         e_damage = 0.3
         thickness = 100
         length = 400
