@@ -223,26 +223,26 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
   Real elem_length = _elem_length[_qp];
 
   //Compute node mass //equal length tetrahedron
-  // Real M = (_density[_qp] * elem_length * elem_length * elem_length / 8) * 4;
-  // Real A = (elem_length * elem_length / 4) * 4;
-
-  // //HARDCODE Condition for surface nodes
-  // Real ycoord = _q_point[_qp](1);
-  // if ( ycoord > -100 ){
-  //   M = (_density[_qp] * elem_length * elem_length * elem_length / 8) * 2;
-  //   A = (elem_length * elem_length / 4) * 2;
-  // }
-
-  //Compute node mass //equal length tetrahedron
-  Real M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 6;
-  Real A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 6;
+  Real M = (_density[_qp] * elem_length * elem_length * elem_length / 8) * 4;
+  Real A = (elem_length * elem_length / 4) * 4;
 
   //HARDCODE Condition for surface nodes
   Real ycoord = _q_point[_qp](1);
   if ( ycoord > -100 ){
-    M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 3;
-    A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 3;
+    M = (_density[_qp] * elem_length * elem_length * elem_length / 8) * 2;
+    A = (elem_length * elem_length / 4) * 2;
   }
+
+  // //Compute node mass //equal length tetrahedron
+  // Real M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 6;
+  // Real A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 6;
+
+  // //HARDCODE Condition for surface nodes
+  // Real ycoord = _q_point[_qp](1);
+  // if ( ycoord > -100 ){
+  //   M = (_density[_qp] * sqrt(2) * elem_length * elem_length * elem_length / 12 / 4) * 3;
+  //   A = (sqrt(3) * elem_length * elem_length / 4 / 3) * 3;
+  // }
 
   //Compute sticking stress
   Real Tstrike = (1/_dt)*M*displacement_jump_rate_local(0)/(2*A) + (R_plus_local_vec(0) - R_minus_local_vec(0))/(2*A) + T_strike_o;
