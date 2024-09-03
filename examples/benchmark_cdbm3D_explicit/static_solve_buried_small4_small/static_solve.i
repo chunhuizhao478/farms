@@ -97,10 +97,10 @@
         nucl_center = '0 -10000 0'
         fault_plane = '-2000 2000 -11000 -9000 -500 500'
         nucl_distance = 400
-        nucl_thickness = 100
+        nucl_thickness = 50
         nucl_damage = 0.7
-        e_damage = 0.5
-        e_sigma = 5e2
+        e_damage = 0.7
+        e_sigma = 2.5e2
         outputs = exodus
     [] 
 []  
@@ -184,28 +184,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 60e6
+        value = 55e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -60e6   
+        value = -55e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -60e6
+        value = -55e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 60e6     
+        value = 55e6     
     []
     #
     [fix_ptr_x]
