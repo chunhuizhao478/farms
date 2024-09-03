@@ -8,29 +8,29 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -15000
-      xmax = 15000
+      xmin = -5000
+      xmax = 5000
       ymin = -20000
       ymax = 0
-      zmin = -8000
-      zmax = 8000
-      nx = 150
-      ny = 100
-      nz = 80
+      zmin = -5000
+      zmax = 5000
+      nx = 50
+      ny = 50
+      nz = 100
       subdomain_ids = 1
-    []
-    [./new_block_1]
+  []
+  [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -13000 & x <= 13000 & y > -15000 & z < 0'
+      combinatorial_geometry = 'x >= -4000 & x <= 4000 & y > -18000 & z < 0'
       block_id = 2
-    []
-    [./new_block_2]
-        type = ParsedSubdomainMeshGenerator
-        input = new_block_1
-        combinatorial_geometry = 'x > -13000 & x < 13000 & y > -15000 & z > 0'
-        block_id = 3
-    [] 
+  []
+  [./new_block_2]
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'x > -4000 & x < 4000 & y > -18000 & z > 0'
+      block_id = 3
+  [] 
     [./split_1]
       type = BreakMeshByBlockGenerator
       input = new_block_2
@@ -774,7 +774,7 @@
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = 0
-    loc_y = -8000
+    loc_y = -7500
     loc_z = 0
     r_crit = 1000
     Vs = 3464
@@ -813,7 +813,7 @@
     type = Transient
     dt = 0.0025
     end_time = 12.0
-    # num_steps = 1
+    num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -823,8 +823,8 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi_old'
+    time_step_interval = 1
+    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi_old'
 []
 
 [MultiApps]
