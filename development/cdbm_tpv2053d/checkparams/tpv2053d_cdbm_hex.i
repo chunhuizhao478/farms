@@ -1,30 +1,30 @@
 [Mesh]
-    [msh]
+      [msh]
         type = GeneratedMeshGenerator
         dim = 3
         xmin = -5000
         xmax = 5000
-        ymin = -10000
+        ymin = -20000
         ymax = 0
         zmin = -5000
         zmax = 5000
         nx = 50
         ny = 50
-        nz = 50
+        nz = 100
         subdomain_ids = 1
     []
     [./new_block_1]
         type = ParsedSubdomainMeshGenerator
         input = msh
-        combinatorial_geometry = 'x >= -4000 & x <= 4000 & y > -9000 & z < 0'
+        combinatorial_geometry = 'x >= -4000 & x <= 4000 & y > -18000 & z < 0'
         block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x > -4000 & x < 4000 & y > -9000 & z > 0'
+        combinatorial_geometry = 'x > -4000 & x < 4000 & y > -18000 & z > 0'
         block_id = 3
-    []       
+    []        
     [./split_1]
         type = BreakMeshByBlockGenerator
         input = new_block_2
