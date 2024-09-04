@@ -165,6 +165,12 @@
       coupled = disp_z
       execute_on = 'TIMESTEP_END'
     []
+    [initial_damage]
+        type = SolutionAux
+        variable = initial_damage_aux
+        solution = init_sol_components
+        from_variable = initial_damage
+    []    
 []
 
 [Kernels]
