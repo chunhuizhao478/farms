@@ -1,8 +1,18 @@
 [Mesh]
-    [msh]
+    [./msh]
         type = FileMeshGenerator
-        file = '../static_solve_buried/static_solve_out.e'
-        use_for_exodus_restart = true
+        file =  '../meshfile/cdbm_tpv2053d_buried.msh'
+    []
+    [./sidesets]
+        input = msh
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0
+                    0 0 -1
+                    0 0 1'
+        new_boundary = 'left right bottom top back front'
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
@@ -11,7 +21,7 @@
                  -20000  -20000   20000;
                   20000  -20000   20000'
         new_boundary = corner_ptr
-        input = msh
+        input = sidesets
     []  
 []
 
@@ -106,20 +116,14 @@
     [disp_x]
         order = FIRST
         family = LAGRANGE
-        initial_from_file_var = disp_x
-        initial_from_file_timestep = LATEST
     []
     [disp_y]
         order = FIRST
-        family = LAGRANGE
-        initial_from_file_var = disp_y
-        initial_from_file_timestep = LATEST        
+        family = LAGRANGE       
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
-        initial_from_file_var = disp_z
-        initial_from_file_timestep = LATEST 
     []
 []
 
@@ -139,8 +143,6 @@
     [initial_damage_aux]
         order = CONSTANT
         family = MONOMIAL
-        initial_from_file_var = initial_damage
-        initial_from_file_timestep = LATEST
     []
 []
 
@@ -162,6 +164,12 @@
       variable = vel_z
       coupled = disp_z
       execute_on = 'TIMESTEP_END'
+    []
+    [initial_damage]
+        type = SolutionAux
+        variable = initial_damage_aux
+        solution = init_sol_components
+        from_variable = initial_damage
     []
 []
 
@@ -250,6 +258,16 @@
 []  
 
 [Functions]
+[]
+
+[UserObjects]
+    [./init_sol_components]
+      type = SolutionUserObject
+      mesh = '../static_solve_buried/static_solve_out.e'
+      system_variables = 'disp_x disp_y disp_z initial_damage'
+      timestep = LATEST
+      force_preaux = true
+    [../]
 []
 
 [Preconditioning]
@@ -375,5 +393,26 @@
         variable = disp_z
         value = 0
         boundary = corner_ptr
+    []
+[]
+
+[ICs]
+    [disp_x_ic]
+      type = SolutionIC
+      variable = disp_x
+      solution_uo = init_sol_components
+      from_variable = disp_x
+    []
+    [disp_y_ic]
+      type = SolutionIC
+      variable = disp_y
+      solution_uo = init_sol_components
+      from_variable = disp_y
+    []
+    [disp_z_ic]
+      type = SolutionIC
+      variable = disp_z
+      solution_uo = init_sol_components
+      from_variable = disp_z
     []
 []

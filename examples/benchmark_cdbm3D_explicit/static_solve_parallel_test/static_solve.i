@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_buried_test.msh'
+        file =  '../meshfile/cdbm_tpv2053d_parallel_test.msh'
     []
     [./sidesets]
         input = msh
@@ -94,8 +94,8 @@
     []
     [initialdamage]
         type = ADInitialDamageBenchmarkDev
-        nucl_center = '0 -10000 0'
-        fault_plane = '-2000 2000 -11000 -9000 -500 500'
+        nucl_center = '0 -5000 0'
+        fault_plane = '-2000 2000 -6000 -4000 -500 500'
         nucl_distance = 400
         nucl_thickness = 100
         nucl_damage = 0.7

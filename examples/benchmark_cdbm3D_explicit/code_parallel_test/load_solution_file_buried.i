@@ -1,8 +1,7 @@
 [Mesh]
-    [msh]
+    [./msh]
         type = FileMeshGenerator
-        file = '../static_solve_buried_test/static_solve_out.e'
-        use_for_exodus_restart = true
+        file =  '../meshfile/cdbm_tpv2053d_parallel_test.msh'
     []
     [./sidesets]
         input = msh
@@ -17,13 +16,13 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-20000  -20000  -20000;
-                  20000  -20000  -20000;
-                 -20000  -20000   20000;
-                  20000  -20000   20000'
+        coord = '-10000  -10000  -10000;
+                  10000  -10000  -10000;
+                 -10000  -10000   10000;
+                  10000  -10000   10000'
         new_boundary = corner_ptr
         input = sidesets
-    []  
+    []    
 []
 
 [GlobalParams]
@@ -120,7 +119,7 @@
     []
     [disp_y]
         order = FIRST
-        family = LAGRANGE 
+        family = LAGRANGE      
     []
     [disp_z]
         order = FIRST
@@ -165,6 +164,12 @@
       variable = vel_z
       coupled = disp_z
       execute_on = 'TIMESTEP_END'
+    []
+    [initial_damage]
+      type = SolutionAux
+      variable = initial_damage_aux
+      solution = init_sol_components
+      from_variable = initial_damage
     []
 []
 
@@ -252,17 +257,17 @@
     []
 []  
 
+[Functions]
+[]
+
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_buried_test/static_solve_out.e'
+      mesh = '../static_solve_parallel_test/static_solve_out.e'
       system_variables = 'disp_x disp_y disp_z initial_damage'
       timestep = LATEST
       force_preaux = true
     [../]
-[]
-
-[Functions]
 []
 
 [Preconditioning]
@@ -287,7 +292,6 @@
 [Outputs] 
     exodus = true
     time_step_interval = 100
-     show = 'alpha_damagedvar B xi initial_damage'
     [sample_snapshots]
         type = Exodus
         time_step_interval = 2000
