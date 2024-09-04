@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_buried.msh'
+        file =  '../meshfile/cdbm_tpv2053d_small2.msh'
     []
     [./sidesets]
         input = msh
@@ -80,7 +80,7 @@
         displacements = 'disp_x disp_y disp_z'
         outputs = exodus
     [] 
-    [stress_nucleation]
+    [stress]
         type = ADComputeDamageStressStaticDistribution
         lambda_o = 30e9
         shear_modulus_o = 30e9
@@ -92,17 +92,17 @@
         type = ADComputeXi
         outputs = exodus
     []
-    [initialdamage]
+    [initial_damage]
         type = ADInitialDamageBenchmarkDev
-        nucl_center = '0 -10000 0'
-        fault_plane = '-2500 2500 -12500 -7500 -500 500'
+        nucl_center = '0 -2500 0'
+        fault_plane = '-5000 5000 -5000 0 -500 500'
         nucl_distance = 400
         nucl_thickness = 100
         nucl_damage = 0.7
         e_damage = 0.7
-        e_sigma = 2.5e2
+        e_sigma = 1e3
         outputs = exodus
-    [] 
+    []    
 []  
 
 [Functions]
@@ -131,7 +131,6 @@
 
 [Outputs]
     exodus = true   
-    #show = 'initial_damage xi_initial'
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
@@ -184,28 +183,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 55e6
+        value = 40e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -55e6   
+        value = -40e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -55e6
+        value = -40e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 55e6     
+        value = 40e6    
     []
     #
     [fix_ptr_x]
