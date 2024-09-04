@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_small2.msh'
+        file =  '../meshfile/cdbm_tpv2053d_freesurface.msh'
     []
     [./sidesets]
         input = msh
@@ -183,28 +183,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 40e6
+        value = 45e6
     []
     [pressure_shear_back]
         type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -40e6   
+        value = -45e6   
     []
     [pressure_shear_left]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -40e6
+        value = -45e6
     []
     [pressure_shear_right]
         type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 40e6    
+        value = 45e6    
     []
     #
     [fix_ptr_x]
