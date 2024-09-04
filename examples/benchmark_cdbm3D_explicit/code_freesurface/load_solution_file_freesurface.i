@@ -291,7 +291,7 @@
 
 [Outputs]
     exodus = true   
-    time_step_interval = 100
+    time_step_interval = 1000
     show = 'alpha_damagedvar B xi initial_damage'
     [sample_snapshots]
         type = Exodus
