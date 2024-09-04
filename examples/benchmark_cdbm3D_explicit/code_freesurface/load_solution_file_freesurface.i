@@ -248,9 +248,9 @@
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -2000 0'
+        nucl_center = '0 -2500 0'
         e_damage = 0.3
-        thickness = 50
+        thickness = 100
         length = 400
         duration = 1e-1
         outputs = exodus
