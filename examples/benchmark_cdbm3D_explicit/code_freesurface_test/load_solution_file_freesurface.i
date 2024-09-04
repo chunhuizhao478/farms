@@ -1,8 +1,7 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file = '../static_solve_freesurface_test/static_solve_out.e'
-        use_for_exodus_restart = true
+        file =  '../meshfile/cdbm_tpv2053d_freesurface_test.msh'
     []
     [./sidesets]
         input = msh

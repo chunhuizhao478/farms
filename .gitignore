@@ -280,3 +280,7 @@ examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_small2_small.msh
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_buried_test.msh
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_freesurface_test.msh
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_parallel_test.msh
+examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_checkpoint_cp/0200-mesh.cpa.gz/1/header.gz
+examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_checkpoint_cp/0200-mesh.cpa.gz/1/split-1-0.gz
+examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_checkpoint_cp/0300-mesh.cpa.gz/1/header.gz
+examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_checkpoint_cp/0300-mesh.cpa.gz/1/split-1-0.gz
