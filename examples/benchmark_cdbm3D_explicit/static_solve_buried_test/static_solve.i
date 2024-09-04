@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_buried_small2_small.msh'
+        file =  '../meshfile/cdbm_tpv2053d_buried_test.msh'
     []
     [./sidesets]
         input = msh
@@ -97,7 +97,7 @@
         nucl_center = '0 -10000 0'
         fault_plane = '-2000 2000 -11000 -9000 -500 500'
         nucl_distance = 400
-        nucl_thickness = 50
+        nucl_thickness = 100
         nucl_damage = 0.7
         e_damage = 0.7
         e_sigma = 2.5e2

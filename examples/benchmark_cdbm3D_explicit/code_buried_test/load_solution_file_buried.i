@@ -1,7 +1,7 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file = '../static_solve_small4_small/static_solve_out.e'
+        file = '../static_solve_buried_test/static_solve_out.e'
         use_for_exodus_restart = true
     []
     [./extranodeset1]
@@ -12,7 +12,7 @@
                   20000  -20000   20000'
         new_boundary = corner_ptr
         input = msh
-    [] 
+    []  
 []
 
 [GlobalParams]
@@ -42,7 +42,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -208,7 +208,7 @@
     [strain]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        # outputs = exodus
+        # outputs = nemesis
     [] 
     [density]
         type = GenericConstantMaterial
@@ -221,14 +221,14 @@
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
         output_properties = 'B alpha_damagedvar xi'
-        outputs = exodus
+        outputs = nemesis
     [] 
     [initial_damage]
         type = ParsedMaterial
         property_name = initial_damage
         coupled_variables = initial_damage_aux
         expression = 'initial_damage_aux'
-        outputs = exodus
+        outputs = nemesis
     []
     # [damage_perturb]
     #     type = DamagePerturbationSperical
@@ -236,16 +236,16 @@
     #     e_damage = 0.3
     #     e_sigma = 1e3
     #     duration = 1e-1
-    #     outputs = exodus
+    #     outputs = nemesis
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -2000 0'
+        nucl_center = '0 -10000 0'
         e_damage = 0.3
         thickness = 50
         length = 400
         duration = 1e-1
-        outputs = exodus
+        outputs = nemesis
     []
 []  
 
@@ -272,18 +272,17 @@
 []
 
 [Outputs]
-    exodus = true   
+    nemesis = true   
+    exodus = false
     time_step_interval = 100
-    show = 'alpha_damagedvar B xi initial_damage'
     [sample_snapshots]
-        type = Exodus
+        type = Nemesis
         time_step_interval = 2000
     []
-    [snapshots]
-        type = Exodus
-        time_step_interval = 1000
-        overwrite = true
-    []    
+    [./checkpoint]
+        type = Checkpoint
+        wall_time_interval = 4000 # interval length in seconds
+    [../]    
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
@@ -332,32 +331,32 @@
     []
     #
     [pressure_shear_front]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 45e6
+        value = 55e6
     []
     [pressure_shear_back]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -45e6   
+        value = -55e6   
     []
     [pressure_shear_left]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -45e6
+        value = -55e6
     []
     [pressure_shear_right]
-        type = NeumannBC
+        type = ADNeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 45e6     
+        value = 55e6     
     []
     #
     [fix_ptr_x]

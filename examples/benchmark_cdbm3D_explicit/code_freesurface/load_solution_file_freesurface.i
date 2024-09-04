@@ -1,7 +1,7 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file = '../static_solve_buried_small4_small/static_solve_out.e'
+        file = '../static_solve_freesurface/static_solve_out.e'
         use_for_exodus_restart = true
     []
     [./extranodeset1]
@@ -12,7 +12,7 @@
                   20000  -20000   20000'
         new_boundary = corner_ptr
         input = msh
-    []  
+    [] 
 []
 
 [GlobalParams]
@@ -42,7 +42,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e5
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -240,7 +240,7 @@
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -10000 0'
+        nucl_center = '0 -2000 0'
         e_damage = 0.3
         thickness = 50
         length = 400
@@ -274,6 +274,7 @@
 [Outputs]
     exodus = true   
     time_step_interval = 100
+    show = 'alpha_damagedvar B xi initial_damage'
     [sample_snapshots]
         type = Exodus
         time_step_interval = 2000
@@ -331,32 +332,32 @@
     []
     #
     [pressure_shear_front]
-        type = ADNeumannBC
+        type = NeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 55e6
+        value = 45e6
     []
     [pressure_shear_back]
-        type = ADNeumannBC
+        type = NeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -55e6   
+        value = -45e6   
     []
     [pressure_shear_left]
-        type = ADNeumannBC
+        type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -55e6
+        value = -45e6
     []
     [pressure_shear_right]
-        type = ADNeumannBC
+        type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 55e6     
+        value = 45e6     
     []
     #
     [fix_ptr_x]
