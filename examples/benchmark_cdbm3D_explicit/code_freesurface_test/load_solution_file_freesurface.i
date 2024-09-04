@@ -52,7 +52,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -280,7 +280,7 @@
 [Executioner]
     type = Transient
     dt = 1e-4
-    end_time = 50.0
+    end_time = 100.0
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
@@ -354,28 +354,28 @@
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = front
-        value = 55e6
+        value = 45e6
     []
     [pressure_shear_back]
         type = NeumannBC
         variable = disp_x
         displacements = 'disp_x disp_y disp_z'
         boundary = back
-        value = -55e6   
+        value = -45e6   
     []
     [pressure_shear_left]
         type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -55e6
+        value = -45e6
     []
     [pressure_shear_right]
         type = NeumannBC
         variable = disp_z
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 55e6     
+        value = 45e6     
     []
     #
     [fix_ptr_x]
