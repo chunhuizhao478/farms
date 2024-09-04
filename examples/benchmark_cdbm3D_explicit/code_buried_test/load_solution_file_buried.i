@@ -208,7 +208,7 @@
     [strain]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        # outputs = nemesis
+        # outputs = exodus
     [] 
     [density]
         type = GenericConstantMaterial
@@ -221,14 +221,14 @@
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
         output_properties = 'B alpha_damagedvar xi'
-        outputs = nemesis
+        outputs = exodus
     [] 
     [initial_damage]
         type = ParsedMaterial
         property_name = initial_damage
         coupled_variables = initial_damage_aux
         expression = 'initial_damage_aux'
-        outputs = nemesis
+        outputs = exodus
     []
     # [damage_perturb]
     #     type = DamagePerturbationSperical
@@ -236,7 +236,7 @@
     #     e_damage = 0.3
     #     e_sigma = 1e3
     #     duration = 1e-1
-    #     outputs = nemesis
+    #     outputs = exodus
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
@@ -245,7 +245,7 @@
         thickness = 50
         length = 400
         duration = 1e-1
-        outputs = nemesis
+        outputs = exodus
     []
 []  
 
@@ -271,12 +271,11 @@
     []
 []
 
-[Outputs]
-    nemesis = true   
-    exodus = false
+[Outputs] 
+    exodus = true
     time_step_interval = 100
     [sample_snapshots]
-        type = Nemesis
+        type = Exodus
         time_step_interval = 2000
     []
     [./checkpoint]
