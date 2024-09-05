@@ -58,7 +58,7 @@
     q = 0.4
     
     #characteristic length (m) #this gives ~200m for resolve L_f
-    Dc = 2.5
+    Dc = 5
 
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
