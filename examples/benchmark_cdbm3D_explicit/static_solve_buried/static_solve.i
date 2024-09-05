@@ -95,7 +95,7 @@
     [initialdamage]
         type = ADInitialDamageBenchmarkDev
         nucl_center = '0 -5000 0'
-        fault_plane = '-2000 2000 -7500 -2500 -500 500'
+        fault_plane = '-2500 2500 -7500 -2500 -500 500'
         nucl_distance = 400
         nucl_thickness = 200
         nucl_damage = 0.7
