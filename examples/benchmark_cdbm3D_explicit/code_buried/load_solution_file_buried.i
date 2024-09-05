@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_buried.msh'
+        file =  '../meshfile/cdbm_tpv2053d_buried_small.msh'
     []
     [./sidesets]
         input = msh
@@ -16,10 +16,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-20000  -20000  -20000;
-                  20000  -20000  -20000;
-                 -20000  -20000   20000;
-                  20000  -20000   20000'
+        coord = '-10000  -10000  -10000;
+                  10000  -10000  -10000;
+                 -10000  -10000   10000;
+                  10000  -10000   10000'
         new_boundary = corner_ptr
         input = sidesets
     []  
@@ -248,9 +248,9 @@
     # []
     [damage_perturb]
         type = DamagePerturbationSquare
-        nucl_center = '0 -10000 0'
+        nucl_center = '0 -5000 0'
         e_damage = 0.3
-        thickness = 100
+        thickness = 200
         length = 400
         duration = 1e-1
         outputs = exodus
