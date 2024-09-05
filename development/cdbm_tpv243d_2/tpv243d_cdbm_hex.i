@@ -58,7 +58,7 @@
     q = 0.4
     
     #characteristic length (m) #this gives ~200m for resolve L_f
-    Dc = 2.5
+    Dc = 5
 
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -68,10 +68,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.985
+    xi_0 = -0.9
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.985
+    xi_d = -0.9
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
