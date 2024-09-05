@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_freesurface.msh'
+        file =  '../meshfile/cdbm_tpv2053d_freesurface_small.msh'
     []
     [./sidesets]
         input = msh
@@ -18,10 +18,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-20000  -20000  -20000;
-                  20000  -20000  -20000;
-                 -20000  -20000   20000;
-                  20000  -20000   20000'
+        coord = '-10000  -10000  -10000;
+                  10000  -10000  -10000;
+                 -10000  -10000   10000;
+                  10000  -10000   10000'
         new_boundary = corner_ptr
         input = sidesets
     []     
@@ -97,7 +97,7 @@
         nucl_center = '0 -2500 0'
         fault_plane = '-2500 2500 -5000 0 -500 500'
         nucl_distance = 400
-        nucl_thickness = 100
+        nucl_thickness = 200
         nucl_damage = 0.7
         e_damage = 0.7
         e_sigma = 2.5e2

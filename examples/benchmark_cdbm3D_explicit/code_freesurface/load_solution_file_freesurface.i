@@ -1,7 +1,7 @@
 [Mesh]
     [msh]
         type = FileMeshGenerator
-        file =  '../meshfile/cdbm_tpv2053d_freesurface.msh'
+        file =  '../meshfile/cdbm_tpv2053d_freesurface_small.msh'
     []
     [./sidesets]
         input = msh
@@ -16,10 +16,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-20000  -20000  -20000;
-                  20000  -20000  -20000;
-                 -20000  -20000   20000;
-                  20000  -20000   20000'
+        coord = '-10000  -10000  -10000;
+                  10000  -10000  -10000;
+                 -10000  -10000   10000;
+                  10000  -10000   10000'
         new_boundary = corner_ptr
         input = sidesets
     [] 
@@ -40,7 +40,7 @@
     xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.95
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -250,7 +250,7 @@
         type = DamagePerturbationSquare
         nucl_center = '0 -2500 0'
         e_damage = 0.3
-        thickness = 100
+        thickness = 200
         length = 400
         duration = 1e-1
         outputs = exodus

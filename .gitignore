@@ -285,3 +285,4 @@ examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_
 examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_checkpoint_cp/0300-mesh.cpa.gz/1/header.gz
 examples/benchmark_cdbm3D_explicit/code_parallel_test/load_solution_file_buried_checkpoint_cp/0300-mesh.cpa.gz/1/split-1-0.gz
 examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_freesurface.msh
+examples/benchmark_cdbm3D_explicit/meshfile/cdbm_tpv2053d_freesurface_small.msh
