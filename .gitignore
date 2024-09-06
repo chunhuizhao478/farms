@@ -320,3 +320,5 @@ postprocess/tpv2053d/outputs/strike7.5_dip0.0/sliprate.png
 meshgenerator/tpv205/tpv2053d_xyplane_farms_small.msh
 meshgenerator/tpv205/tpv2053d_xyplane_farms.msh
 meshgenerator/tpv205/tpv2053d_xyplane.msh
+development/cdbm_tpv243d/checkparams/tpv243d_cdbm_hex_out_cp/0151-mesh.cpa.gz/1/header.gz
+development/cdbm_tpv243d/checkparams/tpv243d_cdbm_hex_out_cp/0151-mesh.cpa.gz/1/split-1-0.gz
