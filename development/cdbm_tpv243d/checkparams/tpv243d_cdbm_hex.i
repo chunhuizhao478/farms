@@ -8,29 +8,29 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -8000
-      xmax = 8000
-      ymin = -16000
+      xmin = -15000
+      xmax = 15000
+      ymin = -20000
       ymax = 0
-      zmin = -4000
-      zmax = 4000
-      nx = 100
-      ny = 80
+      zmin = -8000
+      zmax = 8000
+      nx = 150
+      ny = 100
       nz = 80
       subdomain_ids = 1
-  []
-  [./new_block_1]
+    []
+    [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -6000 & x <= 6000 & y > -15000 & z < 0'
+      combinatorial_geometry = 'x >= -13000 & x <= 13000 & y > -15000 & z < 0'
       block_id = 2
-  []
-  [./new_block_2]
-      type = ParsedSubdomainMeshGenerator
-      input = new_block_1
-      combinatorial_geometry = 'x > -6000 & x < 6000 & y > -15000 & z > 0'
-      block_id = 3
-  [] 
+    []
+    [./new_block_2]
+        type = ParsedSubdomainMeshGenerator
+        input = new_block_1
+        combinatorial_geometry = 'x >= -13000 & x <= 13000 & y > -15000 & z > 0'
+        block_id = 3
+    []
     [./split_1]
       type = BreakMeshByBlockGenerator
       input = new_block_2
@@ -625,7 +625,7 @@
       alpha_grad_x = alpha_grad_x
       alpha_grad_y = alpha_grad_y
       alpha_grad_z = alpha_grad_z
-      output_properties = 'B alpha_damagedvar xi I1'
+      output_properties = 'B alpha_damagedvar xi I1 I2'
       outputs = exodus
     [] 
     [density]
@@ -760,7 +760,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.01
+    dt = 1e-3
     end_time = 12.0
     # num_steps = 1
     [TimeIntegrator]
@@ -772,8 +772,8 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 10
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi I1'
+    time_step_interval = 1000
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi I1 I2 check_function_initial_stress_zz check_function_initial_stress_xz'
 []
 
 # [MultiApps]
