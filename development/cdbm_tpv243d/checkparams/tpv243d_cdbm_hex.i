@@ -8,27 +8,27 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -8000
-      xmax = 8000
-      ymin = -10000
+      xmin = -10000
+      xmax = 10000
+      ymin = -15000
       ymax = 0
       zmin = -4000
       zmax = 4000
-      nx = 80
-      ny = 50
+      nx = 100
+      ny = 75
       nz = 80
       subdomain_ids = 1
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -18000 & z < 0'
+      combinatorial_geometry = 'x >= -10000 & x <= 10000 & y > -15000 & z < 0'
       block_id = 2
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x > -8000 & x < 8000 & y > -18000 & z > 0'
+      combinatorial_geometry = 'x > -10000 & x < 10000 & y > -15000 & z > 0'
       block_id = 3
   [] 
     [./split_1]
@@ -68,10 +68,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9
+    xi_0 = -0.95
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.95
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -81,6 +81,26 @@
     #<strain invariants ratio: minimum allowable value>: set boundary
     #Xu_etal_P15-2D
     xi_min = -1.8
+
+    #if option 2, use Cd_constant
+    Cd_constant = 1e6
+
+    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
+    CdCb_multiplier = 1000
+
+    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
+    # CBCBH_multiplier = 0.0
+    CBH_constant = 1e4
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
+    C_1 = 300
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
+    C_2 = 0.05
+
+    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -248,49 +268,6 @@
     [traction_z]
         order = CONSTANT
         family = MONOMIAL
-    []
-    #obtain parameters from MaterialRealAux, pass parameters to subApp
-    [./B_old]
-      order = FIRST
-      family = LAGRANGE
-    []
-    [./xi_old]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./I2_old]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./mu_old]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./lambda_old]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./gamma_old]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    #updated alpha, B
-    [./alpha_in]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    [./B_in]
-      order = CONSTANT
-      family = MONOMIAL
-    []
-    #high-order-dummy
-    [./alpha_in_dummy]
-      order = FIRST
-      family = MONOMIAL
-    []
-    [./B_in_dummy]
-      order = FIRST
-      family = MONOMIAL
     []
     #grad_alpha
     [./alpha_grad_x]
@@ -530,37 +507,6 @@
       variable = elem_length
       value = 200
     []
-    #obtain parameters from MaterialRealAux
-    [get_xi_old]
-      type = MaterialRealAux
-      property = xi
-      variable = xi_old
-      execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [get_I2_old]
-        type = MaterialRealAux
-        property = I2
-        variable = I2_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [get_mu_old]
-        type = MaterialRealAux
-        property = shear_modulus
-        variable = mu_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [get_lambda_old]
-        type = MaterialRealAux
-        property = lambda
-        variable = lambda_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
-    [get_gamma_old]
-        type = MaterialRealAux
-        property = gamma_damaged
-        variable = gamma_old
-        execute_on = 'INITIAL TIMESTEP_BEGIN'
-    []
     #
     #cohesion
     [cohesion]
@@ -675,15 +621,13 @@
 [Materials]
     #damage breakage model
     [stress_medium]
-      type = ComputeDamageBreakageStress3D
-      alpha_in = alpha_in_dummy
-      B_in = B_in_dummy
+      type = ComputeDamageBreakageStress3Ddebug
       alpha_grad_x = alpha_grad_x
       alpha_grad_y = alpha_grad_y
       alpha_grad_z = alpha_grad_z
-      output_properties = 'eps_p eps_e eps_total I1'
+      output_properties = 'B alpha_damagedvar xi I1'
       outputs = exodus
-    []
+    [] 
     [density]
         type = GenericConstantMaterial
         prop_names = density
@@ -724,6 +668,11 @@
                             func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                             func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
     [../]
+    [damage]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage damage_perturbation'
+        prop_values = '0 0'
+    []
 []
 
 [Functions]
@@ -824,35 +773,35 @@
 [Outputs]
     exodus = true
     time_step_interval = 10
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi_old'
+    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi I1'
 []
 
-[MultiApps]
-  [./sub_app]
-      type = TransientMultiApp
-      positions = '0 0 0'
-      input_files = 'tpv243d_cdbm_hex_sub.i'
-      execute_on = 'TIMESTEP_BEGIN'
-  [../]
-[]
+# [MultiApps]
+#   [./sub_app]
+#       type = TransientMultiApp
+#       positions = '0 0 0'
+#       input_files = 'tpv243d_cdbm_hex_sub.i'
+#       execute_on = 'TIMESTEP_BEGIN'
+#   [../]
+# []
 
-[Transfers]
-  [pull_resid]
-      type = MultiAppCopyTransfer
-      from_multi_app = sub_app
-      source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub alpha_checked_dummy B_checked_dummy'
-      variable = 'alpha_in B_in alpha_grad_x alpha_grad_y alpha_in_dummy B_in_dummy'
-      execute_on = 'TIMESTEP_BEGIN'
-  []
-  #we actually don't need to pass alpha and B
-  [push_disp]
-      type = MultiAppCopyTransfer
-      to_multi_app = sub_app
-      source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old alpha_in_dummy B_in_dummy'
-      variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old alpha_old_dummy B_old_dummy'
-      execute_on = 'TIMESTEP_BEGIN'
-  []
-[]
+# [Transfers]
+#   [pull_resid]
+#       type = MultiAppCopyTransfer
+#       from_multi_app = sub_app
+#       source_variable = 'alpha_checked B_checked alpha_grad_x_sub alpha_grad_y_sub alpha_checked_dummy B_checked_dummy'
+#       variable = 'alpha_in B_in alpha_grad_x alpha_grad_y alpha_in_dummy B_in_dummy'
+#       execute_on = 'TIMESTEP_BEGIN'
+#   []
+#   #we actually don't need to pass alpha and B
+#   [push_disp]
+#       type = MultiAppCopyTransfer
+#       to_multi_app = sub_app
+#       source_variable = 'alpha_in B_in xi_old I2_old mu_old lambda_old gamma_old alpha_in_dummy B_in_dummy'
+#       variable = 'alpha_old B_old xi_old I2_old mu_old lambda_old gamma_old alpha_old_dummy B_old_dummy'
+#       execute_on = 'TIMESTEP_BEGIN'
+#   []
+# []
 
 [BCs]
   ##non-reflecting bc

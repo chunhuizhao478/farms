@@ -29,7 +29,6 @@ public:
   ComputeGeneralDamageBreakageStressBase3D(const InputParameters & parameters);
 
 protected:
-  virtual void initQpStatefulProperties() override;
   virtual void computeQpProperties() override;
 
   /**
@@ -84,35 +83,12 @@ protected:
   MaterialProperty<RankTwoTensor> & _eps_e;
   /// total strain
   MaterialProperty<RankTwoTensor> & _eps_total;
-  /// total inital strain 
-  // MaterialProperty<RankTwoTensor> & _eps_total_init;
   /// total stress tensor
   MaterialProperty<RankTwoTensor> & _sts_total;
-  /// shear wave speed
-  // MaterialProperty<Real> & _shear_wave_speed;
-  /// pressure wave speed
-  // MaterialProperty<Real> & _pressure_wave_speed;
-  /// initial stress tenosr
-  const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
-  /// shear strain rate 
-  // MaterialProperty<Real> & _principal_strain;
-  /// eqv plastic strain
-  // MaterialProperty<Real> & _eqv_plastic_strain;
-  /// plastic work
-  // MaterialProperty<Real> & _plastic_work;
-  /// plastic work rate
-  // MaterialProperty<Real> & _plastic_work_rate;
-  /// resolved total stress components
-  // MaterialProperty<Real> & _resolved_sigma_11;
-  // MaterialProperty<Real> & _resolved_sigma_12;
-  // MaterialProperty<Real> & _resolved_sigma_22;
-  // MaterialProperty<Real> & _resolved_sigma_33;
-  /// resolved plastic strain rate
-  // MaterialProperty<Real> & _resolved_epsp_rate_11;
-  // MaterialProperty<Real> & _resolved_epsp_rate_12;
-  // MaterialProperty<Real> & _resolved_epsp_rate_22;
-  // MaterialProperty<Real> & _resolved_epsp_rate_33;
-
+  /// deviatoric stress tensor
+  MaterialProperty<RankTwoTensor> & _sigma_d;
+  /// eq strain rate
+  MaterialProperty<Real> & _epsilon_eq;
   /// take initial value 
   /// lambda (first lame const)
   Real _lambda_o;

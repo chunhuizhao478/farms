@@ -12,35 +12,25 @@
 #include "ComputeDamageBreakageStressBase3D.h"
 
 /**
- * ComputeDamageBreakageStress3D put everything inside the computeQpstress without defining
+ * ComputeDamageBreakageStress3Ddebug put everything inside the computeQpstress without defining
  * additional functions
  
  */
-class ComputeDamageBreakageStress3D : public ComputeDamageBreakageStressBase3D
+class ComputeDamageBreakageStress3Ddebug : public ComputeDamageBreakageStressBase3D
 {
 public:
   static InputParameters validParams();
 
-  ComputeDamageBreakageStress3D(const InputParameters & parameters);
+  ComputeDamageBreakageStress3Ddebug(const InputParameters & parameters);
 
   virtual void initialSetup() override;
 
 protected:
+  virtual void initQpStatefulProperties() override;
   virtual void computeQpStress() override;
 
   /// Function: Compute initial strain based on initial stress
   void setupInitial();
-
-  /// Name of the elasticity tensor material property
-  //const std::string _elasticity_tensor_name;
-  /// Elasticity tensor material property
-  //const MaterialProperty<RankFourTensor> & _elasticity_tensor;
-
-  //initial stress tensor
-  const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
-
-  //initial strain tensor
-  // const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;  
 
   /// additional variables
   /// strain invariants ratio: onset of damage evolution
@@ -89,12 +79,7 @@ protected:
   const MaterialProperty<RankTwoTensor> & _mechanical_strain_old;
   const MaterialProperty<RankTwoTensor> & _eps_p_old;
   const MaterialProperty<RankTwoTensor> & _eps_e_old;
-  // const MaterialProperty<Real> & _eqv_plastic_strain_old; //old eqv plastic strain
-
-  /// updated damage and breakage parameters computed from subApp
-  //Note: pass reference(&) instead of value, otherwise it may occur segmentation fault 11 error
-  const VariableValue & _alpha_in;
-  const VariableValue & _B_in;
+  const MaterialProperty<RankTwoTensor> & _sigma_d_old;
 
   //add grad term
   const VariableValue & _alpha_grad_x;
@@ -107,41 +92,35 @@ protected:
   /// diffusion coefficient
   Real _D;
 
-  /// Function: deltaij
-  Real deltaij(int i, int j);
+  /// Get initial values
+  // const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
+  // const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
+  // const MaterialProperty<Real> & _I1_initial;
+  // const MaterialProperty<Real> & _I2_initial;
+  // const MaterialProperty<Real> & _xi_initial;
+  const MaterialProperty<Real> & _initial_damage;
 
-  /// Function: epsilonij - take component of elastic strain
-  Real epsilonij(int i, 
-                 int j,
-                 Real eps11e_in,
-                 Real eps22e_in,
-                 Real eps12e_in,
-                 Real eps33e_in,
-                 Real eps13e_in,
-                 Real eps23e_in);
+  /// damage perturbation
+  const MaterialProperty<Real> & _damage_perturbation;
 
-  Real grad_alpha(int i, 
-                  Real alpha_grad_x,
-                  Real alpha_grad_y,
-                  Real alpha_grad_z);
+  /// coefficient of positive damage evolution
+  Real _Cd_constant;
 
-  /// Function: compute stress components
-  Real computeStressComps(int i, 
-                          int j,
-                          Real xi_in,
-                          Real I1_in,
-                          Real B_in,
-                          Real lambda_in,
-                          Real gamma_damaged_in,
-                          Real shear_modulus_in,
-                          Real eps11e_in,
-                          Real eps22e_in,
-                          Real eps12e_in,
-                          Real eps33e_in,
-                          Real eps13e_in,
-                          Real eps23e_in,
-                          Real alpha_grad_x,
-                          Real alpha_grad_y,
-                          Real alpha_grad_z,
-                          Real D);
+  /// coefficient of healing of damage evolution
+  Real _C1;
+
+  /// coefficient of healing of damage evolution
+  Real _C2;
+
+  /// coefficient of width of transitional region
+  Real _beta_width;
+
+  /// coefficient of multiplier between Cd and Cb
+  Real _CdCb_multiplier;
+
+  /// coefficient of CBH constant
+  Real _CBH_constant;
+
+  //initial stress tensor //added
+  const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
 };
