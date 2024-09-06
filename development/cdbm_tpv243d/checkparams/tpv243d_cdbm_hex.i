@@ -8,8 +8,8 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -10000
-      xmax = 10000
+      xmin = -8000
+      xmax = 8000
       ymin = -16000
       ymax = 0
       zmin = -4000
@@ -22,13 +22,13 @@
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -15000 & z < 0'
+      combinatorial_geometry = 'x >= -6000 & x <= 6000 & y > -15000 & z < 0'
       block_id = 2
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x > -8000 & x < 8000 & y > -15000 & z > 0'
+      combinatorial_geometry = 'x > -6000 & x < 6000 & y > -15000 & z > 0'
       block_id = 3
   [] 
     [./split_1]
@@ -83,11 +83,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e6
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1000
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
