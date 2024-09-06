@@ -2,15 +2,15 @@
   [msh]
     type = GeneratedMeshGenerator
     dim = 3
-    xmin = -5000
-    xmax = 5000
-    ymin = -20000
+    xmin = -8000
+    xmax = 8000
+    ymin = -10000
     ymax = 0
-    zmin = -5000
-    zmax = 5000
-    nx = 50
+    zmin = -4000
+    zmax = 4000
+    nx = 80
     ny = 50
-    nz = 100
+    nz = 80
     subdomain_ids = 1
 []
 [./new_block_1]
@@ -54,10 +54,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.985
+    xi_0 = -0.9
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.985
+    xi_d = -0.9
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -73,7 +73,7 @@
     # C_d_min = 10
   
     #if option 2, use Cd_constant
-    Cd_constant = 1e6
+    Cd_constant = 1e4
   
     #power-law correction
     #index
