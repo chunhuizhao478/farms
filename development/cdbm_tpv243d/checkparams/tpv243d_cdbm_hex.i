@@ -8,15 +8,15 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -5000
-      xmax = 5000
-      ymin = -20000
+      xmin = -8000
+      xmax = 8000
+      ymin = -10000
       ymax = 0
-      zmin = -5000
-      zmax = 5000
-      nx = 50
+      zmin = -4000
+      zmax = 4000
+      nx = 80
       ny = 50
-      nz = 100
+      nz = 80
       subdomain_ids = 1
   []
   [./new_block_1]
@@ -58,7 +58,7 @@
     q = 0.4
     
     #characteristic length (m) #this gives ~200m for resolve L_f
-    Dc = 2.5
+    Dc = 5
 
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -68,10 +68,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.985
+    xi_0 = -0.9
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.985
+    xi_d = -0.9
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -776,7 +776,7 @@
     loc_x = 0
     loc_y = -7500
     loc_z = 0
-    r_crit = 1000
+    r_crit = 2000
     Vs = 3464
   []
 []
@@ -811,9 +811,9 @@
 
 [Executioner]
     type = Transient
-    dt = 0.0025
+    dt = 0.01
     end_time = 12.0
-    num_steps = 1
+    # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -824,7 +824,7 @@
 [Outputs]
     exodus = true
     time_step_interval = 1
-    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi_old'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi_old'
 []
 
 [MultiApps]
