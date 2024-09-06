@@ -10,25 +10,25 @@
       dim = 3
       xmin = -10000
       xmax = 10000
-      ymin = -10000
+      ymin = -16000
       ymax = 0
       zmin = -4000
       zmax = 4000
       nx = 100
-      ny = 50
+      ny = 80
       nz = 40
       subdomain_ids = 1
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -8000 & z < 0'
+      combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -14000 & z < 0'
       block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -8000 & z > 0'
+        combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -14000 & z > 0'
         block_id = 3
     []
     [./split_1]
@@ -55,7 +55,7 @@
     displacements = 'disp_x disp_y disp_z'
     
     #damping ratio
-    q = 0.4
+    q = 1.0
     
     #characteristic length (m) #this gives ~200m for resolve L_f
     Dc = 5
@@ -68,10 +68,10 @@
     shear_modulus_o = 3.204e10
   
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.95
+    xi_0 = -0.975
   
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.95
+    xi_d = -0.975
   
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -83,7 +83,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e5
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -723,7 +723,7 @@
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = 0
-    loc_y = -5000
+    loc_y = -7000
     loc_z = 0
     r_crit = 2000
     Vs = 3464
