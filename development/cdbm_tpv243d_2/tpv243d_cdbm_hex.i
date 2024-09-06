@@ -774,7 +774,7 @@
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = 0
-    loc_y = -8000
+    loc_y = -7500
     loc_z = 0
     r_crit = 1000
     Vs = 3464
