@@ -773,7 +773,7 @@
 [Outputs]
     exodus = true
     time_step_interval = 10
-    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi I1'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_in B_in xi I1'
 []
 
 # [MultiApps]
