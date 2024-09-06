@@ -10,25 +10,25 @@
       dim = 3
       xmin = -10000
       xmax = 10000
-      ymin = -15000
+      ymin = -16000
       ymax = 0
       zmin = -4000
       zmax = 4000
       nx = 100
-      ny = 75
+      ny = 80
       nz = 80
       subdomain_ids = 1
   []
   [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -10000 & x <= 10000 & y > -15000 & z < 0'
+      combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -15000 & z < 0'
       block_id = 2
   []
   [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'x > -10000 & x < 10000 & y > -15000 & z > 0'
+      combinatorial_geometry = 'x > -8000 & x < 8000 & y > -15000 & z > 0'
       block_id = 3
   [] 
     [./split_1]
