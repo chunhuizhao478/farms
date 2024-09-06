@@ -10,13 +10,13 @@
       dim = 3
       xmin = -15000
       xmax = 15000
-      ymin = -20000
+      ymin = -16000
       ymax = 0
-      zmin = -8000
-      zmax = 8000
+      zmin = -4000
+      zmax = 4000
       nx = 150
-      ny = 100
-      nz = 80
+      ny = 80
+      nz = 40
       subdomain_ids = 1
     []
     [./new_block_1]
@@ -776,7 +776,7 @@
     loc_x = 0
     loc_y = -8000
     loc_z = 0
-    r_crit = 1000
+    r_crit = 2000
     Vs = 3464
   []
 []
