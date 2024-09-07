@@ -8,27 +8,27 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -8000
-      xmax = 8000
-      ymin = -10000
+      xmin = -15000
+      xmax = 15000
+      ymin = -16000
       ymax = 0
       zmin = -4000
       zmax = 4000
-      nx = 80
-      ny = 50
+      nx = 150
+      ny = 80
       nz = 40
       subdomain_ids = 1
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
       input = msh
-      combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -10000 & z < 0'
+      combinatorial_geometry = 'x >= -13000 & x <= 13000 & y > -15000 & z < 0'
       block_id = 2
     []
     [./new_block_2]
         type = ParsedSubdomainMeshGenerator
         input = new_block_1
-        combinatorial_geometry = 'x >= -8000 & x <= 8000 & y > -10000 & z > 0'
+        combinatorial_geometry = 'x >= -13000 & x <= 13000 & y > -15000 & z > 0'
         block_id = 3
     []
     [./split_1]
@@ -103,7 +103,7 @@
     beta_width = 0.03 #1e-3
   
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-15
   
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -723,7 +723,7 @@
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = 0
-    loc_y = -7000
+    loc_y = -5000
     loc_z = 0
     r_crit = 3000
     Vs = 3464
@@ -760,7 +760,7 @@
 
 [Executioner]
     type = Transient
-    dt = 1e-4
+    dt = 1e-2
     end_time = 12.0
     # num_steps = 1
     [TimeIntegrator]
@@ -772,7 +772,7 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 1000
+    time_step_interval = 100
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z B alpha_damagedvar xi I1 I2 check_function_initial_stress_zz check_function_initial_stress_xz'
 []
 
