@@ -35,11 +35,16 @@ protected:
   /// @brief Update plastic deformation gradient
   /// @return plastic deformation gradient
   virtual RankTwoTensor computeQpFp();
+  /// @brief Compute tangent modulus components vector
+  /// @return tangent modulus components vector, we pass reference and modify in-place
+  virtual void computeQpTangentModulus(std::vector<Real>& tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
 
 protected:
   /* Declare Material Properties */
   /// Plastic Deformation Gradient
   MaterialProperty<RankTwoTensor> & _Fp;
+  /// Elastic Deformation Gradient
+  MaterialProperty<RankTwoTensor> & _Fe;
   /// Deviatoric Stress Tensor
   MaterialProperty<RankTwoTensor> & _Tau;
   /// Green-Lagrange Elastic Strain Tensor
@@ -70,6 +75,8 @@ protected:
   const MaterialProperty<RankTwoTensor> & _Tau_old;
   /// Plastic Deformation Gradient
   const MaterialProperty<RankTwoTensor> & _Fp_old;
+  /// Deformation Gradient
+  const MaterialProperty<RankTwoTensor> & _F_old;
   
   /* Get Constant Parameters */
   /// first lambda constant value
