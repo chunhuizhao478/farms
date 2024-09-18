@@ -88,10 +88,10 @@ protected:
   /// coefficient of power law indexes
   Real _m2;
   /// parameters in granular states
-  Real _a0;
-  Real _a1;
-  Real _a2;
-  Real _a3;  
+  const MaterialProperty<Real> & _a0;
+  const MaterialProperty<Real> & _a1;
+  const MaterialProperty<Real> & _a2;
+  const MaterialProperty<Real> & _a3;  
   /// dimension of the problem
   const unsigned int _dim;
 };

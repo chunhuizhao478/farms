@@ -41,10 +41,10 @@ ComputeLagrangianDamageBreakageStressPK2::ComputeLagrangianDamageBreakageStressP
   _C_g(getParam<Real>("C_g")),
   _m1(getParam<Real>("m1")),
   _m2(getParam<Real>("m2")),
-  _a0(getParam<Real>("a0")),
-  _a1(getParam<Real>("a1")),
-  _a2(getParam<Real>("a2")),
-  _a3(getParam<Real>("a3")),
+  _a0(getMaterialProperty<Real>("a0")),
+  _a1(getMaterialProperty<Real>("a1")),
+  _a2(getMaterialProperty<Real>("a2")),
+  _a3(getMaterialProperty<Real>("a3")),
   _dim(_mesh.dimension())
 {
 }
@@ -113,7 +113,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
 
     //here apply summations to {i}
     for (unsigned int i = 0; i < _dim; i++){
-      dFpmdF_val += -1 * _Fp[_qp](i,m) * dFpdF(m,i,k,l) * Fpinv(j,m);
+      dFpmdF_val += -1 * Fpinv(i,m) * dFpdF(m,i,k,l) * Fpinv(j,m);
     }
 
     return dFpmdF_val;
@@ -153,7 +153,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
     }
   }
 
-  // Complicated wrapping, see documentation
+  // Complicated wrapping from PK2 to PK1, see documentation on overleaf
   if (_large_kinematics)
   {
     // Compute pk1 stress
@@ -162,19 +162,11 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
     // Compute pk1 jacobian
     _pk1_jacobian[_qp] = pk_jacobian_val;
 
-    // usingTensorIndices(i_, j_, k_, l_);
-    // RankFourTensor dE =
-    //     0.5 * (RankTwoTensor::Identity().times<i_, l_, j_, k_>(_F[_qp].transpose()) +
-    //            _F[_qp].transpose().times<i_, k_, j_, l_>(RankTwoTensor::Identity()));
-
-    // _pk1_jacobian[_qp] = RankTwoTensor::Identity().times<i_, k_, j_, l_>(_S[_qp].transpose()) +
-    //                      (_C[_qp] * dE).singleProductI(_F[_qp]);
   }
   // Small deformations all are equivalent
   else
   {
-    _pk1_stress[_qp] = _S[_qp];
-    _pk1_jacobian[_qp] = _C[_qp];
+    mooseError("Must selection 'large_kinematics' option!");
   }
 }
 
@@ -207,11 +199,14 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
 
   /* Compute stress */
   RankTwoTensor sigma_s = (_lambda - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
-  RankTwoTensor sigma_b = (2 * _a2 + _a1 / xi + 3 * _a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0 + _a1 * xi - _a3 * std::pow(xi, 3)) * Ee;
+  RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
 
   //save
   _S[_qp] = sigma_total;
+
+  //compute deviatroic stress tensor //save
+  _Tau[_qp] = sigma_total - 1.0 / 3.0 * ( sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2) ) * RankTwoTensor::Identity();
 
   /* Compute tangent */
   std::vector<Real> components(21);
@@ -223,7 +218,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   //save
   _C[_qp] = tangent;
 
-  /* Save parameters */
+  /* Save other parameters */
   _Fp[_qp] = Fp_updated;
   _Fe[_qp] = Fe;
   _Ee[_qp] = Ee;
@@ -237,15 +232,15 @@ RankTwoTensor
 ComputeLagrangianDamageBreakageStressPK2::computeQpFp()
 {
   //Apply power operation on every element of Tau
-  RankTwoTensor Tau_old_power2;
+  RankTwoTensor Tau_old_power_m2;
   for (unsigned int i = 0; i < _dim; i++){
     for (unsigned int j = 0; j < _dim; j++){
-      Tau_old_power2(i,j) = std::pow(_Tau_old[_qp](i,j), _m2);
+      Tau_old_power_m2(i,j) = std::pow(_Tau_old[_qp](i,j), _m2);
     }
   }
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
-  RankTwoTensor Dp = _C_g * std::pow(_B_breakagevar_old[_qp], _m1) * Tau_old_power2; 
+  RankTwoTensor Dp = _C_g * std::pow(_B_breakagevar_old[_qp], _m1) * Tau_old_power_m2; 
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;
@@ -312,10 +307,10 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(std::vector<Re
 
   //dSb_{ij}_dE_{kl}
   auto dSbdE = [&](int i, int j, int k, int l) -> Real {
-    Real dSbdE_components = ( _a1 * dxim1dE(k,l) + 3 * _a3 * dxidE(k,l) ) * I1 * delta(i,j);
-    dSbdE_components += ( 2 * _a2 + _a1 / xi + 3 * _a3 * xi ) * dI1dE(k,l) * delta(i,j);
-    dSbdE_components += ( _a1 * dxidE(k,l) - _a3 * dxi3dE(k,l) ) * Ee(i,j);
-    dSbdE_components += ( 2 * _a0 + _a1 * xi - _a3 * pow(xi,3) ) * dEdE(i,j,k,l);
+    Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
+    dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
+    dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
+    dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
     return dSbdE_components;
   };
 
