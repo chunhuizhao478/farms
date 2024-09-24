@@ -358,3 +358,7 @@ examples/benchmark_cdbm3D_explicit/code_buried/load_solution_file_buried_checkpo
 examples/benchmark_cdbm3D_explicit/code_buried/load_solution_file_buried_checkpoint_cp/1363-mesh.cpa.gz/8/split-8-5.gz
 examples/benchmark_cdbm3D_explicit/code_buried/load_solution_file_buried_checkpoint_cp/1363-mesh.cpa.gz/8/split-8-6.gz
 examples/benchmark_cdbm3D_explicit/code_buried/load_solution_file_buried_checkpoint_cp/1363-mesh.cpa.gz/8/split-8-7.gz
+development/largedeformation/lab_experiment/main_checkpoint_cp/1000-mesh.cpa.gz/1/header.gz
+development/largedeformation/lab_experiment/main_checkpoint_cp/1000-mesh.cpa.gz/1/split-1-0.gz
+development/largedeformation/lab_experiment/main_checkpoint_cp/2000-mesh.cpa.gz/1/header.gz
+development/largedeformation/lab_experiment/main_checkpoint_cp/2000-mesh.cpa.gz/1/split-1-0.gz
