@@ -28,6 +28,8 @@ public:
   ComputeLagrangianDamageBreakageStressPK2(const InputParameters & parameters);
 
 protected:
+  /// Initial properties
+  virtual void initQpStatefulProperties() override;
   /// Wrap PK2 -> PK1
   virtual void computeQpPK1Stress() override;
   /// Provide the PK2 stress and dPK2/dC
@@ -61,6 +63,8 @@ protected:
   MaterialProperty<RankFourTensor> & _C;
 
   /* Get Up-to-date Material Properties*/
+  /// Lambda
+  const MaterialProperty<Real> & _lambda_const;
   /// Shear Modulus
   const MaterialProperty<Real> & _shear_modulus;
   /// Damage Modulus
@@ -79,14 +83,12 @@ protected:
   const MaterialProperty<RankTwoTensor> & _F_old;
   
   /* Get Constant Parameters */
-  /// first lambda constant value
-  Real _lambda;
   /// material parameter: compliance or fluidity of the fine grain granular material
-  Real _C_g; 
+  const MaterialProperty<Real> & _C_g; 
   /// coefficient of power law indexes
-  Real _m1;
+  const MaterialProperty<Real> & _m1;
   /// coefficient of power law indexes
-  Real _m2;
+  const MaterialProperty<Real> & _m2;
   /// parameters in granular states
   const MaterialProperty<Real> & _a0;
   const MaterialProperty<Real> & _a1;

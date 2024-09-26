@@ -24,7 +24,6 @@ DamageBreakageMaterial::validParams()
   params.addRequiredParam<Real>( "shear_modulus_o", "initial shear modulus value");
   params.addRequiredParam<Real>(            "xi_0", "strain invariants ratio: onset of damage evolution");
   params.addRequiredParam<Real>(            "xi_d", "strain invariants ratio: onset of breakage healing");
-  params.addRequiredParam<Real>(            "xi_1", "critical point of three phases");
   params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
   params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
   params.addRequiredParam<Real>(             "chi", "coefficient of energy ratio Fb/Fs = chi < 1");
@@ -34,6 +33,9 @@ DamageBreakageMaterial::validParams()
   params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
   params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
   params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
+  params.addRequiredParam<Real>(             "C_g", "compliance or fluidity of the fine grain granular material");
+  params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
+  params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");
   return params;
 }
 
@@ -41,6 +43,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   : Material(parameters),
   _alpha_damagedvar(declareProperty<Real>("alpha_damagedvar")),
   _B_breakagevar(declareProperty<Real>("B_damagedvar")),
+  _lambda(declareProperty<Real>("lambda_const")),
   _shear_modulus(declareProperty<Real>("shear_modulus")),
   _damaged_modulus(declareProperty<Real>("damaged_modulus")),
   _gamma_damaged_r(declareProperty<Real>("gamma_damaged_r")),
@@ -48,10 +51,13 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a1(declareProperty<Real>("a1")),
   _a2(declareProperty<Real>("a2")),
   _a3(declareProperty<Real>("a3")),
+  _C_g(declareProperty<Real>("C_g")),
+  _m1(declareProperty<Real>("m1")),
+  _m2(declareProperty<Real>("m2")),  
   _alpha_damagedvar_old(getMaterialPropertyOldByName<Real>("alpha_damagedvar")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
-  _I2_old(getMaterialPropertyOldByName<Real>("I2")),
-  _xi_old(getMaterialPropertyOldByName<Real>("xi")),
+  _I2_old(getMaterialPropertyOldByName<Real>("second_elastic_strain_invariant")),
+  _xi_old(getMaterialPropertyOldByName<Real>("strain_invariant_ratio")),
   _initial_damage(getMaterialProperty<Real>("initial_damage")),
   _gamma_damaged_r_old(getMaterialPropertyOldByName<Real>("gamma_damaged_r")),
   _a0_old(getMaterialPropertyOldByName<Real>("a0")),
@@ -62,7 +68,6 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_0(getParam<Real>("xi_0")),
   _xi_d(getParam<Real>("xi_d")),
-  _xi_1(getParam<Real>("xi_1")),
   _xi_min(getParam<Real>("xi_min")),
   _xi_max(getParam<Real>("xi_max")),
   _chi(getParam<Real>("chi")),
@@ -71,10 +76,19 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _C2(getParam<Real>("C_2")),
   _beta_width(getParam<Real>("beta_width")),
   _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
-  _CBH_constant(getParam<Real>("CBH_constant"))
+  _CBH_constant(getParam<Real>("CBH_constant")),
+  _C_g_value(getParam<Real>("C_g")),
+  _m1_value(getParam<Real>("m1")),
+  _m2_value(getParam<Real>("m2"))
 {
 }
 
+//Rules:See https://github.com/idaholab/moose/discussions/19450
+//Only the object that declares the material property can assign values to it.
+//Objects can request material properties, gaining read-only access to their values.
+//When any object (including the object that declares it) requests the old value of a material property, that property becomes "stateful".
+//All stateful material properties must be initialized within the initQpStatefulProperties call. 
+//
 void 
 DamageBreakageMaterial::initQpStatefulProperties()
 {
@@ -88,6 +102,7 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _alpha_damagedvar[_qp] = _initial_damage[_qp];
   _B_breakagevar[_qp] = 0.0;
 
+  _lambda[_qp] = _lambda_o;
   _shear_modulus[_qp] = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * _gamma_damaged_r[_qp];
   _damaged_modulus[_qp] = _initial_damage[_qp] * _gamma_damaged_r[_qp];
 
@@ -97,13 +112,11 @@ void
 DamageBreakageMaterial::computeQpProperties()
 {
 
-  /* update with old value */
-  //gamma_damage_r, a0, a1, a2, a3 are constant
-  _gamma_damaged_r[_qp] = _gamma_damaged_r_old[_qp];
-  _a0[_qp] = _a0_old[_qp];
-  _a1[_qp] = _a1_old[_qp];
-  _a2[_qp] = _a2_old[_qp];
-  _a3[_qp] = _a3_old[_qp];
+  /* compute gamma_r */
+  computegammar();
+
+  /* compute a0 a1 a2 a3 coefficients */
+  computecoefficients();
 
   /* compute alpha at t_{n+1} using quantities from t_{n} */
   Real alpha_updated = updatedamage();
@@ -193,6 +206,8 @@ DamageBreakageMaterial::updatemodulus(Real alpha_updated)
 {
   Real shear_modulus = _shear_modulus_o + alpha_updated * _xi_0 * _gamma_damaged_r[_qp];
   Real gamma_damaged = alpha_updated * _gamma_damaged_r[_qp];
+
+  _lambda[_qp] = _lambda_o;
   _shear_modulus[_qp] = shear_modulus;
   _damaged_modulus[_qp] = gamma_damaged;
 }

@@ -46,6 +46,7 @@ protected:
   MaterialProperty<Real> & _alpha_damagedvar; //damage variable
   MaterialProperty<Real> & _B_breakagevar;    //breakage variable
 
+  MaterialProperty<Real> & _lambda;           //first lamé constant
   MaterialProperty<Real> & _shear_modulus;    //shear modulus
   MaterialProperty<Real> & _damaged_modulus;  //damaged modulus
 
@@ -55,6 +56,10 @@ protected:
   MaterialProperty<Real> & _a1;               //a1
   MaterialProperty<Real> & _a2;               //a2
   MaterialProperty<Real> & _a3;               //a3
+
+  MaterialProperty<Real> & _C_g;              //C_g
+  MaterialProperty<Real> & _m1;               //m1
+  MaterialProperty<Real> & _m2;               //m2
   
   //get old material properties:
   const MaterialProperty<Real> & _alpha_damagedvar_old; //old damage variable
@@ -76,8 +81,6 @@ protected:
   Real _xi_0;
   /// strain invariants ratio: onset of breakage healing
   Real _xi_d;
-  /// critical point of three phases
-  Real _xi_1;
   /// strain invariants ratio: minimum allowable value
   Real _xi_min;
   /// strain invariants ratio: maximum allowable value
@@ -96,5 +99,11 @@ protected:
   Real _CdCb_multiplier;
   /// coefficient of CBH constant
   Real _CBH_constant;
+  /// compliance or fluidity of the fine grain granular material
+  Real _C_g_value;
+  /// coefficient of power law indexes
+  Real _m1_value;
+  /// coefficient of power law indexes
+  Real _m2_value;
 
 };
