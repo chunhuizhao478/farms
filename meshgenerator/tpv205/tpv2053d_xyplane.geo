@@ -36,7 +36,7 @@
 */
 
 lc = 5e3;
-lc_fault = 100; //change this!!!
+lc_fault = 200; //change this!!!
 
 Fault_length = 30e3;
 Fault_width = 15e3;
@@ -46,7 +46,7 @@ Fault_dip = 90*Pi/180.;
 X_nucl = 0e3;
 Width_nucl = 0.5*Fault_width;
 R_nucl = 1.5e3;
-lc_nucl = 100; //change this!!!
+lc_nucl = 200; //change this!!!
 
 Xmax = 60e3;
 Xmin = -Xmax;

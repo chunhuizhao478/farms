@@ -86,6 +86,7 @@ FarmsSlipWeakeningCZMTet::FarmsSlipWeakeningCZMTet(const InputParameters & param
   _velocities_plus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_plus_local")),
   _velocities_minus_old(getMaterialPropertyOldByName<RealVectorValue>("velocities_minus_local")),
   _absolute_slip_old(getMaterialPropertyOldByName<Real>("absolute_slip")),
+  _slip_total_old(getMaterialPropertyOldByName<Real>("slip_total")),
   _below_strength_marker_old(getMaterialPropertyOldByName<RealVectorValue>("below_strength_marker")),
   _R_plus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_plus_local_vec")),
   _R_minus_local_vec_old(getMaterialPropertyOldByName<RealVectorValue>("R_minus_local_vec")),
@@ -93,6 +94,12 @@ FarmsSlipWeakeningCZMTet::FarmsSlipWeakeningCZMTet(const InputParameters & param
 {
 }
 
+//Rules:See https://github.com/idaholab/moose/discussions/19450
+//Only the object that declares the material property can assign values to it.
+//Objects can request material properties, gaining read-only access to their values.
+//When any object (including the object that declares it) requests the old value of a material property, that property becomes "stateful".
+//All stateful material properties must be initialized within the initQpStatefulProperties call. 
+//
 void
 FarmsSlipWeakeningCZMTet::initQpStatefulProperties()
 {
@@ -101,6 +108,14 @@ FarmsSlipWeakeningCZMTet::initQpStatefulProperties()
   _rotation_matrix[_qp] = zero_realtensorvalue;
   _material_tangent_modulus_on_interface[_qp] = zero_realtensorvalue;
   _traction_on_interface[_qp] = zero_realvectorvalue;
+  _traction_total_global[_qp] = zero_realvectorvalue;
+  _traction_total_local[_qp] = zero_realvectorvalue;
+  _material_tangent_modulus_on_interface[_qp] = zero_realtensorvalue;
+  _absolute_slip[_qp] = 0.0;
+  _slip_total[_qp] = 0.0;
+  _below_strength_marker[_qp] = zero_realvectorvalue;
+  _R_plus_local_vec[_qp] = zero_realvectorvalue;
+  _R_minus_local_vec[_qp] = zero_realvectorvalue;
   _displacement_jump_global[_qp] = zero_realvectorvalue;
   _displacement_jump_rate_global[_qp] = zero_realvectorvalue;
   _displacements_plus_global[_qp] = zero_realvectorvalue;
@@ -247,10 +262,15 @@ FarmsSlipWeakeningCZMTet::computeTractionAndDisplacements()
   }
 
   Real slip_total = std::sqrt(displacement_jump_local(0)*displacement_jump_local(0)+displacement_jump_local(1)*displacement_jump_local(1));
+  //Compute accumulative slip
+  Real slip_abs_diff = std::abs(slip_total - _slip_total_old[_qp]);
+  Real absolute_slip = _absolute_slip_old[_qp] + slip_abs_diff;
+  _slip_total[_qp] = slip_total;
+  _absolute_slip[_qp] = absolute_slip;
   //Compute friction strength
-  if (slip_total < Dc)
+  if (absolute_slip < Dc)
   {
-    tau_f = (mu_s - (mu_s - mu_d)*slip_total/Dc)*(-Tnormal); // square for shear component
+    tau_f = (mu_s - (mu_s - mu_d)*absolute_slip/Dc)*(-Tnormal); // square for shear component
   }
   else
   {

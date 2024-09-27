@@ -370,7 +370,7 @@
     [elem_length]
       type = ConstantAux
       variable = elem_length
-      value = 100
+      value = 200
     []
 []
 

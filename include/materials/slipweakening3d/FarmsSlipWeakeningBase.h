@@ -119,8 +119,11 @@ protected:
   /* the velocity on the minus side (local) */
   MaterialProperty<RealVectorValue> & _velocities_minus_local;  
 
-  /* the absolute slip on the minus side (local) */
+  /* the absolute slip (local) */
   MaterialProperty<Real> & _absolute_slip;  
+
+  /* the instaneous slip (local) */
+  MaterialProperty<Real> & _slip_total; 
 
   /* marker for all elements below strength */
   MaterialProperty<RealVectorValue> & _below_strength_marker;
