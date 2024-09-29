@@ -100,7 +100,7 @@ Line Loop(106) = {100,101,102,103};
 Ruled Surface(101) = {106};
 // Ruled Surface(201) = {204};
 
-// Surface{100} In Volume{1};
+Surface{101} In Volume{1};
 
 // Managing coarsening away from the fault
 // Attractor field returns the distance to the curve (actually, the
