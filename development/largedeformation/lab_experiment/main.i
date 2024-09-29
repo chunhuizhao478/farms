@@ -41,15 +41,15 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 300
+    Cd_constant = 30
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 3e5
+    CdCb_multiplier = 10
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 3e6
+    CBH_constant = 3000
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_1 = 300
@@ -58,7 +58,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.001 #1e-3
+    beta_width = 0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-5
@@ -120,6 +120,8 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
+        output_properties = 'alpha_damagedvar B_damagedvar'
+        outputs = exodus
     [] 
     [initial_damage]
         type = GenericConstantMaterial
@@ -129,7 +131,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk1_stress'
+        output_properties = 'pk2_stress xi'
         outputs = exodus
     []
     # elastic
@@ -146,13 +148,20 @@
 []  
 
 [Functions]
+    [applied_load_top]
+        type = ParsedFunction
+        expression = 'if (t>dt, -1e-4 - 1e-4 * t, -1e-4)'
+        symbol_names = 'dt'
+        symbol_values = '1e-2'
+    []
 []
   
 [Executioner]
     type = Transient
     solve_type = Newton
-    dt = 1
-    num_steps = 1
+    end_time = 300.0
+    dt = 1e-2
+    # num_steps = 1
     abort_on_solve_fail = true
     nl_abs_tol = 1e-6
     nl_rel_tol = 1e-8
@@ -160,6 +169,7 @@
 
 [Outputs] 
     exodus = true
+    time_step_interval = 100
 []
 
 [BCs]
@@ -188,9 +198,9 @@
         boundary = right
     []
     [applied_disp_top]
-        type = DirichletBC
+        type = FunctionDirichletBC
         variable = disp_y
-        value = -1e-4
+        function = applied_load_top
         boundary = top
     []
     [applied_disp_bottom]

@@ -10,9 +10,9 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 3
-      nx = 150
-      ny = 150
-      nz = 150
+      nx = 50
+      ny = 50
+      nz = 50
       xmin = -15000
       xmax = 15000
       ymin = -15000
@@ -37,13 +37,6 @@
         primary_block = 0
         paired_block = 1
         new_boundary = 'interface'
-    []
-    [secondary_interface]
-        type = SideSetsBetweenSubdomainsGenerator
-        input = interface
-        primary_block = 1
-        paired_block = 0
-        new_boundary = 'secondary_interface'
     []
 []
 
