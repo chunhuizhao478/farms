@@ -81,26 +81,26 @@ Line{101} In Surface{1};
 Line(102) = {102, 103};
 Line(103) = {103, 100};
 
-Point(201) = {X_nucl + R_nucl , -(Width_nucl+R_nucl)  *Sin(Fault_dip), (Width_nucl + R_nucl) * Cos(Fault_dip), lc_nucl};
-Point(202) = {X_nucl + R_nucl , -(Width_nucl-R_nucl)  *Sin(Fault_dip), (Width_nucl - R_nucl) * Cos(Fault_dip), lc_nucl};
-Point(203) = {X_nucl - R_nucl , -(Width_nucl-R_nucl)  *Sin(Fault_dip), (Width_nucl - R_nucl) * Cos(Fault_dip), lc_nucl};
-Point(204) = {X_nucl - R_nucl , -(Width_nucl+R_nucl)  *Sin(Fault_dip), (Width_nucl + R_nucl) * Cos(Fault_dip), lc_nucl};
-Line(200) = {201, 202};
-Line(201) = {202, 203};
-Line(202) = {203, 204};
-Line(203) = {204, 201};
-Curve Loop(204) = {200,201,202,203};
-Plane Surface(200) = {204};
+// Point(201) = {X_nucl + R_nucl , -(Width_nucl+R_nucl)  *Sin(Fault_dip), (Width_nucl + R_nucl) * Cos(Fault_dip), lc_nucl};
+// Point(202) = {X_nucl + R_nucl , -(Width_nucl-R_nucl)  *Sin(Fault_dip), (Width_nucl - R_nucl) * Cos(Fault_dip), lc_nucl};
+// Point(203) = {X_nucl - R_nucl , -(Width_nucl-R_nucl)  *Sin(Fault_dip), (Width_nucl - R_nucl) * Cos(Fault_dip), lc_nucl};
+// Point(204) = {X_nucl - R_nucl , -(Width_nucl+R_nucl)  *Sin(Fault_dip), (Width_nucl + R_nucl) * Cos(Fault_dip), lc_nucl};
+// Line(200) = {201, 202};
+// Line(201) = {202, 203};
+// Line(202) = {203, 204};
+// Line(203) = {204, 201};
+// Curve Loop(204) = {200,201,202,203};
+// Plane Surface(200) = {204};
 
-Curve Loop(105) = {100,101,102,103};
-Plane Surface(100) = {105, 204};
+// Curve Loop(105) = {100,101,102,103};
+// Plane Surface(100) = {105};
 
 // There is a bug in "Attractor", we need to define a Ruled surface in FaceList
 Line Loop(106) = {100,101,102,103};
 Ruled Surface(101) = {106};
-Ruled Surface(201) = {204};
+// Ruled Surface(201) = {204};
 
-Surface{100,200} In Volume{1};
+// Surface{100} In Volume{1};
 
 // Managing coarsening away from the fault
 // Attractor field returns the distance to the curve (actually, the
@@ -116,7 +116,7 @@ Field[2].F = Sprintf("0.05*F1 +(F1/2.5e3)^2 + %g", lc_fault);
 
 // Managing coarsening around the nucleation Patch
 Field[3] = Distance;
-Field[3].FacesList = {201};
+Field[3].FacesList = {101};
 
 Field[4] = Threshold;
 Field[4].IField = 3;
@@ -127,7 +127,7 @@ Field[4].DistMax = 3*R_nucl;
 
 Field[5] = Restrict;
 Field[5].IField = 4;
-Field[5].FacesList = {100,200};
+Field[5].FacesList = {101};
 
 // Equivalent of propagation size on element
 Field[6] = Threshold;
@@ -144,7 +144,7 @@ Field[7].FieldsList = {2,5,6};
 Background Field = 7;
 
 Physical Surface(101) = {1};
-Physical Surface(103) = {100,200};
+Physical Surface(103) = {101};
 // This ones are read from the gui
 Physical Surface(105) = {14,18,22,26,27};
 
