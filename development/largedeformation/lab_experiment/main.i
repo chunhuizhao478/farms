@@ -131,7 +131,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress xi'
+        output_properties = 'pk2_stress strain_invariant_ratio'
         outputs = exodus
     []
     # elastic
@@ -150,7 +150,7 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = 'if (t>dt, -1e-4 - 1e-4 * t, -1e-4)'
+        expression = 'if (t>dt, -1e-4 - 1e-2 * t, -1e-4)'
         symbol_names = 'dt'
         symbol_values = '1e-2'
     []
@@ -159,17 +159,17 @@
 [Executioner]
     type = Transient
     solve_type = Newton
-    end_time = 300.0
+    end_time = 5e6
     dt = 1e-2
-    # num_steps = 1
-    abort_on_solve_fail = true
+    # num_steps = 100
+    # abort_on_solve_fail = true
     nl_abs_tol = 1e-6
     nl_rel_tol = 1e-8
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 20
 []
 
 [BCs]
