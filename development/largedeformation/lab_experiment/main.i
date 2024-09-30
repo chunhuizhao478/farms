@@ -131,7 +131,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress strain_invariant_ratio'
+        output_properties = 'pk2_stress strain_invariant_ratio green_lagrange_elastic_strain'
         outputs = exodus
     []
     # elastic
@@ -158,18 +158,32 @@
   
 [Executioner]
     type = Transient
-    solve_type = Newton
-    end_time = 5e6
-    dt = 1e-2
-    # num_steps = 100
-    # abort_on_solve_fail = true
-    nl_abs_tol = 1e-6
-    nl_rel_tol = 1e-8
+    solve_type = 'NEWTON'
+    start_time = 0
+    end_time = 1e10
+    # num_steps = 1
+    l_max_its = 100
+    l_tol = 1e-7
+    nl_rel_tol = 1e-6
+    nl_max_its = 10
+    nl_abs_tol = 1e-8
+    petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    petsc_options_value = 'lu       NONZERO'
+    automatic_scaling = true
+    # nl_forced_its = 3
+    line_search = 'none'
+    [TimeStepper]
+        type = IterationAdaptiveDT
+        dt = 0.01
+        cutback_factor_at_failure = 0.5
+        growth_factor = 2
+        enable = true
+    []
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 20
+    time_step_interval = 1
 []
 
 [BCs]

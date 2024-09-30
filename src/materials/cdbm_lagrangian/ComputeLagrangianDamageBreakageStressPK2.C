@@ -72,11 +72,6 @@ ComputeLagrangianDamageBreakageStressPK2::initQpStatefulProperties()
 void
 ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
 {
-  
-  RankTwoTensor zeroranktwo(0,0,0,0,0,0,0,0,0);
-  _S[_qp] = zeroranktwo;
-  _C[_qp].zero();
-
   // PK2 update
   computeQpPK2Stress();
 
@@ -161,34 +156,13 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
     //initialize value
     Real dPdF_val = 0.0;
 
-    // std::cout << "S in dPdF: " << std::endl;
-    // S.print();
-
-    // std::cout << "C in dPdF: " << std::endl;
-    // C.print();
-
     for (unsigned int m = 0; m < _dim; m++) {
       for (unsigned int n = 0; n < _dim; n++) {
         for (unsigned int p = 0; p < _dim; p++) {
           for (unsigned int q = 0; q < _dim; q++) {
-            // Output values being used in the computation //dFedF, dEdF, dFpmdF
-            // std::cout << "dFedF(" << i << "," << m << "," << k << "," << l << "): " << dFedF(i, m, k, l) << std::endl;
-            // std::cout << "_S[_qp](" << m << "," << n << "): " << _S[_qp](m, n) << std::endl;
-            // std::cout << "Fpinv(" << j << "," << n << "): " << Fpinv(j, n) << std::endl;
-            // std::cout << "_Fe[_qp](" << i << "," << m << "): " << _Fe[_qp](i, m) << std::endl;
-            // std::cout << "_C[_qp](" << m << "," << n << "," << p << "," << q << "): " << _C[_qp](m, n, p, q) << std::endl;
-            // std::cout << "dEdF(" << p << "," << q << "," << k << "," << l << "): " << dEdF(p, q, k, l) << std::endl;
-            // std::cout << "dFpmdF(" << j << "," << n << "," << k << "," << l << "): " << dFpmdF(j, n, k, l) << std::endl;
-            
-            // Check for NaN before adding to dPdF_val
             Real current_value = dFedF(i, m, k, l) * _S[_qp](m, n) * Fpinv(j, n) +
                                 _Fe[_qp](i, m) * _C[_qp](m, n, p, q) * dEdF(p, q, k, l) * Fpinv(j, n) +
-                                _Fe[_qp](i, m) * _S[_qp](m, n) * dFpmdF(j, n, k, l);
-            
-            // if (std::isnan(current_value)) {
-            //     std::cout << "NaN detected at indices: i=" << i << ", j=" << j << ", k=" << k << ", l=" << l << ", m=" << m << ", n=" << n << ", p=" << p << ", q=" << q << std::endl;
-            // }
-            
+                                _Fe[_qp](i, m) * _S[_qp](m, n) * dFpmdF(j, n, k, l); 
             dPdF_val += current_value;
           }
         }
@@ -210,20 +184,6 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
       }
     }
   }
-
-  // //check err //pk_jacobian_val has issue
-  // std::cout<<"----------PK1-----------"<<std::endl;
-  // std::cout<<"_Fe[_qp]"<<std::endl;
-  // RankTwoTensor Fe_check = _Fe[_qp];
-  // Fe_check.print();
-  // std::cout<<"_S[_qp]"<<std::endl;
-  // RankTwoTensor S_check = _S[_qp];
-  // _S[_qp].print();
-  // std::cout<<"Fpinv.transpose()"<<std::endl;
-  // Fpinv.transpose().print();  
-  // std::cout<<"pk_jacobian_val"<<std::endl;
-  // pk_jacobian_val.print();
-  // std::cout<<"-----------------------"<<std::endl;
 
   // Complicated wrapping from PK2 to PK1, see documentation on overleaf
   if (_large_kinematics)
@@ -297,37 +257,6 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   _I1[_qp] = I1;
   _I2[_qp] = I2;
   _xi[_qp] = xi;
-
-  // // //check err
-  // std::cout<<"----------PK2-----------"<<std::endl;
-  // for (unsigned int i = 0; i < _dim; ++i){
-  //   for (unsigned int j = 0; j < _dim; ++j){
-  //     if (std::isnan(sigma_s(i,j))){
-  //       std::cout<<"find nan in sigma_s"<<std::endl;
-  //     }
-  //     if (std::isnan(sigma_b(i,j))){
-  //       std::cout<<"find nan in sigma_b"<<std::endl;
-  //     }
-  //   }
-  // }
-  // if (std::isnan(_lambda_const[_qp])){ std::cout<<"find nan in _lambda_const[_qp]"<<std::endl; }else{ std::cout<<"_lambda_const[_qp]:"<<_lambda_const[_qp]<<std::endl;}
-  // if (std::isnan(_shear_modulus[_qp])){ std::cout<<"find nan in _shear_modulus[_qp]"<<std::endl; }else{ std::cout<<"_shear_modulus[_qp]:"<<_shear_modulus[_qp]<<std::endl;}
-  // if (std::isnan(_damaged_modulus[_qp])){ std::cout<<"find nan in _damaged_modulus[_qp]"<<std::endl; }else{ std::cout<<"_damaged_modulus[_qp]:"<<_damaged_modulus[_qp]<<std::endl;}
-  // if (std::isnan(xi)){ std::cout<<"find nan in xi"<<std::endl; }else{ std::cout<<"xi:"<<xi<<std::endl;}
-  // std::cout<<"Fp_updated"<<std::endl;
-  // Fp_updated.print();
-  // std::cout<<"Fe"<<std::endl;
-  // Fe.print();
-  // std::cout<<"Ee"<<std::endl;
-  // Ee.print();  
-  // std::cout<<"sigma_total"<<std::endl;
-  // sigma_total.print();
-  // std::cout<<"tangent"<<std::endl;
-  // tangent.print();
-  // std::cout<<"I1: "<<I1<<std::endl;
-  // std::cout<<"I2: "<<I2<<std::endl;
-  // std::cout<<"xi: "<<xi<<std::endl;
-  // std::cout<<"-----------------------"<<std::endl;
 
 }
 
