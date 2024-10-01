@@ -541,7 +541,7 @@
 [Executioner]
     type = Transient
     dt = 0.001
-    end_time = 12.0
+    end_time = 15.0
     # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
