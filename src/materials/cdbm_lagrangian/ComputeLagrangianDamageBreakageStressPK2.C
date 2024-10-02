@@ -25,6 +25,7 @@ ComputeLagrangianDamageBreakageStressPK2::ComputeLagrangianDamageBreakageStressP
   _Fe(declareProperty<RankTwoTensor>(_base_name + "elastic_deformation_gradient")),
   _Tau(declareProperty<RankTwoTensor>(_base_name + "deviatroic_stress")),
   _Ee(declareProperty<RankTwoTensor>(_base_name + "green_lagrange_elastic_strain")),
+  _Ep(declareProperty<RankTwoTensor>(_base_name + "plastic_strain")),
   _I1(declareProperty<Real>(_base_name + "first_elastic_strain_invariant")),
   _I2(declareProperty<Real>(_base_name + "second_elastic_strain_invariant")),
   _xi(declareProperty<Real>(_base_name + "strain_invariant_ratio")),
@@ -38,6 +39,7 @@ ComputeLagrangianDamageBreakageStressPK2::ComputeLagrangianDamageBreakageStressP
   _Tau_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "deviatroic_stress")),
   _Fp_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_deformation_gradient")),
   _F_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "deformation_gradient")),
+  _Ep_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_strain")),
   _C_g(getMaterialProperty<Real>("C_g")),
   _m1(getMaterialProperty<Real>("m1")),
   _m2(getMaterialProperty<Real>("m2")),
@@ -62,6 +64,7 @@ ComputeLagrangianDamageBreakageStressPK2::initQpStatefulProperties()
   _Fe[_qp] = RankTwoTensor::Identity();
   _Tau[_qp].zero();
   _Ee[_qp].zero();
+  _Ep[_qp].zero();
   _I1[_qp] = 0.0;
   _I2[_qp] = 0.0;
   _xi[_qp] = -sqrt(3);
@@ -102,7 +105,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
       return 0.0;
     } 
     else{ //Transient
-      if (Fp_dot(i,j) == 0.0){ //no change of viscoelastic dg, set zero
+      if (Fp_dot(i,j) == 0.0 || F_dot(k,l) == 0.0 ){ //no change of viscoelastic dg, set zero
         return 0.0;
       }
       else{
@@ -193,8 +196,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   {
     //if there is plastic
     // Compute pk1 stress
-    //_pk1_stress[_qp] = Jp * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
-    _pk1_stress[_qp] = _F[_qp] * _S[_qp];
+    _pk1_stress[_qp] = Jp * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
 
     // Compute pk1 jacobian
     _pk1_jacobian[_qp] = pk_jacobian_val;
@@ -252,7 +254,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   _S[_qp] = sigma_total;
 
   //compute deviatroic stress tensor //save
-  _Tau[_qp] = sigma_total - 1.0 / 3.0 * ( sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2) ) * RankTwoTensor::Identity();
+  _Tau[_qp] = sigma_total - 1.0 / 3.0 * ( sigma_total.trace() ) * RankTwoTensor::Identity();
 
   /* Compute tangent */
   RankFourTensor tangent;
@@ -275,15 +277,14 @@ RankTwoTensor
 ComputeLagrangianDamageBreakageStressPK2::computeQpFp()
 {
   //Apply power operation on every element of Tau
-  RankTwoTensor Tau_old_power_m2;
-  for (unsigned int i = 0; i < _dim; i++){
-    for (unsigned int j = 0; j < _dim; j++){
-      Tau_old_power_m2(i,j) += std::pow(_Tau_old[_qp](i,j), _m2[_qp]);
-    }
-  }
+  //let's assume m2 = 1, and not apply pow on its elements
+  RankTwoTensor Tau_old_power_m2 = _Tau_old[_qp];
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
-  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * Tau_old_power_m2; 
+  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * Tau_old_power_m2; 
+
+  //Update Plastic Strain
+  _Ep[_qp] = _Ep_old[_qp] + Dp * _dt;
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;

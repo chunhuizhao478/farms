@@ -106,6 +106,11 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _lambda[_qp] = _lambda_o;
   _shear_modulus[_qp] = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * _gamma_damaged_r[_qp];
   _damaged_modulus[_qp] = _initial_damage[_qp] * _gamma_damaged_r[_qp];
+  
+  /* define Cg m1 m2 */
+  _m1[_qp] = _m1_value;
+  _m2[_qp] = _m2_value;
+  _C_g[_qp] = _C_g_value;
 
 }
 
@@ -127,6 +132,11 @@ DamageBreakageMaterial::computeQpProperties()
 
   /* compute modulus at t_{n+1} using alpha at t_{n} */
   updatemodulus(alpha_updated);
+
+  /* define Cg m1 m2 */
+  _m1[_qp] = _m1_value;
+  _m2[_qp] = _m2_value;
+  _C_g[_qp] = _C_g_value;
 
 }
 

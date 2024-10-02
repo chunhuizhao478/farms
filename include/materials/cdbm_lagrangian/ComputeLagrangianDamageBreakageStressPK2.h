@@ -51,6 +51,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _Tau;
   /// Green-Lagrange Elastic Strain Tensor
   MaterialProperty<RankTwoTensor> & _Ee;
+  /// Plastic Strain Tensor
+  MaterialProperty<RankTwoTensor> & _Ep;
   /// First Elastic Strain Invariant
   MaterialProperty<Real> & _I1;
   /// Second Elastic Strain Invariant
@@ -81,6 +83,8 @@ protected:
   const MaterialProperty<RankTwoTensor> & _Fp_old;
   /// Deformation Gradient
   const MaterialProperty<RankTwoTensor> & _F_old;
+  /// Plastic Strain
+  const MaterialProperty<RankTwoTensor> & _Ep_old;
   
   /* Get Constant Parameters */
   /// material parameter: compliance or fluidity of the fine grain granular material

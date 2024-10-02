@@ -45,7 +45,7 @@
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 100
+    CdCb_multiplier = 500
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -147,7 +147,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
     []
     # elastic
@@ -182,8 +182,8 @@
       type = SMP
       full = true
     #   petsc_options = '-ksp_view'
-    #   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
-    #   petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+      petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+      petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     []
 []
   
@@ -198,19 +198,21 @@
     nl_rel_tol = 1e-6
     nl_max_its = 20
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 0.01
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     dt = 0.01
-    #     cutback_factor_at_failure = 0.1
-    #     growth_factor = 2
-    #     enable = true
-    # []
+    # dt = 10
+    [TimeStepper]
+        type = IterationAdaptiveDT
+        dt = 0.01
+        cutback_factor_at_failure = 0.1
+        growth_factor = 2
+        enable = true
+        reject_large_step_threshold = 0.01
+        reject_large_step = true
+    []
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
@@ -231,7 +233,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1
 []
 
 [BCs]
