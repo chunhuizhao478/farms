@@ -54,6 +54,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _C_g(declareProperty<Real>("C_g")),
   _m1(declareProperty<Real>("m1")),
   _m2(declareProperty<Real>("m2")),  
+  _xi_1_mat(declareProperty<Real>("xi_1")),  
   _alpha_damagedvar_old(getMaterialPropertyOldByName<Real>("alpha_damagedvar")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
   _I2_old(getMaterialPropertyOldByName<Real>("second_elastic_strain_invariant")),
@@ -169,6 +170,9 @@ DamageBreakageMaterial::updatebreakage()
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
+
+  //save
+  _xi_1_mat[_qp] = _xi_1;
 
   //alphacr function
   Real alphacr;

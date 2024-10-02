@@ -45,7 +45,7 @@
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 10
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -90,6 +90,20 @@
     []
 []
 
+[AuxVariables]
+    [xi_computed]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+[]
+
+[AuxKernels]
+    [compute_xi]
+        type = CompXi3D
+        variable = xi_computed
+        execute_on = 'TIMESTEP_END'
+    []
+[]
 
 [Kernels]
     [dispkernel_x]
@@ -116,6 +130,8 @@
     [strain]
         type = ComputeLagrangianStrain
         large_kinematics = true
+        output_properties = 'deformation_gradient'
+        outputs = exodus
     []
     # damage
     [damage_mat]
@@ -131,7 +147,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress strain_invariant_ratio green_lagrange_elastic_strain'
+        output_properties = 'pk2_stress'
         outputs = exodus
     []
     # elastic
@@ -154,6 +170,21 @@
         symbol_names = 'dt'
         symbol_values = '1e-2'
     []
+    [applied_pressure_top]
+        type = ParsedFunction
+        expression = '10e6 + 1e6 * t'
+    []
+[]
+
+
+[Preconditioning]
+    [smp]
+      type = SMP
+      full = true
+    #   petsc_options = '-ksp_view'
+    #   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    #   petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+    []
 []
   
 [Executioner]
@@ -165,63 +196,82 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 10
+    nl_max_its = 20
     nl_abs_tol = 1e-8
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    [TimeStepper]
-        type = IterationAdaptiveDT
-        dt = 0.01
-        cutback_factor_at_failure = 0.5
-        growth_factor = 2
-        enable = true
-    []
+    dt = 0.01
+    # [TimeStepper]
+    #     type = IterationAdaptiveDT
+    #     dt = 0.01
+    #     cutback_factor_at_failure = 0.1
+    #     growth_factor = 2
+    #     enable = true
+    # []
+    [./TimeIntegrator]
+        type = ImplicitEuler
+        # type = BDF2
+        # type = CrankNicolson
+        # type = ImplicitMidpoint
+        # type = LStableDirk2
+        # type = LStableDirk3
+        # type = LStableDirk4
+        # type = AStableDirk4
+        #
+        # Explicit methods
+        # type = ExplicitEuler
+        # type = ExplicitMidpoint
+        # type = Heun
+        # type = Ralston
+    [../]
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 100
 []
 
 [BCs]
-    [applied_disp_front]
-        type = DirichletBC
-        variable = disp_z
-        value = -1e-4
-        boundary = front
+    [./Pressure]
+        [static_pressure_right]
+            boundary = right
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []  
+        [static_pressure_front]
+            boundary = front
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        [] 
+        [static_pressure_top]
+            boundary = top
+            function = applied_pressure_top
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []            
     []
-    [applied_disp_back]
-        type = DirichletBC
-        variable = disp_z
-        value = 1e-4
-        boundary = back
-    []
-    [applied_disp_left]
+    [./fix_left_x]
         type = DirichletBC
         variable = disp_x
-        value = 1e-4
         boundary = left
+        value = 0
     []
-    [applied_disp_right]
+    [./fix_back_z]
         type = DirichletBC
-        variable = disp_x
-        value = -1e-4
-        boundary = right
+        variable = disp_z
+        boundary = back
+        value = 0
     []
-    [applied_disp_top]
-        type = FunctionDirichletBC
-        variable = disp_y
-        function = applied_load_top
-        boundary = top
-    []
-    [applied_disp_bottom]
+    [./fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        value = 1e-4
         boundary = bottom
+        value = 0
     []
 []
 

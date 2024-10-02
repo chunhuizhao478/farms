@@ -11,7 +11,13 @@
         ymax = 1
         zmin = 0
         zmax = 1
-    []  
+    [] 
+    [./extranodeset1]
+        type = ExtraNodesetGenerator
+        coord = '0 0 1'
+        new_boundary = corner_ptr
+        input = msh
+    [] 
 []
 
 [GlobalParams]
@@ -30,6 +36,21 @@
     [disp_z]
         order = FIRST
         family = LAGRANGE
+    []
+[]
+
+[AuxVariables]
+    [xi_computed]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+[]
+
+[AuxKernels]
+    [compute_xi]
+        type = CompXi3D
+        variable = xi_computed
+        execute_on = 'TIMESTEP_END'
     []
 []
 
@@ -80,40 +101,42 @@
 []
 
 [BCs]
-    [applied_disp_front]
-        type = DirichletBC
-        variable = disp_z
-        value = -1e-4
-        boundary = front
+    [./Pressure]
+        [static_pressure_right]
+            boundary = right
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []  
+        [static_pressure_front]
+            boundary = front
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        [] 
+        [static_pressure_top]
+            boundary = top
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []            
     []
-    [applied_disp_back]
-        type = DirichletBC
-        variable = disp_z
-        value = 1e-4
-        boundary = back
-    []
-    [applied_disp_left]
+    [./fix_left_x]
         type = DirichletBC
         variable = disp_x
-        value = 1e-4
         boundary = left
+        value = 0
     []
-    [applied_disp_right]
+    [./fix_back_z]
         type = DirichletBC
-        variable = disp_x
-        value = -1e-4
-        boundary = right
+        variable = disp_z
+        boundary = back
+        value = 0
     []
-    [applied_disp_top]
-        type = DirichletBC
-        variable = disp_y
-        value = -1e-4
-        boundary = top
-    []
-    [applied_disp_bottom]
+    [./fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        value = 1e-4
         boundary = bottom
+        value = 0
     []
 []

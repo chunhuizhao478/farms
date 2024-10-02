@@ -82,8 +82,14 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   // Compute Fp_dot, F_dot
   // Here we approximate the rate by first-order, not sure if this is sufficient for varying time steps
   // currently MOOSE don't support getMaterialPropertyDot
-  RankTwoTensor Fp_dot = ( _Fp[_qp] - _Fp_old[_qp] ) / _dt;
-  RankTwoTensor F_dot  = (  _F[_qp] -  _F_old[_qp] ) / _dt;
+  RankTwoTensor Fp_dot;
+  RankTwoTensor F_dot;
+  for (unsigned int i = 0; i < _dim; i++){
+    for (unsigned int j = 0; j < _dim; j++){
+      Fp_dot(i,j) += ( _Fp[_qp](i,j) - _Fp_old[_qp](i,j) ) / _dt;
+      F_dot(i,j)  += (  _F[_qp](i,j) -  _F_old[_qp](i,j) ) / _dt;
+    }
+  }
 
   // Compute delta function
   auto delta = [](int i, int j) -> Real {
@@ -109,11 +115,11 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   auto dFedF = [&](int i, int m, int k, int l) -> Real {
 
     //initialize value
-    Real dFedF_val = 0.0;
+    Real dFedF_val = delta(i,k) * Fpinv(m,l);
 
     //here apply summations to {j}
     for (unsigned int j = 0; j < _dim; j++){
-      dFedF_val += ( delta(i,k) * delta(j,l) - _Fe[_qp](i,m) * dFpdF(m,j,k,l) ) * Fpinv(j,m);
+      dFedF_val -= _Fe[_qp](i,m) * dFpdF(m,j,k,l) * Fpinv(m,j);
     }
 
     return dFedF_val;
@@ -143,43 +149,40 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
 
     //here apply summations to {i}
     for (unsigned int i = 0; i < _dim; i++){
-      dFpmdF_val += -1 * Fpinv(i,m) * dFpdF(m,i,k,l) * Fpinv(j,m);
+      dFpmdF_val += -1.0 * Fpinv(m,i) * dFpdF(m,i,k,l) * Fpinv(j,m);
     }
 
     return dFpmdF_val;
 
   };
 
-  // Compute dPdF
-  auto dPdF = [&](int i, int j, int k, int l) -> Real {
-
-    //initialize value
-    Real dPdF_val = 0.0;
-
-    for (unsigned int m = 0; m < _dim; m++) {
-      for (unsigned int n = 0; n < _dim; n++) {
-        for (unsigned int p = 0; p < _dim; p++) {
-          for (unsigned int q = 0; q < _dim; q++) {
-            Real current_value = dFedF(i, m, k, l) * _S[_qp](m, n) * Fpinv(j, n) +
-                                _Fe[_qp](i, m) * _C[_qp](m, n, p, q) * dEdF(p, q, k, l) * Fpinv(j, n) +
-                                _Fe[_qp](i, m) * _S[_qp](m, n) * dFpmdF(j, n, k, l); 
-            dPdF_val += current_value;
-          }
-        }
-      }
-    }
-
-    return dPdF_val;
-
-  }; 
-
-  // Compute pk_jacobian
+  //Compute pk_jacobian
   RankFourTensor pk_jacobian_val;
+  pk_jacobian_val.zero();  // Make sure the tensor starts with zero values
   for (unsigned int i = 0; i < _dim; i++){
     for (unsigned int j = 0; j < _dim; j++){
       for (unsigned int k = 0; k < _dim; k++){
         for (unsigned int l = 0; l < _dim; l++){
-          pk_jacobian_val(i,j,k,l) = dPdF(i,j,k,l);
+          for (unsigned int m = 0; m < _dim; m++){
+            // First term: dFedF(i,m,k,l) * S(m,n) * Fpinv(j,n)
+            for (unsigned int n = 0; n < _dim; n++){
+              pk_jacobian_val(i,j,k,l) += dFedF(i,m,k,l) * _S[_qp](m,n) * Fpinv(j,n);
+            }
+            
+            // Second term: Fe(i,m) * C(m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n)
+            for (unsigned int n = 0; n < _dim; n++){
+              for (unsigned int p = 0; p < _dim; p++){
+                for (unsigned int q = 0; q < _dim; q++){
+                  pk_jacobian_val(i,j,k,l) += _Fe[_qp](i,m) * _C[_qp](m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n);
+                }
+              }
+            }
+            
+            // Third term: Fe(i,m) * S(m,n) * dFpmdF(j,n,k,l)
+            for (unsigned int n = 0; n < _dim; n++){
+              pk_jacobian_val(i,j,k,l) += _Fe[_qp](i,m) * _S[_qp](m,n) * dFpmdF(j,n,k,l);
+            }
+          }
         }
       }
     }
@@ -188,14 +191,25 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   // Complicated wrapping from PK2 to PK1, see documentation on overleaf
   if (_large_kinematics)
   {
+    //if there is plastic
     // Compute pk1 stress
-    _pk1_stress[_qp] = Jp * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
+    //_pk1_stress[_qp] = Jp * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
+    _pk1_stress[_qp] = _F[_qp] * _S[_qp];
 
     // Compute pk1 jacobian
     _pk1_jacobian[_qp] = pk_jacobian_val;
 
+    //if there is no plastic 
+    // _pk1_stress[_qp] = _F[_qp] * _S[_qp];
+    // usingTensorIndices(i_, j_, k_, l_);
+    // RankFourTensor dE =
+    //     0.5 * (RankTwoTensor::Identity().times<i_, l_, j_, k_>(_F[_qp].transpose()) +
+    //            _F[_qp].transpose().times<i_, k_, j_, l_>(RankTwoTensor::Identity()));
+
+    // _pk1_jacobian[_qp] = RankTwoTensor::Identity().times<i_, k_, j_, l_>(_S[_qp].transpose()) +
+    //                      (_C[_qp] * dE).singleProductI(_F[_qp]);
+
   }
-  // Small deformations all are equivalent
   else
   {
     mooseError("Must selection 'large_kinematics' option!");
@@ -241,11 +255,8 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   _Tau[_qp] = sigma_total - 1.0 / 3.0 * ( sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2) ) * RankTwoTensor::Identity();
 
   /* Compute tangent */
-  std::vector<Real> components(21);
-
-  computeQpTangentModulus(components,I1,I2,xi,Ee);
-
-  RankFourTensor tangent(components, RankFourTensor::symmetric21);
+  RankFourTensor tangent;
+  computeQpTangentModulus(tangent,I1,I2,xi,Ee);
 
   //save
   _C[_qp] = tangent;
@@ -267,7 +278,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpFp()
   RankTwoTensor Tau_old_power_m2;
   for (unsigned int i = 0; i < _dim; i++){
     for (unsigned int j = 0; j < _dim; j++){
-      Tau_old_power_m2(i,j) = std::pow(_Tau_old[_qp](i,j), _m2[_qp]);
+      Tau_old_power_m2(i,j) += std::pow(_Tau_old[_qp](i,j), _m2[_qp]);
     }
   }
 
@@ -284,7 +295,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpFp()
 }
 
 void
-ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(std::vector<Real>& tangent, 
+ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(RankFourTensor & tangent, 
                                                                   Real I1, 
                                                                   Real I2, 
                                                                   Real xi, 
@@ -347,20 +358,19 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(std::vector<Re
   };
 
   //dS_{ij}_dE_{kl}
-  //here we transform index 1,2,3 -> 0,1,2
   auto dSdE = [&](int i, int j, int k, int l) -> Real {
-    int ind_i = i - 1; int ind_j = j - 1; int ind_k = k - 1; int ind_l = l - 1;
-    return (1 - _B_breakagevar[_qp]) * dSedE(ind_i,ind_j,ind_k,ind_l) + _B_breakagevar[_qp] * dSbdE(ind_i,ind_j,ind_k,ind_l);
+    return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
   };
 
-  //fill in tangent vector
-  //symmetric21 : C_ijkl = '1111 1122 1133 1123 1113 1112 2222 2233 2223 2213 2212 3333 3323 3313 3312 2323 2313 2312 1313 1312 1212'
-  //here we use index 1,2,3
-  tangent[0]  = dSdE(1,1,1,1); tangent[1]  = dSdE(1,1,2,2); tangent[2]  = dSdE(1,1,3,3);
-  tangent[3]  = dSdE(1,1,2,3); tangent[4]  = dSdE(1,1,1,3); tangent[5]  = dSdE(1,1,1,2);
-  tangent[6]  = dSdE(2,2,2,2); tangent[7]  = dSdE(2,2,3,3); tangent[8]  = dSdE(2,2,2,3);
-  tangent[9]  = dSdE(2,2,1,3); tangent[10] = dSdE(2,2,1,2); tangent[11] = dSdE(3,3,3,3);
-  tangent[12] = dSdE(3,3,2,3); tangent[13] = dSdE(3,3,1,3); tangent[14] = dSdE(3,3,1,2);
-  tangent[15] = dSdE(2,3,2,3); tangent[16] = dSdE(2,3,1,3); tangent[17] = dSdE(2,3,1,2);
-  tangent[18] = dSdE(1,3,1,3); tangent[19] = dSdE(1,3,1,2); tangent[20] = dSdE(1,2,1,2);
+  // Compute tangent modulus C
+  for (unsigned int i = 0; i < _dim; i++){
+    for (unsigned int j = 0; j < _dim; j++){
+      for (unsigned int k = 0; k < _dim; k++){
+        for (unsigned int l = 0; l < _dim; l++){
+          tangent(i,j,k,l) += dSdE(i,j,k,l);
+        }
+      }
+    }
+  }
+
 }

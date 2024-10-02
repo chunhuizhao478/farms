@@ -39,7 +39,7 @@ protected:
   virtual RankTwoTensor computeQpFp();
   /// @brief Compute tangent modulus components vector
   /// @return tangent modulus components vector, we pass reference and modify in-place
-  virtual void computeQpTangentModulus(std::vector<Real>& tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
+  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
 
 protected:
   /* Declare Material Properties */

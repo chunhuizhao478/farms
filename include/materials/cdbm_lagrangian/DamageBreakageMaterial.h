@@ -60,6 +60,8 @@ protected:
   MaterialProperty<Real> & _C_g;              //C_g
   MaterialProperty<Real> & _m1;               //m1
   MaterialProperty<Real> & _m2;               //m2
+
+  MaterialProperty<Real> & _xi_1_mat;         //xi
   
   //get old material properties:
   const MaterialProperty<Real> & _alpha_damagedvar_old; //old damage variable

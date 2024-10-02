@@ -17,12 +17,7 @@ class CompXi3D : public AuxKernel
 
     virtual Real computeValue() override;
 
-    const VariableValue & _strainxx;
-    const VariableValue & _strainxy;
-    const VariableValue & _strainyy;
-    const VariableValue & _strainxz;
-    const VariableValue & _strainyz;
-    const VariableValue & _strainzz;
+    const MaterialProperty<RankTwoTensor> & _mechanical_strain;
 };
 
 
