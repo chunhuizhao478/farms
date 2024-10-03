@@ -11,7 +11,14 @@
         ymax = 1
         zmin = 0
         zmax = 1
-    []  
+    [] 
+    [./box]
+        type = SubdomainBoundingBoxGenerator
+        input = msh
+        block_id = 1
+        bottom_left = '0.3 0.3 0.3'
+        top_right = '0.7 0.7 0.7'
+    []
 []
 
 [GlobalParams]
@@ -49,10 +56,10 @@
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 3000
+    CBH_constant = 0
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 300
+    C_1 = 0
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -61,7 +68,7 @@
     beta_width = 0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-5
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -138,10 +145,11 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
+        block = 1
     [] 
     [initial_damage]
         type = GenericConstantMaterial
-        prop_names = initial_damage
+        prop_names = 'initial_damage'
         prop_values = 0
     [] 
     [stress_medium]
@@ -149,18 +157,20 @@
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
+        block = 1
     []
     # elastic
-    # [elastic_tensor]
-    #     type = ComputeIsotropicElasticityTensor
-    #     lambda = 1e10
-    #     shear_modulus = 1e10
-    # []
-    # [compute_stress]
-    #     type = ComputeLagrangianLinearElasticStress
-    #     large_kinematics = true
-    #     outputs = exodus
-    # []
+    [elastic_tensor]
+        type = ComputeIsotropicElasticityTensor
+        lambda = 1e10
+        shear_modulus = 1e10
+        block = 0
+    []
+    [compute_stress]
+        type = ComputeLagrangianLinearElasticStress
+        large_kinematics = true
+        block = 0
+    []
 []  
 
 [Functions]
@@ -182,8 +192,8 @@
       type = SMP
       full = true
     #   petsc_options = '-ksp_view'
-      petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
-      petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+    #   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    #   petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     []
 []
   
@@ -198,8 +208,8 @@
     nl_rel_tol = 1e-6
     nl_max_its = 20
     nl_abs_tol = 1e-8
-    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    # petsc_options_value = 'lu       NONZERO'
+    petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    petsc_options_value = 'lu       NONZERO'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
@@ -208,7 +218,8 @@
         type = IterationAdaptiveDT
         dt = 0.01
         cutback_factor_at_failure = 0.1
-        growth_factor = 2
+        optimal_iterations = 10
+        growth_factor = 1.2
         enable = true
         reject_large_step_threshold = 0.01
         reject_large_step = true

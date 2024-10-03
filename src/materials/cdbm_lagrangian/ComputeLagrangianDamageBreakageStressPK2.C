@@ -115,14 +115,16 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   };
 
   // Compute dFedF
-  auto dFedF = [&](int i, int m, int k, int l) -> Real {
+  auto dFedF = [&](int i, int a, int k, int l) -> Real {
 
     //initialize value
-    Real dFedF_val = delta(i,k) * Fpinv(m,l);
+    Real dFedF_val = delta(i,k) * Fpinv(a,l);
 
-    //here apply summations to {j}
+    //here apply summations to {b,j}
     for (unsigned int j = 0; j < _dim; j++){
-      dFedF_val -= _Fe[_qp](i,m) * dFpdF(m,j,k,l) * Fpinv(m,j);
+      for (unsigned int b = 0; b < _dim; b++){
+        dFedF_val -= _Fe[_qp](i,b) * dFpdF(b,j,k,l) * Fpinv(a,j);
+      }
     }
 
     return dFedF_val;
@@ -145,14 +147,16 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   };
 
   // Compute dFpmdF
-  auto dFpmdF = [&](int j, int m, int k, int l) -> Real {
+  auto dFpmdF = [&](int j, int b, int k, int l) -> Real {
 
     //initialize value
     Real dFpmdF_val = 0.0;
 
-    //here apply summations to {i}
+    //here apply summations to {i,a}
     for (unsigned int i = 0; i < _dim; i++){
-      dFpmdF_val += -1.0 * Fpinv(m,i) * dFpdF(m,i,k,l) * Fpinv(j,m);
+      for (unsigned int a = 0; a < _dim; a++){
+        dFpmdF_val += -1.0 * Fpinv(b,i) * dFpdF(a,i,k,l) * Fpinv(j,a);
+      }
     }
 
     return dFpmdF_val;
@@ -327,7 +331,8 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(RankFourTensor
 
   //dE_{ij}_dE_{kl}
   auto dEdE = [&](int i, int j, int k, int l) -> Real {
-    return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) );
+    return delta(i,k) * delta(j,l);
+    //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
   };
 
   //dxi^{-1}_dE_{kl}
@@ -342,9 +347,9 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(RankFourTensor
 
   //dSe_{ij}_dE_{kl}
   auto dSedE = [&](int i, int j, int k, int l) -> Real {
-    Real dSedE_components = ( _lambda_const[_qp] - _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
+    Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
     dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
-    dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
+    dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
     dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
     return dSedE_components;
   };
