@@ -82,7 +82,7 @@
         shear_modulus = 1e10
     []
     [compute_stress]
-        type = ComputeLagrangianLinearElasticStress
+        type = ComputeStVenantKirchhoffStress
         large_kinematics = true
         outputs = exodus
     []
@@ -101,42 +101,34 @@
 []
 
 [BCs]
-    [./Pressure]
-        [static_pressure_right]
-            boundary = right
-            factor = 10e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_front]
-            boundary = front
-            factor = 10e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        [] 
-        [static_pressure_top]
-            boundary = top
-            factor = 10e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []            
-    []
-    [./fix_left_x]
-        type = DirichletBC
-        variable = disp_x
-        boundary = left
-        value = 0
-    []
-    [./fix_back_z]
+    [fix_back_z]
         type = DirichletBC
         variable = disp_z
         boundary = back
         value = 0
     []
-    [./fix_bottom_y]
+    [fix_bottom_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = bottom
+        value = 0
+    []
+    [fix_bottom_y]
         type = DirichletBC
         variable = disp_y
         boundary = bottom
         value = 0
+    []
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = top
+        value = 0
+    []
+    [applied_top_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = top
+        value = 1e-2
     []
 []
