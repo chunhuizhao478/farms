@@ -113,7 +113,7 @@ for i in range(num_of_file):
     zcoord_i = given_coord_list[i][2] / 1000
 
     #file path
-    benchmark_path = "./benchmark_data/200m/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    benchmark_path = "./benchmark_data/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
     benchmark_path_100m = "./benchmark_data/eqsim_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
     farms_slip_path = "./farms_data_elemental/jump_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
     farms_sliprate_path = "./farms_data_elemental/jump_rate_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"

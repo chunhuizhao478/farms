@@ -10,7 +10,7 @@ import postprocess.postfunc as postfunc
 plotvar = ["jump_x","jump_rate_x","traction_x"]
 save_file_path = "./results"
 dim = 3
-node_per_elem = 8 #hex8 #4 #tet4
+node_per_elem = 4 #hex8 #4 #tet4
 elemblock_ind = 2 #primary surface associated blocks
 
 #whether to save the folder results
@@ -37,7 +37,7 @@ ptr_coords = [[0     , -0    , 0],
 
 #multiple files
 decodeflags = ["name_elem_var"]
-file_paths = ["/Users/andyz/Downloads/tpv2053d/tpv2053d_test_hex_uniform_out.e"]
+file_paths = ["/Users/chunhuizhao/Downloads/tpv2053d/tpv2053d_test_tet_out.e"]
 
 if __name__ == '__main__':
 
