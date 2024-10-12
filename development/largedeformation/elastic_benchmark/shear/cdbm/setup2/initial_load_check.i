@@ -118,20 +118,20 @@
         variable = disp_y
         boundary = bottom
         value = 0
-    []    
+    []   
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = top
+        value = 0
+    [] 
     [applied_top_x]
         type = DirichletBC
         variable = disp_x
         boundary = top
-        value = 1e-2
+        value = 0
     []
     [./Pressure]
-        [static_pressure_top]
-            boundary = top
-            factor = 10e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []
         [static_pressure_back]
             boundary = back
             factor = 10e6
