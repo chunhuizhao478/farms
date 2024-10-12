@@ -334,4 +334,5 @@ development/cdbm_tpv243d/checkparams/tpv243d_cdbm_hex_out_cp/1342-mesh.cpa.gz/1/
 development/cdbm_tpv243d/checkparams/tpv243d_cdbm_hex_out_cp/1342-mesh.cpa.gz/1/split-1-0.gz
 
 examples/benchmark_tpv2053D/archive
+examples/benchmark_tpv2052D/archive
 postprocess/tpv2053d/outputs
