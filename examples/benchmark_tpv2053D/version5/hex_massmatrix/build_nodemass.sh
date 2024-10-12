@@ -1,2 +1,0 @@
-../../../../farms-opt -i examples/benchmark_tpv2053D/version5/hex_massmatrix/tpv2053d_test_hex_200m.i > /Users/andyz/projects/farms_benchmark/examples/benchmark_tpv2053D/version5/hex_massmatrix/massbyidprepocess.txt
-python3 massbyid.txt
