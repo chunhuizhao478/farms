@@ -16,16 +16,9 @@
         type = SubdomainBoundingBoxGenerator
         input = msh
         block_id = 1
-        bottom_left = '0 0 0'
-        top_right = '1 0.1 1'
+        bottom_left = '0.3 0.3 0.3'
+        top_right = '0.7 0.7 0.7'
     []
-    [./box2]
-        type = SubdomainBoundingBoxGenerator
-        input = box
-        block_id = 1
-        bottom_left = '0 0.9 0'
-        top_right = '1.0 1.0 1.0'
-    []    
 []
 
 [GlobalParams]
@@ -55,7 +48,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 30
+    Cd_constant = 0
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -152,7 +145,6 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = 0
     [] 
     [initial_damage]
         type = GenericConstantMaterial
@@ -162,24 +154,21 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = 0
     []
     # elastic
-    [elastic_tensor]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 1e10
-        shear_modulus = 1e10
-        block = 1
-    []
-    [compute_stress]
-        type = ComputeStVenantKirchhoffStress
-        large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
-        block = 1
-    []
+    # [elastic_tensor]
+    #     type = ComputeIsotropicElasticityTensor
+    #     lambda = 1e10
+    #     shear_modulus = 1e10
+    # []
+    # [compute_stress]
+    #     type = ComputeStVenantKirchhoffStress
+    #     large_kinematics = true
+    #     output_properties = 'green_lagrange_strain pk2_stress'
+    #     outputs = exodus
+    # []
 []  
 
 [Functions]
@@ -218,7 +207,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1
+    dt = 20
     # [TimeStepper]
     #     type = IterationAdaptiveDT
     #     dt = 0.01
@@ -253,12 +242,6 @@
 []
 
 [BCs]
-    [fix_back_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = back
-        value = 0
-    []
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
@@ -271,18 +254,50 @@
         boundary = bottom
         value = 0
     []
-    [fix_top_y]
+    [fix_bottom_z]
         type = DirichletBC
         variable = disp_y
-        boundary = top
+        boundary = bottom
         value = 0
-    []
+    []    
     [applied_top_x]
         type = FunctionDirichletBC
         variable = disp_x
         boundary = top
         function = applied_load_top
     []
+    [./Pressure]
+        [static_pressure_top]
+            boundary = top
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []
+        [static_pressure_back]
+            boundary = back
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []  
+        [static_pressure_front]
+            boundary = front
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []    
+        [static_pressure_left]
+            boundary = left
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []  
+        [static_pressure_right]
+            boundary = right
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []         
+    []    
 []
 
 [UserObjects]

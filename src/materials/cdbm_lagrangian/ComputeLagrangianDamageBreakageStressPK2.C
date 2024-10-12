@@ -26,6 +26,7 @@ ComputeLagrangianDamageBreakageStressPK2::ComputeLagrangianDamageBreakageStressP
   _Tau(declareProperty<RankTwoTensor>(_base_name + "deviatroic_stress")),
   _Ee(declareProperty<RankTwoTensor>(_base_name + "green_lagrange_elastic_strain")),
   _Ep(declareProperty<RankTwoTensor>(_base_name + "plastic_strain")),
+  _E(declareProperty<RankTwoTensor>(_base_name + "total_lagrange_strain")),
   _I1(declareProperty<Real>(_base_name + "first_elastic_strain_invariant")),
   _I2(declareProperty<Real>(_base_name + "second_elastic_strain_invariant")),
   _xi(declareProperty<Real>(_base_name + "strain_invariant_ratio")),
@@ -65,6 +66,7 @@ ComputeLagrangianDamageBreakageStressPK2::initQpStatefulProperties()
   _Tau[_qp].zero();
   _Ee[_qp].zero();
   _Ep[_qp].zero();
+  _E[_qp].zero();
   _I1[_qp] = 0.0;
   _I2[_qp] = 0.0;
   _xi[_qp] = -sqrt(3);
@@ -234,6 +236,9 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   /* Compute Ee */
   RankTwoTensor Ee = 0.5 * (Fe.transpose() * Fe - RankTwoTensor::Identity());
 
+  /* Compute E */
+  RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + _Ep[_qp];
+
   /* Compute I1 */
   Real I1 = Ee.trace();
 
@@ -271,6 +276,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   _Fp[_qp] = Fp_updated;
   _Fe[_qp] = Fe;
   _Ee[_qp] = Ee;
+  _E[_qp]  = E;
   _I1[_qp] = I1;
   _I2[_qp] = I2;
   _xi[_qp] = xi;

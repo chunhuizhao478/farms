@@ -53,6 +53,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _Ee;
   /// Plastic Strain Tensor
   MaterialProperty<RankTwoTensor> & _Ep;
+  /// Total Lagrange Strain Tensor
+  MaterialProperty<RankTwoTensor> & _E;
   /// First Elastic Strain Invariant
   MaterialProperty<Real> & _I1;
   /// Second Elastic Strain Invariant
