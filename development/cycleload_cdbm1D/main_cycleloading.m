@@ -1,9 +1,9 @@
 %% 1D-Continuum-Damage-Breakage-Model %%
 %% main code %%
-clear all; clc; close all;
+% clear all; clc; close all;
 format long;
 %% import parameter %%
-[param] = struct_param();
+[param] = struct_param_cycleloading(C1_i,CBH_i);
 %% import variable %%
 [var] = struct_var();
 %% initialize material variable %%
@@ -17,10 +17,10 @@ xi_pre = var.xi;
 store_init_strain = var.eps(1,1);
 store_init_stress = var.sigma(1,1);
 %% define alpha threshold
-given_total_strain = -0.06;
+given_total_strain = strain_i;
 applied_total_strain = 0;
 %% number of cycles
-num_cycle = 5;
+num_cycle = num_cycle_val;
 cycle_index = 0;
 var.cycle_index_list = [];
 flag = 1;
@@ -114,5 +114,5 @@ end
 %% Plot figures %%
 plot_figure(var);
 %% Save data %%
-save_data(var,param,given_total_strain);
+save_data(var,param,folderName);
 disp("All done!")

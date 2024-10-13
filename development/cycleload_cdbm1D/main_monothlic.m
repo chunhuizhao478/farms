@@ -2,6 +2,8 @@
 %% main code %%
 clear all; clc; close all;
 format long;
+%%save path
+folder_name = 'results_monothlic/';
 %% import parameter %%
 [param] = struct_param();
 %% import variable %%
@@ -16,58 +18,15 @@ xi_pre = var.xi;
 %% Init Strain %%
 store_init_strain = var.eps(1,1);
 store_init_stress = var.sigma(1,1);
-%% define alpha threshold
-given_total_strain = -0.06;
-applied_total_strain = 0;
-%% number of cycles
-num_cycle = 5;
-cycle_index = 0;
-var.cycle_index_list = [];
-flag = 1;
 %% while loop %%
 while var.t < var.Tmax
       %% Set Time Step & strain increment %%
-%       %{
-      % if xi_pre > var.xi
-      %     var.strain_rate = -1e-4;
-      %     var.dt = 1e-2;
-      %     var.depsx = var.strain_rate * var.dt;
-      % else
-      %     var.strain_rate = -1e-4;
-      %     var.dt = 1e-1;
-      %     var.depsx = var.strain_rate * var.dt;
-      % end
-      %% Set Time Step & strain increment %%
-      if flag == 1
-        % Loading phase: apply negative strain increment until given_total_strain is reached
-        var.strain_rate = -1e-2;
-        var.dt = 1e-2;
-        var.depsx = var.strain_rate * var.dt;
-        applied_total_strain = applied_total_strain + var.depsx;
-        
-        if applied_total_strain <= given_total_strain
-            % Switch to unloading phase
-            flag = -1;  % Change flag to indicate unloading phase
-        end
-      elseif flag == -1
-        % Unloading phase: apply positive strain increment until strain (or stress) reaches 0
-        var.strain_rate = 1e-2;
-        var.dt = 1e-2;
-        var.depsx = var.strain_rate * var.dt;
-        applied_total_strain = applied_total_strain + var.depsx;
-        
-        if var.sigma(1,1)>=-1e7
-            % Switch back to loading phase for next cycle
-            flag = 1;  % Change flag to indicate loading phase
-            cycle_index = cycle_index + 1;  % Increment cycle index
-            var.cycle_index_list = [var.cycle_index_list cycle_index];
-            applied_total_strain = 0;  % Reset total strain for next cycle
-            disp(['Cycle: ', num2str(cycle_index), ' completed.']);
-        end
-      end
-      % Exit loop if number of cycles is completed
-      if cycle_index >= num_cycle
-            disp('All cycles completed.');
+      var.strain_rate = -1e-2;
+      var.dt = 1e-2;
+      var.depsx = var.strain_rate * var.dt;
+      % Exit loop if B = 1
+      if var.B == 1.0
+            disp('simulation completed.');
             break;
       end
       %% Compute alpha & B %%
@@ -114,5 +73,5 @@ end
 %% Plot figures %%
 plot_figure(var);
 %% Save data %%
-save_data(var,param,given_total_strain);
+save_data(var,param,folder_name);
 disp("All done!")

@@ -27,10 +27,14 @@ ylabel('damage variable')
 legend("Our Simulation")
 %% Stress strain plot %%
 figure(3);
-plot(-(var.eps_x_list),-(var.sigma_x_list),'r-.');
+plot(-(var.eps_x_list),-(var.sigma_x_list),'r-*'); hold on;
+plot(-(var.eps_x_list),-(var.sigmas_x_list),'b-'); hold on;
+plot(-(var.eps_x_list),-(var.sigmab_x_list),'k-'); hold on;
 title('strain vs stress')
 xlabel('strain')
 ylabel('stress')
+legend("total","elastic",'granular')
+ylim([0 23e6])
 %% Strain invariants ratio vs. Damage variable plot %%
 figure(4);
 plot(var.xi_list,var.alpha_list,"r-.")
@@ -38,11 +42,20 @@ title('strain inariant ratio vs damage variable')
 xlabel('strain inariant ratio')
 ylabel('damage variable')
 legend("Our Simulation")
-%% Plastic strain (nondecreasing function) %%
+%% Strain vs. Damage variable plot %%
 figure(5);
-plot(var.time_list,-(var.epsp_x_list),"r-.")
+plot(-(var.eps_x_list),var.alpha_list,"r-.")
+title('strain vs damage variable')
+xlabel('strain inariant ratio')
+ylabel('damage variable')
+legend("Our Simulation")
+%% Plastic strain (nondecreasing function) %%
+figure(6);
+plot(var.time_list,-(var.epsp_x_list),"r-"); hold on;
+plot(var.time_list,-(var.epse_x_list),"b-"); hold on;
+plot(var.time_list,-(var.eps_x_list),"k-"); hold on;
 title('time vs viscoelastic strain')
 xlabel('time')
 ylabel('viscoelastic strain')
-legend("Our Simulation")
+legend("viscoelastic strain","elastic strain","total strain")
 end
