@@ -110,8 +110,14 @@ SlipWeakeningFrictionczm2d::computeInterfaceTractionAndDerivatives()
   Real R_minus_local_n = R_minus_local(0);
   Real R_minus_local_t = R_minus_local(1);
 
-  // Compute node mass
-  Real M = _density[_qp] * _len * _len / 2;
+  // Compute node mass and area based on elem type
+  Real M = 0;
+  if (_current_elem->type() == libMesh::ElemType::TRI3){
+    M = _density[_qp] * sqrt(3) / 4 * _len * _len / 3 * 3;
+  }
+  else if (_current_elem->type() == libMesh::ElemType::QUAD4){
+    M = _density[_qp] * _len * _len / 4 * 2;
+  }
 
   // Compute T1_o, T2_o for current qp
   Real T1_o = _ini_shear_sts[_qp];

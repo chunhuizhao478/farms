@@ -5,14 +5,8 @@
 
 [Mesh]
     [./msh]
-      type = GeneratedMeshGenerator
-      dim = 2
-      nx = 400
-      ny = 400
-      xmin = -40000
-      xmax = 40000
-      ymin = -40000
-      ymax = 40000
+      type = FileMeshGenerator
+      file = '../../../meshgenerator/tpv2052d/tpv2052d_tria3.msh'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -32,13 +26,22 @@
       split_interface = true
       block_pairs = '1 2'
     []
+    [./sidesets]
+      input = split
+      type = SideSetsFromNormalsGenerator
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0'
+      new_boundary = 'left right bottom top'
+    []  
   []
 
   [GlobalParams]
     #primary variables
     displacements = 'disp_x disp_y'
     #damping ratio
-    q = 0.1
+    q = 0.2
     #characteristic length (m)
     Dc = 0.4
     #initial normal stress (Pa)
