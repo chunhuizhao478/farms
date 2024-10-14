@@ -117,17 +117,17 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   };
 
   // Compute dFedF
-  auto dFedF = [&](int i, int a, int k, int l) -> Real {
+  auto dFedF = [&](int i, int m, int k, int l) -> Real {
 
     //initialize value
-    Real dFedF_val = delta(i,k) * Fpinv(a,l);
+    Real dFedF_val = delta(i,k) * Fpinv(l,m);
 
-    //here apply summations to {b,j}
-    for (unsigned int j = 0; j < _dim; j++){
-      for (unsigned int b = 0; b < _dim; b++){
-        dFedF_val -= _Fe[_qp](i,b) * dFpdF(b,j,k,l) * Fpinv(a,j);
+    //here apply summations to {h,r}
+    for (unsigned int h = 0; h < _dim; h++){
+      for (unsigned int r = 0; r < _dim; r++){
+        dFedF_val -= _Fe[_qp](i,h) * dFpdF(h,r,k,l) * Fpinv(r,m);
       }
-    }
+    }    
 
     return dFedF_val;
 
@@ -149,15 +149,15 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   };
 
   // Compute dFpmdF
-  auto dFpmdF = [&](int j, int b, int k, int l) -> Real {
+  auto dFpmdF = [&](int j, int n, int k, int l) -> Real {
 
     //initialize value
     Real dFpmdF_val = 0.0;
 
     //here apply summations to {i,a}
     for (unsigned int i = 0; i < _dim; i++){
-      for (unsigned int a = 0; a < _dim; a++){
-        dFpmdF_val += -1.0 * Fpinv(b,i) * dFpdF(a,i,k,l) * Fpinv(j,a);
+      for (unsigned int m = 0; m < _dim; m++){
+        dFpmdF_val += -1.0 * Fpinv(j,i) * dFpdF(i,m,k,l) * Fpinv(m,n);
       }
     }
 
