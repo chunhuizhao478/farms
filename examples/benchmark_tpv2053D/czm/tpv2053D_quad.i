@@ -127,6 +127,10 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [./jump_y_rate]
+      order = CONSTANT
+      family = MONOMIAL
+    []
     [./jump_z_rate]
       order = CONSTANT
       family = MONOMIAL
@@ -212,6 +216,12 @@
       type = FDCompVarRate
       variable = jump_x_rate
       coupled = jump_x
+      execute_on = 'TIMESTEP_END'
+    []
+    [jump_y_rate]
+      type = FDCompVarRate
+      variable = jump_y_rate
+      coupled = jump_y
       execute_on = 'TIMESTEP_END'
     []
     [jump_z_rate]
@@ -357,7 +367,8 @@
 
   [Outputs]
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 10
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
   []
 
   [BCs]
