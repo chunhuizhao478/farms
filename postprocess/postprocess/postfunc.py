@@ -5,6 +5,7 @@ import os
 import glob
 from tqdm import tqdm
 from scipy.spatial import distance
+import shutil
 
 class postprocessclass:
 
@@ -166,12 +167,16 @@ class postprocessclass:
                 #get coordinate for current element
                 coord_data_x = self.nc.variables['coordx'][elem_connect_i]
                 coord_data_y = self.nc.variables['coordy'][elem_connect_i]  
-                coord_data_z = self.nc.variables['coordz'][elem_connect_i] 
+                if self.dim == 3:
+                    coord_data_z = self.nc.variables['coordz'][elem_connect_i] 
 
                 #get centroid by taking average of each dimension
                 self.list_elem_centroids[elem_ind,0] = np.sum(coord_data_x)/self.node_per_elem
                 self.list_elem_centroids[elem_ind,1] = np.sum(coord_data_y)/self.node_per_elem
-                self.list_elem_centroids[elem_ind,2] = np.sum(coord_data_z)/self.node_per_elem
+                if self.dim == 3:
+                    self.list_elem_centroids[elem_ind,2] = np.sum(coord_data_z)/self.node_per_elem
+
+                
 
         else:
 
@@ -198,12 +203,14 @@ class postprocessclass:
                     #get coordinate for current element
                     coord_data_x = self.nc.variables['coordx'][elem_connect_i]
                     coord_data_y = self.nc.variables['coordy'][elem_connect_i]  
-                    coord_data_z = self.nc.variables['coordz'][elem_connect_i] 
+                    if self.dim == 3:
+                        coord_data_z = self.nc.variables['coordz'][elem_connect_i] 
 
                     #get centroid by taking average of each dimension
                     self.list_elem_centroids[elem_ind,0] = np.sum(coord_data_x)/self.node_per_elem
                     self.list_elem_centroids[elem_ind,1] = np.sum(coord_data_y)/self.node_per_elem
-                    self.list_elem_centroids[elem_ind,2] = np.sum(coord_data_z)/self.node_per_elem
+                    if self.dim == 3:
+                        self.list_elem_centroids[elem_ind,2] = np.sum(coord_data_z)/self.node_per_elem
 
     def post_nodal(self, 
                    ptr_coord,
@@ -281,10 +288,14 @@ class postprocessclass:
             #load coordinate
             x_coord = self.list_elem_centroids[:,0]
             y_coord = self.list_elem_centroids[:,1]
-            z_coord = self.list_elem_centroids[:,2]
+            if self.dim == 3:
+                z_coord = self.list_elem_centroids[:,2]
 
             #find index of that point
-            idc = self.helper_find_nearest(x_coord[:], ptr_x, y_coord[:], ptr_y, z_coord[:], ptr_z)
+            if self.dim == 3:
+                idc = self.helper_find_nearest(x_coord[:], ptr_x, y_coord[:], ptr_y, z_coord[:], ptr_z)
+            else:
+                idc = self.helper_find_nearest(x_coord[:], ptr_x, y_coord[:], ptr_y)
 
             print("Loading time array ...")
 
@@ -297,13 +308,20 @@ class postprocessclass:
             ptr_valhist = arr_param[:,idc]
 
             #save data
-            np.savetxt(self.save_file_path+'/'+self.plotvar[plotvar_i]+'_strike'+str(ptr_x/1000)+'_dip'+str(ptr_y/1000)+'.txt',
-                ptr_valhist,
-                fmt='%.7f',
-                newline=" ")
+            if self.dim == 3:
+                np.savetxt(self.save_file_path+'/'+self.plotvar[plotvar_i]+'_strike'+str(ptr_x/1000)+'_dip'+str(ptr_y/1000)+'.txt',
+                    ptr_valhist,
+                    fmt='%.7f',
+                    newline=" ")
+            else:
+                np.savetxt(self.save_file_path+'/'+self.plotvar[plotvar_i]+'_strike'+str(ptr_x/1000)+'_dip'+str(ptr_z/1000)+'.txt',
+                    ptr_valhist,
+                    fmt='%.7f',
+                    newline=" ")               
             np.savetxt(self.save_file_path+"/list_timeseries.txt",timeseries)
+            np.savetxt(self.save_file_path+"/list_elem_centroids.txt",self.list_elem_centroids)
 
-    def helper_find_nearest(self,array_x, value_x, array_y, value_y, array_z, value_z):
+    def helper_find_nearest(self,array_x, value_x, array_y, value_y, array_z = None, value_z = None):
     
         """
         This function is used to find the closet node to the given coordinates
@@ -311,18 +329,33 @@ class postprocessclass:
 
         print("Start finding nearest point ...")
 
-        #
-        array_x = array_x[:].reshape((len(array_x),1))
-        array_y = array_y[:].reshape((len(array_y),1))
-        array_z = array_z[:].reshape((len(array_y),1))
+        if self.dim == 3:
+            
+            #
+            array_x = array_x[:].reshape((len(array_x),1))
+            array_y = array_y[:].reshape((len(array_y),1))
+            array_z = array_z[:].reshape((len(array_y),1))
 
-        #
-        nodes = np.hstack((array_x,array_y,array_z))
-        node = np.hstack((value_x,value_y,value_z))
+            #
+            nodes = np.hstack((array_x,array_y,array_z))
+            node = np.hstack((value_x,value_y,value_z))
 
-        closest_index = distance.cdist([node], nodes).argmin()
+            closest_index = distance.cdist([node], nodes).argmin()
 
-        print("Find point! x: "+str(nodes[closest_index][0])+" y: "+str(nodes[closest_index][1])+" z: "+str(nodes[closest_index][2]))
+        else:
+
+            #
+            array_x = array_x[:].reshape((len(array_x),1))
+            array_y = array_y[:].reshape((len(array_y),1))
+
+            #
+            nodes = np.hstack((array_x,array_y))
+            node = np.hstack((value_x,value_y))
+
+            closest_index = distance.cdist([node], nodes).argmin()
+
+
+            print("Find point! x: "+str(nodes[closest_index][0])+" y: "+str(nodes[closest_index][1]))
 
         return closest_index
 
@@ -458,6 +491,19 @@ class systemops:
                 print(f"Removed: {f}")
             except OSError as e:
                 print(f"Error: {e.strerror} - {f}")
+
+    def remove_specific_folders(folder_path, folders_to_remove):
+        # Iterate over the list of folders you want to remove
+        for folder in folders_to_remove:
+            full_path = os.path.join(folder_path, folder)
+            if os.path.isdir(full_path):  # Check if it's a directory
+                try:
+                    shutil.rmtree(full_path)  # Recursively delete the directory
+                    print(f"Removed folder: {full_path}")
+                except OSError as e:
+                    print(f"Error: {e.strerror} - {full_path}")
+            else:
+                print(f"Folder not found: {full_path}")
     
     def rename_folder(old_name, new_name):
         try:
