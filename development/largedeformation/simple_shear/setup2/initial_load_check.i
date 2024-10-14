@@ -115,7 +115,7 @@
     []
     [fix_bottom_z]
         type = DirichletBC
-        variable = disp_y
+        variable = disp_z
         boundary = bottom
         value = 0
     []   

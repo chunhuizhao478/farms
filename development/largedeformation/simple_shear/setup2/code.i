@@ -162,7 +162,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain plastic_deformation_gradient_det'
         outputs = exodus
         block = 0
     []
@@ -176,8 +176,6 @@
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
         block = 1
     []
 []  
@@ -211,8 +209,8 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
-    nl_abs_tol = 1e-8
+    nl_max_its = 5
+    nl_abs_tol = 1e-6
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     automatic_scaling = true
@@ -230,8 +228,8 @@
     #     reject_large_step = true
     # []
     [./TimeIntegrator]
-        type = ImplicitEuler
-        # type = BDF2
+        # type = ImplicitEuler
+        type = BDF2
         # type = CrankNicolson
         # type = ImplicitMidpoint
         # type = LStableDirk2
@@ -267,7 +265,7 @@
     []
     [fix_bottom_z]
         type = DirichletBC
-        variable = disp_y
+        variable = disp_z
         boundary = bottom
         value = 0
     []   

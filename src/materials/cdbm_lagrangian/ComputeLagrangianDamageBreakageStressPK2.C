@@ -22,6 +22,7 @@ ComputeLagrangianDamageBreakageStressPK2::validParams()
 ComputeLagrangianDamageBreakageStressPK2::ComputeLagrangianDamageBreakageStressPK2(const InputParameters & parameters)
   : ComputeLagrangianStressPK1(parameters),
   _Fp(declareProperty<RankTwoTensor>(_base_name + "plastic_deformation_gradient")),
+  _Jp(declareProperty<Real>(_base_name + "plastic_deformation_gradient_det")),
   _Fe(declareProperty<RankTwoTensor>(_base_name + "elastic_deformation_gradient")),
   _Tau(declareProperty<RankTwoTensor>(_base_name + "deviatroic_stress")),
   _Ee(declareProperty<RankTwoTensor>(_base_name + "green_lagrange_elastic_strain")),
@@ -80,8 +81,11 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK1Stress()
   // PK2 update
   computeQpPK2Stress();
 
-  // Compute Jp, Fp^{-1}
+  // Compute Jp, Fp^{-1} //depends on the plastic deformation rate, here no volumetric strain upodate, Jp = 1 (checked)
   Real Jp = _Fp[_qp].det();
+  //save
+  _Jp[_qp] = Jp;
+
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
 
   // Compute Fp_dot, F_dot
@@ -236,8 +240,11 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   /* Compute Ee */
   RankTwoTensor Ee = 0.5 * (Fe.transpose() * Fe - RankTwoTensor::Identity());
 
+  /* Compute Ep */
+  RankTwoTensor Ep = 0.5 * (Fp_updated.transpose() * Fp_updated - RankTwoTensor::Identity());
+
   /* Compute E */
-  RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + _Ep[_qp];
+  RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + Ep;
 
   /* Compute I1 */
   Real I1 = Ee.trace();
@@ -260,6 +267,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
 
   //save
+  _Ep[_qp] = Ep;
   _S[_qp] = sigma_total;
 
   //compute deviatroic stress tensor //save
@@ -293,8 +301,8 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpFp()
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * Tau_old_power_m2; 
 
-  //Update Plastic Strain
-  _Ep[_qp] = _Ep_old[_qp] + Dp * _dt;
+  // //Update Plastic Strain
+  // _Ep[_qp] = _Ep_old[_qp] + Dp * _dt;
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;

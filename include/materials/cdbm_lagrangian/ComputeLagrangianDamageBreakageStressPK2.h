@@ -45,6 +45,8 @@ protected:
   /* Declare Material Properties */
   /// Plastic Deformation Gradient
   MaterialProperty<RankTwoTensor> & _Fp;
+  /// Determinant of Plastic Deformation Gradient
+  MaterialProperty<Real> & _Jp;
   /// Elastic Deformation Gradient
   MaterialProperty<RankTwoTensor> & _Fe;
   /// Deviatoric Stress Tensor
