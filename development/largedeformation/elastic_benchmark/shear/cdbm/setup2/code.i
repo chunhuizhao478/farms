@@ -256,7 +256,7 @@
     []
     [fix_bottom_z]
         type = DirichletBC
-        variable = disp_y
+        variable = disp_z
         boundary = bottom
         value = 0
     []   
@@ -275,25 +275,25 @@
     [./Pressure]
         [static_pressure_back]
             boundary = back
-            factor = 10e6
+            factor = 80e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_front]
             boundary = front
-            factor = 10e6
+            factor = 80e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []    
         [static_pressure_left]
             boundary = left
-            factor = 10e6
+            factor = 80e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_right]
             boundary = right
-            factor = 10e6
+            factor = 80e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []         
