@@ -10,7 +10,7 @@
     # file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane_farms.msh'
     # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
     # file = '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
-    file = '../../../meshgenerator/tpv205/tpv2053d_xyplane_box.msh'
+    file = '../../../../meshgenerator/tpv205/tpv2053d_xyplane_box.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
