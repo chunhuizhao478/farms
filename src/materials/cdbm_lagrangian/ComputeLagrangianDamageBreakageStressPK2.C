@@ -259,7 +259,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
 
   /* Compute xi */
   //here we may need to add small number to avoid singularity
-  Real xi = I1 / (std::sqrt(I2));
+  Real xi = (I1 + 1e-12) / (1e-12 + std::sqrt(I2));
 
   /* Compute stress */
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
