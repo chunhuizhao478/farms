@@ -1,18 +1,8 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 100
-        ny = 100
-        xmin = -10
-        xmax = 10
-        ymin = -10
-        ymax = 10
-    [] 
-    # [./msh]
-    #     type = FileMeshGenerator
-    #     file = './meshfile/cyclesim.msh'
-    # []
+        type = FileMeshGenerator
+        file = './meshfile/tpv2052dm.msh'
+    []
     [./sidesets]
         input = msh
         type = SideSetsFromNormalsGenerator
@@ -21,20 +11,6 @@
                     0 -1 0
                     0 1 0'
         new_boundary = 'left right bottom top'
-    []
-    [./elasticblock_1]
-        type = SubdomainBoundingBoxGenerator    
-        input = sidesets
-        block_id = 1
-        bottom_left = '-10 -10 0'
-        top_right = '10 -0.4 0'
-    []
-    [./elasticblock_2]
-        type = SubdomainBoundingBoxGenerator    
-        input = elasticblock_1
-        block_id = 1
-        bottom_left = '-10 0.4 0'
-        top_right = '10 10 0'
     []
 []
 
@@ -65,7 +41,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 30
+    Cd_constant = 300
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -230,28 +206,28 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = 0
+        block = 1
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = 0
+        block = 1
     []
     # elastic
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         lambda = 1e10
         shear_modulus = 1e10
-        block = 1
+        block = 2
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
         outputs = exodus
-        block = 1
+        block = 2
     []
     # [initialdamage]
     #     type = ParsedMaterial
@@ -291,7 +267,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = 0
-    end_time = 1e10
+    end_time = 1e100
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -307,7 +283,7 @@
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 0.01
-        cutback_factor_at_failure = 0.1
+        cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.5
         enable = true
@@ -323,7 +299,12 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1000
+    time_step_interval = 10
+    [./my_checkpoint]
+        type = Checkpoint
+        num_files = 2
+        interval = 5
+    [../]
 []
 
 [BCs]
@@ -334,9 +315,9 @@
         boundary = top
     []
     [bc_fix_bottom_x]
-        type = FunctionDirichletBC
+        type = DirichletBC
         variable = disp_x
-        function = func_bot_bc
+        value = 0
         boundary = bottom
     []
     [bc_fix_bottom_y]
@@ -367,13 +348,13 @@
         type = NeumannBC
         variable = disp_x
         boundary = left
-        value = 120e6
+        value = 135e6
     [../]
     [./neumann_right_x]
         type = NeumannBC
         variable = disp_x
         boundary = right
-        value = -120e6
+        value = -135e6
     [../]
 []
 

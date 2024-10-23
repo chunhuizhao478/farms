@@ -2,30 +2,51 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
-        ny = 10
+        nx = 40
+        ny = 11
         nz = 10
         xmin = 0
-        xmax = 1
+        xmax = 4
         ymin = 0
-        ymax = 1
+        ymax = 1.1
         zmin = 0
         zmax = 1
-    [] 
+    []  
     [./box]
         type = SubdomainBoundingBoxGenerator
         input = msh
         block_id = 1
         bottom_left = '0 0 0'
-        top_right = '1 0.5 1'
+        top_right = '4.0 0.3 1.0'
     []
     [./box2]
         type = SubdomainBoundingBoxGenerator
         input = box
         block_id = 1
-        bottom_left = '0 0.6 0'
-        top_right = '1.0 1.0 1.0'
+        bottom_left = '0 0.8 0'
+        top_right = '4.0 1.1 1.0'
+    []
+    [./box3]
+        type = SubdomainBoundingBoxGenerator
+        input = box2
+        block_id = 1
+        bottom_left = '0 0 0'
+        top_right = '0.2 1.1 1.0'
     [] 
+    [./box4]
+        type = SubdomainBoundingBoxGenerator
+        input = box3
+        block_id = 1
+        bottom_left = '3.8 0 0'
+        top_right = '4.0 1.1 1.0'
+    []
+    [./box5]
+        type = SubdomainBoundingBoxGenerator
+        input = box4
+        block_id = 1
+        bottom_left = '0 0 0'
+        top_right = '4.0 1.1 0.2'
+    []
 []
 
 [GlobalParams]
@@ -63,10 +84,10 @@
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 0
+    CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 0
+    C_1 = 300
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -276,12 +297,6 @@
         boundary = bottom
         value = 0
     []   
-    [fix_top_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = top
-        value = 0
-    [] 
     [applied_top_x]
         type = FunctionDirichletBC
         variable = disp_x
@@ -291,29 +306,35 @@
     [./Pressure]
         [static_pressure_back]
             boundary = back
-            factor = 80e6
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_front]
             boundary = front
-            factor = 80e6
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []    
         [static_pressure_left]
             boundary = left
-            factor = 80e6
+            factor = 135e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_right]
             boundary = right
-            factor = 80e6
+            factor = 135e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
-        []         
-    []    
+        [] 
+        [static_pressure_top]
+            boundary = top
+            factor = 120e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []          
+    []       
 []
 
 [UserObjects]

@@ -2,19 +2,9 @@
 
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 100
-        ny = 100
-        xmin = -10
-        xmax = 10
-        ymin = -10
-        ymax = 10
-    [] 
-    # [./msh]
-    #     type = FileMeshGenerator
-    #     file = './meshfile/cyclesim.msh'
-    # []
+        type = FileMeshGenerator
+        file = './meshfile/tpv2052dm.msh'
+    []
     [./sidesets]
         input = msh
         type = SideSetsFromNormalsGenerator
@@ -88,6 +78,7 @@
 [Executioner]
     type = Steady
     solve_type = 'NEWTON'
+    automatic_scaling = true
 []  
 
 [Outputs]
@@ -135,12 +126,12 @@
         type = NeumannBC
         variable = disp_x
         boundary = left
-        value = 120e6
+        value = 135e6
     [../]
     [./neumann_right_x]
         type = NeumannBC
         variable = disp_x
         boundary = right
-        value = -120e6
+        value = -135e6
     [../]
 []

@@ -2,22 +2,16 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
-        ny = 10
+        nx = 40
+        ny = 11
         nz = 10
         xmin = 0
-        xmax = 1
+        xmax = 2000
         ymin = 0
-        ymax = 1
+        ymax = 550
         zmin = 0
-        zmax = 1
-    [] 
-    [./extranodeset1]
-        type = ExtraNodesetGenerator
-        coord = '0 0 1'
-        new_boundary = corner_ptr
-        input = msh
-    [] 
+        zmax = 500
+    []  
 []
 
 [GlobalParams]
@@ -119,12 +113,6 @@
         boundary = bottom
         value = 0
     []   
-    [fix_top_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = top
-        value = 0
-    [] 
     [applied_top_x]
         type = DirichletBC
         variable = disp_x
@@ -134,25 +122,31 @@
     [./Pressure]
         [static_pressure_back]
             boundary = back
-            factor = 80e6
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_front]
             boundary = front
-            factor = 80e6
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []    
         [static_pressure_left]
             boundary = left
-            factor = 80e6
+            factor = 135e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_right]
             boundary = right
-            factor = 80e6
+            factor = 135e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        [] 
+        [static_pressure_top]
+            boundary = top
+            factor = 120e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []         
