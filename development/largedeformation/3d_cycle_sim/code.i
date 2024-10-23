@@ -1,31 +1,19 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 3
-        nx = 10
-        ny = 10
-        nz = 10
-        xmin = 0
-        xmax = 1
-        ymin = 0
-        ymax = 1
-        zmin = 0
-        zmax = 1
-    [] 
-    [./box]
-        type = SubdomainBoundingBoxGenerator
-        input = msh
-        block_id = 1
-        bottom_left = '0 0 0'
-        top_right = '1 0.5 1'
+        type = FileMeshGenerator
+        file = './meshfile/tpv2053dm.msh'
     []
-    [./box2]
-        type = SubdomainBoundingBoxGenerator
-        input = box
-        block_id = 1
-        bottom_left = '0 0.6 0'
-        top_right = '1.0 1.0 1.0'
-    [] 
+    [./sidesets]
+        input = msh
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0
+                    0 0 -1
+                    0 0 1'
+        new_boundary = 'left right front back bottom top'
+    []  
 []
 
 [GlobalParams]
@@ -63,10 +51,10 @@
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 0
+    CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 0
+    C_1 = 300
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -138,9 +126,29 @@
         component = 2
         large_kinematics = true
     []  
+    [./inertia_x]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_x
+    []
+    [./inertia_y]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_y
+    []
+    [./inertia_z]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_z
+    []
 []
 
 [Materials]
+    [density]
+        type = GenericConstantMaterial
+        prop_names = 'density'
+        prop_values = '2700'
+    [] 
     [strain]
         type = ComputeLagrangianStrain
         large_kinematics = true
@@ -152,7 +160,7 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = 0
+        block = 1
     [] 
     [initial_damage]
         type = GenericConstantMaterial
@@ -164,31 +172,29 @@
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain plastic_deformation_gradient_det'
         outputs = exodus
-        block = 0
+        block = 1
     []
     # elastic
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         lambda = 1e10
         shear_modulus = 1e10
-        block = 1
+        block = 2
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
-        block = 1
+        block = 2
     []
 []  
 
-[Functions]
-    [applied_load_top]
-        type = ParsedFunction
-        expression = 'if (t>dt, 1e-2 + 1e-4 * t, 1e-2)'
-        symbol_names = 'dt'
-        symbol_values = '1e-2'
-    []
-[]
 
+[Functions]
+    [func_back_bc]
+        type = ParsedFunction
+        expression = '1e-9*t'
+    []  
+[]
 
 [Preconditioning]
     [smp]
@@ -210,38 +216,25 @@
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 5
-    nl_abs_tol = 1e-6
+    nl_abs_tol = 1e-8
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 5
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     dt = 0.01
-    #     cutback_factor_at_failure = 0.1
-    #     optimal_iterations = 10
-    #     growth_factor = 1.2
-    #     enable = true
-    #     reject_large_step_threshold = 0.01
-    #     reject_large_step = true
-    # []
+    # dt = 5
+    [TimeStepper]
+        type = IterationAdaptiveDT
+        dt = 5
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 10
+        growth_factor = 1.5
+        enable = true
+        reject_large_step_threshold = 0.01
+        reject_large_step = true
+    []
     [./TimeIntegrator]
-        # type = ImplicitEuler
-        type = BDF2
-        # type = CrankNicolson
-        # type = ImplicitMidpoint
-        # type = LStableDirk2
-        # type = LStableDirk3
-        # type = LStableDirk4
-        # type = AStableDirk4
-        #
-        # Explicit methods
-        # type = ExplicitEuler
-        # type = ExplicitMidpoint
-        # type = Heun
-        # type = Ralston
+        type = NewmarkBeta
     [../]
 []
 
@@ -251,58 +244,58 @@
 []
 
 [BCs]
-    [fix_bottom_x]
+    [fix_front_x]
         type = DirichletBC
         variable = disp_x
-        boundary = bottom
+        boundary = front
         value = 0
     []
-    [fix_bottom_y]
+    [fix_front_y]
         type = DirichletBC
         variable = disp_y
-        boundary = bottom
+        boundary = front
         value = 0
     []
-    [fix_bottom_z]
+    [fix_front_z]
         type = DirichletBC
         variable = disp_z
-        boundary = bottom
+        boundary = front
         value = 0
     []   
-    [fix_top_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = top
-        value = 0
-    [] 
-    [applied_top_x]
+    [applied_back_x]
         type = FunctionDirichletBC
         variable = disp_x
-        boundary = top
-        function = applied_load_top
+        boundary = back
+        function = func_back_bc
     []
     [./Pressure]
-        [static_pressure_back]
-            boundary = back
-            factor = 80e6
+        [static_pressure_top]
+            boundary = top
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
-        [static_pressure_front]
-            boundary = front
-            factor = 80e6
+        [static_pressure_bottom]
+            boundary = bottom
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []    
         [static_pressure_left]
             boundary = left
-            factor = 80e6
+            factor = 135e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_right]
             boundary = right
-            factor = 80e6
+            factor = 135e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        [] 
+        [static_pressure_back]
+            boundary = back
+            factor = 120e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []         

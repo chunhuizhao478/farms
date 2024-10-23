@@ -1,17 +1,19 @@
 [Mesh]
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 3
-        nx = 100
-        ny = 100
-        nz = 1
-        xmin = -10
-        xmax = 10
-        ymin = -10
-        ymax = 10
-        zmin = 0
-        zmax = 0.2
-    [] 
+        type = FileMeshGenerator
+        file = './meshfile/tpv2053dm.msh'
+    []
+    [./sidesets]
+        input = msh
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0
+                    0 0 -1
+                    0 0 1'
+        new_boundary = 'left right front back bottom top'
+    []  
 []
 
 [GlobalParams]
@@ -88,6 +90,8 @@
 
 [Executioner]
     type = Steady
+    automatic_scaling = true
+    solve_type = 'NEWTON'
 []
 
 [Outputs] 
@@ -95,58 +99,58 @@
 []
 
 [BCs]
-    [fix_bottom_x]
+    [fix_front_x]
         type = DirichletBC
         variable = disp_x
-        boundary = bottom
+        boundary = front
         value = 0
     []
-    [fix_bottom_y]
+    [fix_front_y]
         type = DirichletBC
         variable = disp_y
-        boundary = bottom
+        boundary = front
         value = 0
     []
-    [fix_bottom_z]
+    [fix_front_z]
         type = DirichletBC
         variable = disp_z
-        boundary = bottom
+        boundary = front
         value = 0
     []   
-    [fix_top_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = top
-        value = 0
-    [] 
-    [applied_top_x]
+    [applied_back_x]
         type = DirichletBC
         variable = disp_x
-        boundary = top
+        boundary = back
         value = 0
     []
     [./Pressure]
-        [static_pressure_back]
-            boundary = back
-            factor = 80e6
+        [static_pressure_top]
+            boundary = top
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
-        [static_pressure_front]
-            boundary = front
-            factor = 80e6
+        [static_pressure_bottom]
+            boundary = bottom
+            factor = 63.75e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []    
         [static_pressure_left]
             boundary = left
-            factor = 80e6
+            factor = 135e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []  
         [static_pressure_right]
             boundary = right
-            factor = 80e6
+            factor = 135e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        [] 
+        [static_pressure_back]
+            boundary = back
+            factor = 120e6
             displacements = 'disp_x disp_y disp_z'
             use_displaced_mesh = false
         []         
