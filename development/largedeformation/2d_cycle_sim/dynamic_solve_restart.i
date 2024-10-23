@@ -368,20 +368,20 @@
     [../]
 []
 
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-[]
+# [ICs]
+#     [disp_x_ic]
+#       type = SolutionIC
+#       variable = disp_x
+#       solution_uo = init_sol_components
+#       from_variable = disp_x
+#     []
+#     [disp_y_ic]
+#       type = SolutionIC
+#       variable = disp_y
+#       solution_uo = init_sol_components
+#       from_variable = disp_y
+#     []
+# []
 
 [Problem]
     restart_file_base = dynamic_solve_my_checkpoint_cp/LATEST  # You may also use a specific number here
