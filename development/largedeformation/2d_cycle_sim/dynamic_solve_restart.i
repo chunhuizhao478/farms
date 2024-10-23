@@ -382,3 +382,7 @@
       from_variable = disp_y
     []
 []
+
+[Problem]
+    restart_file_base = dynamic_solve_my_checkpoint_cp/LATEST  # You may also use a specific number here
+[]
