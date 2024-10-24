@@ -22,14 +22,12 @@ ADInitialDamageCycleSim2D::validParams()
 {
   InputParameters params = Material::validParams();
   params.addClassDescription("Material used in defining initial damage profile");
-  params.addRequiredParam<std::vector<Real>>("geoparams", "geometry parameters coordinates (fault_ymin, fault_ymax, DB_ymin, DB_ymax)");
   return params;
 }
 
 ADInitialDamageCycleSim2D::ADInitialDamageCycleSim2D(const InputParameters & parameters)
   : Material(parameters),
-  _initial_damage(declareADProperty<Real>("initial_damage")),
-  _geoparams(getParam<std::vector<Real>>("geoparams"))
+  _initial_damage(declareADProperty<Real>("initial_damage"))
 {
 }
 
@@ -47,15 +45,19 @@ ADInitialDamageCycleSim2D::computeQpProperties()
 
   ADReal alpha_o = 0;
 
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::weibull_distribution<double> wb_distribution(2.0,0.05);
+  // std::random_device rd;
+  // std::mt19937 gen(rd());
+  // std::weibull_distribution<double> wb_distribution(2.0,0.05);
 
-  if (y_coord >= _geoparams[0] and y_coord <= _geoparams[1]){
-    alpha_o = 0.7;
-  }
-  else if (y_coord >= _geoparams[2] and y_coord <= _geoparams[3]){
-    alpha_o = 0.0;
+  // Real value = 1.0;
+  // while( value > 0.1 ){
+  //   value = wb_distribution(gen);
+  // }
+
+  ADReal r = y_coord;
+  ADReal sigma = 2e2;
+  if (x_coord > -10000 and x_coord < 10000){
+    alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
   else{
     alpha_o = 0.0;

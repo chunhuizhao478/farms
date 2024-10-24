@@ -32,7 +32,4 @@ protected:
   /// ADMaterial property initial damage profile
   ADMaterialProperty<Real> & _initial_damage;
 
-  /// region of fault plane (fault_ymin,fault_ymax,DB_ymin,DB_ymax)
-  std::vector<Real> _geoparams;
-
 };
