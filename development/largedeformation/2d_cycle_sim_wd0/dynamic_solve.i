@@ -70,7 +70,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.5
+    chi = 0.7
     
 []
 
@@ -215,14 +215,14 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3'
+        block = '1 3 4 5'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = '1 3'
+        block = '1 3 4 5'
     []
     # elastic
     [elastic_tensor]
@@ -281,13 +281,17 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 8
+    nl_max_its = 20
     nl_abs_tol = 1e-8
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
-    # automatic_scaling = true
+    # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
+    # petsc_options_value = '101                asm      lu'
+    # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+    automatic_scaling = true
     # nl_forced_its = 3
-    line_search = 'none'
+    # line_search = basic
     # dt = 20
     [TimeStepper]
         type = IterationAdaptiveDT
@@ -308,11 +312,11 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 10
     [./my_checkpoint]
         type = Checkpoint
         num_files = 2
-        interval = 100
+        interval = 10
     [../]
 []
 
@@ -365,6 +369,86 @@
         boundary = right
         value = -135e6
     [../]
+    # [./dashpot_top_x]
+    #     type = NonReflectDashpotBC
+    #     component = 0
+    #     variable = disp_x
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = top
+    # []
+    # [./dashpot_top_y]
+    #     type = NonReflectDashpotBC
+    #     component = 1
+    #     variable = disp_y
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = top
+    # []
+    # [./dashpot_bottom_x]
+    #     type = NonReflectDashpotBC
+    #     component = 0
+    #     variable = disp_x
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = bottom
+    # []
+    # [./dashpot_bottom_y]
+    #     type = NonReflectDashpotBC
+    #     component = 1
+    #     variable = disp_y
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = bottom
+    # []
+    # [./dashpot_left_x]
+    #     type = NonReflectDashpotBC
+    #     component = 0
+    #     variable = disp_x
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = left
+    # []
+    # [./dashpot_left_y]
+    #     type = NonReflectDashpotBC
+    #     component = 1
+    #     variable = disp_y
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = left
+    # []
+    # [./dashpot_right_x]
+    #     type = NonReflectDashpotBC
+    #     component = 0
+    #     variable = disp_x
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = right
+    # []
+    # [./dashpot_right_y]
+    #     type = NonReflectDashpotBC
+    #     component = 1
+    #     variable = disp_y
+    #     disp_x = disp_x
+    #     disp_y = disp_y
+    #     p_wave_speed = 6000
+    #     shear_wave_speed = 3464
+    #     boundary = right
+    # []
 []
 
 [UserObjects]

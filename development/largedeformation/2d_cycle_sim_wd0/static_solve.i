@@ -62,12 +62,14 @@
     []
     [compute_xi]
         type = ADComputeXi
+        output_properties = 'xi_initial'
+        outputs = exodus
     []
     [initial_damage_strip]
         type = ADGenericConstantMaterial
         prop_names = 'initial_damage'
         prop_values = '0.7'
-        block = 1
+        block = '4 5'
         output_properties = 'initial_damage'
         outputs = exodus
     []
@@ -82,6 +84,14 @@
         prop_names = 'initial_damage'
         prop_values = '0'
         block = '2'
+        output_properties = 'initial_damage'
+        outputs = exodus
+    []
+    [initial_damage_nucl]
+        type = ADGenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0.75'
+        block = '1'
         output_properties = 'initial_damage'
         outputs = exodus
     []

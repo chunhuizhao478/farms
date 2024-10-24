@@ -22,6 +22,12 @@ smalld_xmax = 10000;
 smalld_ymin = -50;
 smalld_ymax = 50;
 
+// Define the nucleation patch (2D)
+nucl_xmin = -200;
+nucl_xmax = 200;
+nucl_ymin = -50;
+nucl_ymax = 50;
+
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};
 Point(2) = {big_xmax, big_ymin, 0, lc};
@@ -58,18 +64,32 @@ Line(10) = {10,11};
 Line(11) = {11,12};
 Line(12) = {12, 9};
 
+// Define points for the nucleation patch
+Point(13) = {nucl_xmin, nucl_ymin, 0, lc_fault};
+Point(14) = {nucl_xmax, nucl_ymin, 0, lc_fault};
+Point(15) = {nucl_xmax, nucl_ymax, 0, lc_fault};
+Point(16) = {nucl_xmin, nucl_ymax, 0, lc_fault};
+
+// Define lines for the small box
+Line(13) = {13, 14};
+Line(14) = {14,15};
+Line(15) = {15,16};
+Line(16) = {16,13};
+
 // Create line loops
 Line Loop(1) = {1, 2, 3, 4};  // Big square
 Line Loop(2) = {5, 6, 7, 8};  // Small box
 Line Loop(3) = {9,10,11,12};  // Initial Damage
+Line Loop(4) = {13,14,15,16};  // Nucleation Patch
 
 // Create surfaces for the big square and small box
 Plane Surface(1) = {1};  // Big square surface
 Plane Surface(2) = {2};  // Small box surface
 Plane Surface(3) = {3};  // Small box surface
+Plane Surface(4) = {4};  // Small box surface
 
 // Boolean operation to fragment all surfaces (assuming Surface IDs are 1 and 2)
-BooleanFragments{ Surface{1,2,3}; Delete; }{}
+BooleanFragments{ Surface{1,2,3,4}; Delete; }{}
 
 // Field 1: Mesh size inside the fault zone
 Field[1] = Box;
