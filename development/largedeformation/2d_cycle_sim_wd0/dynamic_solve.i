@@ -312,7 +312,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 10
+    time_step_interval = 100
     [./my_checkpoint]
         type = Checkpoint
         num_files = 2
