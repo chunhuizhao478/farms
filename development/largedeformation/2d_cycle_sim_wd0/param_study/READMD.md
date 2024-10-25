@@ -1,0 +1,1 @@
+** (1) Effects of Healing Rate
