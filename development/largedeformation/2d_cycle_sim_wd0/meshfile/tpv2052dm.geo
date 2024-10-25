@@ -19,14 +19,14 @@ small_ymax = 500;
 // Define the initial damage box (2D)
 smalld_xmin = -10000;
 smalld_xmax = 10000;
-smalld_ymin = -50;
-smalld_ymax = 50;
+smalld_ymin = -25;
+smalld_ymax = 25;
 
 // Define the nucleation patch (2D)
 nucl_xmin = -200;
 nucl_xmax = 200;
-nucl_ymin = -50;
-nucl_ymax = 50;
+nucl_ymin = -25;
+nucl_ymax = 25;
 
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};

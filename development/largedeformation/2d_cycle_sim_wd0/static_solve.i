@@ -90,7 +90,7 @@
     [initial_damage_nucl]
         type = ADGenericConstantMaterial
         prop_names = 'initial_damage'
-        prop_values = '0.75'
+        prop_values = '0.7'
         block = '1'
         output_properties = 'initial_damage'
         outputs = exodus
