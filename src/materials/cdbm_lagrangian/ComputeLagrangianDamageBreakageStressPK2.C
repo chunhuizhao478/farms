@@ -259,7 +259,9 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
 
   /* Compute xi */
   //here we may need to add small number to avoid singularity
-  Real xi = (I1 + 1e-12) / (1e-12 + std::sqrt(I2));
+  Real xi = (I1) / (std::sqrt(I2));
+  //Catch the nan error in the initial solve
+  if (std::isnan(xi)){xi = -std::sqrt(3);}
 
   /* Compute stress */
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
@@ -340,7 +342,20 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(RankFourTensor
 
   //dxi_dE_{kl}
   auto dxidE = [&](int k, int l) -> Real {
-    return delta(k,l) * pow(I2,-0.5) - 0.5 * pow(I2,-1.5) * dI2dE(k,l) * I1;
+    
+    // Epsilon to avoid division by zero
+    const Real epsilon = 1e-12;
+    // Adjust I2 if necessary
+    Real adjusted_I2 = I2;
+    if (I2 <= epsilon) {
+      //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
+      adjusted_I2 = epsilon;
+    }
+
+    Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
+    //mooseInfo("I1 = ", I1, ", I2 = ", I2);
+    if (std::isnan(dxidE)){mooseError("dxidE");}
+    return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
   };
 
   //dE_{ij}_dE_{kl}
@@ -365,6 +380,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(RankFourTensor
     dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
     dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
     dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
+    if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
     return dSedE_components;
   };
 
@@ -387,6 +403,7 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpTangentModulus(RankFourTensor
     for (unsigned int j = 0; j < _dim; j++){
       for (unsigned int k = 0; k < _dim; k++){
         for (unsigned int l = 0; l < _dim; l++){
+          if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
           tangent(i,j,k,l) += dSdE(i,j,k,l);
         }
       }

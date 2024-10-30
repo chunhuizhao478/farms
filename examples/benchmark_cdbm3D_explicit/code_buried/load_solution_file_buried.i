@@ -228,7 +228,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi'
+        output_properties = 'B alpha_damagedvar xi stress'
         outputs = exodus
     [] 
     [initial_damage]

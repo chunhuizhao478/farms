@@ -12,11 +12,21 @@
                     0 1 0'
         new_boundary = 'left right bottom top'
     []
+    [./extranodeset1]
+        type = ExtraNodesetGenerator
+        coord = '0 -60000 0'
+        new_boundary = corner_ptr
+        input = sidesets
+    []
+    displacements = 'disp_x disp_y'
+    use_displaced_mesh = true
 []
 
 [GlobalParams]
 
     displacements = 'disp_x disp_y'
+
+    use_displaced_mesh = false
     
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -112,10 +122,6 @@
         order = FIRST
         family = LAGRANGE
     []
-    [scaled_time]
-        order = FIRST
-        family = LAGRANGE        
-    []
 []
 
 [AuxKernels]
@@ -131,14 +137,14 @@
         displacement = disp_x
         velocity = vel_x
         beta = 0.25
-        execute_on = timestep_end
+        execute_on = 'TIMESTEP_END'
     []
     [vel_x]
         type = NewmarkVelAux
         variable = vel_x
         acceleration = accel_x
         gamma = 0.5
-        execute_on = timestep_end
+        execute_on = 'TIMESTEP_END'
     []
     [accel_y]
         type = NewmarkAccelAux
@@ -146,24 +152,13 @@
         displacement = disp_y
         velocity = vel_y
         beta = 0.25
-        execute_on = timestep_end
+        execute_on = 'TIMESTEP_END'
     []
     [vel_y]
         type = NewmarkVelAux
         variable = vel_y
         acceleration = accel_y
         gamma = 0.5
-        execute_on = timestep_end
-    []
-    [get_initial_damage_aux]   
-        type = SolutionAux
-        variable = initial_damage_aux
-        solution = init_sol_components
-        from_variable = initial_damage
-    []
-    [get_scaled_time]
-        type = SaveTimeAndScale
-        variable = scaled_time
         execute_on = 'TIMESTEP_END'
     []
 []
@@ -183,13 +178,19 @@
     []
     [./inertia_x]
         type = InertialForce
-        use_displaced_mesh = false
         variable = disp_x
+        acceleration = accel_x
+        velocity = vel_x
+        beta = 0.25
+        gamma = 0.5
     []
     [./inertia_y]
         type = InertialForce
-        use_displaced_mesh = false
         variable = disp_y
+        acceleration = accel_y
+        velocity = vel_y
+        beta = 0.25
+        gamma = 0.5
     []
 []
 
@@ -198,19 +199,14 @@
         type = GenericConstantMaterial
         prop_names = 'density'
         prop_values = '2700'
-    []   
-    [nonADdensity]
-        type = GenericConstantMaterial
-        prop_names = 'nonADdensity'
-        prop_values = '2700'
-    []  
+    []
     [strain]
         type = ComputeLagrangianStrain
         large_kinematics = true
         output_properties = 'deformation_gradient'
         outputs = exodus
     []
-    # damage
+    # # damage
     [damage_mat]
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
@@ -238,29 +234,57 @@
         outputs = exodus
         block = 2
     []
-    [initialdamage]
-        type = ParsedMaterial
-        property_name = initial_damage
-        coupled_variables = initial_damage_aux
-        expression = 'initial_damage_aux'
+    [initial_damage_strip]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0.7'
+        block = '4 5'
+        output_properties = 'initial_damage'
         outputs = exodus
     []
-    # [initial_damage]
-    #     type = GenericConstantMaterial
-    #     prop_names = 'initial_damage'
-    #     prop_values = 0
-    # []  
+    [initial_damage_surround]
+        type = InitialDamageCycleSim2D
+        output_properties = 'initial_damage'
+        outputs = exodus
+        block = 3
+    []
+    [initial_damage_zero]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0'
+        block = '2'
+        output_properties = 'initial_damage'
+        outputs = exodus
+    []
+    [initial_damage_nucl]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0.7'
+        block = '1'
+        output_properties = 'initial_damage'
+        outputs = exodus
+    []
+    # pure elastic
+    # [elastic_tensor]
+    #     type = ComputeIsotropicElasticityTensor
+    #     lambda = 1e10
+    #     shear_modulus = 1e10
+    # []
+    # [compute_stress]
+    #     type = ComputeStVenantKirchhoffStress
+    #     large_kinematics = true
+    #     output_properties = 'green_lagrange_strain pk2_stress'
+    #     outputs = exodus
+    # []   
 []  
 
 [Functions]
     [func_top_bc]
         type = ParsedFunction
-        expression = '1e-9*t'
+        expression = 'if (t>dt, 1e-8 * t, 0)'
+        symbol_names = 'dt'
+        symbol_values = '2e-2'
     []
-    [func_bot_bc]
-        type = ParsedFunction
-        expression = '-1e-9*t'
-    []    
 []
 
 
@@ -275,7 +299,7 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = 0
+    start_time = -1e-12
     end_time = 1e100
     # num_steps = 1
     l_max_its = 100
@@ -283,6 +307,8 @@
     nl_rel_tol = 1e-6
     nl_max_its = 20
     nl_abs_tol = 1e-8
+    # petsc_options_iname = '-ksp_type -pc_type'
+    # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
@@ -291,8 +317,8 @@
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
     # nl_forced_its = 3
-    # line_search = basic
-    # dt = 20
+    # line_search = 'bt'
+    # dt = 1e-2
     [TimeStepper]
         type = IterationAdaptiveDT
         dt = 0.01
@@ -300,24 +326,29 @@
         optimal_iterations = 10
         growth_factor = 1.5
         enable = true
-        reject_large_step_threshold = 0.01
-        reject_large_step = true
+        # reject_large_step_threshold = 100000
+        reject_large_step = false
     []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
         gamma = 0.5
+        inactive_tsteps = 1
     [../]
 []
 
+[Controls] # turns off inertial terms for the first time step
+  [./period0]
+    type = TimePeriod
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x'
+    start_time = -1e-12
+    end_time = 1e-2 # dt used in the simulation
+  [../]
+[../]
+
 [Outputs] 
     exodus = true
-    time_step_interval = 100
-    [./my_checkpoint]
-        type = Checkpoint
-        num_files = 2
-        interval = 10
-    [../]
+    time_step_interval = 1
 []
 
 [BCs]
@@ -327,151 +358,44 @@
         function = func_top_bc
         boundary = top
     []
-    [bc_fix_bottom_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = bottom
-    []
     [bc_fix_bottom_y]
         type = DirichletBC
         variable = disp_y
         value = 0
         boundary = bottom
+    [] 
+    [./Pressure]
+        [static_pressure_top]
+            boundary = top
+            factor = 120e6
+            displacements = 'disp_x disp_y'
+            use_displaced_mesh = true
+        []    
+        [static_pressure_left]
+            boundary = left
+            factor = 135e6
+            displacements = 'disp_x disp_y'
+            use_displaced_mesh = true
+        []  
+        [static_pressure_right]
+            boundary = right
+            factor = 135e6
+            displacements = 'disp_x disp_y'
+            use_displaced_mesh = true
+        []     
+    []        
+    # fix ptr
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
     []
-    [bc_fix_left_y]
+    [./fix_cptr2_y]
         type = DirichletBC
         variable = disp_y
+        boundary = corner_ptr
         value = 0
-        boundary = left
     []
-    [bc_fix_right_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = right
-    []
-    [./neumann_top_y]
-        type = NeumannBC
-        variable = disp_y
-        boundary = top
-        value = -120e6
-    [../]
-    [./neumann_left_x]
-        type = NeumannBC
-        variable = disp_x
-        boundary = left
-        value = 135e6
-    [../]
-    [./neumann_right_x]
-        type = NeumannBC
-        variable = disp_x
-        boundary = right
-        value = -135e6
-    [../]
-    # [./dashpot_top_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = top
-    # []
-    # [./dashpot_top_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = top
-    # []
-    # [./dashpot_bottom_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = bottom
-    # []
-    # [./dashpot_bottom_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = bottom
-    # []
-    # [./dashpot_left_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = left
-    # []
-    # [./dashpot_left_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = left
-    # []
-    # [./dashpot_right_x]
-    #     type = NonReflectDashpotBC
-    #     component = 0
-    #     variable = disp_x
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = right
-    # []
-    # [./dashpot_right_y]
-    #     type = NonReflectDashpotBC
-    #     component = 1
-    #     variable = disp_y
-    #     disp_x = disp_x
-    #     disp_y = disp_y
-    #     p_wave_speed = 6000
-    #     shear_wave_speed = 3464
-    #     boundary = right
-    # []
 []
 
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = './static_solve_out.e'
-      system_variables = 'disp_x disp_y initial_damage'
-      timestep = LATEST
-      force_preaux = true
-    [../]
-[]
-
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-[]
