@@ -122,6 +122,15 @@
         order = FIRST
         family = LAGRANGE
     []
+    #
+    [velfield_x]
+        order = FIRST
+        family = LAGRANGE        
+    []
+    [velfield_y]
+        order = FIRST
+        family = LAGRANGE        
+    []
 []
 
 [AuxKernels]
@@ -159,6 +168,19 @@
         variable = vel_y
         acceleration = accel_y
         gamma = 0.5
+        execute_on = 'TIMESTEP_END'
+    []
+    #
+    [velfield_x]
+        type = CompVarRate
+        variable = velfield_x
+        coupled = disp_x
+        execute_on = 'TIMESTEP_END'
+    []
+    [velfield_y]
+        type = CompVarRate
+        variable = velfield_y
+        coupled = disp_y
         execute_on = 'TIMESTEP_END'
     []
 []
@@ -285,6 +307,12 @@
         symbol_names = 'dt'
         symbol_values = '2e-2'
     []
+    [func_top_bc_shear]
+        type = ParsedFunction
+        expression = 'if (t>dt, 1e1 * t, 0)'
+        symbol_names = 'dt'
+        symbol_values = '2e-2'
+    []    
 []
 
 
@@ -305,7 +333,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 5
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
@@ -323,7 +351,7 @@
         type = IterationAdaptiveDT
         dt = 0.01
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
+        optimal_iterations = 5
         growth_factor = 1.5
         enable = true
         # reject_large_step_threshold = 100000
@@ -340,7 +368,8 @@
 [Controls] # turns off inertial terms for the first time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x'
+    # disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   [../]
@@ -353,11 +382,20 @@
 
 [BCs]
     [bc_load_top_x]
-        type = FunctionDirichletBC
-        variable = disp_x
-        function = func_top_bc
+        type = PresetDisplacement
         boundary = top
+        variable = disp_x
+        beta = 0.25
+        velocity = vel_x
+        acceleration = accel_x
+        function = func_top_bc
     []
+    # [bc_load_top_x_shear]
+    #     type = FunctionNeumannBC
+    #     variable = disp_x
+    #     function = func_top_bc_shear
+    #     boundary = top
+    # []
     [bc_fix_bottom_y]
         type = DirichletBC
         variable = disp_y
