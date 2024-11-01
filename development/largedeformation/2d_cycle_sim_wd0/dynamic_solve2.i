@@ -97,10 +97,6 @@ Mesh]
 []
 
 [AuxVariables]
-    [xi_computed]
-        order = CONSTANT
-        family = MONOMIAL
-    []
     [initial_damage_aux]
         order = CONSTANT
         family = MONOMIAL     
@@ -125,11 +121,6 @@ Mesh]
 []
 
 [AuxKernels]
-    [compute_xi]
-        type = CompXi3D
-        variable = xi_computed
-        execute_on = 'TIMESTEP_END'
-    []
     #
     [accel_x]
         type = NewmarkAccelAux
@@ -230,7 +221,7 @@ Mesh]
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
         block = '1 3 4 5'
     []

@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm.msh'
+        file = '../../meshfile/tpv2052dm_quad.msh'
     []
     [./sidesets]
         input = msh
@@ -97,10 +97,6 @@
 []
 
 [AuxVariables]
-    [xi_computed]
-        order = CONSTANT
-        family = MONOMIAL
-    []
     [initial_damage_aux]
         order = CONSTANT
         family = MONOMIAL     
@@ -125,12 +121,6 @@
 []
 
 [AuxKernels]
-    [compute_xi]
-        type = CompXi3D
-        variable = xi_computed
-        execute_on = 'TIMESTEP_END'
-    []
-    #
     [accel_x]
         type = NewmarkAccelAux
         variable = accel_x
@@ -230,7 +220,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
         block = '1 3 4 5'
     []
@@ -309,10 +299,10 @@
     nl_rel_tol = 1e-8
     nl_max_its = 5
     nl_abs_tol = 1e-8
-    # petsc_options_iname = '-ksp_type -pc_type'
-    # petsc_options_value = 'gmres     hypre'
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    petsc_options_iname = '-ksp_type -pc_type'
+    petsc_options_value = 'gmres     hypre'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
@@ -320,13 +310,12 @@
     # line_search = 'bt'
     # dt = 1e-2
     [TimeStepper]
-        type = IterationAdaptiveDT
+        type = FarmsIterationAdaptiveDT
         dt = 0.01
         cutback_factor_at_failure = 0.5
         optimal_iterations = 5
         growth_factor = 1.5
-        # reject_large_step_threshold = 100000
-        reject_large_step = false
+        max_time_step_bound = 1e10
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -354,7 +343,7 @@
 [Outputs] 
     exodus = true
     csv = true
-    time_step_interval = 1
+    time_step_interval = 100
 []
 
 [BCs]
