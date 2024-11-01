@@ -54,13 +54,19 @@ InitialDamageCycleSim2D::computeQpProperties()
   //   value = wb_distribution(gen);
   // }
 
-  Real r = y_coord;
-  Real sigma = 2e2;
+  Real r = 0.0;
+  Real sigma = 3e2;
   if (x_coord > -10000 and x_coord < 10000){
+    r = y_coord;
     alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
-  else{
-    alpha_o = 0.0;
+  else if (x_coord <= -10000){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (-10000)) * (x_coord - (-10000)));
+    alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  }
+  else if (x_coord >= 10000){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (10000)) * (x_coord - (10000)));
+    alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
 
   _initial_damage[_qp] = alpha_o; 

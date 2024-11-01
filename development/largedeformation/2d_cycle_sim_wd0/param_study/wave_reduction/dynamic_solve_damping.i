@@ -195,16 +195,16 @@
         eta = 0
     []
     [damping_x]
-        type = LagrangianStiffPropDampingImplicit
+        type = StiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 0
+        zeta = 0.1
     []
     [damping_y]
-        type = LagrangianStiffPropDampingImplicit
+        type = StiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 0
+        zeta = 0.1
     []    
 []
 
@@ -303,34 +303,31 @@
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e100
-    num_steps = 50
+    # num_steps = 50
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-8
-    nl_max_its = 50
+    nl_max_its = 5
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
-    # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
-    # petsc_options_value = '101                asm      lu'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    dt = 1e-2
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     dt = 0.01
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 5
-    #     growth_factor = 1.5
-    #     enable = true
-    #     # reject_large_step_threshold = 100000
-    #     reject_large_step = false
-    # []
+    # dt = 1e-2
+    [TimeStepper]
+        type = IterationAdaptiveDT
+        dt = 0.01
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 5
+        growth_factor = 1.5
+        # reject_large_step_threshold = 100000
+        reject_large_step = false
+    []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
