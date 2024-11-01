@@ -55,7 +55,7 @@ InitialDamageCycleSim2D::computeQpProperties()
   // }
 
   Real r = 0.0;
-  Real sigma = 2.5e2;
+  Real sigma = 3e2;
   if (x_coord > -10000 and x_coord < 10000){
     r = y_coord;
     alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
