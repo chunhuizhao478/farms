@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm_quad.msh'
+        file = '../../meshfile/tpv2052dm.msh'
     []
     [./sidesets]
         input = msh
@@ -97,11 +97,6 @@
 []
 
 [AuxVariables]
-    [initial_damage_aux]
-        order = CONSTANT
-        family = MONOMIAL     
-    []
-    #
     [vel_x]
         order = FIRST
         family = LAGRANGE
@@ -342,11 +337,9 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
-    [csv]
-        type = CSV
-        time_step_interval = 1
-    []
+    csv = true
+    time_step_interval = 1
+    show = 'vel_x vel_y initial_damage alpha_damagedvar B_damagedvar strain_invariant_ratio _dt'
 []
 
 [BCs]
