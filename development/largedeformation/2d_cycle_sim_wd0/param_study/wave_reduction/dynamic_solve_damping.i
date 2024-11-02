@@ -19,7 +19,6 @@
         input = sidesets
     []
     displacements = 'disp_x disp_y'
-    use_displaced_mesh = true
 []
 
 [GlobalParams]
