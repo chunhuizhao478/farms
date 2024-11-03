@@ -182,13 +182,13 @@
         type = StiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 0.1
+        zeta = 0.4
     []
     [damping_y]
         type = StiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 0.1
+        zeta = 0.4
     []    
 []
 
@@ -338,7 +338,7 @@
 [Outputs] 
     exodus = true
     csv = true
-    time_step_interval = 1
+    time_step_interval = 100
     show = 'vel_x vel_y initial_damage alpha_damagedvar B_damagedvar strain_invariant_ratio _dt'
 []
 
