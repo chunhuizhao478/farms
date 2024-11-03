@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm_quad.msh'
+        file = '../../meshfile/tpv2052dm_refined.msh'
     []
     [./sidesets]
         input = msh
