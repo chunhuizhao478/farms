@@ -290,7 +290,7 @@
     # num_steps = 50
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-7
+    nl_rel_tol = 1e-6
     nl_max_its = 5
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
