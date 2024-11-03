@@ -182,13 +182,13 @@
         type = StiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 0.4
+        zeta = 0.1
     []
     [damping_y]
         type = StiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 0.4
+        zeta = 0.1
     []    
 []
 
