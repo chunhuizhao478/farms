@@ -353,15 +353,15 @@
 []
 
 [BCs]
-    # [bc_load_top_x]
-    #     type = PresetDisplacement
-    #     boundary = top
-    #     variable = disp_x
-    #     beta = 0.25
-    #     velocity = vel_x
-    #     acceleration = accel_x
-    #     function = func_top_bc
-    # []
+    [bc_load_top_x]
+        type = PresetDisplacement
+        boundary = top
+        variable = disp_x
+        beta = 0.25
+        velocity = vel_x
+        acceleration = accel_x
+        function = func_top_bc
+    []
     [bc_fix_bottom_y]
         type = DirichletBC
         variable = disp_y
