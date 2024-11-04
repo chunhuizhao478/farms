@@ -261,7 +261,7 @@
         block = '1'
         output_properties = 'initial_damage'
         outputs = exodus
-    [] 
+    []
 []  
 
 [Functions]
@@ -293,14 +293,16 @@
     nl_rel_tol = 1e-7
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    # petsc_options_iname = '-ksp_type -pc_type'
-    # petsc_options_value = 'gmres     hypre'
+    petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
-    petsc_options_iname = '-ksp_type -pc_type'
-    petsc_options_value = 'gmres ilu'
+    # petsc_options_iname = '-ksp_type -pc_type'
+    # petsc_options_value = 'gmres ilu' 
+    # petsc_options_iname = '-ksp_type -pc_type'
+    # petsc_options_value = 'preonly lu'    
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
@@ -400,4 +402,3 @@
         value = 0
     []
 []
-

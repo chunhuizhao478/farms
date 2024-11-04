@@ -335,11 +335,17 @@
     [../]
 []
 
-[Outputs] 
-    exodus = true
-    csv = true
-    time_step_interval = 100
-    show = 'vel_x vel_y initial_damage alpha_damagedvar B_damagedvar strain_invariant_ratio _dt'
+[Outputs]
+    [./exodus]
+      type = Exodus
+      time_step_interval = 100
+      show = 'vel_x vel_y initial_damage alpha_damagedvar B_damagedvar strain_invariant_ratio'
+    [../]
+    [./csv]
+      type = CSV
+      time_step_interval = 1
+      show = '_dt'
+    [../]
 []
 
 [BCs]
