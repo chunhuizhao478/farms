@@ -209,29 +209,29 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3 4 5'
+        # block = '1 3 4 5'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
-        block = '1 3 4 5'
+        # block = '1 3 4 5'
     []
     # elastic
-    [elastic_tensor]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 1e10
-        shear_modulus = 1e10
-        block = 2
-    []
-    [compute_stress]
-        type = ComputeStVenantKirchhoffStress
-        large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
-        block = 2
-    []
+    # [elastic_tensor]
+    #     type = ComputeIsotropicElasticityTensor
+    #     lambda = 1e10
+    #     shear_modulus = 1e10
+    #     block = 2
+    # []
+    # [compute_stress]
+    #     type = ComputeStVenantKirchhoffStress
+    #     large_kinematics = true
+    #     output_properties = 'green_lagrange_strain pk2_stress'
+    #     outputs = exodus
+    #     block = 2
+    # []
     [initial_damage_strip]
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
