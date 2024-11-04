@@ -326,8 +326,8 @@
 [Controls] # turns off inertial terms for the first time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
-    # disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x'
+    # disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   [../]
