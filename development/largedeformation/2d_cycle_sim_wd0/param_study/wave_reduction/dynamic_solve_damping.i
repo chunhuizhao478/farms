@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm.msh'
+        file = '../../meshfile/tpv2052dm_2ndorder.msh'
     []
     [./sidesets]
         input = msh
@@ -28,7 +28,7 @@
     use_displaced_mesh = false
     
     ##----continuum damage breakage model----##
-    #initial lambda value (first lame constant) [Pa]
+    #initial lambda value (SECOND lame constant) [Pa]
     lambda_o = 10e9
         
     #initial shear modulus value (second lame constant) [Pa]
@@ -86,31 +86,44 @@
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE     
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [vel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
+    []
+    #
+    [alpha_damagedvar_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [B_damagedvar_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [strain_invariant_ratio_aux]
+        order = FIRST
+        family = MONOMIAL
     []
 []
 
@@ -144,6 +157,28 @@
         acceleration = accel_y
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
+    []
+    #
+    [alpha_damagedvar_aux]
+        type = MaterialRealAux
+        variable = alpha_damagedvar_aux
+        property = alpha_damagedvar
+        execute_on = 'timestep_end'
+        block = '1 3 4 5'
+    []
+    [B_damagedvar_aux]
+        type = MaterialRealAux
+        variable = B_damagedvar_aux
+        property = B_damagedvar
+        execute_on = 'timestep_end'
+        block = '1 3 4 5'
+    []  
+    [strain_invariant_ratio_aux]
+        type = MaterialRealAux
+        variable = strain_invariant_ratio_aux
+        property = strain_invariant_ratio
+        execute_on = 'timestep_end'
+        block = '1 3 4 5'
     []
 []
 
@@ -207,8 +242,8 @@
     # # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar'
-        outputs = exodus
+        # output_properties = 'alpha_damagedvar B_damagedvar'
+        # outputs = exodus
         block = '1 3 4 5'
     [] 
     [stress_medium]
@@ -319,7 +354,7 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the first time step
+[Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
     # disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
@@ -339,7 +374,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 100
-      show = 'vel_x vel_y initial_damage alpha_damagedvar B_damagedvar strain_invariant_ratio'
+      show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux'
     [../]
     [./csv]
       type = CSV
