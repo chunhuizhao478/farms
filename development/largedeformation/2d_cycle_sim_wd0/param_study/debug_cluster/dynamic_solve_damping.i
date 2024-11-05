@@ -287,7 +287,7 @@
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e100
-    num_steps = 50
+    num_steps = 200
     l_max_its = 200
     l_tol = 1e-7
     nl_rel_tol = 1e-6
