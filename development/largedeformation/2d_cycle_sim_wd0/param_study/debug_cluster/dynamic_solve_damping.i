@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm_refined.msh'
+        file = '../../meshfile/tpv2052dm.msh'
     []
     [./sidesets]
         input = msh
@@ -373,19 +373,16 @@
             boundary = top
             factor = 120e6
             displacements = 'disp_x disp_y'
-            use_displaced_mesh = true
         []    
         [static_pressure_left]
             boundary = left
             factor = 135e6
             displacements = 'disp_x disp_y'
-            use_displaced_mesh = true
         []  
         [static_pressure_right]
             boundary = right
             factor = 135e6
             displacements = 'disp_x disp_y'
-            use_displaced_mesh = true
         []     
     []        
     # fix ptr
