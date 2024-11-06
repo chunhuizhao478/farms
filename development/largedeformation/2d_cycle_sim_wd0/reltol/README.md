@@ -1,0 +1,1 @@
+Use the static solve first and load solution to dynamic solve, we are able to get rid of the waves from damage region

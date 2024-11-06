@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm_2ndorder.msh'
+        file = '../meshfile/tpv2052dm.msh'
     []
     [./sidesets]
         input = msh
@@ -28,10 +28,10 @@
     use_displaced_mesh = false
     
     ##----continuum damage breakage model----##
-    #initial lambda value (SECOND lame constant) [Pa]
+    #initial lambda value (FIRST lame constant) [Pa]
     lambda_o = 10e9
         
-    #initial shear modulus value (second lame constant) [Pa]
+    #initial shear modulus value (FIRST lame constant) [Pa]
     shear_modulus_o = 10e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -86,43 +86,43 @@
 
 [Variables]
     [disp_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE     
     []
     [disp_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [accel_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [vel_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [accel_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     #
     [alpha_damagedvar_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [B_damagedvar_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [strain_invariant_ratio_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
 []
@@ -359,7 +359,7 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the SECOND time step
+[Controls] # turns off inertial terms for the FIRST time step
   [./period0]
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x BCs/damp_top_x BCs/damp_top_y BCs/damp_bottom_x BCs/damp_bottom_y BCs/damp_left_x BCs/damp_left_y BCs/damp_right_x BCs/damp_right_y'
@@ -548,3 +548,27 @@
     []
 []
 
+[UserObjects]
+    [./init_sol_components]
+      type = SolutionUserObject
+      mesh = './static_solve_out.e'
+      system_variables = 'disp_x disp_y green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_02 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_12 green_lagrange_elastic_strain_22'
+      timestep = LATEST
+      force_preaux = true
+    [../]
+[]
+
+[ICs]
+    [disp_x_ic]
+      type = SolutionIC
+      variable = disp_x
+      solution_uo = init_sol_components
+      from_variable = disp_x
+    []
+    [disp_y_ic]
+      type = SolutionIC
+      variable = disp_y
+      solution_uo = init_sol_components
+      from_variable = disp_y
+    []
+[]
