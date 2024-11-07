@@ -1,7 +1,8 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/tpv2052dm.msh'
+        # file = '../meshfile/tpv2052dm.msh'
+        file = '../meshfile/tpv2052dm_refined.msh'
     []
     [./sidesets]
         input = msh
@@ -168,21 +169,21 @@
         variable = alpha_damagedvar_aux
         property = alpha_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 3'
     []
     [B_damagedvar_aux]
         type = MaterialRealAux
         variable = B_damagedvar_aux
         property = B_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 3'
     []  
     [strain_invariant_ratio_aux]
         type = MaterialRealAux
         variable = strain_invariant_ratio_aux
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 3'
     []
     [get_initial_damage]
         type = SolutionAux
@@ -252,16 +253,16 @@
     # # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        # output_properties = 'alpha_damagedvar B_damagedvar'
-        # outputs = exodus
-        block = '1 3 4 5'
+        output_properties = 'alpha_damagedvar B_damagedvar'
+        outputs = exodus
+        block = '1 3'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
         output_properties = 'pk1_stress pk2_stress green_lagrange_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     []
     # elastic
     [elastic_tensor]
@@ -277,36 +278,6 @@
         outputs = exodus
         block = 2
     []
-    # [initial_damage_strip]
-    #     type = GenericConstantMaterial
-    #     prop_names = 'initial_damage'
-    #     prop_values = '0.7'
-    #     block = '4 5'
-    #     output_properties = 'initial_damage'
-    #     outputs = exodus
-    # []
-    # [initial_damage_surround]
-    #     type = InitialDamageCycleSim2D
-    #     output_properties = 'initial_damage'
-    #     outputs = exodus
-    #     block = 3
-    # []
-    # [initial_damage_zero]
-    #     type = GenericConstantMaterial
-    #     prop_names = 'initial_damage'
-    #     prop_values = '0'
-    #     block = '2'
-    #     output_properties = 'initial_damage'
-    #     outputs = exodus
-    # []
-    # [initial_damage_nucl]
-    #     type = GenericConstantMaterial
-    #     prop_names = 'initial_damage'
-    #     prop_values = '0.7'
-    #     block = '1'
-    #     output_properties = 'initial_damage'
-    #     outputs = exodus
-    # [] 
     [define_initial_damage_matprop]
         type = ParsedMaterial
         property_name = initial_damage

@@ -3,7 +3,8 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/tpv2052dm.msh'
+        # file = '../meshfile/tpv2052dm.msh'
+        file = '../meshfile/tpv2052dm_refined.msh'
     []
     [./sidesets]
         input = msh
@@ -126,14 +127,14 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     []
     # elastic
     [elastic_tensor]
@@ -149,36 +150,11 @@
         outputs = exodus
         block = 2
     []
-    # [initial_damage_strip]
-    #     type = GenericConstantMaterial
-    #     prop_names = 'initial_damage'
-    #     prop_values = '0.7'
-    #     block = '4 5'
-    #     output_properties = 'initial_damage'
-    #     outputs = exodus
-    # []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         outputs = exodus
-        block = '1 3 4 5'
     []
-    [initial_damage_zero]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0'
-        block = '2'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
-    # [initial_damage_nucl]
-    #     type = GenericConstantMaterial
-    #     prop_names = 'initial_damage'
-    #     prop_values = '0.7'
-    #     block = '1'
-    #     output_properties = 'initial_damage'
-    #     outputs = exodus
-    # []
 []  
 
 [Preconditioning]
