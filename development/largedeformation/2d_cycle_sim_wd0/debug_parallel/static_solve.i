@@ -158,7 +158,7 @@
         outputs = exodus
     []
     [initial_damage_surround]
-        type = InitialDamageCycleSim2D
+        type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         outputs = exodus
         block = 3
