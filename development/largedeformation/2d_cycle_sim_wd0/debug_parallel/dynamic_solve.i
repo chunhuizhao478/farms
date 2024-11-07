@@ -345,7 +345,7 @@
 [Controls] # turns off inertial terms for the FIRST time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -360,8 +360,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
-    #   show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01'
+      time_step_interval = 100
+      show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01'
     [../]
     [./csv]
       type = CSV
@@ -417,118 +417,118 @@
         value = 0
     []
     #add dampers
-    # [damp_top_x]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 0
-    #     boundary = top
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_top_y]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 1
-    #     boundary = top
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_bottom_x]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 0
-    #     boundary = bottom
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_bottom_y]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 1
-    #     boundary = bottom
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_left_x]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 0
-    #     boundary = left
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_left_y]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 1
-    #     boundary = left
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_right_x]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 0
-    #     boundary = right
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
-    # [damp_right_y]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 1
-    #     boundary = right
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 1924.5
-    #     p_wave_speed = 3333.3
-    #     density = 2700
-    # []
+    [damp_top_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_top_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_bottom_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = bottom
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_bottom_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = bottom
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_left_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_left_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_right_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
+    [damp_right_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 1924.5
+        p_wave_speed = 3333.3
+        density = 2700
+    []
 []
 
 [UserObjects]
