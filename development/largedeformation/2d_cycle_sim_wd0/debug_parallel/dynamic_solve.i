@@ -125,6 +125,10 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [initial_damage_aux]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -179,6 +183,12 @@
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
         block = '1 3 4 5'
+    []
+    [get_initial_damage]
+        type = SolutionAux
+        variable = initial_damage_aux
+        solution = init_sol_components
+        from_variable = initial_damage
     []
 []
 
@@ -249,7 +259,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
+        output_properties = 'pk1_stress pk2_stress green_lagrange_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
         block = '1 3 4 5'
     []
@@ -267,36 +277,43 @@
         outputs = exodus
         block = 2
     []
-    [initial_damage_strip]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '4 5'
-        output_properties = 'initial_damage'
+    # [initial_damage_strip]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     prop_values = '0.7'
+    #     block = '4 5'
+    #     output_properties = 'initial_damage'
+    #     outputs = exodus
+    # []
+    # [initial_damage_surround]
+    #     type = InitialDamageCycleSim2D
+    #     output_properties = 'initial_damage'
+    #     outputs = exodus
+    #     block = 3
+    # []
+    # [initial_damage_zero]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     prop_values = '0'
+    #     block = '2'
+    #     output_properties = 'initial_damage'
+    #     outputs = exodus
+    # []
+    # [initial_damage_nucl]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     prop_values = '0.7'
+    #     block = '1'
+    #     output_properties = 'initial_damage'
+    #     outputs = exodus
+    # [] 
+    [define_initial_damage_matprop]
+        type = ParsedMaterial
+        property_name = initial_damage
+        coupled_variables = 'initial_damage_aux'
+        expression = 'initial_damage_aux'
         outputs = exodus
     []
-    [initial_damage_surround]
-        type = InitialDamageCycleSim2D
-        output_properties = 'initial_damage'
-        outputs = exodus
-        block = 3
-    []
-    [initial_damage_zero]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0'
-        block = '2'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
-    [initial_damage_nucl]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '1'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    [] 
 []  
 
 [Functions]
@@ -322,7 +339,7 @@
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e100
-    # num_steps = 50
+    num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-7
@@ -547,7 +564,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = './static_solve_out.e'
-      system_variables = 'disp_x disp_y'
+      system_variables = 'disp_x disp_y initial_damage'
       timestep = LATEST
       force_preaux = true
     [../]

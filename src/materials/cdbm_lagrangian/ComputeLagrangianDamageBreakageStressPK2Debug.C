@@ -25,7 +25,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _Jp(declareProperty<Real>(_base_name + "plastic_deformation_gradient_det")),
   _Fe(declareProperty<RankTwoTensor>(_base_name + "elastic_deformation_gradient")),
   _Tau(declareProperty<RankTwoTensor>(_base_name + "deviatroic_stress")),
-  _Ee(declareProperty<RankTwoTensor>(_base_name + "green_lagrange_elastic_strain")),
+  _Ee(declareProperty<RankTwoTensor>(_base_name + "green_lagrange_strain")),
   _Ep(declareProperty<RankTwoTensor>(_base_name + "plastic_strain")),
   _E(declareProperty<RankTwoTensor>(_base_name + "total_lagrange_strain")),
   _I1(declareProperty<Real>(_base_name + "first_elastic_strain_invariant")),
