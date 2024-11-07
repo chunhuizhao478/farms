@@ -149,19 +149,19 @@
         outputs = exodus
         block = 2
     []
-    [initial_damage_strip]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '4 5'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
+    # [initial_damage_strip]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     prop_values = '0.7'
+    #     block = '4 5'
+    #     output_properties = 'initial_damage'
+    #     outputs = exodus
+    # []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         outputs = exodus
-        block = 3
+        block = '1 3 4 5'
     []
     [initial_damage_zero]
         type = GenericConstantMaterial
@@ -171,14 +171,14 @@
         output_properties = 'initial_damage'
         outputs = exodus
     []
-    [initial_damage_nucl]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '1'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
+    # [initial_damage_nucl]
+    #     type = GenericConstantMaterial
+    #     prop_names = 'initial_damage'
+    #     prop_values = '0.7'
+    #     block = '1'
+    #     output_properties = 'initial_damage'
+    #     outputs = exodus
+    # []
 []  
 
 [Preconditioning]
