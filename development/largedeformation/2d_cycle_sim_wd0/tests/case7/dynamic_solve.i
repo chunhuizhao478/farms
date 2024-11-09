@@ -202,7 +202,7 @@
         velocity = vel_x
         beta = 0.25
         gamma = 0.5
-        eta = 2.0
+        eta = 1.860
     []
     [./inertia_y]
         type = InertialForce
@@ -211,19 +211,19 @@
         velocity = vel_y
         beta = 0.25
         gamma = 0.5
-        eta = 2.0
+        eta = 1.860
     []
     [damping_x]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta =  2.678e-5
+        zeta =  3.701e-5
     []
     [damping_y]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta =  2.678e-5
+        zeta =  3.701e-5
     []    
 []
 
