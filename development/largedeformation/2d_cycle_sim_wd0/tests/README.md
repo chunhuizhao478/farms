@@ -3,6 +3,6 @@ Test a few cases:
 (2) Linear shape function, w absorber
 (3) Quadratic shape function, w/o absorber
 (4) Quadratic shape function, w absorber
-(5) Quadratic shape function, symmetric mesh, h refinement 25m, w/o absorber, Rayleigh damping (need to be finished)
+(5) Linear shape function, w absorber, don't apply on top and bottom
 (6) Quadratic shape function, w absorber, don't apply on top and bottom
-(7) Quadratic shape function, w absorber, don't apply on top and bottom, add Rayleigh damping
+(7) Quadratic shape function, w absorber, don't apply on top and bottom, add Rayleigh damping (failed!)
