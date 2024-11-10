@@ -1,9 +1,9 @@
 import numpy as np
 
 # Given data
-zeta = 0.01 # desired damping ratio
+zeta = 0.1 # desired damping ratio
 fmin = 19  # Hz
-fmax = 100  # Hz
+fmax = 39  # Hz
 
 omega_min = 2 * np.pi * fmin  # rad/s
 omega_max = 2 * np.pi * fmax  # rad/s
