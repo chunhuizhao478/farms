@@ -6,5 +6,5 @@ Test a few cases:
 New added cases (Nov 9):
 (5) Linear shape function, w absorber, don't apply on top and bottom
 (6) Quadratic shape function, w absorber, don't apply on top and bottom
-(7) Quadratic shape function, w absorber, don't apply on top and bottom, add Rayleigh damping (failed!)
+(7) Quadratic shape function, w absorber, don't apply on top and bottom, add high stiff damping
 (8) Quadratic shape function, w absorber, don't apply on top and bottom, refine damage region 50m, symmetric mesh, reduced healing 
