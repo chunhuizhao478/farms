@@ -56,16 +56,16 @@ InitialDamageCycleSim2DDebug::computeQpProperties()
 
   Real r = 0.0;
   Real sigma = 3e2;
-  if (x_coord > -10000 and x_coord < 10000){
+  if (x_coord > -1000 and x_coord < 1000 ){
     r = y_coord;
     alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
-  else if (x_coord <= -10000){
-    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (-10000)) * (x_coord - (-10000)));
+  else if (x_coord <= -1000 ){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (-1000 )) * (x_coord - (-1000 )));
     alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
-  else if (x_coord >= 10000){
-    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (10000)) * (x_coord - (10000)));
+  else if (x_coord >= 1000 ){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (1000)) * (x_coord - (1000 )));
     alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
 

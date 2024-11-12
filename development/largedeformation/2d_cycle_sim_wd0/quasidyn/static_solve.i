@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/tpv2052dm_2ndorder.msh'
+        file = '../meshfile/tpv2052dm_2ndorder_small.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -10000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -149,33 +149,8 @@
         outputs = exodus
         block = 2
     []
-    [initial_damage_strip]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '4 5'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
     [initial_damage_surround]
-        type = InitialDamageCycleSim2D
-        output_properties = 'initial_damage'
-        outputs = exodus
-        block = 3
-    []
-    [initial_damage_zero]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0'
-        block = '2'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
-    [initial_damage_nucl]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '1'
+        type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         outputs = exodus
     []

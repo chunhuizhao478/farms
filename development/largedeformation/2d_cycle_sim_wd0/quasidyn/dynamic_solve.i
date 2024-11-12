@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/tpv2052dm_2ndorder.msh'
+        file = '../meshfile/tpv2052dm_2ndorder_small.msh'
     []
     [./sidesets]
         input = msh
@@ -14,7 +14,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -10000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -146,21 +146,21 @@
         variable = alpha_damagedvar_aux
         property = alpha_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 4 5'
     []
     [B_damagedvar_aux]
         type = MaterialRealAux
         variable = B_damagedvar_aux
         property = B_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 4 5'
     []  
     [strain_invariant_ratio_aux]
         type = MaterialRealAux
         variable = strain_invariant_ratio_aux
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 4 5'
     []
 []
 
@@ -225,36 +225,11 @@
         outputs = exodus
         block = 2
     []
-    [initial_damage_strip]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '4 5'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    []
     [initial_damage_surround]
-        type = InitialDamageCycleSim2D
-        output_properties = 'initial_damage'
-        outputs = exodus
-        block = 3
-    []
-    [initial_damage_zero]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0'
-        block = '2'
+        type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         outputs = exodus
     []
-    [initial_damage_nucl]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.7'
-        block = '1'
-        output_properties = 'initial_damage'
-        outputs = exodus
-    [] 
 []  
 
 [Functions]
@@ -286,7 +261,7 @@
     l_max_its = 10
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 10
+    nl_max_its = 5
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
@@ -337,7 +312,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 10
+      time_step_interval = 100
       show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11 green_lagrange_strain_00 green_lagrange_strain_01 green_lagrange_strain_11'
     [../]
     [./csv]
