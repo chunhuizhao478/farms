@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm.msh'
+        file = '../../meshfile/tpv2052dm_2ndorder.msh'
     []
     [./sidesets]
         input = msh
@@ -28,10 +28,10 @@
     use_displaced_mesh = false
     
     ##----continuum damage breakage model----##
-    #initial lambda value (FIRST lame constant) [Pa]
+    #initial lambda value (SECOND lame constant) [Pa]
     lambda_o = 10e9
         
-    #initial shear modulus value (FIRST lame constant) [Pa]
+    #initial shear modulus value (SECOND lame constant) [Pa]
     shear_modulus_o = 10e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -86,43 +86,43 @@
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE     
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [vel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     #
     [alpha_damagedvar_aux]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [B_damagedvar_aux]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [strain_invariant_ratio_aux]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
 []
@@ -202,7 +202,7 @@
         velocity = vel_x
         beta = 0.25
         gamma = 0.5
-        eta = 2.0
+        eta = 0
     []
     [./inertia_y]
         type = InertialForce
@@ -211,19 +211,19 @@
         velocity = vel_y
         beta = 0.25
         gamma = 0.5
-        eta = 2.0
+        eta = 0
     []
     [damping_x]
         type = StiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 2.678e-5
+        zeta = 0.4
     []
     [damping_y]
         type = StiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 2.678e-5
+        zeta = 0.4
     []    
 []
 
@@ -318,20 +318,22 @@
   
 [Executioner]
     type = Transient
-    solve_type = 'NEWTON'
-    # solve_type = 'PJFNK'
+    # solve_type = 'NEWTON'
+    solve_type = PJFNK
+    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+    petsc_options_value = 'lu superlu_dist'
     start_time = -1e-12
     end_time = 1e100
-    # num_steps = 50
+    # num_steps = 5
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 5
+    nl_max_its = 10
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
@@ -354,10 +356,10 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the FIRST time step
+[Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -429,62 +431,62 @@
         value = 0
     []
     #add dampers
-    [damp_top_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 1924.5
-        p_wave_speed = 3333.3
-        density = 2700
-    []
-    [damp_top_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 1924.5
-        p_wave_speed = 3333.3
-        density = 2700
-    []
-    [damp_bottom_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 1924.5
-        p_wave_speed = 3333.3
-        density = 2700
-    []
-    [damp_bottom_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 1924.5
-        p_wave_speed = 3333.3
-        density = 2700
-    []
+    # [damp_top_x]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_x
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 0
+    #     boundary = top
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 1924.5
+    #     p_wave_speed = 3333.3
+    #     density = 2700
+    # []
+    # [damp_top_y]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_y
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 1
+    #     boundary = top
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 1924.5
+    #     p_wave_speed = 3333.3
+    #     density = 2700
+    # []
+    # [damp_bottom_x]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_x
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 0
+    #     boundary = bottom
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 1924.5
+    #     p_wave_speed = 3333.3
+    #     density = 2700
+    # []
+    # [damp_bottom_y]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_y
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 1
+    #     boundary = bottom
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 1924.5
+    #     p_wave_speed = 3333.3
+    #     density = 2700
+    # []
     [damp_left_x]
         type = FarmsNonReflectDashpotBC
         variable = disp_x

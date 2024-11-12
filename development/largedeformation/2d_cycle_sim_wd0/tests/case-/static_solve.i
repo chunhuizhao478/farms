@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/tpv2052dm.msh'
+        file = '../../meshfile/tpv2052dm_2ndorder.msh'
     []
     [./sidesets]
         input = msh
@@ -26,7 +26,7 @@
     displacements = 'disp_x disp_y'
         
     ##----continuum damage breakage model----##
-    #initial lambda value (first lame constant) [Pa]
+    #initial lambda value (SECOND lame constant) [Pa]
     lambda_o = 10e9
         
     #initial shear modulus value (second lame constant) [Pa]
@@ -83,11 +83,11 @@
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
 []
