@@ -32,4 +32,8 @@ protected:
   /// Material property initial damage profile
   MaterialProperty<Real> & _initial_damage;
 
+  Real _len_of_fault; // length of the fault
+  Real _sigma; // decay rate
+  Real _peak_val; // peak value of the initial damage
+
 };

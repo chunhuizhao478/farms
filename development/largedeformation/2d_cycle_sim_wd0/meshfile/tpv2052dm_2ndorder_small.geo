@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 // Define mesh sizes
-lc_fault = 100;
+lc_fault = 50;
 lc = 2.5e3;
 
 // Define the big square (2D)
@@ -11,22 +11,22 @@ big_ymin = -10000;
 big_ymax = 10000;
 
 // Define the small box (2D)
-small_xmin = -900;
-small_xmax = 900;
-small_ymin = -500;
-small_ymax = 500;
+small_xmin = -1500;
+small_xmax = 1500;
+small_ymin = -600;
+small_ymax = 600;
 
 // Define the initial damage box (2D)
-smalld_xmin = -800;
-smalld_xmax = 800;
-smalld_ymin = -50;
-smalld_ymax = 50;
+smalld_xmin = -1000;
+smalld_xmax = 1000;
+smalld_ymin = -25;
+smalld_ymax = 25;
 
 // Define the nucleation patch (2D)
 nucl_xmin = -200;
 nucl_xmax = 200;
-nucl_ymin = -50;
-nucl_ymax = 50;
+nucl_ymin = -25;
+nucl_ymax = 25;
 
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};
