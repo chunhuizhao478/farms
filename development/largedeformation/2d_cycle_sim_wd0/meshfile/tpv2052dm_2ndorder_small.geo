@@ -2,31 +2,25 @@ SetFactory("OpenCASCADE");
 
 // Define mesh sizes
 lc_fault = 50;
-lc = 2.5e3;
+lc = 5e3;
 
 // Define the big square (2D)
-big_xmin = -10000;
-big_xmax = 10000;
-big_ymin = -10000;
-big_ymax = 10000;
+big_xmin = -60000;
+big_xmax = 60000;
+big_ymin = -60000;
+big_ymax = 60000;
 
 // Define the small box (2D)
-small_xmin = -1500;
-small_xmax = 1500;
+small_xmin = -3000;
+small_xmax = 3000;
 small_ymin = -600;
 small_ymax = 600;
 
 // Define the initial damage box (2D)
-smalld_xmin = -1000;
-smalld_xmax = 1000;
+smalld_xmin = -2000;
+smalld_xmax = 2000;
 smalld_ymin = -25;
 smalld_ymax = 25;
-
-// Define the nucleation patch (2D)
-nucl_xmin = -200;
-nucl_xmax = 200;
-nucl_ymin = -25;
-nucl_ymax = 25;
 
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};
@@ -64,32 +58,18 @@ Line(10) = {10,11};
 Line(11) = {11,12};
 Line(12) = {12, 9};
 
-// Define points for the nucleation patch
-Point(13) = {nucl_xmin, nucl_ymin, 0, lc_fault};
-Point(14) = {nucl_xmax, nucl_ymin, 0, lc_fault};
-Point(15) = {nucl_xmax, nucl_ymax, 0, lc_fault};
-Point(16) = {nucl_xmin, nucl_ymax, 0, lc_fault};
-
-// Define lines for the small box
-Line(13) = {13, 14};
-Line(14) = {14,15};
-Line(15) = {15,16};
-Line(16) = {16,13};
-
 // Create line loops
 Line Loop(1) = {1, 2, 3, 4};  // Big square
 Line Loop(2) = {5, 6, 7, 8};  // Small box
 Line Loop(3) = {9,10,11,12};  // Initial Damage
-Line Loop(4) = {13,14,15,16};  // Nucleation Patch
 
 // Create surfaces for the big square and small box
 Plane Surface(1) = {1};  // Big square surface
 Plane Surface(2) = {2};  // Small box surface
 Plane Surface(3) = {3};  // Small box surface
-Plane Surface(4) = {4};  // Small box surface
 
 // Boolean operation to fragment all surfaces (assuming Surface IDs are 1 and 2)
-BooleanFragments{ Surface{1,2,3,4}; Delete; }{}
+BooleanFragments{ Surface{1,2,3}; Delete; }{}
 
 // Field 1: Mesh size inside the fault zone
 Field[1] = Box;

@@ -16,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -10000 0'
+        coord = '0 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -126,14 +126,14 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     []
     # elastic
     [elastic_tensor]
@@ -152,8 +152,8 @@
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
-        len_of_fault = 1000
-        sigma = 3e2
+        len_of_fault = 4000
+        sigma = 2e2
         peak_val = 0.7
         outputs = exodus
     []

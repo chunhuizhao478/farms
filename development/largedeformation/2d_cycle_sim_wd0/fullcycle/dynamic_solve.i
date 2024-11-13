@@ -14,7 +14,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -10000 0'
+        coord = '0 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -163,21 +163,21 @@
         variable = alpha_damagedvar_aux
         property = alpha_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 3'
     []
     [B_damagedvar_aux]
         type = MaterialRealAux
         variable = B_damagedvar_aux
         property = B_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 3'
     []  
     [strain_invariant_ratio_aux]
         type = MaterialRealAux
         variable = strain_invariant_ratio_aux
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
-        block = '1 3 4 5'
+        block = '1 3'
     []
 []
 
@@ -260,14 +260,14 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
-        block = '1 3 4 5'
+        block = '1 3'
     []
     # elastic
     [elastic_tensor]
@@ -286,8 +286,8 @@
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
-        len_of_fault = 1000
-        sigma = 3e2
+        len_of_fault = 4000
+        sigma = 2e2
         peak_val = 0.7
         outputs = exodus
     []
@@ -349,7 +349,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 0.01
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 3
+        optimal_iterations = 8
         growth_factor = 1.5
         max_time_step_bound = 1e10
     []
