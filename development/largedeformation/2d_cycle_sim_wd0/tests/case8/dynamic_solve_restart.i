@@ -364,9 +364,14 @@
       show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01'
     [../]
     [./csv]
-      type = CSV
-      time_step_interval = 1
-      show = '_dt'
+        type = CSV
+        time_step_interval = 1
+        show = '_dt'
+    [../]
+    [./my_checkpoint]
+        type = Checkpoint
+        num_files = 5
+        interval = 5000
     [../]
 []
 
