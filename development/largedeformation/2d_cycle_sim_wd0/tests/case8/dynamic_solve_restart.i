@@ -308,7 +308,7 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = -1e-12
+    start_time = 0
     end_time = 1e100
     # num_steps = 10
     l_max_its = 100
@@ -342,14 +342,14 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the SECOND time step
-  [./period0]
-    type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
-    start_time = -1e-12
-    end_time = 1e-2 # dt used in the simulation
-  []
-[../]
+# [Controls] # turns off inertial terms for the SECOND time step
+#   [./period0]
+#     type = TimePeriod
+#     disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+#     start_time = -1e-12
+#     end_time = 1e-2 # dt used in the simulation
+#   []
+# [../]
 
 [Postprocessors]
     [./_dt]
