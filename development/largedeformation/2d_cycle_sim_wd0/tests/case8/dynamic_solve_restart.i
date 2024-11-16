@@ -185,12 +185,12 @@
         execute_on = 'timestep_end'
         block = '1 2'
     []
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_aux
-        solution = init_sol_components
-        from_variable = initial_damage_aux
-    []
+    # [get_initial_damage]
+    #     type = SolutionAux
+    #     variable = initial_damage_aux
+    #     solution = init_sol_components
+    #     from_variable = initial_damage_aux
+    # []
 []
 
 [Kernels]
