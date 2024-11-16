@@ -290,9 +290,7 @@
 [Functions]
     [func_top_bc]
         type = ParsedFunction
-        expression = 'if (t>dt, 1e-8 * t, 0)'
-        symbol_names = 'dt'
-        symbol_values = '1e-2'
+        expression = '1e-8 * (118270069463.82 + t)'
     []
 []
 
@@ -338,7 +336,7 @@
         type = NewmarkBeta
         beta = 0.25
         gamma = 0.5
-        inactive_tsteps = 1
+        # inactive_tsteps = 1
     [../]
 []
 
