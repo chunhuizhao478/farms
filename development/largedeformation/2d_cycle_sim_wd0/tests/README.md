@@ -8,3 +8,5 @@ New added cases (Nov 9):
 (6) Quadratic shape function, w absorber, don't apply on top and bottom
 (7) Quadratic shape function, w absorber, don't apply on top and bottom, add high stiff damping
 (8) Quadratic shape function, w absorber, don't apply on top and bottom, extend damage-allowable region
+(9) Quadratic shape function, w absorber, don't apply on top and bottom, small problem
+(10) Quadratic shape function, w absorber, close healing

@@ -2,13 +2,13 @@ SetFactory("OpenCASCADE");
 
 // Define mesh sizes
 lc_fault = 100;    // Fine mesh size inside the small boxes
-lc = 5000;        // Coarse mesh size outside the small boxes
+lc = 2500;        // Coarse mesh size outside the small boxes
 
 // Define the big square (2D) - full domain
-big_xmin = -60000;
-big_xmax = 60000;
-big_ymin = -60000;
-big_ymax = 60000;
+big_xmin = -30000;
+big_xmax = 30000;
+big_ymin = -30000;
+big_ymax = 30000;
 
 // Define the small boxes (2D) - areas for refined mesh
 small_xmin = -7500;
