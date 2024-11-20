@@ -62,7 +62,9 @@ protected:
   MaterialProperty<Real> & _m2;               //m2
 
   MaterialProperty<Real> & _xi_1_mat;         //xi
-  
+
+  MaterialProperty<Real> & _xi_0_mat; //xi_0
+
   //get old material properties:
   const MaterialProperty<Real> & _alpha_damagedvar_old; //old damage variable
   const MaterialProperty<Real> & _B_breakagevar_old;     //old breakage variable
@@ -79,8 +81,6 @@ protected:
   //get const values
   Real _lambda_o;
   Real _shear_modulus_o;
-  /// strain invariants ratio: onset of damage evolution
-  Real _xi_0;
   /// strain invariants ratio: onset of breakage healing
   Real _xi_d;
   /// strain invariants ratio: minimum allowable value
@@ -107,5 +107,10 @@ protected:
   Real _m1_value;
   /// coefficient of power law indexes
   Real _m2_value;
+
+  /// @brief add option to provide xi0 as a constant value or as an auxiliary variable
+  const bool _use_xi0_aux;
+  const Real _xi0_value;
+  const VariableValue * _xi0_aux;
 
 };

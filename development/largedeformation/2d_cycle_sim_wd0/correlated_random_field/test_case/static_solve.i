@@ -4,7 +4,7 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../meshfile/tpv2052dm.msh'
-        file = '../../meshfile/tpv2052dm_2ndorder_mirrormesh_small_local.msh'
+        file = '../../meshfile/tpv2052dm_2ndorder_mirrormesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -17,7 +17,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -7500 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -160,7 +160,7 @@
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
-        len_of_fault = 4000
+        len_of_fault = 6000
         sigma = 5e2
         peak_val = 0.7
         output_properties = 'initial_damage'

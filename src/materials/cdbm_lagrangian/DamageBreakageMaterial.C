@@ -36,6 +36,8 @@ DamageBreakageMaterial::validParams()
   params.addRequiredParam<Real>(             "C_g", "compliance or fluidity of the fine grain granular material");
   params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
   params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");
+  params.addParam<bool>("use_xi0_aux", false, "Whether to use xi_0 from aux variable");
+  params.addCoupledVar("xi0_aux", "AuxVariable for xi_0");
   return params;
 }
 
@@ -55,6 +57,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _m1(declareProperty<Real>("m1")),
   _m2(declareProperty<Real>("m2")),  
   _xi_1_mat(declareProperty<Real>("xi_1")),  
+  _xi_0_mat(declareProperty<Real>("xi_0")),
   _alpha_damagedvar_old(getMaterialPropertyOldByName<Real>("alpha_damagedvar")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
   _I2_old(getMaterialPropertyOldByName<Real>("second_elastic_strain_invariant")),
@@ -67,7 +70,6 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a3_old(getMaterialPropertyOldByName<Real>("a3")),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
-  _xi_0(getParam<Real>("xi_0")),
   _xi_d(getParam<Real>("xi_d")),
   _xi_min(getParam<Real>("xi_min")),
   _xi_max(getParam<Real>("xi_max")),
@@ -80,8 +82,13 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _CBH_constant(getParam<Real>("CBH_constant")),
   _C_g_value(getParam<Real>("C_g")),
   _m1_value(getParam<Real>("m1")),
-  _m2_value(getParam<Real>("m2"))
+  _m2_value(getParam<Real>("m2")),
+  _use_xi0_aux(getParam<bool>("use_xi0_aux")),
+  _xi0_value(getParam<Real>("xi_0")),
+  _xi0_aux(_use_xi0_aux ? &coupledValue("xi0_aux") : nullptr)
 {
+  if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
+    mooseError("Must specify xi0_aux when use_xi0_aux = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -93,6 +100,9 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
 void 
 DamageBreakageMaterial::initQpStatefulProperties()
 {
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
 
   /* compute gamma_r */
   computegammar();
@@ -138,11 +148,19 @@ DamageBreakageMaterial::computeQpProperties()
   _m2[_qp] = _m2_value;
   _C_g[_qp] = _C_g_value;
 
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+  _xi_0_mat[_qp] = _xi_0;
+
 }
 
 Real 
 DamageBreakageMaterial::updatedamage()
 {
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+
   //compute forcing term
   Real alpha_forcingterm;
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
@@ -175,6 +193,10 @@ DamageBreakageMaterial::updatedamage()
 void
 DamageBreakageMaterial::updatebreakage()
 {
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+
   /* compute C_B based on C_d */
   Real C_B = _CdCb_multiplier * _Cd_constant;
 
@@ -218,6 +240,10 @@ DamageBreakageMaterial::updatebreakage()
 void 
 DamageBreakageMaterial::updatemodulus(Real alpha_updated)
 {
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+
   Real shear_modulus = _shear_modulus_o + alpha_updated * _xi_0 * _gamma_damaged_r[_qp];
   Real gamma_damaged = alpha_updated * _gamma_damaged_r[_qp];
 
@@ -229,6 +255,10 @@ DamageBreakageMaterial::updatemodulus(Real alpha_updated)
 void 
 DamageBreakageMaterial::computegammar()
 {
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+
   // Calculate each part of the expression
   Real term1 = -_xi_0 * (-_lambda_o * pow(_xi_0, 2) + 6 * _lambda_o + 2 * _shear_modulus_o);
   Real term2_sqrt = sqrt((_lambda_o * pow(_xi_0, 2) + 2 * _shear_modulus_o) * 
@@ -246,6 +276,9 @@ DamageBreakageMaterial::computegammar()
 void
 DamageBreakageMaterial::computecoefficients()
 {
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
@@ -291,6 +324,10 @@ DamageBreakageMaterial::computecoefficients()
 // Function for alpha_func_root1
 Real 
 DamageBreakageMaterial::alphacr_root1(Real xi) {
+    
+    // Get xi_0 value
+    const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+
     Real term1 = _lambda_o * pow(xi, 3) - 6 * _lambda_o * _xi_0 + 6 * _shear_modulus_o * xi - 8 * _shear_modulus_o * _xi_0;
     Real term2 = std::sqrt(_lambda_o * _lambda_o * pow(xi, 6) 
                              - 12 * _lambda_o * _lambda_o * pow(xi, 3) * _xi_0 
@@ -309,5 +346,9 @@ DamageBreakageMaterial::alphacr_root1(Real xi) {
 // Function for alpha_func_root2
 Real 
 DamageBreakageMaterial::alphacr_root2(Real xi) {
+    
+    // Get xi_0 value
+    const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+
     return 2 * _shear_modulus_o / (_gamma_damaged_r[_qp] * (xi - 2 * _xi_0));
 }

@@ -2,7 +2,7 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../meshfile/tpv2052dm.msh'
-        file = '../../meshfile/tpv2052dm_2ndorder_mirrormesh_small_local.msh'
+        file = '../../meshfile/tpv2052dm_2ndorder_mirrormesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -15,7 +15,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -7500 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -59,10 +59,10 @@
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 0
+    CBH_constant = 10
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 0
+    C_1 = 3
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -130,6 +130,11 @@
         order = FIRST
         family = MONOMIAL
     []
+    #
+    [correlated_xio]
+        order = SECOND
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]
@@ -190,6 +195,13 @@
         variable = initial_damage_aux
         solution = init_sol_components
         from_variable = initial_damage_aux
+    []
+    #
+    [get_correlated_xio]
+        type = FunctionAux
+        variable = correlated_xio
+        function = node
+        execute_on = 'INITIAL TIMESTEP_END'
     []
 []
 
@@ -253,9 +265,14 @@
     # # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar'
+        output_properties = 'alpha_damagedvar B_damagedvar xi_0'
         outputs = exodus
         block = '1 2'
+        # Option 1: Use constant value
+        # use_xi0_aux = false 
+        # Option 2: Use aux variable
+        use_xi0_aux = true
+        xi0_aux = correlated_xio
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
@@ -369,7 +386,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 100
-      show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01'
+      show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 xi_0'
     [../]
     [./csv]
       type = CSV
@@ -505,5 +522,24 @@
       variable = disp_y
       solution_uo = init_sol_components
       from_variable = disp_y
+    []
+[]
+
+[UserObjects]
+    [reader_node]
+        type = PropertyReadFile
+        prop_file_name = '../mapped_weibull_field.csv'
+        read_type = 'node'
+        nprop = 3 # number of columns in CSV
+    []
+[]
+
+[Functions]
+    [node]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'reader_node'
+        read_type = 'node'
+        # 0-based indexing
+        column_number = '2'
     []
 []
