@@ -6,12 +6,13 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 2000
-        ny = 2000
+        nx = 100
+        ny = 100
         xmin = -50000
         xmax = 50000
         ymin = -50000
         ymax = 50000
+        elem_type = QUAD9
     []
     [./new_block]
         type = ParsedSubdomainMeshGenerator
@@ -31,13 +32,23 @@
     q = 0.1
     Dc = 0.4
     T2_o = 120e6
-    area = 100
     mu_d = 0.525
+[]
+
+[Variables]
+    [./disp_x]
+        order = SECOND
+        family = LAGRANGE
+    [../]
+    [./disp_y]
+        order = SECOND
+        family = LAGRANGE
+    [../]
 []
 
 [AuxVariables]
     [./vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [./accel_x]
@@ -46,6 +57,10 @@
     []
     [./accel_y]
     []
+    [./nodal_area]
+        order = SECOND
+        family = LAGRANGE
+    [../]
 []
 
 [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -116,20 +131,37 @@
         prop_names = density
         prop_values = 2670
     []
-    [./czm_mat]
-        type = SlipWeakeningFriction2d
+    [./czm_stress_derivative]
+        type = StressDerivative2
         boundary = 'Block0_Block1'
+        args = 'disp_x disp_y' 
+    [../]
+    [./czm_mat]
+        type = SlipWeakeningFriction2dxx
+        boundary = 'Block0_Block1'
+         nodal_area = nodal_area
     [../]
 []
 
+[UserObjects]
+    [./nodal_area]
+      type = NodalArea
+      variable = nodal_area
+      boundary = Block0_Block1
+      execute_on = 'initial TIMESTEP_BEGIN'
+    [../]
+[]
 
 [Executioner]
     type = Transient
+   # solve_type = 'PJFNK'
     dt = 0.0025
     end_time = 12
+    automatic_scaling = true
     [TimeIntegrator]
         type = CentralDifference
-        solve_type = lumped
+      #  type = NewmarkBeta
+        #solve_type = lumped
     []
 []
 
