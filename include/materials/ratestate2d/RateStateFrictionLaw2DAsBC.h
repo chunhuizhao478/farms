@@ -34,11 +34,32 @@ protected:
   const VariableValue & _reaction_rsf_neighbor_x;
   const VariableValue & _reaction_rsf_neighbor_y;
 
+  const VariableValue & _jacobian_rsf_x;
+  const VariableValue & _jacobian_rsf_y;
+  const VariableValue & _jacobian_rsf_neighbor_x;
+  const VariableValue & _jacobian_rsf_neighbor_y;
+
+  //restoration pressures to calculate effective stress
+  // const VariableValue & _reaction_rsf_pressure_x;
+  // const VariableValue & _reaction_rsf_pressure_y;
+  // const VariableValue & _reaction_rsf_neighbor_pressure_x;
+  // const VariableValue & _reaction_rsf_neighbor_pressure_y;
+
+  // const VariableValue & _jacobian_rsf_pressure_x;
+  // const VariableValue & _jacobian_rsf_pressure_y;
+  // const VariableValue & _jacobian_rsf_neighbor_pressure_x;
+  // const VariableValue & _jacobian_rsf_neighbor_pressure_y;
+
   //restoration forces
   const VariableValue & _reaction_damp_x;
   const VariableValue & _reaction_damp_y;
   const VariableValue & _reaction_damp_neighbor_x;
   const VariableValue & _reaction_damp_neighbor_y;
+
+  const VariableValue & _jacobian_damp_x;
+  const VariableValue & _jacobian_damp_y;
+  const VariableValue & _jacobian_damp_neighbor_x;
+  const VariableValue & _jacobian_damp_neighbor_y;
 
   //shear stress perturbation
   ///Measure from current time step
@@ -76,5 +97,9 @@ protected:
   //old traction
   const MaterialProperty<Real> & _traction_strike_old;
   const MaterialProperty<Real> & _traction_normal_old;
+
+  // //interfsce pressures
+  // const VariableValue & _interface_pressure_plus; 
+  // const VariableValue & _interface_pressure_minus;
 
 };

@@ -102,6 +102,9 @@ SlipWeakeningFriction2dv2::computeInterfaceTractionAndDerivatives()
    Real Dc = _Dc; 
    Real tau_f = 0;
 
+   Real dtau_f =0;
+   Real dfd_disp =0;
+
    Real T1_o = 0;
    Real T2_o = _T2_o;
    Real area = _nodal_area[_qp];
@@ -134,14 +137,20 @@ SlipWeakeningFriction2dv2::computeInterfaceTractionAndDerivatives()
    Real T1 =  -(1/_dt)*M*displacement_jump_rate(1)/(2*area) + shear + T1_o;
    Real T2 =  (1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*_interface_displacement_jump[_qp](0))/(2*area) + ( ( Ry_plus - Ry_minus ) / ( 2*area) ) - T2_o ;
 
+  //  Real dT1d_disp =  -(1/_dt)*( M )* (1/_dt) / (2*area) + dshear ; 
+  //  Real dT2d_disp =  (1/_dt)*( M )* (1/_dt) *2 / (2*area) + ( ( dRy_plus - dRy_minus ) / ( 2*area) )  ; 
+
    //Compute friction strength
    if (std::abs(_interface_displacement_jump[_qp](1)) < Dc)
    {
      tau_f = (mu_s - (mu_s - mu_d)*std::abs(_interface_displacement_jump[_qp](1))/Dc)*(-T2); // square for shear component
+    //  dtau_f = -(mu_s - mu_d)/Dc*(-T2)*(_interface_displacement_jump[_qp](1))/(std::abs(_interface_displacement_jump[_qp](1)))
+    //           + (mu_s - (mu_s - mu_d)*std::abs(_interface_displacement_jump[_qp](1))/Dc)*(-dT2d_disp);
    } 
    else
    {
      tau_f = mu_d * (-T2);
+    //  dtau_f = mu_d * (-dT2d_disp);
    }
 
    //Compute fault traction

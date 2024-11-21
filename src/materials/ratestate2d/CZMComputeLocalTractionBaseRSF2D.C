@@ -59,7 +59,23 @@ CZMComputeLocalTractionBaseRSF2D::CZMComputeLocalTractionBaseRSF2D(const InputPa
     _alongfaultdisp_x_plus(declarePropertyByName<Real>("alongfaultdisp_x_plus")),
     _alongfaultdisp_x_minus(declarePropertyByName<Real>("alongfaultdisp_x_minus")),
     _alongfaultdisp_y_plus(declarePropertyByName<Real>("alongfaultdisp_y_plus")),
-    _alongfaultdisp_y_minus(declarePropertyByName<Real>("alongfaultdisp_y_minus"))
+    _alongfaultdisp_y_minus(declarePropertyByName<Real>("alongfaultdisp_y_minus")),
+    _dalongfaultdisp_strike_plus_tplusdt_du_strike_plus(declarePropertyByName<Real>("dalongfaultdisp_strike_plus_tplusdt_du_strike_plus")),
+    _dalongfaultdisp_strike_plus_tplusdt_du_strike_minus(declarePropertyByName<Real>("dalongfaultdisp_strike_plus_tplusdt_du_strike_minus")),
+    _dalongfaultdisp_strike_plus_tplusdt_du_normal_plus(declarePropertyByName<Real>("dalongfaultdisp_strike_plus_tplusdt_du_normal_plus")),
+    _dalongfaultdisp_strike_plus_tplusdt_du_normal_minus(declarePropertyByName<Real>("dalongfaultdisp_strike_plus_tplusdt_du_normal_minus")),
+    _dalongfaultdisp_strike_minus_tplusdt_du_strike_plus(declarePropertyByName<Real>("dalongfaultdisp_strike_minus_tplusdt_du_strike_plus")),
+    _dalongfaultdisp_strike_minus_tplusdt_du_strike_minus(declarePropertyByName<Real>("dalongfaultdisp_strike_minus_tplusdt_du_strike_minus")),
+    _dalongfaultdisp_strike_minus_tplusdt_du_normal_plus(declarePropertyByName<Real>("dalongfaultdisp_strike_minus_tplusdt_du_normal_plus")),
+    _dalongfaultdisp_strike_minus_tplusdt_du_normal_minus(declarePropertyByName<Real>("dalongfaultdisp_strike_minus_tplusdt_du_normal_minus")),
+    _dalongfaultdisp_normal_plus_tplusdt_du_strike_plus(declarePropertyByName<Real>("dalongfaultdisp_normal_plus_tplusdt_du_strike_plus")),
+    _dalongfaultdisp_normal_plus_tplusdt_du_strike_minus(declarePropertyByName<Real>("dalongfaultdisp_normal_plus_tplusdt_du_strike_minus")),
+    _dalongfaultdisp_normal_plus_tplusdt_du_normal_plus(declarePropertyByName<Real>("dalongfaultdisp_normal_plus_tplusdt_du_normal_plus")),
+    _dalongfaultdisp_normal_plus_tplusdt_du_normal_minus(declarePropertyByName<Real>("dalongfaultdisp_normal_plus_tplusdt_du_normal_minus")),
+    _dalongfaultdisp_normal_minus_tplusdt_du_strike_plus(declarePropertyByName<Real>("dalongfaultdisp_normal_minus_tplusdt_du_strike_plus")),
+    _dalongfaultdisp_normal_minus_tplusdt_du_strike_minus(declarePropertyByName<Real>("dalongfaultdisp_normal_minus_tplusdt_du_strike_minus")),
+    _dalongfaultdisp_normal_minus_tplusdt_du_normal_plus(declarePropertyByName<Real>("dalongfaultdisp_normal_minus_tplusdt_du_normal_plus")),
+    _dalongfaultdisp_normal_minus_tplusdt_du_normal_minus(declarePropertyByName<Real>("dalongfaultdisp_normal_minus_tplusdt_du_normal_minus"))
 {
 }
 

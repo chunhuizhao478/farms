@@ -57,3 +57,4 @@ class BreakageVarUpdate : public AuxKernel
     Real computeAlphaCr(Real xi);
 
 };
+

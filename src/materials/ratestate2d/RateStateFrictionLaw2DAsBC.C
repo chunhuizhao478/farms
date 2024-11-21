@@ -22,10 +22,23 @@ RateStateFrictionLaw2DAsBC::validParams()
   params.addRequiredParam<Real>("rsf_b","rate-and-state friction coefficients");
   params.addRequiredParam<Real>("rsf_L","rate-and-state friction coefficients");
   params.addRequiredParam<Real>("delta_o","slip rate parameter");
+//   params.addParam<Real>("elem_size", 1.0, "Value of element size");
+//   params.addRequiredCoupledVar("nodal_area","nodal area");
   params.addRequiredCoupledVar("reaction_rsf_x","reaction in x dir");
   params.addRequiredCoupledVar("reaction_rsf_y","reaction in y dir");
+  params.addRequiredCoupledVar("jacob_x","reaction in x dir");
+  params.addRequiredCoupledVar("jacob_y","reaction in y dir");
+//   params.addRequiredCoupledVar("reaction_rsf_pressure_x","reaction in x dir");
+//   params.addRequiredCoupledVar("reaction_rsf_pressure_y","reaction in y dir");
+//   params.addRequiredCoupledVar("jacob_pressure_x","reaction in x dir");
+//   params.addRequiredCoupledVar("jacob_pressure_y","reaction in y dir");
+//   params.addRequiredCoupledVar("interface_pressure","Pressure at sides of the fault");
+//   params.addRequiredParam<std::string>("permeability_type", 
+//     "Type of permeability condition (permeable/impermeable/semi_permeable)");
   params.addRequiredCoupledVar("reaction_damp_x","reaction in x dir");
   params.addRequiredCoupledVar("reaction_damp_y","reaction in y dir");
+  params.addRequiredCoupledVar("jacob_damp_x","reaction in x dir");
+  params.addRequiredCoupledVar("jacob_damp_y","reaction in y dir");
   params.addRequiredCoupledVar("Ts_perturb","shear stress perturbation in strike dir");
   return params;
 }
@@ -44,10 +57,29 @@ RateStateFrictionLaw2DAsBC::RateStateFrictionLaw2DAsBC(const InputParameters & p
     _reaction_rsf_y(coupledValue("reaction_rsf_y")),
     _reaction_rsf_neighbor_x(coupledNeighborValue("reaction_rsf_x")),
     _reaction_rsf_neighbor_y(coupledNeighborValue("reaction_rsf_y")),
+    _jacobian_rsf_x(coupledValue("jacob_x")),
+    _jacobian_rsf_y(coupledValue("jacob_y")),
+    _jacobian_rsf_neighbor_x(coupledNeighborValue("jacob_x")),
+    _jacobian_rsf_neighbor_y(coupledNeighborValue("jacob_y")),
+    // _reaction_rsf_pressure_x(coupledValue("reaction_rsf_pressure_x")),
+    // _reaction_rsf_pressure_y(coupledValue("reaction_rsf_pressure_y")),
+    // _reaction_rsf_neighbor_pressure_x(coupledNeighborValue("reaction_rsf_pressure_x")),
+    // _reaction_rsf_neighbor_pressure_y(coupledNeighborValue("reaction_rsf_pressure_y")),
+    // _jacobian_rsf_pressure_x(coupledValue("jacob_pressure_x")),
+    // _jacobian_rsf_pressure_y(coupledValue("jacob_pressure_y")),
+    // _jacobian_rsf_neighbor_pressure_x(coupledNeighborValue("jacob_pressure_x")),
+    // _jacobian_rsf_neighbor_pressure_y(coupledNeighborValue("jacob_pressure_y")),
+    // _permeability_type(getParam<std::string>("permeability_type")),
+    // _interface_pressure_plus(coupledNeighborValue("interface_pressure")),
+    // _interface_pressure_minus(coupledValue("interface_pressure")),
     _reaction_damp_x(coupledValue("reaction_damp_x")),
     _reaction_damp_y(coupledValue("reaction_damp_y")),
     _reaction_damp_neighbor_x(coupledNeighborValue("reaction_damp_x")),
     _reaction_damp_neighbor_y(coupledNeighborValue("reaction_damp_y")),
+    _jacobian_damp_x(coupledValue("jacob_damp_x")),
+    _jacobian_damp_y(coupledValue("jacob_damp_y")),
+    _jacobian_damp_neighbor_x(coupledNeighborValue("jacob_damp_x")),
+    _jacobian_damp_neighbor_y(coupledNeighborValue("jacob_damp_y")),
     _Ts_perturb(coupledValue("Ts_perturb")),
     _Ts_perturb_old(coupledValueOld("Ts_perturb")),
     _alongfaultvel_strike_plus_old(getMaterialPropertyOldByName<Real>("alongfaultvel_strike_plus")),
@@ -89,6 +121,34 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
     Real Ts_o = _Ts_o;
     Real Ts = 0.0; //strike
     Real Tn = 0.0; //normal
+
+    // //pressure state 
+    // Real alpha = _biot_coefficient[_qp];
+    // Real p_plus = _interface_pressure_plus[_qp];
+    // Real p_minus = _interface_pressure_minus[_qp];
+    // Real p = std::max(_interface_pressure_plus[_qp], _interface_pressure_minus[_qp]);
+    // Real p_old = std::max(_interface_pressure_plus_older[_qp], _interface_pressure_minus_older[_qp]);
+    
+    // // Define pressure based on fault permeability condition
+    // if (_permeability_type == "permeable")
+    // {
+    //     Real p = 0.0;  // For permeable condition
+    //     Real p_old = 0.0;
+    // }
+
+    //*Restoration Force*
+
+    //Effective stress = Stress Divergence - pressure divergence Components (label as stsdivcomp)
+
+    // ///Define in global coordinate
+    // //current time step 
+    // RealVectorValue R_plus_global_prsdivcomp(-_reaction_rsf_pressure_x[_qp],-_reaction_rsf_pressure_y[_qp], 0.0);
+    // RealVectorValue R_minus_global_prsdivcomp(-_reaction_rsf_neighbor_pressure_x[_qp],-_reaction_rsf_neighbor_pressure_y[_qp], 0.0);
+
+    // ///Rotate in local coordinate
+    // //current time step
+    // RealVectorValue R_plus_local_prsdivcomp = _rot[_qp].transpose() * R_plus_global_prsdivcomp;
+    // RealVectorValue R_minus_local_prsdivcomp = _rot[_qp].transpose() * R_minus_global_prsdivcomp;
     
     //*Restoration Force*
 
@@ -108,11 +168,11 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
 
     ///Get Components
     //current time step
-    Real R_plus_local_normal_stsdivcomp  = R_plus_local_stsdivcomp(0);
-    Real R_plus_local_strike_stsdivcomp  = R_plus_local_stsdivcomp(1);
+    Real R_plus_local_normal_stsdivcomp  = R_plus_local_stsdivcomp(0); //+ R_plus_local_prsdivcomp(0);
+    Real R_plus_local_strike_stsdivcomp  = R_plus_local_stsdivcomp(1); //+ R_plus_local_prsdivcomp(1);
     
-    Real R_minus_local_normal_stsdivcomp = R_minus_local_stsdivcomp(0);
-    Real R_minus_local_strike_stsdivcomp = R_minus_local_stsdivcomp(1);
+    Real R_minus_local_normal_stsdivcomp = R_minus_local_stsdivcomp(0); //+ R_minus_local_prsdivcomp(0);
+    Real R_minus_local_strike_stsdivcomp = R_minus_local_stsdivcomp(1); //+ R_minus_local_prsdivcomp(1);
 
     //--------------------------------------------------------------------------------------------------//
 
@@ -143,6 +203,72 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
     Real R_plus_local_strike  = R_plus_local_strike_stsdivcomp  + R_plus_local_strike_dampingcomp;
     Real R_minus_local_normal = R_minus_local_normal_stsdivcomp + R_minus_local_normal_dampingcomp;
     Real R_minus_local_strike = R_minus_local_strike_stsdivcomp + R_minus_local_strike_dampingcomp;  
+
+    //--------------------------------------------------------------------------------------------------//
+
+     //--------------------------------------------------------------------------------------------------//
+
+    //*jacobian Restoration Force*
+
+    //Effective stress = Stress Divergence - pressure divergence Components (label as stsdivcomp)
+
+    // ///Define in global coordinate
+    // //current time step 
+    // RealVectorValue J_plus_global_prsdivcomp(-_jacobian_rsf_pressure_x[_qp],-_jacobian_rsf_pressure_y[_qp], 0.0);
+    // RealVectorValue J_minus_global_prsdivcomp(-_jacobian_rsf_neighbor_pressure_x[_qp],-_jacobian_rsf_neighbor_pressure_y[_qp], 0.0);
+
+    // ///Rotate in local coordinate
+    // //current time step
+    // RealVectorValue J_plus_local_prsdivcomp = _rot[_qp].transpose() * J_plus_global_prsdivcomp;
+    // RealVectorValue J_minus_local_prsdivcomp = _rot[_qp].transpose() * J_minus_global_prsdivcomp;
+
+    ///Define in global coordinate
+    //current time step 
+    RealVectorValue J_plus_global_stsdivcomp(-_jacobian_rsf_x[_qp],-_jacobian_rsf_y[_qp], 0.0);
+    RealVectorValue J_minus_global_stsdivcomp(-_jacobian_rsf_neighbor_x[_qp],-_jacobian_rsf_neighbor_y[_qp], 0.0);
+
+    ///Rotate in local coordinate
+    //current time step
+    RealVectorValue J_plus_local_stsdivcomp = _rot[_qp].transpose() * J_plus_global_stsdivcomp;
+    RealVectorValue J_minus_local_stsdivcomp = _rot[_qp].transpose() * J_minus_global_stsdivcomp;
+
+    ///Get Components
+    //current time step
+    Real J_plus_local_normal_stsdivcomp  = J_plus_local_stsdivcomp(0) ; //+ J_plus_local_prsdivcomp(0)
+    Real J_plus_local_strike_stsdivcomp  = J_plus_local_stsdivcomp(1) ; // J_plus_local_prsdivcomp(1);
+    
+    Real J_minus_local_normal_stsdivcomp = J_minus_local_stsdivcomp(0); // J_minus_local_prsdivcomp(0);
+    Real J_minus_local_strike_stsdivcomp = J_minus_local_stsdivcomp(1); // J_minus_local_prsdivcomp(1);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Damping Components Contribution (label as dampingcomp)
+
+    ///Define in global coordinate
+    //current time step 
+    RealVectorValue J_plus_global_dampingcomp(-_jacobian_damp_x[_qp],-_jacobian_damp_y[_qp], 0.0);
+    RealVectorValue J_minus_global_dampingcomp(-_jacobian_damp_neighbor_x[_qp],-_jacobian_damp_neighbor_y[_qp], 0.0);
+
+    ///Rotate in local coordinate
+    //current time step
+    RealVectorValue J_plus_local_dampingcomp = _rot[_qp].transpose() * J_plus_global_dampingcomp;
+    RealVectorValue J_minus_local_dampingcomp = _rot[_qp].transpose() * J_minus_global_dampingcomp;
+
+    ///Get Components
+    //current time step
+    Real J_plus_local_normal_dampingcomp  = J_plus_local_dampingcomp(0);
+    Real J_plus_local_strike_dampingcomp  = J_plus_local_dampingcomp(1);
+    
+    Real J_minus_local_normal_dampingcomp = J_minus_local_dampingcomp(0);
+    Real J_minus_local_strike_dampingcomp = J_minus_local_dampingcomp(1);
+
+    //--------------------------------------------------------------------------------------------------//
+
+    //Add restoration forces from two contributions
+    Real J_plus_local_normal  = J_plus_local_normal_stsdivcomp  + J_plus_local_normal_dampingcomp; 
+    Real J_plus_local_strike  = J_plus_local_strike_stsdivcomp  + J_plus_local_strike_dampingcomp; 
+    Real J_minus_local_normal = J_minus_local_normal_stsdivcomp + J_minus_local_normal_dampingcomp; 
+    Real J_minus_local_strike = J_minus_local_strike_stsdivcomp + J_minus_local_strike_dampingcomp; 
 
     //--------------------------------------------------------------------------------------------------//
 
@@ -304,5 +430,159 @@ RateStateFrictionLaw2DAsBC::computeInterfaceTractionAndDerivatives()
 
     _interface_traction[_qp] = 0.0;
     _dinterface_traction_djump[_qp] = 0;   
+
+    // //--------------------------------------------------------------------------------------------------//
+
+    //Jacobians of the displacements
+   
+    // Diagonal and off diagonal jacobians with respect to displacements on both sides 
+    // (This should consider the stress divergence, pressure divergence and damping jacobians)
+
+    Real dR_plus_local_strike_du_strike_plus = J_plus_local_strike;
+    Real dR_minus_local_strike_du_strike_plus = 0;
+    Real dR_plus_local_normal_du_strike_plus  = 0;
+    Real dR_minus_local_normal_du_strike_plus = 0;
+
+    Real dR_plus_local_strike_du_strike_minus = 0;
+    Real dR_minus_local_strike_du_strike_minus = J_minus_local_strike;
+    Real dR_plus_local_normal_du_strike_minus  = 0;
+    Real dR_minus_local_normal_du_strike_minus = 0;
+
+    Real dR_plus_local_strike_du_normal_plus = 0;
+    Real dR_minus_local_strike_du_normal_plus = 0;
+    Real dR_plus_local_normal_du_normal_plus  = J_plus_local_normal;
+    Real dR_minus_local_normal_du_normal_plus = 0;
+
+    Real dR_plus_local_strike_du_normal_minus = 0;
+    Real dR_minus_local_strike_du_normal_minus = 0;
+    Real dR_plus_local_normal_du_normal_minus  = 0;
+    Real dR_minus_local_normal_du_normal_minus = J_minus_local_normal;
+
+
+    Real dTn_du_strike_plus =  0;
+    Real dTn_du_strike_minus =  0;
+    Real dTn_du_normal_plus  =  0;
+    Real dTn_du_normal_minus =  0;
+
+    // jacobians of the normal traction   
+    if (Tn_trial<0)
+    {
+     // if we consider the old slip and slip rates
+
+        Real dTn_du_strike_plus =  ( M * dR_minus_local_normal_du_strike_plus - M * dR_plus_local_normal_du_strike_plus  ) / ( len * (M + M) ) ;
+        Real dTn_du_strike_minus =  ( M * dR_minus_local_normal_du_strike_minus - M * dR_plus_local_normal_du_strike_minus  ) / ( len * (M + M) ) ;
+
+        Real dTn_du_normal_plus  =  (-1.0 * (1.0/_dt) * M * M * ( (1.0/_dt) * 1 + (1.0/_dt) * 1) ) / ( len * (M + M) ) + ( M * dR_minus_local_normal_du_normal_plus - M * dR_plus_local_normal_du_normal_plus ) / ( len * (M + M) );
+        Real dTn_du_normal_minus =  (-1.0 * (1.0/_dt) * M * M * ( (1.0/_dt) * -1 + (1.0/_dt) * -1) ) / ( len * (M + M) ) + ( M * dR_minus_local_normal_du_normal_minus - M * dR_plus_local_normal_du_normal_minus ) / ( len * (M + M) );
+
+     // if we don't consider the old slip and slip rates
+
+        // dTn_du_strike_plus =  ( M * dR_minus_local_normal_du_strike_plus - M * dR_plus_local_normal_du_strike_plus  ) / ( len * (M + M) ) ;
+        // dTn_du_strike_minus =  ( M * dR_minus_local_normal_du_strike_minus - M * dR_plus_local_normal_du_strike_minus  ) / ( len * (M + M) ) ;
+
+        // dTn_du_normal_plus  =  ( M * dR_minus_local_normal_du_normal_plus - M * dR_plus_local_normal_du_normal_plus ) / ( len * (M + M) );
+        // dTn_du_normal_minus =   ( M * dR_minus_local_normal_du_normal_minus - M * dR_plus_local_normal_du_normal_minus ) / ( len * (M + M) );
+
+    }else{
+        
+    }
+
+
+    Real dstatevar_ss_du_strike_plus = 0;
+    Real dstatevar_ss_du_strike_minus = 0;
+    Real dstatevar_ss_du_normal_plus = 0;
+    Real dstatevar_ss_du_normal_minus = 0;
+
+    Real dZ_du_strike_plus = 0;
+    Real dZ_du_strike_minus = 0;
+    Real dZ_du_normal_plus = 0;
+    Real dZ_du_normal_minus = 0;
+
+    dstatevar_ss_du_strike_plus = -(rsf_L / pow(sliprate_mag_tplusdtover2, 2)) * (1 / _dt);
+    dstatevar_ss_du_strike_minus = (rsf_L / pow(sliprate_mag_tplusdtover2, 2)) * (1 / _dt);
+    // dstatevar_ss_du_normal_plus and dstatevar_ss_du_normal_minus stay 0
+
+    dZ_du_strike_plus = (Z / statevar_t) * (rsf_b / rsf_a) * dstatevar_ss_du_strike_plus;
+    dZ_du_strike_minus = (Z / statevar_t) * (rsf_b / rsf_a) * dstatevar_ss_du_strike_minus;
+    dZ_du_normal_plus = (Z / statevar_t) * (rsf_b / rsf_a) * dstatevar_ss_du_normal_plus;
+    dZ_du_normal_minus = (Z / statevar_t) * (rsf_b / rsf_a) * dstatevar_ss_du_normal_minus;
+
+    Real C =  0.5*(sliprate_mag_tminusdtover2+sliprate_mag_tplusdtover2);
+
+    Real dT_mag_du_strike_plus = dTn_du_strike_plus * rsf_a * asinh(C*Z)
+                                  + Tn * rsf_a * dZ_du_strike_plus * C/std::sqrt(1+std::pow(C*Z,2))
+                                  + Tn * rsf_a * (1.0/_dt) * Z * C/std::sqrt(1+std::pow(C*Z,2)); 
+    Real dT_mag_du_strike_minus = dTn_du_strike_minus * rsf_a * asinh(C*Z)
+                                   + Tn * rsf_a * dZ_du_strike_minus * C/std::sqrt(1+std::pow(C*Z,2))
+                                   + Tn * rsf_a * (-1.0/_dt) * Z * C/std::sqrt(1+std::pow(C*Z,2));    
+    Real dT_mag_du_normal_plus = dTn_du_normal_plus * rsf_a * asinh(C*Z)
+                                  + Tn * rsf_a * dZ_du_normal_plus * C/std::sqrt(1+std::pow(C*Z,2));                              
+    Real dT_mag_du_normal_minus = dTn_du_normal_minus * rsf_a * asinh(C*Z)
+                                   + Tn * rsf_a * dZ_du_normal_minus * C/std::sqrt(1+std::pow(C*Z,2));
+                                                   
+
+    Real dTs_du_strike_plus = dT_mag_du_strike_plus * ( Ts_trial / Tmag_trial );
+    Real dTs_du_strike_minus = dT_mag_du_strike_minus * ( Ts_trial / Tmag_trial );
+    Real dTs_du_normal_plus = dT_mag_du_normal_plus * ( Ts_trial / Tmag_trial );
+    Real dTs_du_normal_minus = dT_mag_du_normal_minus * ( Ts_trial / Tmag_trial );
+
+    Real dalongfaultdisp_strike_plus_tplusdt_du_strike_plus = 1 + 1 + _dt * _dt / M * (dR_plus_local_strike_du_strike_plus - len * dTs_du_strike_plus);
+    Real dalongfaultdisp_strike_plus_tplusdt_du_strike_minus = _dt * _dt / M * (dR_plus_local_strike_du_strike_minus - len * dTs_du_strike_minus);
+    Real dalongfaultdisp_strike_plus_tplusdt_du_normal_plus = _dt * _dt / M * (dR_plus_local_strike_du_normal_plus - len * dTs_du_normal_plus);
+    Real dalongfaultdisp_strike_plus_tplusdt_du_normal_minus = _dt * _dt / M * (dR_plus_local_strike_du_normal_minus - len * dTs_du_normal_minus);
+        
+    Real dalongfaultdisp_strike_minus_tplusdt_du_strike_plus = _dt * _dt / M * (dR_minus_local_strike_du_strike_plus + len * dTs_du_strike_plus);
+    Real dalongfaultdisp_strike_minus_tplusdt_du_strike_minus = 1 + 1 + _dt * _dt / M * (dR_minus_local_strike_du_strike_minus + len * dTs_du_strike_minus);
+    Real dalongfaultdisp_strike_minus_tplusdt_du_normal_plus = _dt * _dt / M * (dR_minus_local_strike_du_normal_plus + len * dTs_du_normal_plus);
+    Real dalongfaultdisp_strike_minus_tplusdt_du_normal_minus = _dt * _dt / M * (dR_minus_local_strike_du_normal_minus + len * dTs_du_normal_minus);
+
+    Real dalongfaultdisp_normal_plus_tplusdt_du_strike_plus = _dt * _dt / M * (dR_plus_local_normal_du_strike_plus - len * dTn_du_strike_plus);
+    Real dalongfaultdisp_normal_plus_tplusdt_du_strike_minus = _dt * _dt / M * (dR_plus_local_normal_du_strike_minus - len * dTn_du_strike_minus);
+    Real dalongfaultdisp_normal_plus_tplusdt_du_normal_plus = 1 + 1 + _dt * _dt / M * (dR_plus_local_normal_du_normal_plus - len * dTn_du_normal_plus);
+    Real dalongfaultdisp_normal_plus_tplusdt_du_normal_minus = _dt * _dt / M * (dR_plus_local_normal_du_normal_minus - len * dTn_du_normal_minus);
+
+    Real dalongfaultdisp_normal_minus_tplusdt_du_strike_plus = _dt * _dt / M * (dR_minus_local_normal_du_strike_plus + len * dTn_du_strike_plus);
+    Real dalongfaultdisp_normal_minus_tplusdt_du_strike_minus = _dt * _dt / M * (dR_minus_local_normal_du_strike_minus + len * dTn_du_strike_minus);
+    Real dalongfaultdisp_normal_minus_tplusdt_du_normal_plus = _dt * _dt / M * (dR_minus_local_normal_du_normal_plus + len * dTn_du_normal_plus);
+    Real dalongfaultdisp_normal_minus_tplusdt_du_normal_minus = 1 + 1 + _dt * _dt / M * (dR_minus_local_normal_du_normal_minus + len * dTn_du_normal_minus);
+ 
+        _dalongfaultdisp_strike_plus_tplusdt_du_strike_plus[_qp] = dalongfaultdisp_strike_plus_tplusdt_du_strike_plus;
+        _dalongfaultdisp_strike_plus_tplusdt_du_strike_minus[_qp] = dalongfaultdisp_strike_plus_tplusdt_du_strike_minus;
+        _dalongfaultdisp_strike_plus_tplusdt_du_normal_plus[_qp] = dalongfaultdisp_strike_plus_tplusdt_du_normal_plus;
+        _dalongfaultdisp_strike_plus_tplusdt_du_normal_minus[_qp] = dalongfaultdisp_strike_plus_tplusdt_du_normal_minus;
+        _dalongfaultdisp_strike_minus_tplusdt_du_strike_plus[_qp] = dalongfaultdisp_strike_minus_tplusdt_du_strike_plus;
+        _dalongfaultdisp_strike_minus_tplusdt_du_strike_minus[_qp] = dalongfaultdisp_strike_minus_tplusdt_du_strike_minus;
+        _dalongfaultdisp_strike_minus_tplusdt_du_normal_plus[_qp] = dalongfaultdisp_strike_minus_tplusdt_du_normal_plus;
+        _dalongfaultdisp_strike_minus_tplusdt_du_normal_minus[_qp] = dalongfaultdisp_strike_minus_tplusdt_du_normal_minus;
+        _dalongfaultdisp_normal_plus_tplusdt_du_strike_plus[_qp] = dalongfaultdisp_normal_plus_tplusdt_du_strike_plus;
+        _dalongfaultdisp_normal_plus_tplusdt_du_strike_minus[_qp] = dalongfaultdisp_normal_plus_tplusdt_du_strike_minus;
+        _dalongfaultdisp_normal_plus_tplusdt_du_normal_plus[_qp] = dalongfaultdisp_normal_plus_tplusdt_du_normal_plus;
+        _dalongfaultdisp_normal_plus_tplusdt_du_normal_minus[_qp] = dalongfaultdisp_normal_plus_tplusdt_du_normal_minus;
+        _dalongfaultdisp_normal_minus_tplusdt_du_strike_plus[_qp] = dalongfaultdisp_normal_minus_tplusdt_du_strike_plus;
+        _dalongfaultdisp_normal_minus_tplusdt_du_strike_minus[_qp] = dalongfaultdisp_normal_minus_tplusdt_du_strike_minus;
+        _dalongfaultdisp_normal_minus_tplusdt_du_normal_plus[_qp] = dalongfaultdisp_normal_minus_tplusdt_du_normal_plus;
+        _dalongfaultdisp_normal_minus_tplusdt_du_normal_minus[_qp] = dalongfaultdisp_normal_minus_tplusdt_du_normal_minus;
+
+        // _dalongfaultdisp_strike_plus_tplusdt_du_strike_plus[_qp] = 1;
+        // _dalongfaultdisp_strike_plus_tplusdt_du_strike_minus[_qp] = 1;
+        // _dalongfaultdisp_strike_plus_tplusdt_du_normal_plus[_qp] = 1;
+        // _dalongfaultdisp_strike_plus_tplusdt_du_normal_minus[_qp] = 1;
+        // _dalongfaultdisp_strike_minus_tplusdt_du_strike_plus[_qp] = 1;
+        // _dalongfaultdisp_strike_minus_tplusdt_du_strike_minus[_qp] = 1;
+        // _dalongfaultdisp_strike_minus_tplusdt_du_normal_plus[_qp] = 1;
+        // _dalongfaultdisp_strike_minus_tplusdt_du_normal_minus[_qp] = 1;
+        // _dalongfaultdisp_normal_plus_tplusdt_du_strike_plus[_qp] = 1;
+        // _dalongfaultdisp_normal_plus_tplusdt_du_strike_minus[_qp] = 1;
+        // _dalongfaultdisp_normal_plus_tplusdt_du_normal_plus[_qp] = 1;
+        // _dalongfaultdisp_normal_plus_tplusdt_du_normal_minus[_qp] = 1;
+        // _dalongfaultdisp_normal_minus_tplusdt_du_strike_plus[_qp] = 1;
+        // _dalongfaultdisp_normal_minus_tplusdt_du_strike_minus[_qp] = 1;
+        // _dalongfaultdisp_normal_minus_tplusdt_du_normal_plus[_qp] = 1;
+        // _dalongfaultdisp_normal_minus_tplusdt_du_normal_minus[_qp] = 1;
+ 
+
+
+
+    
 
 }

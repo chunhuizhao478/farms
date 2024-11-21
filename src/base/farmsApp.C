@@ -8,9 +8,12 @@ InputParameters
 farmsApp::validParams()
 {
   InputParameters params = MooseApp::validParams();
-
+  params.set<bool>("use_legacy_material_output") = false;
+  params.set<bool>("use_legacy_initial_residual_evaluation_behavior") = false;
   return params;
 }
+
+registerKnownLabel("farmsApp");
 
 farmsApp::farmsApp(InputParameters parameters) : MooseApp(parameters)
 {
@@ -19,15 +22,33 @@ farmsApp::farmsApp(InputParameters parameters) : MooseApp(parameters)
 
 farmsApp::~farmsApp() {}
 
+static void
+associateSyntaxInner(Syntax & syntax, ActionFactory & /*action_factory*/)
+{
+registerSyntax("PoroCohesiveZoneAction", "Actions/PoroCohesiveZoneAction/*");
+}
+
+
 void
 farmsApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 {
   ModulesApp::registerAllObjects<farmsApp>(f, af, syntax);
   Registry::registerObjectsTo(f, {"farmsApp"});
   Registry::registerActionsTo(af, {"farmsApp"});
+  associateSyntaxInner(syntax, af);
+  registerDataFilePath();
 
   /* register custom execute flags, action syntax, etc. here */
 }
+
+
+void
+farmsApp::associateSyntax(Syntax & syntax, ActionFactory & action_factory)
+{
+  Registry::registerActionsTo(action_factory, {"farmsApp"});
+  associateSyntaxInner(syntax, action_factory);
+}
+
 
 void
 farmsApp::registerApps()

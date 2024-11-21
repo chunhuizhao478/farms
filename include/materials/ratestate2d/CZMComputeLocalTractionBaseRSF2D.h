@@ -100,4 +100,24 @@ protected:
   MaterialProperty<Real> & _alongfaultdisp_y_plus;
   MaterialProperty<Real> & _alongfaultdisp_y_minus;
 
+  MaterialProperty<Real> & _dalongfaultdisp_strike_plus_tplusdt_du_strike_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_strike_plus_tplusdt_du_strike_minus;
+  MaterialProperty<Real> & _dalongfaultdisp_strike_plus_tplusdt_du_normal_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_strike_plus_tplusdt_du_normal_minus;
+  
+  MaterialProperty<Real> & _dalongfaultdisp_strike_minus_tplusdt_du_strike_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_strike_minus_tplusdt_du_strike_minus;
+  MaterialProperty<Real> & _dalongfaultdisp_strike_minus_tplusdt_du_normal_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_strike_minus_tplusdt_du_normal_minus;
+  
+  MaterialProperty<Real> & _dalongfaultdisp_normal_plus_tplusdt_du_strike_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_normal_plus_tplusdt_du_strike_minus;
+  MaterialProperty<Real> & _dalongfaultdisp_normal_plus_tplusdt_du_normal_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_normal_plus_tplusdt_du_normal_minus;
+  
+  MaterialProperty<Real> & _dalongfaultdisp_normal_minus_tplusdt_du_strike_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_normal_minus_tplusdt_du_strike_minus;
+  MaterialProperty<Real> & _dalongfaultdisp_normal_minus_tplusdt_du_normal_plus;
+  MaterialProperty<Real> & _dalongfaultdisp_normal_minus_tplusdt_du_normal_minus;
+
 };
