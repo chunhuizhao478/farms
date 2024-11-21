@@ -43,5 +43,28 @@ StiffPropDamping::computeQpResidual()
   return residual;
 }
 
+Real
+StiffPropDamping::computeQpJacobian()
+{
+
+  return StressDivergenceTensors::computeQpJacobian()*_q;
+
+}
+
+Real
+StiffPropDamping::computeQpOffDiagJacobian(unsigned int jvar)
+{
+
+  return 0.0;
+  
+  for (unsigned int i = 0; i < _ndisp; ++i)
+  {
+    if (jvar == _disp_var[i])
+    { 
+      return StressDivergenceTensors::computeQpOffDiagJacobian(jvar)*_q;   
+    }     
+  }
+}
+
 
 

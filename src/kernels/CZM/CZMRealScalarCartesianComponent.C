@@ -1,0 +1,41 @@
+//* This file is part of the MOOSE framework
+//* https://www.mooseframework.org
+//*
+//* All rights reserved, see COPYRIGHT for full restrictions
+//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+
+#include "CZMRealScalarCartesianComponent.h"
+
+registerMooseObject("farmsApp", CZMRealScalarCartesianComponent);
+
+InputParameters
+CZMRealScalarCartesianComponent::validParams()
+{
+  InputParameters params = InterfaceMaterial::validParams();
+  params.addClassDescription("Access a component of a RealScalarValue defined on a cohesive zone");
+  params.addRequiredParam<std::string>("real_scalar_value", "The scalar material name");
+  params.addRequiredParam<MaterialPropertyName>(
+      "property_name", "Name of the material property computed by this model");
+  params.addParam<std::string>("base_name", "Material property base name");
+  return params;
+}
+
+CZMRealScalarCartesianComponent::CZMRealScalarCartesianComponent(const InputParameters & parameters)
+  : InterfaceMaterial(parameters),
+    _base_name(isParamValid("base_name") && !getParam<std::string>("base_name").empty()
+                   ? getParam<std::string>("base_name") + "_"
+                   : ""),
+    _property(declarePropertyByName<Real>(getParam<MaterialPropertyName>("property_name"))),
+    _scalar(getMaterialPropertyByName<Real>(_base_name +
+                                                       getParam<std::string>("real_scalar_value")))
+{
+}
+
+void
+CZMRealScalarCartesianComponent::computeQpProperties()
+{
+  _property[_qp] = _scalar[_qp];
+}

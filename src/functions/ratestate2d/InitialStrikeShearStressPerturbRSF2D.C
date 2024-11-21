@@ -66,7 +66,8 @@ InitialStrikeShearStressPerturbRSF2D::value(Real t, const Point & p) const
   Real Val_G = Func_G(t, T);
 
   //Obtain initial shear stress
-  Real T1_o = T1_perturb * Val_F * Val_G;
+  // Real T1_o = T1_perturb * Val_F * Val_G;
+  Real T1_o = 0;
   
   return T1_o;
 
