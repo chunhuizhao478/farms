@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/tpv2052dm_2ndorder_small.msh'
+        file = '../meshfile/tpv2052dm_2ndorder_mirrormesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -124,7 +124,7 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar'
+        output_properties = 'alpha_damagedvar B_damagedvar shear_modulus damaged_modulus'
         outputs = exodus
         block = '1 3'
     [] 
@@ -153,7 +153,7 @@
         type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         len_of_fault = 4000
-        sigma = 2e2
+        sigma = 5e2
         peak_val = 0.7
         outputs = exodus
     []

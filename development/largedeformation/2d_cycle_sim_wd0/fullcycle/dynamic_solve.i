@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/tpv2052dm_2ndorder_small.msh'
+        file = '../meshfile/tpv2052dm_2ndorder_mirrormesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -14,7 +14,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -125,6 +125,11 @@
         order = FIRST
         family = MONOMIAL
     []
+    #state
+    [state]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -178,6 +183,12 @@
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
         block = '1 3'
+    []
+    #state
+    [get_state_qdyn_to_dyn]
+        type = FunctionAux
+        variable = state
+        function = switch_condition
     []
 []
 
@@ -287,7 +298,7 @@
         type = InitialDamageCycleSim2DDebug
         output_properties = 'initial_damage'
         len_of_fault = 4000
-        sigma = 2e2
+        sigma = 5e2
         peak_val = 0.7
         outputs = exodus
     []
@@ -300,18 +311,13 @@
         symbol_names = 'dt'
         symbol_values = '1e-2'
     []
-     #need to think of a way to adjust vel_sol value here, keep it same as other condition for now
-    [switch_condition_qdyn_to_dyn]
-        type = ParsedFunction
-        expression = 'vel_sol >= 1e-2'
-        symbol_names = 'vel_sol'
-        symbol_values = 'max_vel'
-    []
-    [./switch_condition_dyn_to_qdyn]
-        type = ParsedFunction
-        expression = '(vel_sol < 1e-2) * (max_plastic_strain != 0)'
-        symbol_names = 'vel_sol max_plastic_strain'
-        symbol_values = 'max_vel max_plastic_strain'
+    #need to think of a way to adjust vel_sol value here, keep it same as other condition for now
+    [./switch_condition]
+        type = SwitchStateFunction
+        vel_sol = max_vel
+        vel_threshold_quasi_to_dyn = 5e-4
+        vel_threshold_dyn_to_quasi = 1e-2
+        stateflag_old = stateflag_old
     [../]
 []
 
@@ -330,7 +336,7 @@
     start_time = -1e-12
     end_time = 1e100
     # num_steps = 5
-    l_max_its = 100
+    l_max_its = 15
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 5
@@ -368,19 +374,12 @@
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
-  [./control_switch_condition_qdyn_to_dyn]
-    type = ConditionalFunctionEnableControl
-    conditional_function = 'switch_condition_qdyn_to_dyn'
+  [./control_switch_condition]
+    type = FarmsConditionalFunctionEnableControl
+    conditional_function = 'switch_condition'
     enable_objects = '*/inertia_x */inertia_y */damping_x */damping_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     disable_objects = '*/radiationdamping_x */radiationdamping_y'
-    reverse_on_false = false
-  []
-  [./control_switch_condition_dyn_to_qdyn]
-    type = ConditionalFunctionEnableControl
-    conditional_function = 'switch_condition_dyn_to_qdyn'
-    enable_objects = '*/radiationdamping_x */radiationdamping_y'
-    disable_objects = '*/inertia_x */inertia_y */damping_x */damping_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
-    reverse_on_false = false
+    reverse_on_false = true
   []
 [../]
 
@@ -397,13 +396,18 @@
         type = ElementExtremeValue
         variable = plastic_strain_01
     []
+    #get stateflag old
+    [./stateflag_old]
+        type = ElementExtremeValue
+        variable = state
+    []    
 [../]
 
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
-      show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11'
+      time_step_interval = 1
+      show = 'state vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11'
     [../]
     [./csv]
       type = CSV
