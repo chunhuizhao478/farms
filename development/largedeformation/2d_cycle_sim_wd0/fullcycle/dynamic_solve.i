@@ -168,21 +168,21 @@
         variable = alpha_damagedvar_aux
         property = alpha_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3'
+        block = '1 2'
     []
     [B_damagedvar_aux]
         type = MaterialRealAux
         variable = B_damagedvar_aux
         property = B_damagedvar
         execute_on = 'timestep_end'
-        block = '1 3'
+        block = '1 2'
     []  
     [strain_invariant_ratio_aux]
         type = MaterialRealAux
         variable = strain_invariant_ratio_aux
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
-        block = '1 3'
+        block = '1 2'
     []
     #state
     [get_state_qdyn_to_dyn]
@@ -271,28 +271,28 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3'
+        block = '1 2'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
-        block = '1 3'
+        block = '1 2'
     []
     # elastic
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         lambda = 1e10
         shear_modulus = 1e10
-        block = 2
+        block = 3
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
         outputs = exodus
-        block = 2
+        block = 3
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug

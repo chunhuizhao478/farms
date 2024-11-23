@@ -126,28 +126,28 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar shear_modulus damaged_modulus'
         outputs = exodus
-        block = '1 3'
+        block = '1 2'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = '1 3'
+        block = '1 2'
     []
     # elastic
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         lambda = 1e10
         shear_modulus = 1e10
-        block = 2
+        block = 3
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
         outputs = exodus
-        block = 2
+        block = 3
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
