@@ -160,7 +160,7 @@
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
-        len_of_fault = 6000
+        len_of_fault = 1000
         sigma = 5e2
         peak_val = 0.7
         output_properties = 'initial_damage'
