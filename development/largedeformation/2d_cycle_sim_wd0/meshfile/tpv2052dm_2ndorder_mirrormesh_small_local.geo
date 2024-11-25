@@ -11,8 +11,8 @@ big_ymin = -7500;
 big_ymax = 7500;
 
 // Define the small boxes (2D) - areas for refined mesh
-small_xmin = -4000;
-small_xmax = 4000;
+small_xmin = -2000;
+small_xmax = 2000;
 small_ymin = -1000;
 small_ymax = 1000;
 
