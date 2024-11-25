@@ -11,10 +11,10 @@ big_ymin = -7500;
 big_ymax = 7500;
 
 // Define the small boxes (2D) - areas for refined mesh
-small_xmin = -5000;
-small_xmax = 5000;
-small_ymin = -3000;
-small_ymax = 3000;
+small_xmin = -4000;
+small_xmax = 4000;
+small_ymin = -1000;
+small_ymax = 1000;
 
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};
