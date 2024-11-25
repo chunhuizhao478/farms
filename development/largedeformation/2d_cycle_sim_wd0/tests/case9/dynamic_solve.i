@@ -333,6 +333,8 @@
         optimal_iterations = 8
         growth_factor = 1.5
         max_time_step_bound = 1e10
+        maxvel = maxvel
+        vel_increase_factor = 2.0
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -355,6 +357,25 @@
     [./_dt]
         type = TimestepSize
     [../]
+    [./maxvelx]
+        type = NodalExtremeValue
+        variable = vel_x
+    [../]
+    [./maxvely]
+        type = NodalExtremeValue
+        variable = vel_y
+    [../]
+    [./maxvel]
+        type = ParsedPostprocessor
+        expression = 'sqrt(maxvelx * maxvelx + maxvely * maxvely)'
+        pp_names = 'maxvelx maxvely'
+    []
+    #must be named "flag", this will be called in FarmsNewmarkBeta
+    [flag]
+        type = ElementExtremeValue
+        variable = timeintegratorflag
+        force_postaux = true
+    []
 [../]
 
 [Outputs]

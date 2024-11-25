@@ -86,6 +86,8 @@ FarmsIterationAdaptiveDT::validParams()
   params.addParam<Real>("max_time_step_bound",
                         1,
                         "Maximum time step allowed");
+  params.addParam<PostprocessorName>("max_vel", "Maximum velocity postprocessor");
+  params.addParam<Real>("vel_increase_factor", 2.0, "Maximum allowed ratio of velocity increase");  
   return params;
 }
 
@@ -124,7 +126,11 @@ FarmsIterationAdaptiveDT::FarmsIterationAdaptiveDT(const InputParameters & param
     _at_function_point(false),
     _reject_large_step(getParam<bool>("reject_large_step")),
     _large_step_rejection_threshold(getParam<Real>("reject_large_step_threshold")),
-    _max_time_step_bound(getParam<Real>("max_time_step_bound"))
+    _max_time_step_bound(getParam<Real>("max_time_step_bound")),
+    _max_vel(isParamValid("max_vel") ? &getPostprocessorValue("max_vel") : nullptr),
+    _max_vel_old(isParamValid("max_vel") ? &getPostprocessorValueOld("max_vel") : nullptr),
+    _vel_increase_factor(getParam<Real>("vel_increase_factor")),
+    _check_velocity(isParamValid("max_vel"))
 {
   auto timestep_limiting_postprocessor_names =
       parameters.get<std::vector<PostprocessorName>>("timestep_limiting_postprocessor");
@@ -369,6 +375,17 @@ FarmsIterationAdaptiveDT::converged() const
   // we need to repeat the current iteration with a smaller time step
   if (dt_test < _dt * _large_step_rejection_threshold)
     return false;
+
+  // Check velocity increase if parameters are provided
+  if (_check_velocity && _max_vel && _max_vel_old && *_max_vel > _vel_increase_factor * *_max_vel_old)
+  {
+    if (_verbose)
+      _console << "Velocity increase too large. Current: " << *_max_vel 
+               << " Old: " << *_max_vel_old 
+               << " Reducing timestep and rejecting solution." << std::endl;
+    
+    return false;
+  }
 
   // otherwise we move one
   return true;

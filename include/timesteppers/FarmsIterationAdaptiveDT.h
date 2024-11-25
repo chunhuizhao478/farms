@@ -115,4 +115,9 @@ protected:
 
   /// Maximum time step bound
   const Real & _max_time_step_bound;
+
+  const PostprocessorValue * _max_vel;
+  const PostprocessorValue * _max_vel_old;
+  const Real _vel_increase_factor;
+  bool _check_velocity;
 };
