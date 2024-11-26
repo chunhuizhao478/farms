@@ -10,10 +10,10 @@ import netCDF4
 file_path = './static_solve_out.e'
 
 # Step 1: Define the Spatial Grid
-nx = 150  # Number of grid points in each dimension
-ny = 150
-x = np.linspace(-7500, 7500, nx)
-y = np.linspace(-7500, 7500, ny)
+nx = 80  # Number of grid points in each dimension
+ny = 80
+x = np.linspace(-4000, 4000, nx)
+y = np.linspace(-4000, 4000, ny)
 x_grid, y_grid = np.meshgrid(x, y)
 grid_points = np.column_stack((x_grid.ravel(), y_grid.ravel()))  # Flatten grid into points
 

@@ -2,7 +2,7 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../meshfile/tpv2052dm.msh'
-        file = '../../meshfile/tpv2052dm_2ndorder_mirrormesh_small_local.msh'
+        file = '../../meshfile/tpv2052dm_2ndorder_mirrormesh_small_local2.msh'
     []
     [./sidesets]
         input = msh
@@ -15,7 +15,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -7500 0'
+        coord = '0 -4000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
