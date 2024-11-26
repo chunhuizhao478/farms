@@ -5,16 +5,16 @@ lc_fault = 100;    // Fine mesh size inside the small boxes
 lc = 1250;        // Coarse mesh size outside the small boxes
 
 // Define the big square (2D) - full domain
-big_xmin = -7500;
-big_xmax = 7500;
-big_ymin = -7500;
-big_ymax = 7500;
+big_xmin = -3000;
+big_xmax = 3000;
+big_ymin = -3000;
+big_ymax = 3000;
 
 // Define the small boxes (2D) - areas for refined mesh
-small_xmin = -2000;
-small_xmax = 2000;
-small_ymin = -1000;
-small_ymax = 1000;
+small_xmin = -750;
+small_xmax = 750;
+small_ymin = -500;
+small_ymax = 500;
 
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};
