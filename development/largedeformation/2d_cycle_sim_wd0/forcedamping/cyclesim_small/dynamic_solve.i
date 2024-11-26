@@ -409,6 +409,11 @@
       time_step_interval = 1
       show = '_dt maxvelx maxvely'
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 100
+        num_files = 2
+    []
 []
 
 [BCs]
