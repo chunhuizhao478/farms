@@ -201,7 +201,7 @@
         type = FunctionAux
         variable = correlated_xio
         function = node
-        execute_on = 'INITIAL TIMESTEP_END'
+        execute_on = 'INITIAL'
     []
 []
 
