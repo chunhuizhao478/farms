@@ -327,7 +327,7 @@
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e100
-    num_steps = 1
+    # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -385,7 +385,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 100
       show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 correlated_xio xi_0'
     [../]
     [./csv]
