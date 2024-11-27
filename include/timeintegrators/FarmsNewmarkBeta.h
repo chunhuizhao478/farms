@@ -104,6 +104,14 @@ FarmsNewmarkBeta::computeTimeDerivativeHelper(
   // Velocity reduction logic
   if (flag > 0.0)
   {
+
+    //outputs
+    if (_verbose)
+    {
+      _console << "Reducing velocity by factor " << factor << " for DOFs with magnitude less than "
+               << threshold << std::endl;
+    }
+
     std::vector<dof_id_type> dof_indices;
     std::vector<Number> values;
 

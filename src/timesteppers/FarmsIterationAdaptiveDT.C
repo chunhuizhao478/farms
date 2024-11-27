@@ -13,6 +13,7 @@
 #include "PiecewiseLinear.h"
 #include "Transient.h"
 #include "NonlinearSystem.h"
+#include "FEProblemBase.h"
 
 #include <limits>
 #include <set>
@@ -351,6 +352,24 @@ FarmsIterationAdaptiveDT::computeFailedDT()
 bool
 FarmsIterationAdaptiveDT::converged() const
 {
+
+  // Check velocity increase if parameters are provided
+  if ((_check_velocity) && (_max_vel) && (_max_vel_old) && ((*_max_vel) > _vel_increase_factor * (*_max_vel_old)) && ((*_max_vel)>0) && ((*_max_vel_old)>0))
+  {
+    if (_verbose)
+    {
+      _console << "Velocity increase too large. Current: " << *_max_vel 
+                    << " Old: " << *_max_vel_old 
+                    << " Reducing timestep and rejecting solution." << std::endl;
+    }
+    // if (_verbose)
+    //   _console << "Velocity increase too large. Current: " << *_max_vel 
+    //            << " Old: " << *_max_vel_old 
+    //            << " Reducing timestep and rejecting solution." << std::endl;
+    
+    return false;
+  }
+
   if (!_reject_large_step)
     return TimeStepper::converged();
 
@@ -375,17 +394,6 @@ FarmsIterationAdaptiveDT::converged() const
   // we need to repeat the current iteration with a smaller time step
   if (dt_test < _dt * _large_step_rejection_threshold)
     return false;
-
-  // Check velocity increase if parameters are provided
-  if (_check_velocity && _max_vel && _max_vel_old && *_max_vel > _vel_increase_factor * *_max_vel_old)
-  {
-    if (_verbose)
-      _console << "Velocity increase too large. Current: " << *_max_vel 
-               << " Old: " << *_max_vel_old 
-               << " Reducing timestep and rejecting solution." << std::endl;
-    
-    return false;
-  }
 
   // otherwise we move one
   return true;
