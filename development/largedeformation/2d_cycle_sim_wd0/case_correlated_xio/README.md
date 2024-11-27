@@ -1,0 +1,1 @@
+Random xio field, Reasonable Healing, Force Damping
