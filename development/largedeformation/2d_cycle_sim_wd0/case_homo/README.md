@@ -1,0 +1,1 @@
+Homogeneous, Reasonable Healing, Force Damping
