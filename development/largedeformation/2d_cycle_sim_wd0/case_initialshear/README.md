@@ -1,0 +1,1 @@
+Case when initial shear stress is applied, so we could use smaller time step bound
