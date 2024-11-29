@@ -65,6 +65,9 @@ protected:
 
   MaterialProperty<Real> & _xi_0_mat; //xi_0
 
+  //initial shear modulus distribution
+  MaterialProperty<Real> & _shear_modulus_o_mat; //shear modulus
+
   //get old material properties:
   const MaterialProperty<Real> & _alpha_damagedvar_old; //old damage variable
   const MaterialProperty<Real> & _B_breakagevar_old;     //old breakage variable
@@ -112,5 +115,10 @@ protected:
   const bool _use_xi0_aux;
   const Real _xi0_value;
   const VariableValue * _xi0_aux;
+
+  /// @brief add option to provide initial shear modulus as a constant value or as an auxiliary variable
+  const bool _use_shear_modulus_o_aux;
+  const Real _shear_modulus_o_value;
+  const VariableValue * _shear_modulus_o_aux;
 
 };
