@@ -178,8 +178,8 @@
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim3D
-        len_of_fault = 15000
-        len_along_dip = 7500
+        len_of_fault = 10000
+        len_along_dip = 7000
         sigma = 5e2
         peak_val = 0.7
         nucl_center = '0 0 -3750'
