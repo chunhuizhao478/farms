@@ -158,7 +158,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
         block = '1'
     []
@@ -178,13 +178,14 @@
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim3D
-        len_of_fault = 10000
-        len_along_dip = 7000
+        len_of_fault = 15000
+        len_along_dip = 7500
         sigma = 5e2
         peak_val = 0.7
         nucl_center = '0 0 -3750'
         output_properties = 'initial_damage'
         outputs = exodus
+        block = '1'
     []
 []  
 
