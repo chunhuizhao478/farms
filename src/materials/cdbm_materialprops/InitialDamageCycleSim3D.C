@@ -50,40 +50,23 @@ void
 InitialDamageCycleSim3D::computeQpProperties()
 {
 
-  Real x_coord = _q_point[_qp](0); // along strike
-  Real y_coord = _q_point[_qp](1); // along normal
-  Real z_coord = _q_point[_qp](2); // along dip
+  Real x_coord = _q_point[_qp](0); //along the strike direction
+  Real y_coord = _q_point[_qp](1); //along the normal direction
+  Real z_coord = _q_point[_qp](2); //along the dip direction
 
-  Real alpha_o = 0.0;
+  Real alpha_o = 0;
+
   Real r = 0.0;
   Real sigma = _sigma;
-
-  // Check if point is within fault plane
-  if (x_coord > -0.5*_len_of_fault && 
-      x_coord < 0.5*_len_of_fault && 
-      z_coord < 0 && 
-      z_coord > -_len_along_dip)
-  {
-    // Distance from fault plane
-    r = std::abs(y_coord);
+  if (x_coord > -0.5*_len_of_fault and x_coord < 0.5*_len_of_fault and z_coord < 0 and z_coord > -_len_along_dip){
+    if (y_coord >= 0 -0.5 * 200 && y_coord <= 0 + 0.5 * 200 && (x_coord >= 0 - 200 / 2.0) && (x_coord <= 0 + 200 / 2.0) && (z_coord >= -3750 - 200 / 2.0) && (z_coord <= -3750 + 200 / 2.0)){ //set high damage strip
+        alpha_o = 0.8;
+    }
+    else{
+      r = y_coord;
+      alpha_o = std::max(_peak_val * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+    }
   }
-  else
-  {
-    // Distance to nearest fault boundary
-    Real dist_x = std::min(std::abs(x_coord - 0.5*_len_of_fault), 
-                          std::abs(x_coord + 0.5*_len_of_fault));
-    Real dist_y = std::abs(y_coord);
-    Real dist_z = std::min(std::abs(z_coord), 
-                          std::abs(z_coord + _len_along_dip));
-    
-    // Compute minimum distance to boundaries
-    r = std::sqrt(dist_x*dist_x + dist_y*dist_y + dist_z*dist_z);
-  }
-
-  // Apply Gaussian decay
-  alpha_o = _peak_val * std::exp(-1.0 * (r*r)/(sigma*sigma));
-  
-  // Ensure non-negative values
-  _initial_damage[_qp] = std::max(alpha_o, 0.0);
+  _initial_damage[_qp] = alpha_o; 
   
 }
