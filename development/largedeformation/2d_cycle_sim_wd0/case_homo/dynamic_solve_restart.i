@@ -312,10 +312,9 @@
     #     symbol_names = 'dt'
     #     symbol_values = '1e-2'
     # []
-    #the time needs to change
     [func_top_bc]
         type = ParsedFunction
-        expression = '1e-8 * (31202551972.217052 + t)'
+        expression = '1e-8 * (t)'
     []
 []
 
