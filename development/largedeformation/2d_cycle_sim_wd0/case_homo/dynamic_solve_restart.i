@@ -312,6 +312,7 @@
     #     symbol_names = 'dt'
     #     symbol_values = '1e-2'
     # []
+    #the time needs to change
     [func_top_bc]
         type = ParsedFunction
         expression = '1e-8 * (31202551972.217052 + t)'
@@ -330,7 +331,8 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = -1e-12
+    #the time needs to change
+    start_time = 31202551972.217052
     end_time = 1e100
     # num_steps = 10
     l_max_its = 100
