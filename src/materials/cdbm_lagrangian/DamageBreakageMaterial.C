@@ -40,6 +40,8 @@ DamageBreakageMaterial::validParams()
   params.addCoupledVar("xi0_aux", "AuxVariable for xi_0");
   params.addParam<bool>("use_shear_modulus_o_aux", false, "Whether to use shear_modulus_o from aux variable");
   params.addCoupledVar("shear_modulus_o_aux", "AuxVariable for shear_modulus_o");
+  params.addParam<bool>("use_nonlocal_xi", false, "Whether to use nonlocal xi variable");
+  params.addCoupledVar("nonlocal_xi", "Nonlocal xi variable");
   return params;
 }
 
@@ -91,12 +93,16 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _xi0_aux(_use_xi0_aux ? &coupledValue("xi0_aux") : nullptr),
   _use_shear_modulus_o_aux(getParam<bool>("use_shear_modulus_o_aux")),
   _shear_modulus_o_value(getParam<Real>("shear_modulus_o")),
-  _shear_modulus_o_aux(_use_shear_modulus_o_aux ? &coupledValue("shear_modulus_o_aux") : nullptr)
+  _shear_modulus_o_aux(_use_shear_modulus_o_aux ? &coupledValue("shear_modulus_o_aux") : nullptr),
+  _use_nonlocal_xi(getParam<bool>("use_nonlocal_xi")),
+  _nonlocal_xi(_use_nonlocal_xi ? &coupledValueOld("nonlocal_xi") : nullptr)
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
   if (_use_shear_modulus_o_aux && !parameters.isParamSetByUser("shear_modulus_o_aux"))
     mooseError("Must specify shear_modulus_o_aux when use_shear_modulus_o_aux = true");
+  if (_use_nonlocal_xi && !parameters.isParamSetByUser("nonlocal_xi"))
+    mooseError("Must specify nonlocal_xi when use_nonlocal_xi = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -176,13 +182,16 @@ DamageBreakageMaterial::updatedamage()
   // Get shear_modulus_o value
   //const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
 
+  // Get xi value based on option
+  const Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];
+
   //compute forcing term
   Real alpha_forcingterm;
-  if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+  if ( xi >= _xi_0 && xi <= _xi_max ){
+    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
-  else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
-    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+  else if ( xi < _xi_0 && xi >= _xi_min ){
+    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
   else{
     //mooseError("xi_old is OUT-OF-RANGE!.");   
@@ -223,21 +232,24 @@ DamageBreakageMaterial::updatebreakage()
   //save
   _xi_1_mat[_qp] = _xi_1;
 
+  // Get xi value based on option
+  const Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];  
+
   //alphacr function
   Real alphacr;
-  if ( _xi_old[_qp] < _xi_0 ){ alphacr = 1.0;} 
-  else if ( _xi_old[_qp] > _xi_0 && _xi_old[_qp] <= _xi_1 ){ alphacr = alphacr_root1(_xi_old[_qp]);}
-  else if ( _xi_old[_qp] > _xi_1 && _xi_old[_qp] <= _xi_max ){ alphacr = alphacr_root2(_xi_old[_qp]);}
-  else{std::cout<<"xi: "<<_xi_old[_qp]<<std::endl;}//mooseError("xi exceeds the maximum allowable range!")}
+  if ( xi < _xi_0 ){ alphacr = 1.0;} 
+  else if ( xi > _xi_0 && xi <= _xi_1 ){ alphacr = alphacr_root1(xi);}
+  else if ( xi > _xi_1 && xi <= _xi_max ){ alphacr = alphacr_root2(xi);}
+  else{std::cout<<"xi: "<<xi<<std::endl;}//mooseError("xi exceeds the maximum allowable range!")}
 
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
   Real B_forcingterm;
-  if ( _xi_old[_qp] >= _xi_d && _xi_old[_qp] <= _xi_max ){
-    B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (_xi_old[_qp] - _xi_d); //could heal if xi < xi_0
+  if ( xi >= _xi_d && xi <= _xi_max ){
+    B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (xi - _xi_d); //could heal if xi < xi_0
   }
-  else if ( _xi_old[_qp] < _xi_d && _xi_old[_qp] >= _xi_min ){
-    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_d );
+  else if ( xi < _xi_d && xi >= _xi_min ){
+    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
   }
   else{
     //mooseError("xi_old is OUT-OF-RANGE!.");

@@ -121,4 +121,8 @@ protected:
   const Real _shear_modulus_o_value;
   const VariableValue * _shear_modulus_o_aux;
 
+  /// @brief add option to provide xi as a nonlocal variable
+  const bool _use_nonlocal_xi;
+  const VariableValue * _nonlocal_xi;  
+
 };
