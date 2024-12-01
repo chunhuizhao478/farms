@@ -59,8 +59,8 @@ InitialDamageCycleSim3D::computeQpProperties()
   Real r = 0.0;
   Real sigma = _sigma;
   if (x_coord > -0.5*_len_of_fault and x_coord < 0.5*_len_of_fault and z_coord < 0 and z_coord > -_len_along_dip){
-    if (y_coord >= 0 -0.5 * 200 && y_coord <= 0 + 0.5 * 200 && (x_coord >= 0 - 200 / 2.0) && (x_coord <= 0 + 200 / 2.0) && (z_coord >= -3750 - 200 / 2.0) && (z_coord <= -3750 + 200 / 2.0)){ //set high damage strip
-        alpha_o = 0.8;
+    if (y_coord >= 0 -0.5 * 400 && y_coord <= 0 + 0.5 * 400 && (x_coord >= 0 - 400 / 2.0) && (x_coord <= 0 + 400 / 2.0) && (z_coord >= -6000 - 400 / 2.0) && (z_coord <= -6000 + 400 / 2.0)){ //set high damage strip
+        alpha_o = 0.9;
     }
     else{
       r = y_coord;

@@ -18,13 +18,13 @@
     []  
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-15000  -15000  -15000;'
+        coord = '-15000  -10000  -20000;'
         new_boundary = corner_ptr
         input = sidesets
     [] 
     [./extranodeset2]
         type = ExtraNodesetGenerator
-        coord = '0  -15000  -15000;'
+        coord = '0  -10000  -20000;'
         new_boundary = corner_ptr2
         input = extranodeset1
         use_closest_node=true
@@ -178,8 +178,8 @@
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim3D
-        len_of_fault = 15000
-        len_along_dip = 7500
+        len_of_fault = 16000
+        len_along_dip = 12000
         sigma = 5e2
         peak_val = 0.7
         nucl_center = '0 0 -3750'
@@ -286,14 +286,14 @@
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = left
-        value = -50e6
+        value = 50e6
     []
     [pressure_shear_right]
         type = NeumannBC
         variable = disp_y
         displacements = 'disp_x disp_y disp_z'
         boundary = right
-        value = 50e6     
+        value = -50e6     
     []      
     # fix ptr 1
     [./fix_cptr1_x]
@@ -310,7 +310,7 @@
     []
     [./fix_cptr2_z]
         type = DirichletBC
-        variable = disp_y
+        variable = disp_z
         boundary = corner_ptr
         value = 0
     []
