@@ -117,6 +117,7 @@
         type = MaterialRealAux
         variable = initial_damage_aux
         property = initial_damage
+        block = '1 2'
     []
 []
 
