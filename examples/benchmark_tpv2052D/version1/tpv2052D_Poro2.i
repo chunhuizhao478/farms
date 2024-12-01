@@ -354,7 +354,6 @@
         fluid_disp_x = fluid_disp_x
         fluid_disp_y = fluid_disp_y
         permeability_type = 'impermeable'
-
     [../]
     
 []
