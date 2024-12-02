@@ -1,6 +1,34 @@
 [Mesh]
-  file = main_mesh_out.e
-  parallel_type = replicated
+    [./msh]
+        type = FileMeshGenerator
+        file = './Inclined_fault_with_injection.msh'
+    []
+    [subdomain1]
+        input = msh
+        type = SubdomainBoundingBoxGenerator
+        bottom_left = '-5000 -5000 0'
+        top_right = '5000 5000 0'
+        block_id = 0
+    []
+    [./inner_block]
+        type = ParsedSubdomainMeshGenerator
+        input = subdomain1
+        combinatorial_geometry = 'x > -1732.05 & x < 1732.05'
+        block_id = 1
+    []
+    [./fault_block_upper]
+        type = ParsedSubdomainMeshGenerator
+        input = inner_block
+        combinatorial_geometry = 'y > (-0.577350269 * x) & x > -1732.05 & x < 1732.05'
+        block_id = 2
+    []
+    [./split_1]
+        type = BreakMeshByBlockGenerator
+        input = fault_block_upper
+        split_interface = true
+        add_interface_on_two_sides = true
+        block_pairs = '1 2'
+    []
 []
 
 [GlobalParams]
