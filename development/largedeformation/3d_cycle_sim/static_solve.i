@@ -266,34 +266,34 @@
         []    
     []  
     #
-    [pressure_shear_front]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = front
-        value = -30e6
-    []
-    [pressure_shear_back]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = back
-        value = 30e6   
-    []
-    [pressure_shear_left]
-        type = NeumannBC
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
-        boundary = left
-        value = -30e6
-    []
-    [pressure_shear_right]
-        type = NeumannBC
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
-        boundary = right
-        value = 30e6     
-    []      
+    # [pressure_shear_front]
+    #     type = NeumannBC
+    #     variable = disp_x
+    #     displacements = 'disp_x disp_y disp_z'
+    #     boundary = front
+    #     value = -30e6
+    # []
+    # [pressure_shear_back]
+    #     type = NeumannBC
+    #     variable = disp_x
+    #     displacements = 'disp_x disp_y disp_z'
+    #     boundary = back
+    #     value = 30e6   
+    # []
+    # [pressure_shear_left]
+    #     type = NeumannBC
+    #     variable = disp_y
+    #     displacements = 'disp_x disp_y disp_z'
+    #     boundary = left
+    #     value = -30e6
+    # []
+    # [pressure_shear_right]
+    #     type = NeumannBC
+    #     variable = disp_y
+    #     displacements = 'disp_x disp_y disp_z'
+    #     boundary = right
+    #     value = 30e6     
+    # []      
     # fix ptr 1
     [./fix_cptr1_x]
         type = DirichletBC
