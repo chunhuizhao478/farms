@@ -117,7 +117,6 @@
         type = MaterialRealAux
         variable = initial_damage_aux
         property = initial_damage
-        block = '1 3'
     []
 []
 
@@ -186,7 +185,6 @@
         nucl_center = '0 0 -3750'
         output_properties = 'initial_damage'
         outputs = exodus
-        block = '1 3'
     []
 []  
 

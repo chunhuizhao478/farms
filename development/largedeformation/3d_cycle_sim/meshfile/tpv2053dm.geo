@@ -61,8 +61,8 @@ EndFor
 
 // Assign physical volumes using correct indices
 Physical Volume("InnerBox") = volumes[0];  // First fragment
-Physical Volume("DamagableBox") = volumes[1];  // Second fragment
-Physical Volume("OuterBox") = volumes[2];  // Second fragment
+Physical Volume("DamagableBox") = volumes[2];  // Second fragment
+Physical Volume("OuterBox") = volumes[1];  // Second fragment
 
 // Field definition remains the same
 Field[1] = Box;
