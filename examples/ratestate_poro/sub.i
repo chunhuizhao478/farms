@@ -1,35 +1,6 @@
 [Mesh]
-    [./msh]
-        type = FileMeshGenerator
-        file = './Inclined_fault_with_injection_7.msh'
-    []
-    [subdomain1]
-        input = msh
-        type = SubdomainBoundingBoxGenerator
-        bottom_left = '-5000 -5000 0'
-        top_right = '5000 5000 0'
-        block_id = 0
-    []
-    [./inner_block]
-        type = ParsedSubdomainMeshGenerator
-        input = subdomain1
-        combinatorial_geometry = 'x > -1732.05 & x < 1732.05'
-        block_id = 1
-    []
-    [./fault_block_upper]
-        type = ParsedSubdomainMeshGenerator
-        input = inner_block
-        combinatorial_geometry = 'y > (-0.577350269 * x) & x > -1732.05 & x < 1732.05'
-        block_id = 2
-    []
-    [./split_1]
-        type = BreakMeshByBlockGenerator
-        input = fault_block_upper
-        split_interface = true
-        add_interface_on_two_sides = true
-        block_pairs = '1 2'
-        show_info = true
-    []
+  file = main_mesh_out.e
+  parallel_type = replicated
 []
 
 [GlobalParams]
@@ -38,11 +9,11 @@
     PorousFlowDictator = dictator
 
     q = 0.0
-    elem_size = 100
+    elem_size = 4
 
     
     ##element length (m)
-    len = 100
+    len = 4
     
     ##rate-and-state coefficients
     f_o = 0.6
@@ -58,10 +29,10 @@
     Ts_o = 0 # check if we should include the far field tectonic loading
 
     ##initial sliprate (m/s)
-    Vini = 1e-12 # assumed
+    Vini = 2.17e-2 # assumed #  2.17e-2 steady state
 
     ##initial state variable
-    statevarini = 18003426.26
+    statevarini = 0.00922 #18003426.26 #  steady state
     # statevarini = 4068457.682 # if sinitial sliprate is 1e-9
 []
 
@@ -75,7 +46,7 @@
   [./nodal_area]
       type = NodalArea
       variable = nodal_area
-      boundary = Block1_Block2
+      boundary = domain_Block2
       execute_on = 'initial TIMESTEP_BEGIN'
    [../]
 []
@@ -292,7 +263,7 @@
         property = traction_strike
         variable = traction_sub_strike
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_traction_normal]
@@ -300,7 +271,7 @@
         property = traction_normal
         variable = traction_sub_normal
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_sliprate_strike]
@@ -308,7 +279,7 @@
         property = sliprate_strike
         variable = sliprate_sub_strike
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_sliprate_normal]
@@ -316,7 +287,7 @@
         property = sliprate_normal
         variable = sliprate_sub_normal
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_slip_strike]
@@ -324,7 +295,7 @@
         property = slip_strike
         variable = slip_sub_strike
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_slip_normal]
@@ -332,7 +303,7 @@
         property = slip_normal
         variable = slip_sub_normal
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_statevar]
@@ -340,14 +311,14 @@
         property = statevar
         variable = statevar_sub
         check_boundary_restricted = false
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
     []
 []
 
 [Modules/TensorMechanics/CohesiveZoneMaster]
     [./czm_ik]
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         strain = SMALL
     [../]
 []
@@ -454,7 +425,7 @@
         variable = disp_sub_x
         neighbor_var = disp_sub_x
         extra_vector_tags = 'restore_tag_x'
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         y_var = disp_sub_y
     []
     [./ratestate_y]
@@ -462,7 +433,7 @@
         variable = disp_sub_y
         neighbor_var = disp_sub_y
         extra_vector_tags = 'restore_tag_y'
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         x_var = disp_sub_x
     []
 []
@@ -552,7 +523,7 @@
         interface_pressure = p_sub_main
         permeability_type = 'Semi_permeable'
         Ts_perturb = ini_shear_stress_perturb
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         output_properties = 'sliprate_strike slip_strike statevar traction_strike traction_normal alongfaultdisp_strike_plus alongfaultdisp_strike_minus'
         # outputs = exodus
     [../]
@@ -563,7 +534,7 @@
     # [element_side_volume]
     #     type = NodalArea
     #     variable = element_side_volume
-    #     boundary = 'Block1_Block2 Block1_Block2'
+    #     boundary = 'domain_Block2 domain_Block2'
     #     execute_on = 'initial TIMESTEP_BEGIN'
     # []
     [recompute_residual_tag_x]
