@@ -37,7 +37,7 @@
     q = 0.5
     gravity = '0 0 0'
 []
-
+ 
 [FluidProperties]
   [simple_fluid]
     type = SimpleFluidProperties
