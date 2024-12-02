@@ -153,28 +153,28 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 3'
+        block = '1 2'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
-        block = '1 3'
+        block = '1 2'
     []
     # elastic
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         lambda = 1e10
         shear_modulus = 1e10
-        block = 2
+        block = 3
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
         outputs = exodus
-        block = 2
+        block = 3
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim3D
@@ -266,34 +266,34 @@
         []    
     []  
     #
-    # [pressure_shear_front]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y disp_z'
-    #     boundary = front
-    #     value = -30e6
-    # []
-    # [pressure_shear_back]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y disp_z'
-    #     boundary = back
-    #     value = 30e6   
-    # []
-    # [pressure_shear_left]
-    #     type = NeumannBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y disp_z'
-    #     boundary = left
-    #     value = -30e6
-    # []
-    # [pressure_shear_right]
-    #     type = NeumannBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y disp_z'
-    #     boundary = right
-    #     value = 30e6     
-    # []      
+    [pressure_shear_front]
+        type = NeumannBC
+        variable = disp_x
+        displacements = 'disp_x disp_y disp_z'
+        boundary = front
+        value = -30e6
+    []
+    [pressure_shear_back]
+        type = NeumannBC
+        variable = disp_x
+        displacements = 'disp_x disp_y disp_z'
+        boundary = back
+        value = 30e6   
+    []
+    [pressure_shear_left]
+        type = NeumannBC
+        variable = disp_y
+        displacements = 'disp_x disp_y disp_z'
+        boundary = left
+        value = -30e6
+    []
+    [pressure_shear_right]
+        type = NeumannBC
+        variable = disp_y
+        displacements = 'disp_x disp_y disp_z'
+        boundary = right
+        value = 30e6     
+    []      
     # fix ptr 1
     [./fix_cptr1_x]
         type = DirichletBC
