@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = './Inclined_fault_with_injection_7.msh'
+        file = './Inclined_fault_with_injection.msh'
     []
     [subdomain1]
         input = msh
@@ -28,14 +28,13 @@
         split_interface = true
         add_interface_on_two_sides = true
         block_pairs = '1 2'
-        show_info = true
     []
 []
 
 [GlobalParams]
     displacements = 'disp_x disp_y' 
     PorousFlowDictator = dictator
-    q = 0.2
+    q = 0.5
     gravity = '0 0 0'
 []
 
@@ -305,7 +304,7 @@
         type = MaterialRealAux
         property = across_fault_flux
         variable = elemental_across_flux_main
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         execute_on = 'TIMESTEP_END'
         check_boundary_restricted = false
     []     
@@ -313,7 +312,7 @@
         type = MaterialRealAux
         property = across_fault_flux
         variable = elemental_across_flux_sec
-        boundary = 'Block2_Block1'
+        boundary = 'Block2_domain'
         execute_on = 'TIMESTEP_END'
         check_boundary_restricted = false
     [] 
@@ -380,21 +379,21 @@
     [../]
     [poro_x]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.5
+        biot_coefficient = 0.95
         variable = disp_x
         component = 0
         extra_vector_tags = 'restore_pressurex_tag' 
     []
     [poro_y]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.5
+        biot_coefficient = 0.95
         variable = disp_y
         component = 1
         extra_vector_tags = 'restore_pressurey_tag' 
     []
     [mass0]
         type = PorousFlowFullySaturatedMassTimeDerivative
-        biot_coefficient = 0.5
+        biot_coefficient = 0.95
         coupling_type = HydroMechanical
         variable = p
         multiply_by_density = false
@@ -462,7 +461,7 @@
     [biot_coeff]
         type = GenericConstantMaterial
         prop_names = 'biot_coefficient'
-        prop_values = 0.5    
+        prop_values = 0.95    
         block = '0 1 2'        
     []
     [./Transmissibility]
@@ -494,7 +493,7 @@
     []
     [biot_modulus]
         type = PorousFlowConstantBiotModulus
-        biot_coefficient = 0.5
+        biot_coefficient = 0.95
         solid_bulk_compliance = 3.75e-11  # 1/Ks
         fluid_bulk_modulus = 2.5e9        # Kf
     []
@@ -504,13 +503,13 @@
     []
     [./flux_main_mat]
         type = SemiPermeableFault
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         pressure_secondary = p
         pressure_main = p
     [../]
     [./flux_sec_mat]
         type = SemiPermeableFault
-        boundary = 'Block2_Block1'
+        boundary = 'Block2_domain'
         pressure_secondary = p
         pressure_main =  p
     [../]
@@ -596,9 +595,36 @@
     [./nodal_area]
         type = NodalArea
         variable = nodal_area
-        boundary = Block1_Block2
+        boundary = domain_Block2
         execute_on = 'initial TIMESTEP_BEGIN'
     [../]
+    [./init_sol_components]
+        type = SolutionUserObject
+        mesh = 'main_mesh_out.e'  
+        system_variables = 'disp_x disp_y p'
+        timestep = LATEST
+        force_preaux = true
+    [../]
+[]
+[ICs]
+    [disp_x_ic]
+      type = SolutionIC
+      variable = disp_x
+      solution_uo = init_sol_components
+      from_variable = disp_x
+    []
+    [disp_y_ic]
+      type = SolutionIC
+      variable = disp_y
+      solution_uo = init_sol_components
+      from_variable = disp_y
+    []
+    [p_ic]
+      type = SolutionIC
+      variable = p
+      solution_uo = init_sol_components
+      from_variable = p
+    []
 []
 
 [BCs]
@@ -607,31 +633,31 @@
         type = MatchedValueBC
         variable = disp_x
         v = disp_plusminus_scaled_x
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
     []
     [./matchval_secondary_x]
         type = MatchedValueBC
         variable = disp_x
         v = disp_plusminus_scaled_x
-        boundary = 'Block2_Block1'
+        boundary = 'Block2_domain'
     []
     [./matchval_primary_y]
         type = MatchedValueBC
         variable = disp_y
         v = disp_plusminus_scaled_y
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
     []
     [./matchval_secondary_y]
         type = MatchedValueBC
         variable = disp_y
         v = disp_plusminus_scaled_y
-        boundary = 'Block2_Block1'
+        boundary = 'Block2_domain'
     []
     # Displacement and tractions boundary conditions
     [./disp_bottom]
         type = DirichletBC
         variable = disp_y
-        boundary = 'bottom'
+        boundary = '1'
         value = 0
     [../]
     [./disp_left]
@@ -644,24 +670,24 @@
         type = NeumannBC
         variable = disp_x
         boundary = 'right'
-        value = -20e6
+        value = 0
     [../]
     [./traction_top]
         type = NeumannBC
         variable = disp_y
         boundary = 'top'
-        value = -10e6
+        value = 0
     [../]
     [./flux_main]
         type = CoupledVarNeumannBC
         variable = p
-        boundary = 'Block1_Block2'
+        boundary = 'domain_Block2'
         v = across_flux_main
     [../]
     [./flux_sec]
         type = CoupledVarNeumannBC
         variable = p
-        boundary = 'Block2_Block1'
+        boundary = 'Block2_domain'
         v = across_flux_sec
     [../]
     [./pressure_top]
@@ -679,7 +705,7 @@
     [./flux_bot]
         type = NeumannBC
         variable = p
-        boundary = 'bottom'
+        boundary = '1'
         value = 0.0
     [../]
     [./flux_left]
@@ -687,6 +713,12 @@
         variable = p
         boundary = 'left'
         value = 0.0
+    [../]
+    [./injection]
+        type = NeumannBC
+        variable = p
+        boundary = '6'
+        value = 0.17e-11
     [../]
 []
 
@@ -696,21 +728,19 @@
   [./smp]
     type = SMP
     full = true
-            petsc_options = '-snes_ksp_ew'
-        petsc_options_iname = '-ksp_gmres_restart -pc_type'
-        petsc_options_value = '100 asm'
+    petsc_options = '-snes_ksp_ew'
+    petsc_options_iname = '-ksp_gmres_restart -pc_type -pc_hypre_type'
+    petsc_options_value = '200 hypre boomeramg'
   [../]
 []
 
 [Executioner]
     type = Transient
-    dt = 0.001
+    dt = 0.00004
     automatic_scaling = true
-    end_time = 5.0
-  #  num_steps = 10
+    end_time = 1.0
     [TimeIntegrator]
         type = CentralDifference
-        #solve_type = lumped
     []
 []
 
