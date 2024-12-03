@@ -15,7 +15,7 @@ x_grid, y_grid = np.meshgrid(x, y)
 grid_points = np.column_stack((x_grid.ravel(), y_grid.ravel()))
 
 # Von Kármán correlation parameters
-correlation_length = 200
+correlation_length = 600
 nu = 0.5
 
 # Compute pairwise distances
