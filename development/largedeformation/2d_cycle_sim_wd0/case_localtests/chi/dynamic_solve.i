@@ -1,9 +1,7 @@
-#implicit continuum damage-breakage model dynamics
-
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = './meshfile/tpv2053dm.msh'
+        file = '../../meshfile/mesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -11,34 +9,29 @@
         normals = '-1 0 0
                     1 0 0
                     0 -1 0
-                    0 1 0
-                    0 0 -1
-                    0 0 1'
-        new_boundary = 'left right front back bottom top'
-    []  
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-15000  -10000  -20000;'
+        coord = '0 -5000 0'
         new_boundary = corner_ptr
         input = sidesets
-    [] 
-    [./extranodeset2]
-        type = ExtraNodesetGenerator
-        coord = '0  -10000  -20000;'
-        new_boundary = corner_ptr2
-        input = extranodeset1
-        use_closest_node=true
-    [] 
+    []
+    displacements = 'disp_x disp_y'
 []
 
-[[GlobalParams]
-    displacements = 'disp_x disp_y disp_z'
-        
+[GlobalParams]
+
+    displacements = 'disp_x disp_y'
+
+    use_displaced_mesh = false
+    
     ##----continuum damage breakage model----##
-    #initial lambda value (FIRST lame constant) [Pa]
+    #initial lambda value (SECOND lame constant) [Pa]
     lambda_o = 10e9
         
-    #initial shear modulus value (FIRST lame constant) [Pa]
+    #initial shear modulus value (SECOND lame constant) [Pa]
     shear_modulus_o = 10e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -71,10 +64,10 @@
     C_1 = 3
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 0.1
+    C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.01 #1e-3
+    beta_width = 0.01 #0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -86,49 +79,37 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.7
-        
+    chi = 0.9
+    
 []
 
 
 [Variables]
     [disp_x]
-        order = FIRST
-        family = LAGRANGE
+        order = SECOND
+        family = LAGRANGE     
     []
     [disp_y]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [disp_z]
-        order = FIRST
-        family = LAGRANGE
+        order = SECOND
+        family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [vel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_y]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [vel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [accel_z]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     #
@@ -146,6 +127,10 @@
     []
     [initial_damage_aux]
         order = FIRST
+        family = MONOMIAL
+    []
+    [timeintegratorflag]
+        order = CONSTANT
         family = MONOMIAL
     []
 []
@@ -181,21 +166,6 @@
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
-    [accel_Z]
-        type = NewmarkAccelAux
-        variable = accel_z
-        displacement = disp_z
-        velocity = vel_z
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
-    [vel_z]
-        type = NewmarkVelAux
-        variable = vel_z
-        acceleration = accel_z
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
     #
     [alpha_damagedvar_aux]
         type = MaterialRealAux
@@ -224,6 +194,13 @@
         solution = init_sol_components
         from_variable = initial_damage_aux
     []
+    #
+    [get_flag]
+        type = MaterialRealAux
+        variable = timeintegratorflag
+        property = flag
+        execute_on = 'timestep_end'
+    []
 []
 
 [Kernels]
@@ -237,12 +214,6 @@
         type = TotalLagrangianStressDivergence
         variable = disp_y
         component = 1
-        large_kinematics = true
-    []
-    [dispkernel_z]
-        type = TotalLagrangianStressDivergence
-        variable = disp_z
-        component = 2
         large_kinematics = true
     []
     [./inertia_x]
@@ -263,15 +234,6 @@
         gamma = 0.5
         eta = 0
     []
-    [./inertia_z]
-        type = InertialForce
-        variable = disp_z
-        acceleration = accel_z
-        velocity = vel_z
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
     [damping_x]
         type = StiffPropDampingImplicit
         variable = disp_x
@@ -283,13 +245,7 @@
         variable = disp_y
         component = 1
         zeta = 0.1
-    []  
-    [damping_z]
-        type = StiffPropDampingImplicit
-        variable = disp_z
-        component = 1
-        zeta = 0.1
-    []   
+    []      
 []
 
 [Materials]
@@ -338,6 +294,14 @@
         coupled_variables = 'initial_damage_aux'
         expression = 'initial_damage_aux'
         outputs = exodus
+    []
+    #
+    [forcedampingflag]
+        type = ForceDampingFlag
+        vel_maximum_threshold = 1e-2
+        vel_minimum_threshold = 1e-6
+        max_vel_x = maxvelx
+        max_vel_y = maxvely
     []
 []  
 
@@ -398,7 +362,7 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the FIRST time step
+[Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
@@ -419,12 +383,18 @@
         type = NodalExtremeValue
         variable = vel_y
     [../]
+    #must be named "flag", this will be called in FarmsNewmarkBeta
+    [flag]
+        type = ElementExtremeValue
+        variable = timeintegratorflag
+        force_postaux = true
+    []
 [../]
 
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 10
+      time_step_interval = 20
       show = 'vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01'
     [../]
     [./csv]
@@ -434,12 +404,21 @@
     [../]
     [out]
         type = Checkpoint
-        time_step_interval = 10
+        time_step_interval = 100
         num_files = 2
     []
 []
 
 [BCs]
+    [bc_load_top_x]
+        type = PresetDisplacement
+        boundary = top
+        variable = disp_x
+        beta = 0.25
+        velocity = vel_x
+        acceleration = accel_x
+        function = func_top_bc
+    []
     [bc_fix_bottom_y]
         type = DirichletBC
         variable = disp_y
@@ -447,67 +426,23 @@
         boundary = bottom
     [] 
     [./Pressure]
-        [static_pressure_front]
-            boundary = front
+        [static_pressure_top]
+            boundary = top
             factor = 120e6
-            displacements = 'disp_x disp_y disp_z'
-        []  
-        [static_pressure_back]
-            boundary = back
-            factor = 120e6
-            displacements = 'disp_x disp_y disp_z'
-        []  
+            displacements = 'disp_x disp_y'
+        []    
         [static_pressure_left]
             boundary = left
             factor = 135e6
-            displacements = 'disp_x disp_y disp_z'
+            displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
             factor = 135e6
-            displacements = 'disp_x disp_y disp_z'
-        [] 
-        [static_pressure_top]
-            boundary = top
-            factor = 127.5e6 
-            displacements = 'disp_x disp_y disp_z'   
-        []
-        [static_pressure_bottom]
-            boundary = bottom 
-            factor = 127.5e6 
-            displacements = 'disp_x disp_y disp_z'            
-        []    
-    []  
-    #
-    [pressure_shear_front]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = front
-        value = 30e6
-    []
-    [pressure_shear_back]
-        type = NeumannBC
-        variable = disp_x
-        displacements = 'disp_x disp_y disp_z'
-        boundary = back
-        value = -30e6   
-    []
-    [pressure_shear_left]
-        type = NeumannBC
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
-        boundary = left
-        value = 30e6
-    []
-    [pressure_shear_right]
-        type = NeumannBC
-        variable = disp_y
-        displacements = 'disp_x disp_y disp_z'
-        boundary = right
-        value = -30e6     
-    []      
-    # fix ptr 1
+            displacements = 'disp_x disp_y'
+        []     
+    []        
+    # fix ptr
     [./fix_cptr1_x]
         type = DirichletBC
         variable = disp_x
@@ -519,25 +454,6 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    []
-    [./fix_cptr2_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = corner_ptr
-        value = 0
-    []
-    # 
-    [fix_ptr2_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = corner_ptr2
-    []
-    [fix_ptr2_z]
-        type = DirichletBC
-        variable = disp_z
-        value = 0
-        boundary = corner_ptr2
     []
     #add dampers
     [damp_left_x]
@@ -602,7 +518,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = './static_solve_out.e'
-      system_variables = 'disp_x disp_y disp_z initial_damage_aux'
+      system_variables = 'disp_x disp_y initial_damage_aux'
       timestep = LATEST
       force_preaux = true
     [../]
@@ -610,21 +526,15 @@
 
 [ICs]
     [disp_x_ic]
-        type = SolutionIC
-        variable = disp_x
-        solution_uo = init_sol_components
-        from_variable = disp_x
+      type = SolutionIC
+      variable = disp_x
+      solution_uo = init_sol_components
+      from_variable = disp_x
     []
     [disp_y_ic]
-        type = SolutionIC
-        variable = disp_y
-        solution_uo = init_sol_components
-        from_variable = disp_y
-    []
-    [disp_z_ic]
-        type = SolutionIC
-        variable = disp_z
-        solution_uo = init_sol_components
-        from_variable = disp_z
+      type = SolutionIC
+      variable = disp_y
+      solution_uo = init_sol_components
+      from_variable = disp_y
     []
 []

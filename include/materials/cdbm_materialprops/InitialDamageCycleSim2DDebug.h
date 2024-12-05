@@ -36,4 +36,8 @@ protected:
   Real _sigma; // decay rate
   Real _peak_val; // peak value of the initial damage
 
+  // Add new members
+  const bool _use_background_randalpha;
+  const VariableValue * _randalpha;
+
 };
