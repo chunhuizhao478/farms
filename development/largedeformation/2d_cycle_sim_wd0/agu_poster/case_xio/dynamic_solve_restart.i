@@ -562,5 +562,5 @@
 
 [Problem]
     #Note that the suffix is left off in the parameter below.
-    restart_file_base = dynamic_solve_restart_out_cp/LATEST  # You may also use a specific number here
+    restart_file_base = dynamic_solve_out_cp/LATEST  # You may also use a specific number here
 []
