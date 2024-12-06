@@ -9,8 +9,8 @@ import netCDF4
 
 # Grid parameters
 nx, ny = 80, 80
-x = np.linspace(-4000, 4000, nx)
-y = np.linspace(-2000, 2000, ny)
+x = np.linspace(-3000, 3000, nx)
+y = np.linspace(-1500, 1500, ny)
 x_grid, y_grid = np.meshgrid(x, y)
 grid_points = np.column_stack((x_grid.ravel(), y_grid.ravel()))
 
@@ -63,8 +63,8 @@ y_coord = nc.variables['coordy'][:]
 target_points = np.column_stack((x_coord, y_coord))  # Target points for interpolation
 
 # Define bounds
-x_min, x_max = -4000, 4000
-y_min, y_max = -2000, 2000
+x_min, x_max = -3000, 3000
+y_min, y_max = -1500, 1500
 
 # Check if the points are within bounds
 in_bounds = (x_coord >= x_min) & (x_coord <= x_max) & (y_coord >= y_min) & (y_coord <= y_max)
