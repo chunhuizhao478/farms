@@ -294,20 +294,20 @@
     [strain]
         type = ComputeLagrangianStrain
         large_kinematics = true
-        output_properties = 'deformation_gradient'
+        #output_properties = 'deformation_gradient'
         outputs = exodus
     []
     # # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar shear_modulus gamma_damaged_r'
+        #output_properties = 'alpha_damagedvar B_damagedvar shear_modulus gamma_damaged_r'
         outputs = exodus
         block = '1 2'
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
+        #output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain first_elastic_strain_invariant second_elastic_strain_invariant strain_invariant_ratio deviatroic_stress'
         outputs = exodus
         block = '1 2'
     []
