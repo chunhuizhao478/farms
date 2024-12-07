@@ -251,8 +251,8 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
 
   /* Compute I2 */
   Real I2 = 0.0;
-  for (unsigned int i = 0; i < _dim; ++i){
-    for (unsigned int j = 0; j < _dim; ++j){
+  for (unsigned int i = 0; i < 3; ++i){
+    for (unsigned int j = 0; j < 3; ++j){
       I2 += Ee(i,j) * Ee(i,j);
     }
   }

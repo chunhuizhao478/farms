@@ -187,15 +187,15 @@ DamageBreakageMaterial::updatedamage()
 
   //compute forcing term
   Real alpha_forcingterm;
-  if ( xi >= _xi_0 && xi <= _xi_max ){
+  if ( xi >= _xi_0 ){
     alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
-  else if ( xi < _xi_0 && xi >= _xi_min ){
+  else if ( xi < _xi_0 ){
     alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
-  else{
-    mooseError("xi_old is OUT-OF-RANGE!.");   
-  }
+  // else{
+  //   mooseError("xi_old is OUT-OF-RANGE!.");   
+  // }
 
   //update alpha at current time
   Real alpha_damagedvar = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
@@ -245,15 +245,15 @@ DamageBreakageMaterial::updatebreakage()
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
   Real B_forcingterm;
-  if ( xi >= _xi_d && xi <= _xi_max ){
+  if ( xi >= _xi_d ){
     B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (xi - _xi_d); //could heal if xi < xi_0
   }
-  else if ( xi < _xi_d && xi >= _xi_min ){
+  else if ( xi < _xi_d ){
     B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
   }
-  else{
-    mooseError("xi_old is OUT-OF-RANGE!.");
-  }
+  // else{
+  //   mooseError("xi_old is OUT-OF-RANGE!.");
+  // }
 
   Real B_damagedvar = _B_breakagevar_old[_qp] + _dt * B_forcingterm;
 
