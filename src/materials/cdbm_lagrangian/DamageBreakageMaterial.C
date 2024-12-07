@@ -194,7 +194,7 @@ DamageBreakageMaterial::updatedamage()
     alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
   else{
-    //mooseError("xi_old is OUT-OF-RANGE!.");   
+    mooseError("xi_old is OUT-OF-RANGE!.");   
   }
 
   //update alpha at current time
@@ -240,7 +240,7 @@ DamageBreakageMaterial::updatebreakage()
   if ( xi < _xi_0 ){ alphacr = 1.0;} 
   else if ( xi > _xi_0 && xi <= _xi_1 ){ alphacr = alphacr_root1(xi);}
   else if ( xi > _xi_1 && xi <= _xi_max ){ alphacr = alphacr_root2(xi);}
-  else{std::cout<<"xi: "<<xi<<std::endl;}//mooseError("xi exceeds the maximum allowable range!")}
+  else{std::cout<<"xi: "<<xi<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
 
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
@@ -252,7 +252,7 @@ DamageBreakageMaterial::updatebreakage()
     B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
   }
   else{
-    //mooseError("xi_old is OUT-OF-RANGE!.");
+    mooseError("xi_old is OUT-OF-RANGE!.");
   }
 
   Real B_damagedvar = _B_breakagevar_old[_qp] + _dt * B_forcingterm;

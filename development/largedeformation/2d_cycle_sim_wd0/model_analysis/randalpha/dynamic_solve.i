@@ -125,6 +125,20 @@
         order = FIRST
         family = MONOMIAL
     []
+    #
+    [alpha_damagedvar_constmono]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [B_damagedvar_constmono]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [strain_invariant_ratio_constmono]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #    
     [initial_damage_aux]
         order = FIRST
         family = MONOMIAL
@@ -188,6 +202,29 @@
         execute_on = 'timestep_end'
         block = '1 2'
     []
+    #
+    [alpha_damagedvar_constmono]
+        type = MaterialRealAux
+        variable = alpha_damagedvar_constmono
+        property = alpha_damagedvar
+        execute_on = 'timestep_end'
+        block = '1 2'
+    []
+    [B_damagedvar_constmono]
+        type = MaterialRealAux
+        variable = B_damagedvar_constmono
+        property = B_damagedvar
+        execute_on = 'timestep_end'
+        block = '1 2'
+    []  
+    [strain_invariant_ratio_constmono]
+        type = MaterialRealAux
+        variable = strain_invariant_ratio_constmono
+        property = strain_invariant_ratio
+        execute_on = 'timestep_end'
+        block = '1 2'
+    []
+    #
     [get_initial_damage]
         type = SolutionAux
         variable = initial_damage_aux
@@ -394,8 +431,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
-      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11'
+      time_step_interval = 10
+      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux alpha_damagedvar_constmono B_damagedvar_constmono strain_invariant_ratio_constmono pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11'
     [../]
     [./csv]
       type = CSV
