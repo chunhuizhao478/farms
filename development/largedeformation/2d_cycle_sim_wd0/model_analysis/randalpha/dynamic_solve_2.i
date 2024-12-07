@@ -58,10 +58,10 @@
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 0
+    CBH_constant = 10
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 0
+    C_1 = 3
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -270,7 +270,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_strain plastic_strain deviatroic_stress strain_invariant_ratio'
+        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain first_elastic_strain_invariant second_elastic_strain_invariant'
         outputs = exodus
         block = '1 2'
     []
@@ -394,8 +394,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
-      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11'
+      time_step_interval = 100
+      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 first_elastic_strain_invariant second_elastic_strain_invariant'
     [../]
     [./csv]
       type = CSV
