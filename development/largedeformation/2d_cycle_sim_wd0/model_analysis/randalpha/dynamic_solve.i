@@ -300,7 +300,7 @@
     # # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar'
+        output_properties = 'alpha_damagedvar B_damagedvar shear_modulus gamma_damaged_r'
         outputs = exodus
         block = '1 2'
     [] 
