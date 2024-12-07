@@ -307,7 +307,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_strain plastic_strain deviatroic_stress strain_invariant_ratio'
+        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
         block = '1 2'
     []
@@ -432,7 +432,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 10
-      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux alpha_damagedvar_constmono B_damagedvar_constmono strain_invariant_ratio_constmono pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11'
+      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux alpha_damagedvar_constmono B_damagedvar_constmono strain_invariant_ratio_constmono pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_01'
     [../]
     [./csv]
       type = CSV
