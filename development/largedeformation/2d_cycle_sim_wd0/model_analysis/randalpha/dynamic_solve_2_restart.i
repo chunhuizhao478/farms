@@ -133,6 +133,10 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [correlated_randalpha_o]
+        order = SECOND
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]
@@ -188,12 +192,12 @@
         execute_on = 'timestep_end'
         block = '1 2'
     []
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_aux
-        solution = init_sol_components
-        from_variable = initial_damage_aux
-    []
+    [get_randalpha_o]
+        type = FunctionAux
+        variable = correlated_randalpha_o
+        function = node_randalpha_o
+        execute_on = 'INITIAL'
+    [] 
     #
     [get_flag]
         type = MaterialRealAux
@@ -288,11 +292,14 @@
         outputs = exodus
         block = 3
     []
-    [define_initial_damage_matprop]
-        type = ParsedMaterial
-        property_name = initial_damage
-        coupled_variables = 'initial_damage_aux'
-        expression = 'initial_damage_aux'
+    [initial_damage_surround]
+        type = InitialDamageCycleSim2DRand
+        len_of_fault = 2000
+        sigma = 5e2
+        peak_val = 0.5
+        output_properties = 'initial_damage'
+        use_background_randalpha = true  # Add option
+        randalpha = correlated_randalpha_o  # Add coupling        
         outputs = exodus
     []
     #
@@ -547,3 +554,22 @@
 #       from_variable = disp_y
 #     []
 # []
+
+[UserObjects]
+    [reader_node_alpha]
+        type = PropertyReadFile
+        prop_file_name = 'mapped_vonkarman_field.csv'
+        read_type = 'node'
+        nprop = 3 # number of columns in CSV
+    []
+[]
+
+[Functions]
+    [node_randalpha_o]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'reader_node_alpha'
+        read_type = 'node'
+        # 0-based indexing
+        column_number = '2'
+    []
+[]
