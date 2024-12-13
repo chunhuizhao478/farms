@@ -338,7 +338,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = 23558395774.487804
-    end_time = 1e10
+    end_time = 1e100
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
