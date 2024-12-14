@@ -192,12 +192,12 @@
         execute_on = 'timestep_end'
         block = '1 2'
     []
-    [get_randalpha_o]
-        type = FunctionAux
-        variable = correlated_randalpha_o
-        function = node_randalpha_o
-        execute_on = 'INITIAL'
-    [] 
+    [get_initial_damage]
+        type = SolutionAux
+        variable = initial_damage_aux
+        solution = init_sol_components
+        from_variable = initial_damage_aux
+    []
     #
     [get_flag]
         type = MaterialRealAux
@@ -292,14 +292,11 @@
         outputs = exodus
         block = 3
     []
-    [initial_damage_surround]
-        type = InitialDamageCycleSim2DRand
-        len_of_fault = 2000
-        sigma = 5e2
-        peak_val = 0.5
-        output_properties = 'initial_damage'
-        use_background_randalpha = true  # Add option
-        randalpha = correlated_randalpha_o  # Add coupling        
+    [define_initial_damage_matprop]
+        type = ParsedMaterial
+        property_name = initial_damage
+        coupled_variables = 'initial_damage_aux'
+        expression = 'initial_damage_aux'
         outputs = exodus
     []
     #
@@ -530,15 +527,15 @@
     restart_file_base = dynamic_solve_2_out_cp/LATEST  # You may also use a specific number here
 []
 
-# [UserObjects]
-#     [./init_sol_components]
-#       type = SolutionUserObject
-#       mesh = './static_solve_readcsv_out.e'
-#       system_variables = 'disp_x disp_y initial_damage_aux'
-#       timestep = LATEST
-#       force_preaux = true
-#     [../]
-# []
+[UserObjects]
+    [./init_sol_components]
+      type = SolutionUserObject
+      mesh = './static_solve_readcsv_out.e'
+      system_variables = 'initial_damage_aux'
+      timestep = LATEST
+      force_preaux = true
+    [../]
+[]
 
 # [ICs]
 #     [disp_x_ic]
