@@ -38,6 +38,7 @@ protected:
 
   // Add new members
   const bool _use_background_randalpha;
+  const bool _use_decay_region;
   const VariableValue * _randalpha;
 
 };
