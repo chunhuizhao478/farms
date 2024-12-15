@@ -143,6 +143,16 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("CdCb_multiplier must be set to a positive value or use_cb_multiplier_aux must be set to true");
   if (_CBH_constant < 0 && !_use_cbh_aux)
     mooseError("CBH_constant must be set to a positive value or use_cbh_aux must be set to true");
+  if (_Cd_constant > 0 && _use_cd_aux)
+    mooseError("Global Param Cd_constant must not be set when use_cd_aux is set to true");
+  if (_C1 > 0 && _use_c1_aux)
+    mooseError("Global Param C1 must not be set when use_c1_aux is set to true");
+  if (_C2 > 0 && _use_c2_aux)
+    mooseError("Global Param C2 must not be set when use_c2_aux is set to true");
+  if (_CdCb_multiplier > 0 && _use_cb_multiplier_aux)
+    mooseError("Global Param CdCb_multiplier must not be set when use_cb_multiplier_aux is set to true");
+  if (_CBH_constant > 0 && _use_cbh_aux)
+    mooseError("Global Param CBH_constant must not be set when use_cbh_aux is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -230,7 +240,10 @@ DamageBreakageMaterial::updatedamage()
   const Real C1 = _use_c1_aux ? (*_c1_aux)[_qp] : _C1;
 
   // Get C2 value based on option
-  const Real C2 = _use_c2_aux ? (*_c2_aux)[_qp] : _C2;
+  Real C2 = _use_c2_aux ? (*_c2_aux)[_qp] : _C2;
+
+  // Set initial C2 as nonzero value (for the use of aux variable)
+  if ( C2 == 0 ){ C2 = 0.05; } 
 
   //compute forcing term
   Real alpha_forcingterm;

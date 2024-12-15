@@ -76,7 +76,7 @@
     # C_1 = 3
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 0.05
+    # C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.01 #1e-3
@@ -143,19 +143,19 @@
     []
     #
     [alpha_damagedvar_aux_firstmono]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [B_damagedvar_aux_firstmono]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [strain_invariant_ratio_aux_firstmono]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [initial_damage_aux_firstmono]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL 
     []
     #
@@ -262,6 +262,8 @@
         property = flag
         execute_on = 'timestep_end'
     []
+    #block 1: outer block where damage is not activated
+    #block 2: inner block where damage is activated
     #cd constant
     [get_cd_block1]
         type = ConstantAux
@@ -319,6 +321,21 @@
         type = ConstantAux
         variable = C1_aux
         value = 3
+        block = 2
+        execute_on = 'INITIAL'
+    []
+    #C2
+    [get_c2_block1]
+        type = ConstantAux
+        variable = C2_aux
+        value = 0.05
+        block = 1
+        execute_on = 'INITIAL'
+    []
+    [get_c2_block2]
+        type = ConstantAux
+        variable = C2_aux
+        value = 1000
         block = 2
         execute_on = 'INITIAL'
     []
@@ -395,6 +412,8 @@
         CBH_aux = Cbh_constant_aux
         use_c1_aux = true
         C1_aux = C1_aux
+        use_c2_aux = true
+        C2_aux = C2_aux
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
