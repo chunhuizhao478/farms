@@ -125,4 +125,24 @@ protected:
   const bool _use_nonlocal_xi;
   const VariableValue * _nonlocal_xi;  
 
+  /// @brief add option to provide cd as aux variable
+  const bool _use_cd_aux;
+  const VariableValue * _cd_aux; 
+
+  /// @brief add option to provide cb_multiplier as aux variable
+  const bool _use_cb_multiplier_aux;
+  const VariableValue * _cb_multiplier_aux;
+
+  /// @brief add option to provide cbh as aux variable
+  const bool _use_cbh_aux;
+  const VariableValue * _cbh_aux;
+
+  /// @brief add option to provide c1 as aux variable
+  const bool _use_c1_aux;
+  const VariableValue * _c1_aux;
+
+  /// @brief add option to provide c2 as aux variable
+  const bool _use_c2_aux;
+  const VariableValue * _c2_aux;
+
 };

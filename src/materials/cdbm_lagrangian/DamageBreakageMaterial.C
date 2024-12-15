@@ -42,6 +42,16 @@ DamageBreakageMaterial::validParams()
   params.addCoupledVar("shear_modulus_o_aux", "AuxVariable for shear_modulus_o");
   params.addParam<bool>("use_nonlocal_xi", false, "Whether to use nonlocal xi variable");
   params.addCoupledVar("nonlocal_xi", "Nonlocal xi variable");
+  params.addParam<bool>("use_cd_aux", false, "Whether to use Cd from aux variable");
+  params.addCoupledVar("Cd_constant_aux", "AuxVariable for Cd block-restricted");
+  params.addParam<bool>("use_cb_multiplier_aux", false, "Whether to use Cb multiplier from aux variable");
+  params.addCoupledVar("Cb_multiplier_aux", "AuxVariable for Cb multiplier block-restricted");
+  params.addParam<bool>("use_cbh_aux", false, "Whether to use CBH from aux variable");
+  params.addCoupledVar("CBH_aux", "AuxVariable for CBH block-restricted");
+  params.addParam<bool>("use_c1_aux", false, "Whether to use C1 from aux variable");
+  params.addCoupledVar("C1_aux", "AuxVariable for C1 block-restricted");
+  params.addParam<bool>("use_c2_aux", false, "Whether to use C2 from aux variable");
+  params.addCoupledVar("C2_aux", "AuxVariable for C2 block-restricted");
   return params;
 }
 
@@ -95,7 +105,17 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _shear_modulus_o_value(getParam<Real>("shear_modulus_o")),
   _shear_modulus_o_aux(_use_shear_modulus_o_aux ? &coupledValue("shear_modulus_o_aux") : nullptr),
   _use_nonlocal_xi(getParam<bool>("use_nonlocal_xi")),
-  _nonlocal_xi(_use_nonlocal_xi ? &coupledValueOld("nonlocal_xi") : nullptr)
+  _nonlocal_xi(_use_nonlocal_xi ? &coupledValueOld("nonlocal_xi") : nullptr),
+  _use_cd_aux(getParam<bool>("use_cd_aux")),
+  _cd_aux(_use_cd_aux ? &coupledValue("Cd_constant_aux") : nullptr),
+  _use_cb_multiplier_aux(getParam<bool>("use_cb_multiplier_aux")),
+  _cb_multiplier_aux(_use_cb_multiplier_aux ? &coupledValue("Cb_multiplier_aux") : nullptr),
+  _use_cbh_aux(getParam<bool>("use_cbh_aux")),
+  _cbh_aux(_use_cbh_aux ? &coupledValue("CBH_aux") : nullptr),
+  _use_c1_aux(getParam<bool>("use_c1_aux")),
+  _c1_aux(_use_c1_aux ? &coupledValue("C1_aux") : nullptr),
+  _use_c2_aux(getParam<bool>("use_c2_aux")),
+  _c2_aux(_use_c2_aux ? &coupledValue("C2_aux") : nullptr)
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -103,6 +123,10 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Must specify shear_modulus_o_aux when use_shear_modulus_o_aux = true");
   if (_use_nonlocal_xi && !parameters.isParamSetByUser("nonlocal_xi"))
     mooseError("Must specify nonlocal_xi when use_nonlocal_xi = true");
+  if (_use_cd_aux && !parameters.isParamSetByUser("Cd_constant_aux"))
+    mooseError("Must specify Cd_constant_aux when use_cd_aux = true");
+  if (_use_cb_multiplier_aux && !parameters.isParamSetByUser("Cb_multiplier_aux"))
+    mooseError("Must specify Cb_multiplier_aux when use_cb_multiplier_aux = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -185,13 +209,22 @@ DamageBreakageMaterial::updatedamage()
   // Get xi value based on option
   const Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];
 
+  // Get Cd value based on option
+  const Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;
+
+  // Get C1 value based on option
+  const Real C1 = _use_c1_aux ? (*_c1_aux)[_qp] : _C1;
+
+  // Get C2 value based on option
+  const Real C2 = _use_c2_aux ? (*_c2_aux)[_qp] : _C2;
+
   //compute forcing term
   Real alpha_forcingterm;
   if ( xi >= _xi_0 ){
-    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( xi - _xi_0 ) );
+    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( Cd * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
   else if ( xi < _xi_0 ){
-    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( xi - _xi_0 ) );
+    alpha_forcingterm = (1 - _B_breakagevar_old[_qp]) * ( C1 * std::exp(_alpha_damagedvar_old[_qp]/C2) * _I2_old[_qp] * ( xi - _xi_0 ) );
   }
   // else{
   //   mooseError("xi_old is OUT-OF-RANGE!.");   
@@ -223,8 +256,16 @@ DamageBreakageMaterial::updatebreakage()
   // Get shear_modulus_o value
   const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
 
+  // Get Cd value based on option
+  const Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;  
+  // Get Cd value based on option
+  const Real CdCb_multiplier = _use_cb_multiplier_aux ? (*_cb_multiplier_aux)[_qp] : _CdCb_multiplier;
+
+  // Get Cbh value based on option
+  const Real CBH_constant = _use_cbh_aux ? (*_cbh_aux)[_qp] : _CBH_constant;
+
   /* compute C_B based on C_d */
-  Real C_B = _CdCb_multiplier * _Cd_constant;
+  Real C_B = CdCb_multiplier * Cd;
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
@@ -249,7 +290,7 @@ DamageBreakageMaterial::updatebreakage()
     B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (xi - _xi_d); //could heal if xi < xi_0
   }
   else if ( xi < _xi_d ){
-    B_forcingterm = 1.0 * _CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
+    B_forcingterm = 1.0 * CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
   }
   // else{
   //   mooseError("xi_old is OUT-OF-RANGE!.");

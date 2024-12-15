@@ -1,37 +1,49 @@
+#implicit continuum damage-breakage model dynamics
+
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file = '../../meshfile/mesh_refined.msh'
+        type = GeneratedMeshGenerator
+        dim = 2
+        xmin = -10000
+        xmax = 10000
+        ymin = -10000
+        ymax = 10000
+        nx = 400
+        ny = 400
+        subdomain_ids = 1
+        elem_type = QUAD4
     []
-    [./sidesets]
+    [./mark_block]
+        type = SubdomainBoundingBoxGenerator
         input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
+        location = inside
+        bottom_left = '-4000 -2000 0'
+        top_right = '4000 2000 0'
+        block_id = 2
     []
+    # [./refine]
+    #     type = RefineBlockGenerator
+    #     input = mark_block
+    #     refinement = '1'
+    #     block = '2'
+    # []
     [./extranodeset1]
         type = ExtraNodesetGenerator
         coord = '0 -10000 0'
         new_boundary = corner_ptr
-        input = sidesets
+        input = mark_block
     []
-    displacements = 'disp_x disp_y'
 []
 
 [GlobalParams]
 
     displacements = 'disp_x disp_y'
-
-    use_displaced_mesh = false
     
     ##----continuum damage breakage model----##
-    #initial lambda value (SECOND lame constant) [Pa]
+    #initial lambda value (FIRST lame constant) [Pa]
     lambda_o = 10e9
         
-    #initial shear modulus value (SECOND lame constant) [Pa]
+    #initial shear modulus value (FIRST lame constant) [Pa]
     shear_modulus_o = 10e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
@@ -50,11 +62,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 300
+    Cd_constant = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 500
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -86,30 +98,30 @@
 
 [Variables]
     [disp_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE     
     []
     [disp_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [accel_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [vel_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [accel_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     #
@@ -127,10 +139,31 @@
     []
     [initial_damage_aux]
         order = FIRST
-        family = MONOMIAL
+        family = MONOMIAL 
     []
     [timeintegratorflag]
-        order = CONSTANT
+        order = FIRST
+        family = MONOMIAL
+    []
+    #
+    [Cd_constant_aux]
+        order = FIRST
+        family = MONOMIAL
+    []  
+    [Cb_multiplier_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [Cbh_constant_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [C1_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [C2_aux]
+        order = FIRST
         family = MONOMIAL
     []
 []
@@ -172,27 +205,21 @@
         variable = alpha_damagedvar_aux
         property = alpha_damagedvar
         execute_on = 'timestep_end'
-        block = '1 2'
+        # block = '2'
     []
     [B_damagedvar_aux]
         type = MaterialRealAux
         variable = B_damagedvar_aux
         property = B_damagedvar
         execute_on = 'timestep_end'
-        block = '1 2'
+        # block = '2'
     []  
     [strain_invariant_ratio_aux]
         type = MaterialRealAux
         variable = strain_invariant_ratio_aux
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
-        block = '1 2'
-    []
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_aux
-        solution = init_sol_components
-        from_variable = initial_damage_aux
+        # block = '2'
     []
     #
     [get_flag]
@@ -200,6 +227,66 @@
         variable = timeintegratorflag
         property = flag
         execute_on = 'timestep_end'
+    []
+    #cd constant
+    [get_cd_block1]
+        type = ConstantAux
+        variable = Cd_constant_aux
+        value = 0
+        block = 1
+        execute_on = 'INITIAL'
+    []
+    [get_cd_block2]
+        type = ConstantAux
+        variable = Cd_constant_aux
+        value = 300
+        block = 2
+        execute_on = 'INITIAL'
+    []    
+    #cb multiplier
+    [get_cb_multiplier_block1]
+        type = ConstantAux
+        variable = Cb_multiplier_aux
+        value = 0
+        block = 1
+        execute_on = 'INITIAL'
+    []
+    [get_cb_multiplier_block2]
+        type = ConstantAux
+        variable = Cb_multiplier_aux
+        value = 500
+        block = 2
+        execute_on = 'INITIAL'
+    []
+    #cbh constant 
+    [get_cbh_constant_block1]
+        type = ConstantAux
+        variable = Cbh_constant_aux
+        value = 1e5
+        block = 1
+        execute_on = 'INITIAL'
+    []
+    [get_cbh_constant_block2]
+        type = ConstantAux
+        variable = Cbh_constant_aux
+        value = 10
+        block = 2
+        execute_on = 'INITIAL'
+    []
+    #C1
+    [get_c1_block1]
+        type = ConstantAux
+        variable = C1_aux
+        value = 3000
+        block = 1
+        execute_on = 'INITIAL'
+    []
+    [get_c1_block2]
+        type = ConstantAux
+        variable = C1_aux
+        value = 3
+        block = 2
+        execute_on = 'INITIAL'
     []
 []
 
@@ -265,34 +352,42 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = '1 2'
+        use_cd_aux = true
+        Cd_constant_aux = Cd_constant_aux
+        use_cb_multiplier_aux = true
+        Cb_multiplier_aux = Cb_multiplier_aux
+        use_cbh_aux = true
+        CBH_aux = Cbh_constant_aux
+        use_c1_aux = true
+        C1_aux = C1_aux
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_strain plastic_strain deviatroic_stress strain_invariant_ratio'
+        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain'
         outputs = exodus
-        block = '1 2'
+        # block = '2'
     []
-    # elastic
-    [elastic_tensor]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 1e10
-        shear_modulus = 1e10
-        block = 3
-    []
-    [compute_stress]
-        type = ComputeStVenantKirchhoffStress
-        large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
-        block = 3
-    []
-    [define_initial_damage_matprop]
-        type = ParsedMaterial
-        property_name = initial_damage
-        coupled_variables = 'initial_damage_aux'
-        expression = 'initial_damage_aux'
+    # # elastic
+    # [elastic_tensor]
+    #     type = ComputeIsotropicElasticityTensor
+    #     lambda = 1e10
+    #     shear_modulus = 1e10
+    #     block = 1
+    # []
+    # [compute_stress]
+    #     type = ComputeStVenantKirchhoffStress
+    #     large_kinematics = true
+    #     output_properties = 'green_lagrange_strain pk2_stress'
+    #     outputs = exodus
+    #     block = 1
+    # []
+    [initial_damage_surround]
+        type = InitialDamageCycleSim2DDebug
+        len_of_fault = 1000
+        sigma = 5e2
+        peak_val = 0.7
+        output_properties = 'initial_damage'
         outputs = exodus
     []
     #
@@ -362,7 +457,7 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the SECOND time step
+[Controls] # turns off inertial terms for the FIRST time step
   [./period0]
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
@@ -394,8 +489,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 100
-      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 plastic_strain_00 plastic_strain_01 plastic_strain_11'
+      time_step_interval = 1
+      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22'
     [../]
     [./csv]
       type = CSV
@@ -424,7 +519,8 @@
         variable = disp_y
         value = 0
         boundary = bottom
-    [] 
+    []  
+    # 
     [./Pressure]
         [static_pressure_top]
             boundary = top
@@ -511,30 +607,5 @@
         shear_wave_speed = 1924.5
         p_wave_speed = 3333.3
         density = 2700
-    []
-[]
-
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = './static_solve_out.e'
-      system_variables = 'disp_x disp_y initial_damage_aux'
-      timestep = LATEST
-      force_preaux = true
-    [../]
-[]
-
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
     []
 []
