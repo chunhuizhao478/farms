@@ -27,12 +27,12 @@ DamageBreakageMaterial::validParams()
   params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
   params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
   params.addRequiredParam<Real>(             "chi", "coefficient of energy ratio Fb/Fs = chi < 1");
-  params.addRequiredParam<Real>(     "Cd_constant", "coefficient gives positive damage evolution");
-  params.addRequiredParam<Real>(             "C_1", "coefficient of healing for damage evolution");
-  params.addRequiredParam<Real>(             "C_2", "coefficient of healing for damage evolution");
+  params.addParam<Real>(     "Cd_constant", -1, "coefficient gives positive damage evolution");
+  params.addParam<Real>(             "C_1", -1, "coefficient of healing for damage evolution");
+  params.addParam<Real>(             "C_2", -1, "coefficient of healing for damage evolution");
   params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
-  params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
-  params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
+  params.addParam<Real>( "CdCb_multiplier", -1, "multiplier between Cd and Cb");
+  params.addParam<Real>(    "CBH_constant", -1, "constant CBH value");
   params.addRequiredParam<Real>(             "C_g", "compliance or fluidity of the fine grain granular material");
   params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
   params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");
@@ -127,6 +127,22 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Must specify Cd_constant_aux when use_cd_aux = true");
   if (_use_cb_multiplier_aux && !parameters.isParamSetByUser("Cb_multiplier_aux"))
     mooseError("Must specify Cb_multiplier_aux when use_cb_multiplier_aux = true");
+  if (_use_cbh_aux && !parameters.isParamSetByUser("CBH_aux"))
+    mooseError("Must specify CBH_aux when use_cbh_aux = true");
+  if (_use_c1_aux && !parameters.isParamSetByUser("C1_aux"))
+    mooseError("Must specify C1_aux when use_c1_aux = true");
+  if (_use_c2_aux && !parameters.isParamSetByUser("C2_aux"))
+    mooseError("Must specify C2_aux when use_c2_aux = true");
+  if (_Cd_constant < 0 && !_use_cd_aux)
+    mooseError("Cd_constant must be set to a positive value or use_cd_aux must be set to true");
+  if (_C1 < 0 && !_use_c1_aux)
+    mooseError("C1 must be set to a positive value or use_c1_aux must be set to true");
+  if (_C2 < 0 && !_use_c2_aux)
+    mooseError("C2 must be set to a positive value or use_c2_aux must be set to true");
+  if (_CdCb_multiplier < 0 && !_use_cb_multiplier_aux)
+    mooseError("CdCb_multiplier must be set to a positive value or use_cb_multiplier_aux must be set to true");
+  if (_CBH_constant < 0 && !_use_cbh_aux)
+    mooseError("CBH_constant must be set to a positive value or use_cbh_aux must be set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -203,8 +219,6 @@ DamageBreakageMaterial::updatedamage()
 
   // Get xi_0 value
   const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
-  // Get shear_modulus_o value
-  //const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
 
   // Get xi value based on option
   const Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];
