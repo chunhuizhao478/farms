@@ -4,8 +4,8 @@ function [param] = struct_param()
 %Define all parameters in "param" struct
 %% Prescribed values %%
 param.P_c = 10 * 10 ^ 6;   %Pa  <confinement pressure> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1
-param.lambda_0 = 10 ^ 10;  %Pa  <initial 1st lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
-param.mu_0 = 10 ^ 10;      %Pa  <initial 2nd lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
+param.lambda_0 = 10e9;  %Pa  <initial 1st lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
+param.mu_0 = 10e9;      %Pa  <initial 2nd lame constant> refer to "Lyak_BZ_JMPS14_splitstrain" Section 3.1 | 10 ^ 10
 param.xi_0 = -0.8;        %--  <strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
 param.xi_d = -0.9;        %--  <strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
 param.xi_max = sqrt(3);    %--  <strain invariants ratio: maximum allowable value>: set boundary

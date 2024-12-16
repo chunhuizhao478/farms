@@ -1,0 +1,1 @@
+The idea here is to make system solve symmetry, it involves examination on boundary loading, mesh

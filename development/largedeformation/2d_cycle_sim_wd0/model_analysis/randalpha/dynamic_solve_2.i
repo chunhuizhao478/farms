@@ -133,6 +133,10 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [correlated_randalpha_o]
+        order = SECOND
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]

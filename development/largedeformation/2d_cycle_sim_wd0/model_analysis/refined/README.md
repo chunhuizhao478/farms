@@ -1,1 +1,0 @@
-The idea here is to test refined mesh 50m could resolve the same thickness of crack band -> prove the length scale exists

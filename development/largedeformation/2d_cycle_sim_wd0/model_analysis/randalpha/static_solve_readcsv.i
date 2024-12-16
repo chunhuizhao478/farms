@@ -174,6 +174,7 @@
         peak_val = 0.5
         output_properties = 'initial_damage'
         use_background_randalpha = true  # Add option
+        use_decay_region = false
         randalpha = correlated_randalpha_o  # Add coupling        
         outputs = exodus
     []
