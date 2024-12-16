@@ -11,7 +11,7 @@
         nx = 200
         ny = 200
         subdomain_ids = 1
-        elem_type = QUAD4
+        elem_type = QUAD9
     []
     [./mark_block]
         type = SubdomainBoundingBoxGenerator
@@ -98,30 +98,30 @@
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE     
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [vel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     #
