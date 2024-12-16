@@ -11,7 +11,7 @@
         nx = 400
         ny = 400
         subdomain_ids = 1
-        elem_type = QUAD4
+        elem_type = QUAD9
     []
     [./mark_block]
         type = SubdomainBoundingBoxGenerator
@@ -61,22 +61,22 @@
     #Xu_etal_P15-2D
     xi_min = -1.8
 
-    #if option 2, use Cd_constant
-    Cd_constant = 10
+    #if option 2, use Cd_constant #specify by auxiliary variable
+    # Cd_constant = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 100
+    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
+    # CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    # CBCBH_multiplier = 0.0
-    CBH_constant = 10
+    # CBCBH_multiplier = 0.0 #specify by auxiliary variable
+    # CBH_constant = 10
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
+    # C_1 = 3
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 3
-
-    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 0.05
+    # C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.01 #1e-3
@@ -98,72 +98,90 @@
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE     
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE    
     []
 []
 
 [AuxVariables]
     [vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [vel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [accel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     #
     [alpha_damagedvar_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [B_damagedvar_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [strain_invariant_ratio_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [initial_damage_aux]
+        order = CONSTANT
+        family = MONOMIAL 
+    []
+    #
+    [alpha_damagedvar_aux_firstmono]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [B_damagedvar_aux_firstmono]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [strain_invariant_ratio_aux_firstmono]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [initial_damage_aux_firstmono]
         order = FIRST
         family = MONOMIAL 
     []
+    #
     [timeintegratorflag]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #
     [Cd_constant_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []  
     [Cb_multiplier_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [Cbh_constant_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [C1_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [C2_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
 []
@@ -199,28 +217,44 @@
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
-    #
+    #get damage,breakage,strain invariant ratio in constant monomial
     [alpha_damagedvar_aux]
         type = MaterialRealAux
         variable = alpha_damagedvar_aux
         property = alpha_damagedvar
         execute_on = 'timestep_end'
-        # block = '2'
     []
     [B_damagedvar_aux]
         type = MaterialRealAux
         variable = B_damagedvar_aux
         property = B_damagedvar
         execute_on = 'timestep_end'
-        # block = '2'
     []  
     [strain_invariant_ratio_aux]
         type = MaterialRealAux
         variable = strain_invariant_ratio_aux
         property = strain_invariant_ratio
         execute_on = 'timestep_end'
-        # block = '2'
     []
+    #get damage,breakage,strain invariant ratio in first monomial
+    [alpha_damagedvar_aux_firstmono]
+        type = MaterialRealAux
+        variable = alpha_damagedvar_aux_firstmono
+        property = alpha_damagedvar
+        execute_on = 'timestep_end'
+    []
+    [B_damagedvar_aux_firstmono]
+        type = MaterialRealAux
+        variable = B_damagedvar_aux_firstmono
+        property = B_damagedvar
+        execute_on = 'timestep_end'
+    []  
+    [strain_invariant_ratio_aux_firstmono]
+        type = MaterialRealAux
+        variable = strain_invariant_ratio_aux_firstmono
+        property = strain_invariant_ratio
+        execute_on = 'timestep_end'
+    []    
     #
     [get_flag]
         type = MaterialRealAux
@@ -228,6 +262,8 @@
         property = flag
         execute_on = 'timestep_end'
     []
+    #block 1: outer block where damage is not activated
+    #block 2: inner block where damage is activated
     #cd constant
     [get_cd_block1]
         type = ConstantAux
@@ -285,6 +321,21 @@
         type = ConstantAux
         variable = C1_aux
         value = 3
+        block = 2
+        execute_on = 'INITIAL'
+    []
+    #C2
+    [get_c2_block1]
+        type = ConstantAux
+        variable = C2_aux
+        value = 0.05
+        block = 1
+        execute_on = 'INITIAL'
+    []
+    [get_c2_block2]
+        type = ConstantAux
+        variable = C2_aux
+        value = 1000
         block = 2
         execute_on = 'INITIAL'
     []
@@ -352,6 +403,7 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
+        #options to use auxiliary variables
         use_cd_aux = true
         Cd_constant_aux = Cd_constant_aux
         use_cb_multiplier_aux = true
@@ -360,28 +412,15 @@
         CBH_aux = Cbh_constant_aux
         use_c1_aux = true
         C1_aux = C1_aux
+        use_c2_aux = true
+        C2_aux = C2_aux
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
         output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain'
         outputs = exodus
-        # block = '2'
     []
-    # # elastic
-    # [elastic_tensor]
-    #     type = ComputeIsotropicElasticityTensor
-    #     lambda = 1e10
-    #     shear_modulus = 1e10
-    #     block = 1
-    # []
-    # [compute_stress]
-    #     type = ComputeStVenantKirchhoffStress
-    #     large_kinematics = true
-    #     output_properties = 'green_lagrange_strain pk2_stress'
-    #     outputs = exodus
-    #     block = 1
-    # []
     [initial_damage_surround]
         type = InitialDamageCycleSim2DDebug
         len_of_fault = 1000
@@ -490,7 +529,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 100
-      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22'
+      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux alpha_damagedvar_aux_firstmono B_damagedvar_aux_firstmono strain_invariant_ratio_aux_firstmono pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22'
     [../]
     [./csv]
       type = CSV
