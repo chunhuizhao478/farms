@@ -52,6 +52,7 @@ DamageBreakageMaterial::validParams()
   params.addCoupledVar("C1_aux", "AuxVariable for C1 block-restricted");
   params.addParam<bool>("use_c2_aux", false, "Whether to use C2 from aux variable");
   params.addCoupledVar("C2_aux", "AuxVariable for C2 block-restricted");
+  params.addParam<bool>("use_cd_strain_dependent", "Whether to use strain-dependent Cd");
   return params;
 }
 
@@ -73,6 +74,9 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _xi_1_mat(declareProperty<Real>("xi_1")),  
   _xi_0_mat(declareProperty<Real>("xi_0")),
   _shear_modulus_o_mat(declareProperty<Real>("shear_modulus_o_mat")),
+  _Cd_rate_dependent(declareProperty<Real>("Cd_rate_dependent")),
+  _strain_dir0_positive(declareProperty<Real>("strain_dir0_positive")),
+  _strain_dir0_positive_old(getMaterialPropertyOldByName<Real>("strain_dir0_positive")),
   _alpha_damagedvar_old(getMaterialPropertyOldByName<Real>("alpha_damagedvar")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
   _I2_old(getMaterialPropertyOldByName<Real>("second_elastic_strain_invariant")),
@@ -83,6 +87,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a1_old(getMaterialPropertyOldByName<Real>("a1")),
   _a2_old(getMaterialPropertyOldByName<Real>("a2")),
   _a3_old(getMaterialPropertyOldByName<Real>("a3")),
+  _elastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("green_lagrange_elastic_strain")),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_d(getParam<Real>("xi_d")),
@@ -115,7 +120,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _use_c1_aux(getParam<bool>("use_c1_aux")),
   _c1_aux(_use_c1_aux ? &coupledValue("C1_aux") : nullptr),
   _use_c2_aux(getParam<bool>("use_c2_aux")),
-  _c2_aux(_use_c2_aux ? &coupledValue("C2_aux") : nullptr)
+  _c2_aux(_use_c2_aux ? &coupledValue("C2_aux") : nullptr),
+  _use_cd_strain_dependent(getParam<bool>("use_cd_strain_dependent"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -188,6 +194,9 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _m2[_qp] = _m2_value;
   _C_g[_qp] = _C_g_value;
 
+  //initialize maximum principal strain 
+  _strain_dir0_positive[_qp] = 0.0;
+
 }
 
 void
@@ -234,7 +243,25 @@ DamageBreakageMaterial::updatedamage()
   const Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];
 
   // Get Cd value based on option
-  const Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;
+  Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;
+
+  // Get Cd value if using strain dependent
+  RealVectorValue strain_in_crack_dir;
+  const Real strain_dir0_positive_old = _strain_dir0_positive_old[_qp];
+  if ((_use_cd_strain_dependent) && (Cd != 0.0)) //avoid modifying outer block zero Cd
+    //compute principal strain
+    computePrincipalStrainAndOrientation(strain_in_crack_dir);
+    //compute maximum tensile strain
+    Real strain_dir0_positive = std::max(strain_in_crack_dir(0), 0.0); //maximum tensile strain
+    //compute strain rate
+    Real strain_rate = (strain_dir0_positive - strain_dir0_positive_old) / _dt; //strain rate
+    //save strain_dir0_positive
+    _strain_dir0_positive[_qp] = strain_dir0_positive;
+    //compute rate-dependent Cd
+    Cd = std::max(Cd, pow(10, 1 + 0.85 * log(strain_rate/1e-4)) * 1); //scale the Cd value //take constant Cd as minimum
+
+  // Save rate-denpendent Cd
+  _Cd_rate_dependent[_qp] = Cd;
 
   // Get C1 value based on option
   const Real C1 = _use_c1_aux ? (*_c1_aux)[_qp] : _C1;
@@ -284,12 +311,30 @@ DamageBreakageMaterial::updatebreakage()
   const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
 
   // Get Cd value based on option
-  const Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;  
+  Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;  
   // Get Cd value based on option
   const Real CdCb_multiplier = _use_cb_multiplier_aux ? (*_cb_multiplier_aux)[_qp] : _CdCb_multiplier;
 
   // Get Cbh value based on option
   const Real CBH_constant = _use_cbh_aux ? (*_cbh_aux)[_qp] : _CBH_constant;
+
+  // Get Cd value if using strain dependent
+  RealVectorValue strain_in_crack_dir;
+  const Real strain_dir0_positive_old = _strain_dir0_positive_old[_qp];
+  if ((_use_cd_strain_dependent) && (Cd != 0.0)) //avoid modifying outer block zero Cd
+    //compute principal strain
+    computePrincipalStrainAndOrientation(strain_in_crack_dir);
+    //compute maximum tensile strain
+    Real strain_dir0_positive = std::max(strain_in_crack_dir(0), 0.0); //maximum tensile strain
+    //compute strain rate
+    Real strain_rate = (strain_dir0_positive - strain_dir0_positive_old) / _dt; //strain rate
+    //save strain_dir0_positive
+    _strain_dir0_positive[_qp] = strain_dir0_positive;
+    //compute rate-dependent Cd
+    Cd = std::max(Cd, pow(10, 1 + 0.85 * log(strain_rate/1e-4)) * 1); //scale the Cd value //take constant Cd as minimum
+
+  // Save rate-denpendent Cd
+  _Cd_rate_dependent[_qp] = Cd;
 
   /* compute C_B based on C_d */
   Real C_B = CdCb_multiplier * Cd;
@@ -458,4 +503,29 @@ DamageBreakageMaterial::alphacr_root2(Real xi) {
     const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
 
     return 2 * _shear_modulus_o / (_gamma_damaged_r[_qp] * (xi - 2 * _xi_0));
+}
+
+void
+DamageBreakageMaterial::computePrincipalStrainAndOrientation(
+    RealVectorValue & strain_in_crack_dir)
+{
+  // The rotation tensor is ordered such that directions for pre-existing cracks appear first
+  // in the list of columns.  For example, if there is one existing crack, its direction is in the
+  // first column in the rotation tensor.
+
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor eigvec;
+
+  _elastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+
+  // If the elastic strain is beyond the cracking strain, save the eigen vectors as
+  // the rotation tensor. Reverse their order so that the third principal strain
+  // (most tensile) will correspond to the first crack.
+  // _crack_rotation[_qp].fillColumn(0, eigvec.column(2));
+  // _crack_rotation[_qp].fillColumn(1, eigvec.column(1));
+  // _crack_rotation[_qp].fillColumn(2, eigvec.column(0));
+
+  strain_in_crack_dir(0) = eigval[2];
+  strain_in_crack_dir(1) = eigval[1];
+  strain_in_crack_dir(2) = eigval[0];
 }

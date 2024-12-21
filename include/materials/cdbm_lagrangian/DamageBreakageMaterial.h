@@ -40,6 +40,13 @@ public:
 
   virtual Real alphacr_root2(Real xi); //alpha cr root 2
 
+  /**
+   * Compute the crack strain in the crack coordinate system. Also
+   * computes the crack orientations, and stores in _crack_rotation.
+   * @param strain_in_crack_dir Computed strains in crack directions
+   */
+  void computePrincipalStrainAndOrientation(RealVectorValue & strain_in_crack_dir);  
+
 protected:
   
   //declare material properties:
@@ -68,6 +75,13 @@ protected:
   //initial shear modulus distribution
   MaterialProperty<Real> & _shear_modulus_o_mat; //shear modulus
 
+  //damage accmulation rate
+  MaterialProperty<Real> & _Cd_rate_dependent; //Cd_constant
+
+  //maximum principal strain rate
+  MaterialProperty<Real> & _strain_dir0_positive; //strain_dir0_positive_old
+  const MaterialProperty<Real> & _strain_dir0_positive_old; //strain_dir0_positive_old
+
   //get old material properties:
   const MaterialProperty<Real> & _alpha_damagedvar_old; //old damage variable
   const MaterialProperty<Real> & _B_breakagevar_old;     //old breakage variable
@@ -79,6 +93,7 @@ protected:
   const MaterialProperty<Real> & _a1_old;     //old a1
   const MaterialProperty<Real> & _a2_old;     //old a2
   const MaterialProperty<Real> & _a3_old;     //old a3
+  const MaterialProperty<RankTwoTensor> & _elastic_strain_old;   //old first lamé constant
 
 
   //get const values
@@ -144,5 +159,8 @@ protected:
   /// @brief add option to provide c2 as aux variable
   const bool _use_c2_aux;
   const VariableValue * _c2_aux;
+
+  /// @brief add option to use strain-dependent cd
+  const bool _use_cd_strain_dependent;
 
 };
