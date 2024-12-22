@@ -52,7 +52,7 @@ DamageBreakageMaterial::validParams()
   params.addCoupledVar("C1_aux", "AuxVariable for C1 block-restricted");
   params.addParam<bool>("use_c2_aux", false, "Whether to use C2 from aux variable");
   params.addCoupledVar("C2_aux", "AuxVariable for C2 block-restricted");
-  params.addParam<bool>("use_cd_strain_dependent", "Whether to use strain-dependent Cd");
+  params.addParam<bool>("use_cd_strain_dependent", false, "Whether to use strain-dependent Cd");
   return params;
 }
 
