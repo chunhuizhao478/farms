@@ -96,7 +96,7 @@
     #add strain rate dependent Cd option
     m_exponent = 0.85
     strain_rate_hat = 1e-4
-    cd_hat = 0.01
+    cd_hat = 1
     
 []
 
@@ -448,6 +448,7 @@
         use_c2_aux = true
         C2_aux = C2_aux
         use_cd_strain_dependent = true
+        use_plastic_strain_rate = true
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2

@@ -53,6 +53,10 @@ DamageBreakageMaterial::validParams()
   params.addParam<bool>("use_c2_aux", false, "Whether to use C2 from aux variable");
   params.addCoupledVar("C2_aux", "AuxVariable for C2 block-restricted");
   params.addParam<bool>("use_cd_strain_dependent", false, "Whether to use strain-dependent Cd");
+  params.addParam<Real>("m_exponent", -1, "Exponent for strain-dependent Cd");
+  params.addParam<Real>("strain_rate_hat", -1, "Strain rate for strain-dependent Cd");
+  params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
+  params.addParam<bool>("use_plastic_strain_rate", false, "Whether to use plastic strain rate, default is to use elastic strain rate");
   return params;
 }
 
@@ -88,6 +92,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a2_old(getMaterialPropertyOldByName<Real>("a2")),
   _a3_old(getMaterialPropertyOldByName<Real>("a3")),
   _elastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("green_lagrange_elastic_strain")),
+  _plastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("plastic_strain")),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_d(getParam<Real>("xi_d")),
@@ -121,7 +126,11 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _c1_aux(_use_c1_aux ? &coupledValue("C1_aux") : nullptr),
   _use_c2_aux(getParam<bool>("use_c2_aux")),
   _c2_aux(_use_c2_aux ? &coupledValue("C2_aux") : nullptr),
-  _use_cd_strain_dependent(getParam<bool>("use_cd_strain_dependent"))
+  _use_cd_strain_dependent(getParam<bool>("use_cd_strain_dependent")),
+  _m_exponent(getParam<Real>("m_exponent")),
+  _strain_rate_hat(getParam<Real>("strain_rate_hat")),
+  _cd_hat(getParam<Real>("cd_hat")),
+  _use_plastic_strain_rate(getParam<bool>("use_plastic_strain_rate"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -159,6 +168,12 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Global Param CdCb_multiplier must not be set when use_cb_multiplier_aux is set to true");
   if (_CBH_constant > 0 && _use_cbh_aux)
     mooseError("Global Param CBH_constant must not be set when use_cbh_aux is set to true");
+  if (_use_cd_strain_dependent && _m_exponent < 0)
+    mooseError("m_exponent must be set to a positive value when use_cd_strain_dependent is set to true");
+  if (_use_cd_strain_dependent && _strain_rate_hat < 0)
+    mooseError("strain_rate_hat must be set to a positive value when use_cd_strain_dependent is set to true");
+  if (_use_cd_strain_dependent && _cd_hat < 0)
+    mooseError("cd_hat must be set to a positive value when use_cd_strain_dependent is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -258,7 +273,8 @@ DamageBreakageMaterial::updatedamage()
     //save strain_dir0_positive
     _strain_dir0_positive[_qp] = strain_dir0_positive;
     //compute rate-dependent Cd
-    Cd = std::max(Cd, pow(10, 1 + 0.85 * log(strain_rate/1e-4)) * 1); //scale the Cd value //take constant Cd as minimum
+    if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
+    Cd = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
 
   // Save rate-denpendent Cd
   _Cd_rate_dependent[_qp] = Cd;
@@ -321,7 +337,7 @@ DamageBreakageMaterial::updatebreakage()
   // Get Cd value if using strain dependent
   RealVectorValue strain_in_crack_dir;
   const Real strain_dir0_positive_old = _strain_dir0_positive_old[_qp];
-  if ((_use_cd_strain_dependent) && (Cd != 0.0)) //avoid modifying outer block zero Cd
+  if ((_use_cd_strain_dependent) && (Cd != 0.0)) //avoid modifying outer block zero Cd, this could be hard-coded, assuming Cd is zero outside, if we could get block-id it could be better
     //compute principal strain
     computePrincipalStrainAndOrientation(strain_in_crack_dir);
     //compute maximum tensile strain
@@ -331,7 +347,8 @@ DamageBreakageMaterial::updatebreakage()
     //save strain_dir0_positive
     _strain_dir0_positive[_qp] = strain_dir0_positive;
     //compute rate-dependent Cd
-    Cd = std::max(Cd, pow(10, 1 + 0.85 * log(strain_rate/1e-4)) * 1); //scale the Cd value //take constant Cd as minimum
+    if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
+    Cd = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
 
   // Save rate-denpendent Cd
   _Cd_rate_dependent[_qp] = Cd;
@@ -516,7 +533,12 @@ DamageBreakageMaterial::computePrincipalStrainAndOrientation(
   std::vector<Real> eigval(3, 0.0);
   RankTwoTensor eigvec;
 
-  _elastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  //the option of using either plastic or elastic strain rate
+  //default is to use elastic strain rate
+  if (_use_plastic_strain_rate)
+    _plastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  else
+    _elastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
 
   // If the elastic strain is beyond the cracking strain, save the eigen vectors as
   // the rotation tensor. Reverse their order so that the third principal strain

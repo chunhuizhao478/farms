@@ -139,8 +139,8 @@ FarmsNewmarkBeta::computeADTimeDerivatives(ADReal & ad_u_dot,
 void
 FarmsNewmarkBeta::postResidual(NumericVector<Number> & residual)
 {
-  residual += _Re_time;
-  residual += _Re_non_time;
+  residual += *_Re_time;
+  residual += *_Re_non_time;
   residual.close();
 }
 

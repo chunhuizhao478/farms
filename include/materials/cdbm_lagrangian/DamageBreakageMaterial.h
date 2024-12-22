@@ -94,7 +94,7 @@ protected:
   const MaterialProperty<Real> & _a2_old;     //old a2
   const MaterialProperty<Real> & _a3_old;     //old a3
   const MaterialProperty<RankTwoTensor> & _elastic_strain_old;   //old first lamé constant
-
+  const MaterialProperty<RankTwoTensor> & _plastic_strain_old;   //old first lamé constant
 
   //get const values
   Real _lambda_o;
@@ -162,5 +162,11 @@ protected:
 
   /// @brief add option to use strain-dependent cd
   const bool _use_cd_strain_dependent;
+  const Real _m_exponent;
+  const Real _strain_rate_hat;
+  const Real _cd_hat;
 
+  /// @brief add option to use plastic strain rate
+  // default is to use elastic strain rate
+  const bool _use_plastic_strain_rate;
 };
