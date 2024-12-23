@@ -56,6 +56,7 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("m_exponent", -1, "Exponent for strain-dependent Cd");
   params.addParam<Real>("strain_rate_hat", -1, "Strain rate for strain-dependent Cd");
   params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
+  params.addParam<int>("block_id_applied", -1, "Block ID to apply the rate-dependent Cd, currently it has to be one block");
   params.addParam<bool>("use_plastic_strain_rate", false, "Whether to use plastic strain rate, default is to use elastic strain rate");
   return params;
 }
@@ -127,9 +128,11 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _use_c2_aux(getParam<bool>("use_c2_aux")),
   _c2_aux(_use_c2_aux ? &coupledValue("C2_aux") : nullptr),
   _use_cd_strain_dependent(getParam<bool>("use_cd_strain_dependent")),
+  _block_id(0),  // Initialize block ID
   _m_exponent(getParam<Real>("m_exponent")),
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
+  _block_id_applied(getParam<int>("block_id_applied")),
   _use_plastic_strain_rate(getParam<bool>("use_plastic_strain_rate"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
@@ -168,12 +171,14 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Global Param CdCb_multiplier must not be set when use_cb_multiplier_aux is set to true");
   if (_CBH_constant > 0 && _use_cbh_aux)
     mooseError("Global Param CBH_constant must not be set when use_cbh_aux is set to true");
-  if (_use_cd_strain_dependent && _m_exponent < 0)
+  if ((_use_cd_strain_dependent) && (_m_exponent < 0))
     mooseError("m_exponent must be set to a positive value when use_cd_strain_dependent is set to true");
-  if (_use_cd_strain_dependent && _strain_rate_hat < 0)
+  if ((_use_cd_strain_dependent) && (_strain_rate_hat < 0))
     mooseError("strain_rate_hat must be set to a positive value when use_cd_strain_dependent is set to true");
-  if (_use_cd_strain_dependent && _cd_hat < 0)
+  if ((_use_cd_strain_dependent) && (_cd_hat < 0))
     mooseError("cd_hat must be set to a positive value when use_cd_strain_dependent is set to true");
+  if ((_use_cd_strain_dependent) && (_block_id_applied < 0))
+    mooseError("block_id_applied must be set to a positive value when use_cd_strain_dependent is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -263,7 +268,10 @@ DamageBreakageMaterial::updatedamage()
   // Get Cd value if using strain dependent
   RealVectorValue strain_in_crack_dir;
   const Real strain_dir0_positive_old = _strain_dir0_positive_old[_qp];
-  if ((_use_cd_strain_dependent) && (Cd != 0.0)) //avoid modifying outer block zero Cd
+  // Get the block ID for the current element
+  _block_id = _current_elem->subdomain_id();
+  // std::cout << "Block ID: " << _block_id << std::endl;
+  if ((_use_cd_strain_dependent) && (_block_id == _block_id_applied )){ //avoid modifying outer block zero Cd
     //compute principal strain
     computePrincipalStrainAndOrientation(strain_in_crack_dir);
     //compute maximum tensile strain
@@ -275,6 +283,7 @@ DamageBreakageMaterial::updatedamage()
     //compute rate-dependent Cd
     if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
     Cd = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
+  } //note: {} is needed for statements, otherwise weird error will occur
 
   // Save rate-denpendent Cd
   _Cd_rate_dependent[_qp] = Cd;
@@ -335,23 +344,9 @@ DamageBreakageMaterial::updatebreakage()
   const Real CBH_constant = _use_cbh_aux ? (*_cbh_aux)[_qp] : _CBH_constant;
 
   // Get Cd value if using strain dependent
-  RealVectorValue strain_in_crack_dir;
-  const Real strain_dir0_positive_old = _strain_dir0_positive_old[_qp];
-  if ((_use_cd_strain_dependent) && (Cd != 0.0)) //avoid modifying outer block zero Cd, this could be hard-coded, assuming Cd is zero outside, if we could get block-id it could be better
-    //compute principal strain
-    computePrincipalStrainAndOrientation(strain_in_crack_dir);
-    //compute maximum tensile strain
-    Real strain_dir0_positive = std::max(strain_in_crack_dir(0), 0.0); //maximum tensile strain
-    //compute strain rate
-    Real strain_rate = (strain_dir0_positive - strain_dir0_positive_old) / _dt; //strain rate
-    //save strain_dir0_positive
-    _strain_dir0_positive[_qp] = strain_dir0_positive;
-    //compute rate-dependent Cd
-    if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
-    Cd = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
-
-  // Save rate-denpendent Cd
-  _Cd_rate_dependent[_qp] = Cd;
+  if (_use_cd_strain_dependent){
+    Cd = _Cd_rate_dependent[_qp];
+  }
 
   /* compute C_B based on C_d */
   Real C_B = CdCb_multiplier * Cd;

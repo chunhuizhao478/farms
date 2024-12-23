@@ -10,6 +10,8 @@
 #pragma once
 
 #include "Material.h"
+#include "MooseMesh.h"
+#include "MooseTypes.h"
 
 /**
  *  Material used in damage-breakage large deformation formulation
@@ -162,9 +164,12 @@ protected:
 
   /// @brief add option to use strain-dependent cd
   const bool _use_cd_strain_dependent;
+  // Add member variable for block ID (where the rate-dependent Cd applies)
+  unsigned int _block_id;
   const Real _m_exponent;
   const Real _strain_rate_hat;
   const Real _cd_hat;
+  const int _block_id_applied; 
 
   /// @brief add option to use plastic strain rate
   // default is to use elastic strain rate

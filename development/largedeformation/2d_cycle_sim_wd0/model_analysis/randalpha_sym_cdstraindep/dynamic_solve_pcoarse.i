@@ -448,6 +448,7 @@
         use_c2_aux = true
         C2_aux = C2_aux
         use_cd_strain_dependent = true
+        block_id_applied = 2
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
