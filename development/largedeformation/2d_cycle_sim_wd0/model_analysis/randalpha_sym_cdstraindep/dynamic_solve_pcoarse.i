@@ -96,7 +96,7 @@
     #add strain rate dependent Cd option
     m_exponent = 0.85
     strain_rate_hat = 1e-4
-    cd_hat = 0.01
+    cd_hat = 0.1
     
 []
 
