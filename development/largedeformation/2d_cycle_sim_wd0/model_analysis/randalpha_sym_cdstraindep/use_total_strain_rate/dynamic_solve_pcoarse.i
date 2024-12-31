@@ -332,14 +332,14 @@
         execute_on = 'INITIAL'
     []
     #cbh constant 
-    [get_cbh_constant_block1]
+    [get_cbh_constant_block12]
         type = ConstantAux
         variable = Cbh_constant_aux
         value = 1e5
-        block = 1
+        block = '1 2'
         execute_on = 'INITIAL'
     []
-    [get_cbh_constant_block2]
+    [get_cbh_constant_block3]
         type = ConstantAux
         variable = Cbh_constant_aux
         value = 10
@@ -347,14 +347,14 @@
         execute_on = 'INITIAL'
     []
     #C1
-    [get_c1_block1]
+    [get_c1_block12]
         type = ConstantAux
         variable = C1_aux
         value = 3000
-        block = 1
+        block = '1 2'
         execute_on = 'INITIAL'
     []
-    [get_c1_block2]
+    [get_c1_block3]
         type = ConstantAux
         variable = C1_aux
         value = 3
@@ -362,14 +362,14 @@
         execute_on = 'INITIAL'
     []
     #C2
-    [get_c2_block1]
+    [get_c2_block12]
         type = ConstantAux
         variable = C2_aux
         value = 0.05
-        block = 1
+        block = '1 2'
         execute_on = 'INITIAL'
     []
-    [get_c2_block2]
+    [get_c2_block3]
         type = ConstantAux
         variable = C2_aux
         value = 1000
@@ -614,8 +614,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
-      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
+      time_step_interval = 100
+      show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux Cb_multiplier_aux C1_aux C2_aux'
     [../]
     [./csv]
       type = CSV

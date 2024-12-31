@@ -1,0 +1,1 @@
+Use total strain rate to update Cd
