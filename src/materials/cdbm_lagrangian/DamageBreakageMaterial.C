@@ -57,7 +57,7 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("strain_rate_hat", -1, "Strain rate for strain-dependent Cd");
   params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
   params.addParam<int>("block_id_applied", -1, "Block ID to apply the rate-dependent Cd, currently it has to be one block");
-  params.addParam<bool>("use_plastic_strain_rate", false, "Whether to use plastic strain rate, default is to use elastic strain rate");
+  params.addParam<bool>("use_total_strain_rate", false, "Whether to use total strain rate, default is to use elastic strain rate");
   return params;
 }
 
@@ -93,7 +93,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a2_old(getMaterialPropertyOldByName<Real>("a2")),
   _a3_old(getMaterialPropertyOldByName<Real>("a3")),
   _elastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("green_lagrange_elastic_strain")),
-  _plastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("plastic_strain")),
+  _total_lagrange_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("total_lagrange_strain")),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_d(getParam<Real>("xi_d")),
@@ -133,7 +133,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
   _block_id_applied(getParam<int>("block_id_applied")),
-  _use_plastic_strain_rate(getParam<bool>("use_plastic_strain_rate"))
+  _use_total_strain_rate(getParam<bool>("use_total_strain_rate"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -530,8 +530,8 @@ DamageBreakageMaterial::computePrincipalStrainAndOrientation(
 
   //the option of using either plastic or elastic strain rate
   //default is to use elastic strain rate
-  if (_use_plastic_strain_rate)
-    _plastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  if (_use_total_strain_rate)
+    _total_lagrange_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
   else
     _elastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
 

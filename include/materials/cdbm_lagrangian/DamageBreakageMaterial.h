@@ -95,8 +95,8 @@ protected:
   const MaterialProperty<Real> & _a1_old;     //old a1
   const MaterialProperty<Real> & _a2_old;     //old a2
   const MaterialProperty<Real> & _a3_old;     //old a3
-  const MaterialProperty<RankTwoTensor> & _elastic_strain_old;   //old first lamé constant
-  const MaterialProperty<RankTwoTensor> & _plastic_strain_old;   //old first lamé constant
+  const MaterialProperty<RankTwoTensor> & _elastic_strain_old;   //old elastic strain
+  const MaterialProperty<RankTwoTensor> & _total_lagrange_strain_old;   //old total lagrangian strain
 
   //get const values
   Real _lambda_o;
@@ -171,7 +171,7 @@ protected:
   const Real _cd_hat;
   const int _block_id_applied; 
 
-  /// @brief add option to use plastic strain rate
+  /// @brief add option to use total strain rate
   // default is to use elastic strain rate
-  const bool _use_plastic_strain_rate;
+  const bool _use_total_strain_rate;
 };
