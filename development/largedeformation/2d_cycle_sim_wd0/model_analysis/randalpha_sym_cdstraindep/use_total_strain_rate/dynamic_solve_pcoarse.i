@@ -292,16 +292,16 @@
         type = ConstantAux
         variable = Cd_constant_aux
         value = 0
-        block = 1
+        block = '1 2'
         execute_on = 'INITIAL'
     []
-    [get_cd_block2]
-        type = FunctionAux
-        variable = Cd_constant_aux
-        function = decay_cd
-        block = 2
-        execute_on = 'INITIAL'
-    []
+    # [get_cd_block2]
+    #     type = FunctionAux
+    #     variable = Cd_constant_aux
+    #     function = decay_cd
+    #     block = 2
+    #     execute_on = 'INITIAL'
+    # []
     [get_cd_block3]
         type = ConstantAux
         variable = Cd_constant_aux
@@ -314,16 +314,16 @@
         type = ConstantAux
         variable = Cb_multiplier_aux
         value = 0
-        block = 1
+        block = '1 2'
         execute_on = 'INITIAL'
     []
-    [get_cb_multiplier_block2]
-        type = FunctionAux
-        variable = Cb_multiplier_aux
-        function = decay_cb_multiplier
-        block = 2
-        execute_on = 'INITIAL'
-    []
+    # [get_cb_multiplier_block2]
+    #     type = FunctionAux
+    #     variable = Cb_multiplier_aux
+    #     function = decay_cb_multiplier
+    #     block = 2
+    #     execute_on = 'INITIAL'
+    # []
     [get_cb_multiplier_block3]
         type = ConstantAux
         variable = Cb_multiplier_aux
@@ -401,28 +401,28 @@
 #related parameters in block 2, such that from block 3 (damageable)
 #to block 1 (elastic), damage accumulation rate drops, healing increases
 #to stop the rupture propagation
-[Functions]
-    [decay_cd]
-        type = SpatialDamageBreakageParameters
-        xmin = -4000
-        xmax = 4000
-        ymin = -2000
-        ymax = 2000
-        max_val = 300
-        min_val = 0
-        scale = 2e3
-    []
-    [decay_cb_multiplier]
-        type = SpatialDamageBreakageParameters
-        xmin = -4000
-        xmax = 4000
-        ymin = -2000
-        ymax = 2000
-        max_val = 500
-        min_val = 0
-        scale = 2e3
-    []
-[]
+# [Functions]
+#     [decay_cd]
+#         type = SpatialDamageBreakageParameters
+#         xmin = -4000
+#         xmax = 4000
+#         ymin = -2000
+#         ymax = 2000
+#         max_val = 300
+#         min_val = 0
+#         scale = 5e2
+#     []
+#     [decay_cb_multiplier]
+#         type = SpatialDamageBreakageParameters
+#         xmin = -4000
+#         xmax = 4000
+#         ymin = -2000
+#         ymax = 2000
+#         max_val = 500
+#         min_val = 0
+#         scale = 5e2
+#     []
+# []
 
 [Kernels]
     [dispkernel_x]
@@ -614,7 +614,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 100
+      time_step_interval = 10
       show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux Cb_multiplier_aux C1_aux C2_aux'
     [../]
     [./csv]
