@@ -22,12 +22,22 @@ InitialDamageCycleSim2D::validParams()
 {
   InputParameters params = Material::validParams();
   params.addClassDescription("Material used in defining initial damage profile");
+  params.addRequiredParam<Real>("len_of_fault", "length of the fault");
+  params.addRequiredParam<Real>("sigma", "decay rate");
+  params.addRequiredParam<Real>("peak_val", "peak value of the initial damage");
+  params.addParam<bool>("use_background_randalpha", false, "Whether to use random alpha background");
+  params.addCoupledVar("randalpha", "Random alpha auxiliary variable");
   return params;
 }
 
 InitialDamageCycleSim2D::InitialDamageCycleSim2D(const InputParameters & parameters)
   : Material(parameters),
-  _initial_damage(declareProperty<Real>("initial_damage"))
+  _initial_damage(declareProperty<Real>("initial_damage")),
+  _len_of_fault(getParam<Real>("len_of_fault")),
+  _sigma(getParam<Real>("sigma")),
+  _peak_val(getParam<Real>("peak_val")),
+  _use_background_randalpha(getParam<bool>("use_background_randalpha")),
+  _randalpha(_use_background_randalpha ? &coupledValue("randalpha") : nullptr)
 {
 }
 
@@ -45,28 +55,24 @@ InitialDamageCycleSim2D::computeQpProperties()
 
   Real alpha_o = 0;
 
-  // std::random_device rd;
-  // std::mt19937 gen(rd());
-  // std::weibull_distribution<double> wb_distribution(2.0,0.05);
-
-  // Real value = 1.0;
-  // while( value > 0.1 ){
-  //   value = wb_distribution(gen);
-  // }
-
   Real r = 0.0;
-  Real sigma = 2e2;
-  if (x_coord > -10000 and x_coord < 10000){
+  Real sigma = _sigma;
+  if (x_coord > -0.5*_len_of_fault and x_coord < 0.5*_len_of_fault ){
     r = y_coord;
-    alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+    alpha_o = std::max(_peak_val * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
-  else if (x_coord <= -10000){
-    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (-10000)) * (x_coord - (-10000)));
-    alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  else if (x_coord <= -0.5*_len_of_fault ){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (-0.5*_len_of_fault )) * (x_coord - (-0.5*_len_of_fault )));
+    alpha_o = std::max(_peak_val * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
   }
-  else if (x_coord >= 10000){
-    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (10000)) * (x_coord - (10000)));
-    alpha_o = std::max(0.7 * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  else if (x_coord >= 0.5*_len_of_fault ){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (0.5*_len_of_fault)) * (x_coord - (0.5*_len_of_fault )));
+    alpha_o = std::max(_peak_val * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  }
+
+  if (_use_background_randalpha)
+  {
+    alpha_o = std::max(alpha_o, (*_randalpha)[_qp]);
   }
 
   _initial_damage[_qp] = alpha_o; 
