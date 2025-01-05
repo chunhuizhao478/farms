@@ -29,3 +29,6 @@ run_modelanalysis_refined_re.sh 3046799.sawtoothpbs  [running]
 
 run_modelanalysis_randalpha_symCdpcoarse.sh 3118000.sawtoothpbs
 run_modelanalysis_randalpha_symCdpcoarseplastic.sh 3118162.sawtoothpbs
+run_modelanalysis_randalpha_symCdpcoarseplastic2.sh 3145474.sawtoothpbs
+run_modelanalysis_randalpha_symCdpcoarsetotalstrain.sh 3203505.sawtoothpbs [canceled, nucleation takes place at buffer zone]
+3205062.sawtoothpbs run_modelanalysis_randalpha_symCdpcoarsetotalstrain.sh

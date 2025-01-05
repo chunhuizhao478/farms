@@ -1,0 +1,2 @@
+- Solve full damage diffusion evolution (damage as primary variable)
+- Created by Chunhui Zhao, Dec 24th, 2024
