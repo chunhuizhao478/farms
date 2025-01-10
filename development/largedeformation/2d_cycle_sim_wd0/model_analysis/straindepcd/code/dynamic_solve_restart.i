@@ -688,30 +688,30 @@
     []
 []
 
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = './static_solve_out.e'
-      system_variables = 'initial_damage_aux disp_x disp_y'
-      timestep = LATEST
-      force_preaux = true
-    [../]
-[]
+# [UserObjects]
+#     [./init_sol_components]
+#       type = SolutionUserObject
+#       mesh = './static_solve_out.e'
+#       system_variables = 'initial_damage_aux disp_x disp_y'
+#       timestep = LATEST
+#       force_preaux = true
+#     [../]
+# []
 
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-[]
+# [ICs]
+#     [disp_x_ic]
+#       type = SolutionIC
+#       variable = disp_x
+#       solution_uo = init_sol_components
+#       from_variable = disp_x
+#     []
+#     [disp_y_ic]
+#       type = SolutionIC
+#       variable = disp_y
+#       solution_uo = init_sol_components
+#       from_variable = disp_y
+#     []
+# []
 
 [Problem]
     #Note that the suffix is left off in the parameter below.
