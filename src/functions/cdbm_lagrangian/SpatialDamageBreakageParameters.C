@@ -53,7 +53,7 @@ SpatialDamageBreakageParameters::value(Real /*t*/, const Point & p) const
   // 2) Inside the box => dist=0 => exp(0) = 1.0
   //    Outside => decays exponentially with distance
   //    If you prefer a steeper or gentler transition, change the exponent!
-  Real param_value = _max_val * std::exp(-dist / _scale);
+  Real param_value = std::max(_min_val, _max_val * std::exp(-dist / _scale));
 
   return param_value;  
 

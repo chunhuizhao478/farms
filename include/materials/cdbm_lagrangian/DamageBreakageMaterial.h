@@ -162,6 +162,11 @@ protected:
   const bool _use_c2_aux;
   const VariableValue * _c2_aux;
 
+  /// @brief add option to provide xi as aux variable
+  const bool _use_const_xi_aux;
+  const VariableValue * _const_xi_aux;
+  const int _const_xi_block_id;
+
   /// @brief add option to use strain-dependent cd
   const bool _use_cd_strain_dependent;
   // Add member variable for block ID (where the rate-dependent Cd applies)
@@ -169,7 +174,7 @@ protected:
   const Real _m_exponent;
   const Real _strain_rate_hat;
   const Real _cd_hat;
-  const int _block_id_applied; 
+  const int _straindep_block_id_applied; 
 
   /// @brief add option to use total strain rate
   // default is to use elastic strain rate

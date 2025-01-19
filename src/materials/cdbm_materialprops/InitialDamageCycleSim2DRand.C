@@ -131,7 +131,7 @@ InitialDamageCycleSim2DRand::computeQpProperties()
       // High damage region
       if (x_coord > -1000 && x_coord < 1000 && y_coord > -200 && y_coord < 200)
       {
-        alpha_o = 0.8;
+        alpha_o = _peak_val;
       }
       else
       {
