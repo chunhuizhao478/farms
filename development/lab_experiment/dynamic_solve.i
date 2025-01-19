@@ -6,10 +6,10 @@
         type = GeneratedMeshGenerator
         dim = 2
         xmin = 0
-        xmax = 0.002
+        xmax = 0.006
         ymin = 0
         ymax = 0.05
-        nx = 10
+        nx = 30
         ny = 250
         subdomain_ids = 1
         elem_type = QUAD4
@@ -19,31 +19,31 @@
         input = msh
         location = inside
         bottom_left = '0 0 0'
-        top_right = '0.0002 0.05 0'
+        top_right = '0.002 0.05 0'
         block_id = 2
     []
     [./right_elastic_block]
         type = SubdomainBoundingBoxGenerator
         input = left_elastic_block
         location = inside
-        bottom_left = '0.0018 0 0'
-        top_right = '0.002 0.05 0'
+        bottom_left = '0.004 0 0'
+        top_right = '0.006 0.05 0'
         block_id = 3
     []
     [./top_elastic_block]
         type = SubdomainBoundingBoxGenerator
         input = right_elastic_block
         location = inside
-        bottom_left = '0.0002 0.0474 0'
-        top_right = '0.0018 0.05 0'
+        bottom_left = '0.002 0.0474 0'
+        top_right = '0.004 0.05 0'
         block_id = 4
     []
     [./bot_elastic_block]
         type = SubdomainBoundingBoxGenerator
         input = top_elastic_block
         location = inside
-        bottom_left = '0.0002 0 0'
-        top_right = '0.0018 0.0026 0'
+        bottom_left = '0.002 0 0'
+        top_right = '0.004 0.0026 0'
         block_id = 5
     []
 []
@@ -242,7 +242,7 @@
     [get_cd_block1]
         type = ConstantAux
         variable = Cd_constant_aux
-        value = 10
+        value = 300
         block = 1
         execute_on = 'INITIAL'
     []    
@@ -257,7 +257,7 @@
     [get_cb_multiplier_block1]
         type = ConstantAux
         variable = Cb_multiplier_aux
-        value = 100
+        value = 500
         block = 1
         execute_on = 'INITIAL'
     []

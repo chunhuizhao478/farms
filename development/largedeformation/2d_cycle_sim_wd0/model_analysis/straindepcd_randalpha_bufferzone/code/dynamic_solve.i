@@ -186,6 +186,11 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    #
+    [strain_invariant_ratio_const_aux]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]

@@ -152,10 +152,10 @@
     #     family = MONOMIAL 
     # []
     #
-    [timeintegratorflag]
-        order = SECOND
-        family = MONOMIAL
-    []
+    # [timeintegratorflag]
+    #     order = SECOND
+    #     family = MONOMIAL
+    # []
     #
     [Cd_constant_aux]
         order = CONSTANT
@@ -258,12 +258,12 @@
     #     execute_on = 'timestep_end'
     # []    
     # #
-    [get_flag]
-        type = MaterialRealAux
-        variable = timeintegratorflag
-        property = flag
-        execute_on = 'timestep_end'
-    []
+    # [get_flag]
+    #     type = MaterialRealAux
+    #     variable = timeintegratorflag
+    #     property = flag
+    #     execute_on = 'timestep_end'
+    # []
     #block 1: inner block where damage is activated
     #block 2: outer block where damage is not activated
     #cd constant
@@ -341,12 +341,12 @@
         block = 2
         execute_on = 'INITIAL'
     []
-    # [get_initial_damage]
-    #     type = SolutionAux
-    #     variable = initial_damage_aux
-    #     solution = init_sol_components
-    #     from_variable = initial_damage_aux
-    # []
+    [get_initial_damage]
+        type = SolutionAux
+        variable = initial_damage_aux
+        solution = init_sol_components
+        from_variable = initial_damage_aux
+    []
     #get rate dependent Cd
     # [get_cd_rate_dependent]
     #     type = MaterialRealAux
@@ -397,13 +397,13 @@
         type = StiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 0.5
+        zeta = 2.0
     []
     [damping_y]
         type = StiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 0.5
+        zeta = 2.0
     []    
 []
 
@@ -446,47 +446,35 @@
         outputs = exodus
         # block = '2'
     []
-    [initial_damage_surround]
-        type = InitialDamageCycleSim2D
-        len_of_fault = 15000
-        sigma = 5e2
-        peak_val = 0.7
-        output_properties = 'initial_damage'      
+    [define_initial_damage_matprop]
+        type = ParsedMaterial
+        property_name = initial_damage
+        coupled_variables = 'initial_damage_aux'
+        expression = 'initial_damage_aux'
         outputs = exodus
     []
-    # [define_initial_damage_matprop]
-    #     type = ParsedMaterial
-    #     property_name = initial_damage
-    #     coupled_variables = 'initial_damage_aux'
-    #     expression = 'initial_damage_aux'
-    #     outputs = exodus
-    # []
     #
-    [forcedampingflag]
-        type = ForceDampingFlag
-        vel_maximum_threshold = 1e-2
-        vel_minimum_threshold = 1e-6
-        max_vel_x = maxvelx
-        max_vel_y = maxvely
-    []
+    # [forcedampingflag]
+    #     type = ForceDampingFlag
+    #     vel_maximum_threshold = 1e-2
+    #     vel_minimum_threshold = 1e-6
+    #     max_vel_x = maxvelx
+    #     max_vel_y = maxvely
+    # []
 []  
 
 [Functions]
-    # [func_top_bc]
-    #     type = ParsedFunction
-    #     expression = 'if (t>dt, 1e-8 * t, 0)'
-    #     symbol_names = 'dt'
-    #     symbol_values = '1e-2'
-    # []
-    # [func_bottom_bc]
-    #     type = ParsedFunction
-    #     expression = 'if (t>dt, -1e-8 * t, 0)'
-    #     symbol_names = 'dt'
-    #     symbol_values = '1e-2'
-    # []
     [func_top_bc]
         type = ParsedFunction
-        expression = '1e-8 * (t)'
+        expression = 'if (t>dt, 1e-8 * t, 0)'
+        symbol_names = 'dt'
+        symbol_values = '1e-2'
+    []
+    [func_bottom_bc]
+        type = ParsedFunction
+        expression = 'if (t>dt, -1e-8 * t, 0)'
+        symbol_names = 'dt'
+        symbol_values = '1e-2'
     []
 []
 
@@ -502,7 +490,7 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = 8376318968.665965
+    start_time = -1e-12
     end_time = 1e100
     # num_steps = 10
     l_max_its = 100
@@ -529,28 +517,28 @@
         growth_factor = 1.5
         max_time_step_bound = 1e10
     []
-    [./TimeIntegrator]
-        type = FarmsNewmarkBeta
-        beta = 0.25
-        gamma = 0.5
-        factor = 0.9
-        threshold = 1e-3
-    [../]
     # [./TimeIntegrator]
-    #     type = NewmarkBeta
+    #     type = FarmsNewmarkBeta
     #     beta = 0.25
     #     gamma = 0.5
+    #     factor = 0.9
+    #     threshold = 1e-3
     # [../]
+    [./TimeIntegrator]
+        type = NewmarkBeta
+        beta = 0.25
+        gamma = 0.5
+    [../]
 []
 
-# [Controls] # turns off inertial terms for the SECOND time step
-#   [./period0]
-#     type = TimePeriod
-#     disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
-#     start_time = -1e-12
-#     end_time = 1e-2 # dt used in the simulation
-#   []
-# [../]
+[Controls] # turns off inertial terms for the SECOND time step
+  [./period0]
+    type = TimePeriod
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+    start_time = -1e-12
+    end_time = 1e-2 # dt used in the simulation
+  []
+[../]
 
 [Postprocessors]
     [./_dt]
@@ -565,11 +553,11 @@
         variable = vel_y
     [../]
     #must be named "flag", this will be called in FarmsNewmarkBeta
-    [flag]
-        type = ElementExtremeValue
-        variable = timeintegratorflag
-        force_postaux = true
-    []
+    # [flag]
+    #     type = ElementExtremeValue
+    #     variable = timeintegratorflag
+    #     force_postaux = true
+    # []
 [../]
 
 [Outputs]
@@ -696,32 +684,27 @@
     []
 []
 
-# [UserObjects]
-#     [./init_sol_components]
-#       type = SolutionUserObject
-#       mesh = './static_solve_out.e'
-#       system_variables = 'initial_damage_aux disp_x disp_y'
-#       timestep = LATEST
-#       force_preaux = true
-#     [../]
-# []
+[UserObjects]
+    [./init_sol_components]
+      type = SolutionUserObject
+      mesh = './static_solve_out.e'
+      system_variables = 'initial_damage_aux disp_x disp_y'
+      timestep = LATEST
+      force_preaux = true
+    [../]
+[]
 
-# [ICs]
-#     [disp_x_ic]
-#       type = SolutionIC
-#       variable = disp_x
-#       solution_uo = init_sol_components
-#       from_variable = disp_x
-#     []
-#     [disp_y_ic]
-#       type = SolutionIC
-#       variable = disp_y
-#       solution_uo = init_sol_components
-#       from_variable = disp_y
-#     []
-# []
-
-[Problem]
-    #Note that the suffix is left off in the parameter below.
-    restart_file_base = dynamic_solve_out_cp/LATEST  # You may also use a specific number here
+[ICs]
+    [disp_x_ic]
+      type = SolutionIC
+      variable = disp_x
+      solution_uo = init_sol_components
+      from_variable = disp_x
+    []
+    [disp_y_ic]
+      type = SolutionIC
+      variable = disp_y
+      solution_uo = init_sol_components
+      from_variable = disp_y
+    []
 []
