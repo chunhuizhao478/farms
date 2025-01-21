@@ -30,7 +30,7 @@ InitialShearStressTPV2053d::value(Real /*t*/, const Point & p) const
   Real T1_o = 0.0;
     
     //tpv205
-    if ((x_coord<=(0.0+1.5e3))&&(x_coord>=(0.0-1.5e3))&& (z_coord<=(-7.5e3+1.5e3))&&(z_coord>=(-7.5e3-1.5e3)))
+    if ((x_coord<=(0.0+1.6e3))&&(x_coord>=(0.0-1.6e3))&& (z_coord<=(-7.5e3+1.6e3))&&(z_coord>=(-7.5e3-1.6e3)))
     {
         T1_o = 81.6e6;
     }

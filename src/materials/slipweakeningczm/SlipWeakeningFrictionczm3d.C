@@ -29,6 +29,9 @@ SlipWeakeningFrictionczm3d::validParams()
   params.addRequiredCoupledVar("disp_slipweakening_x", "displacement in x dir");
   params.addRequiredCoupledVar("disp_slipweakening_y", "displacement in y dir");
   params.addRequiredCoupledVar("disp_slipweakening_z", "displacement in z dir");
+  params.addRequiredCoupledVar("vel_slipweakening_x","velocity in x dir");
+  params.addRequiredCoupledVar("vel_slipweakening_y","velocity in y dir");
+  params.addRequiredCoupledVar("vel_slipweakening_z","velocity in z dir");
   params.addRequiredCoupledVar("reaction_slipweakening_x", "reaction in x dir");
   params.addRequiredCoupledVar("reaction_slipweakening_y", "reaction in y dir");
   params.addRequiredCoupledVar("reaction_slipweakening_z", "reaction in z dir");
@@ -52,6 +55,12 @@ SlipWeakeningFrictionczm3d::SlipWeakeningFrictionczm3d(const InputParameters & p
     _disp_slipweakening_neighbor_y(coupledNeighborValue("disp_slipweakening_y")),
     _disp_slipweakening_z(coupledValue("disp_slipweakening_z")),
     _disp_slipweakening_neighbor_z(coupledNeighborValue("disp_slipweakening_z")),
+    _vel_slipweakening_x(coupledValue("vel_slipweakening_x")),
+    _vel_slipweakening_neighbor_x(coupledNeighborValue("vel_slipweakening_x")),
+    _vel_slipweakening_y(coupledValue("vel_slipweakening_y")),
+    _vel_slipweakening_neighbor_y(coupledNeighborValue("vel_slipweakening_y")),
+    _vel_slipweakening_z(coupledValue("vel_slipweakening_z")),
+    _vel_slipweakening_neighbor_z(coupledNeighborValue("vel_slipweakening_z")),
     _reaction_slipweakening_x(coupledValue("reaction_slipweakening_x")),
     _reaction_slipweakening_neighbor_x(coupledNeighborValue("reaction_slipweakening_x")),
     _reaction_slipweakening_y(coupledValue("reaction_slipweakening_y")),
@@ -84,15 +93,10 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
       _disp_slipweakening_y[_qp] - _disp_slipweakening_neighbor_y[_qp],
       _disp_slipweakening_z[_qp] - _disp_slipweakening_neighbor_z[_qp]);
 
-  // Global Displacement Jump Old
-  RealVectorValue displacement_jump_old_global(
-      _disp_slipweakening_x_old[_qp] - _disp_slipweakening_neighbor_x_old[_qp],
-      _disp_slipweakening_y_old[_qp] - _disp_slipweakening_neighbor_y_old[_qp],
-      _disp_slipweakening_z_old[_qp] - _disp_slipweakening_neighbor_z_old[_qp]);
-
   // Global Displacement Jump Rate
-  RealVectorValue displacement_jump_rate_global =
-      (displacement_jump_global - displacement_jump_old_global) * (1 / _dt);
+  RealVectorValue displacement_jump_rate_global(_vel_slipweakening_x[_qp]-_vel_slipweakening_neighbor_x[_qp],
+                                                _vel_slipweakening_y[_qp]-_vel_slipweakening_neighbor_y[_qp],
+                                                _vel_slipweakening_z[_qp]-_vel_slipweakening_neighbor_z[_qp]);
 
   // Local Displacement Jump / Displacement Jump Rate
   RealVectorValue displacement_jump = _rot[_qp].transpose() * displacement_jump_global;
@@ -100,6 +104,8 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
 
   // n is along normal direction; t is along tangential direction; d is along dip direction
   Real displacement_jump_n = displacement_jump(0);
+  Real displacement_jump_t = displacement_jump(1);
+  Real displacement_jump_d = displacement_jump(2);
   Real displacement_jump_rate_n = displacement_jump_rate(0);
   Real displacement_jump_rate_t = displacement_jump_rate(1);
   Real displacement_jump_rate_d = displacement_jump_rate(2);
@@ -127,7 +133,7 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
   Real R_minus_local_d = R_minus_local(2);
 
   // Compute node mass
-  Real M = _density[_qp] * _len * _len * _len / 2;
+  Real M = _density[_qp] * _len * _len * _len / 2.0;
 
   // Compute T1_o, T2_o, T3_o for current qp
   Real T1_o = _ini_shear_sts[_qp];
@@ -153,9 +159,10 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
   }
 
   // Compute friction strength
-  if (std::norm(displacement_jump) < _Dc)
+  Real slip_total = std::sqrt(displacement_jump_t*displacement_jump_t+displacement_jump_d*displacement_jump_d);
+  if (slip_total < _Dc)
   {
-    tau_f = (_mu_s[_qp] - (_mu_s[_qp] - _mu_d) * std::norm(displacement_jump) / _Dc) *
+    tau_f = (_mu_s[_qp] - (_mu_s[_qp] - _mu_d) * slip_total / _Dc) *
             (-T2); // square for shear component
   }
   else
