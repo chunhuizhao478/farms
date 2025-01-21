@@ -9,13 +9,13 @@
       dim = 3
       xmin = -22400
       xmax = 22400
-      ymin = -22000
-      ymax = 0
-      zmin = -14000
-      zmax = 14000
+      ymin = -14000
+      ymax = 14000
+      zmin = -22000
+      zmax = 0
       nx = 224
-      ny = 110
-      nz = 140
+      ny = 140
+      nz = 110
       subdomain_ids = 1
     []
     [./new_block_1]
