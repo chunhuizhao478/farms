@@ -347,12 +347,12 @@
         block = '2'
         execute_on = 'INITIAL'
     []
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_aux
-        solution = init_sol_components
-        from_variable = initial_damage_aux
-    []
+    # [get_initial_damage]
+    #     type = SolutionAux
+    #     variable = initial_damage_aux
+    #     solution = init_sol_components
+    #     from_variable = initial_damage_aux
+    # []
     #strain invariant ratio xi
     #the constant strain invariant ratio xi is only activated in the buffer block
     #in the material object, the block where this constant xi is activated must be speficied
