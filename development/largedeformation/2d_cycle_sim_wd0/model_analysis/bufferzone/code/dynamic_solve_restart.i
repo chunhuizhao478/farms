@@ -452,13 +452,21 @@
         outputs = exodus
         # block = '2'
     []
-    [define_initial_damage_matprop]
-        type = ParsedMaterial
-        property_name = initial_damage
-        coupled_variables = 'initial_damage_aux'
-        expression = 'initial_damage_aux'
+    [initial_damage_surround]
+        type = InitialDamageCycleSim2D
+        len_of_fault = 15000
+        sigma = 5e2
+        peak_val = 0.7
+        output_properties = 'initial_damage'      
         outputs = exodus
     []
+    # [define_initial_damage_matprop]
+    #     type = ParsedMaterial
+    #     property_name = initial_damage
+    #     coupled_variables = 'initial_damage_aux'
+    #     expression = 'initial_damage_aux'
+    #     outputs = exodus
+    # []
     #
     # [forcedampingflag]
     #     type = ForceDampingFlag
