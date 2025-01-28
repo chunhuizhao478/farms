@@ -82,9 +82,9 @@
     chi = 0.7
 
     #add strain rate dependent Cd option
-    # m_exponent = 0.85
-    # strain_rate_hat = 1e-4
-    # cd_hat = 300 #incresed from 1 to 100
+    m_exponent = 0.85
+    strain_rate_hat = 1e-4
+    cd_hat = 300 #incresed from 1 to 100
     
 []
 
@@ -179,6 +179,15 @@
     []
     #
     [strain_invariant_ratio_const_aux]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #for strain rate dependent Cd
+    [Cd_rate_dependent_aux]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [strain_dir0_positive_aux]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -363,6 +372,19 @@
         block = '1 2'
         execute_on = 'INITIAL'
     []
+    #get rate dependent Cd
+    [get_cd_rate_dependent]
+        type = MaterialRealAux
+        variable = Cd_rate_dependent_aux
+        property = Cd_rate_dependent
+        execute_on = 'timestep_end'
+    []
+    [get_strain_dir0_positive]
+        type = MaterialRealAux
+        variable = strain_dir0_positive_aux
+        property = strain_dir0_positive
+        execute_on = 'timestep_end'
+    []
 []
 
 [Kernels]
@@ -438,9 +460,9 @@
         C1_aux = C1_aux
         use_c2_aux = true
         C2_aux = C2_aux
-        # use_cd_strain_dependent = true
-        # use_total_strain_rate = true
-        # block_id_applied = 1
+        use_cd_strain_dependent = true
+        use_total_strain_rate = true
+        straindep_block_id_applied = 1
         use_const_xi_aux = true
         const_xi_aux = strain_invariant_ratio_const_aux
         const_xi_block_id = 3
@@ -514,7 +536,7 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = 8376319166.877851
+    start_time = 8376317078.523933
     end_time = 1e100
     # num_steps = 10
     l_max_its = 100
@@ -735,5 +757,5 @@
 
 [Problem]
     #Note that the suffix is left off in the parameter below.
-    restart_file_base = dynamic_solve_out_cp/LATEST  # You may also use a specific number here
+    restart_file_base = dynamic_solve_straindep_out_cp/LATEST  # You may also use a specific number here
 []
