@@ -173,7 +173,7 @@
     [initial_Cd_surround]
         type = InitialCdCycleSim2D
         len_of_fault = 5000
-        sigma = 5e2
+        sigma = 2.5e2
         peak_val = 300
         output_properties = 'initial_cd'      
         outputs = exodus
@@ -199,10 +199,10 @@
     nl_rel_tol = 1e-8
     nl_max_its = 20
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres     hypre  True'
-    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    # petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
+    # petsc_options_value = 'gmres     hypre  True'
+    petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
     # petsc_options_value = '101                asm      lu'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
