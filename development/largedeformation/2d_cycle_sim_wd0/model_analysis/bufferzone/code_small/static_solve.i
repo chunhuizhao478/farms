@@ -121,11 +121,11 @@
     #     function = node_randalpha_o
     #     execute_on = 'INITIAL'
     # [] 
-    [get_initial_cd]
-        type = MaterialRealAux
-        variable = initial_cd_aux
-        property = initial_cd
-    []
+    # [get_initial_cd]
+    #     type = MaterialRealAux
+    #     variable = initial_cd_aux
+    #     property = initial_cd
+    # []
 []
 
 [Kernels]
@@ -170,14 +170,14 @@
         output_properties = 'initial_damage'      
         outputs = exodus
     []
-    [initial_Cd_surround]
-        type = InitialCdCycleSim2D
-        len_of_fault = 5000
-        sigma = 2.5e2
-        peak_val = 300
-        output_properties = 'initial_cd'      
-        outputs = exodus
-    []
+    # [initial_Cd_surround]
+    #     type = InitialCdCycleSim2D
+    #     len_of_fault = 5000
+    #     sigma = 5e2
+    #     peak_val = 300
+    #     output_properties = 'initial_cd'      
+    #     outputs = exodus
+    # []
 []  
 
 [Preconditioning]

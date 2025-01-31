@@ -264,28 +264,42 @@
     #block 2: outer block where damage is not activated
     #block 3: buffer block where damage/breakage accumulation is decreased, using xi only
     #cd constant
+    # [get_cd_block13]
+    #     type = SolutionAux
+    #     variable = Cd_constant_aux
+    #     solution = init_sol_components
+    #     from_variable = initial_cd_aux
+    #     block = '1'
+    #     execute_on = 'INITIAL'
+    # []
+    # [get_cd_block23]
+    #     type = SolutionAux
+    #     variable = Cd_constant_aux
+    #     solution = init_sol_components
+    #     from_variable = initial_cd_aux
+    #     block = '2'
+    #     execute_on = 'INITIAL'
+    # [] 
     [get_cd_block13]
-        type = SolutionAux
+        type = ConstantAux
         variable = Cd_constant_aux
-        solution = init_sol_components
-        from_variable = initial_cd_aux
-        block = '1 3'
+        value = 300
+        block = '1'
         execute_on = 'INITIAL'
     []
     [get_cd_block23]
-        type = SolutionAux
+        type = ConstantAux
         variable = Cd_constant_aux
-        solution = init_sol_components
-        from_variable = initial_cd_aux
+        value = 0
         block = '2'
         execute_on = 'INITIAL'
-    []    
+    []   
     #cb multiplier
     [get_cb_multiplier_block13]
         type = ConstantAux
         variable = Cb_multiplier_aux
         value = 500
-        block = '1 3'
+        block = '1'
         execute_on = 'INITIAL'
     []
     [get_cb_multiplier_block2]
@@ -300,7 +314,7 @@
         type = ConstantAux
         variable = Cbh_constant_aux
         value = 1e4
-        block = '1 3'
+        block = '1'
         execute_on = 'INITIAL'
     []
     [get_cbh_constant_block2]
@@ -315,7 +329,7 @@
         type = ConstantAux
         variable = C1_aux
         value = 300
-        block = '1 3'
+        block = '1'
         execute_on = 'INITIAL'
     []
     [get_c1_block2]
@@ -330,7 +344,7 @@
         type = ConstantAux
         variable = C2_aux
         value = 0.05
-        block = '1 3'
+        block = '1'
         execute_on = 'INITIAL'
     []
     [get_c2_block2]
@@ -349,22 +363,22 @@
     #strain invariant ratio xi
     #the constant strain invariant ratio xi is only activated in the buffer block
     #in the material object, the block where this constant xi is activated must be speficied
-    # [get_xi_block3]
-    #     type = ConstantAux
-    #     variable = strain_invariant_ratio_const_aux
-    #     value = -1.7
-    #     block = '3'
-    #     execute_on = 'INITIAL'
-    # []
-    # #don't apply this in the material object, as block 1
-    # #xi needs to be actually calculated
-    # [get_xi_block12]
-    #     type = ConstantAux
-    #     variable = strain_invariant_ratio_const_aux
-    #     value = 0
-    #     block = '1 2'
-    #     execute_on = 'INITIAL'
-    # []
+    [get_xi_block3]
+        type = ConstantAux
+        variable = strain_invariant_ratio_const_aux
+        value = -1.7
+        block = '2'
+        execute_on = 'INITIAL'
+    []
+    #don't apply this in the material object, as block 1
+    #xi needs to be actually calculated
+    [get_xi_block12]
+        type = ConstantAux
+        variable = strain_invariant_ratio_const_aux
+        value = 0
+        block = '1'
+        execute_on = 'INITIAL'
+    []
 []
 
 [Kernels]
@@ -444,9 +458,9 @@
         # use_cd_strain_dependent = true
         # use_total_strain_rate = true
         # block_id_applied = 1
-        # use_const_xi_aux = true
-        # const_xi_aux = strain_invariant_ratio_const_aux
-        # const_xi_block_id = 3
+        use_const_xi_aux = true
+        const_xi_aux = strain_invariant_ratio_const_aux
+        const_xi_block_id = 2
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2
@@ -576,7 +590,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 100
+      time_step_interval = 20
     #   show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
     [../]
     [./csv]
@@ -701,7 +715,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = './static_solve_out.e'
-      system_variables = 'initial_damage_aux initial_cd_aux disp_x disp_y'
+      system_variables = 'initial_damage_aux disp_x disp_y'
       timestep = LATEST
       force_preaux = true
     [../]

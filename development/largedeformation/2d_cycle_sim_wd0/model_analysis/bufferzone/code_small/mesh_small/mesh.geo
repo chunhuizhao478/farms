@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 // Define mesh sizes
-lc_fault = 100;
+lc_fault = 50;
 lc = 5e3;
 
 // Define the big square (2D)
@@ -11,16 +11,16 @@ big_ymin = -30000;
 big_ymax = 30000;
 
 // Define the small box (2D)
-small_xmin = -4000;
-small_xmax = 4000;
-small_ymin = -2000;
-small_ymax = 2000;
+small_xmin = -2400;
+small_xmax = 2400;
+small_ymin = -1000;
+small_ymax = 1000;
 
 // Define the initial damage box (2D)
-smalld_xmin = -5000;
-smalld_xmax = 5000;
-smalld_ymin = -3000;
-smalld_ymax = 3000;
+// smalld_xmin = -1500;
+// smalld_xmax = 1500;
+// smalld_ymin = -1500;
+// smalld_ymax = 1500;
 
 // Define points for the big square
 Point(1) = {big_xmin, big_ymin, 0, lc};
@@ -47,16 +47,16 @@ Line(7) = {7, 8};
 Line(8) = {8, 5};
 
 // Define points for the buffer zone
-Point(9) = {smalld_xmin, smalld_ymin, 0, lc_fault};
-Point(10) = {smalld_xmax, smalld_ymin, 0, lc_fault};
-Point(11) = {smalld_xmax, smalld_ymax, 0, lc_fault};
-Point(12) = {smalld_xmin, smalld_ymax, 0, lc_fault};
+// Point(9) = {smalld_xmin, smalld_ymin, 0, lc_fault};
+// Point(10) = {smalld_xmax, smalld_ymin, 0, lc_fault};
+// Point(11) = {smalld_xmax, smalld_ymax, 0, lc_fault};
+// Point(12) = {smalld_xmin, smalld_ymax, 0, lc_fault};
 
 //Define lines for the small box
-Line(9) = {9, 10};
-Line(10) = {10,11};
-Line(11) = {11,12};
-Line(12) = {12, 9};
+// Line(9) = {9, 10};
+// Line(10) = {10,11};
+// Line(11) = {11,12};
+// Line(12) = {12, 9};
 
 // Define points for the nucleation patch
 // Point(13) = {nucl_xmin, nucl_ymin, 0, lc_fault};
@@ -73,17 +73,17 @@ Line(12) = {12, 9};
 // Create line loops
 Line Loop(1) = {1, 2, 3, 4};  // Big square
 Line Loop(2) = {5, 6, 7, 8};  // Small box
-Line Loop(3) = {9,10,11,12};  // Buffer Zone
+// Line Loop(3) = {9,10,11,12};  // Buffer Zone
 // Line Loop(4) = {13,14,15,16};  // Nucleation Patch
 
 // Create surfaces for the big square and small box
 Plane Surface(1) = {1};  // Big square surface
 Plane Surface(2) = {2};  // Small box surface
-Plane Surface(3) = {3};  // Small box surface
+// Plane Surface(3) = {3};  // Small box surface
 // Plane Surface(4) = {4};  // Small box surface
 
 // Boolean operation to fragment all surfaces (assuming Surface IDs are 1 and 2)
-BooleanFragments{ Surface{1,2,3}; Delete; }{}
+BooleanFragments{ Surface{1,2}; Delete; }{}
 
 // Field 1: Mesh size inside the fault zone
 Field[1] = Box;
