@@ -472,8 +472,6 @@
         len_of_fault = 15000
         sigma = 5e2
         peak_val = 0.7
-        use_background_randalpha = true
-        randalpha = correlated_randalpha_o
         output_properties = 'initial_damage'      
         outputs = exodus
     []
