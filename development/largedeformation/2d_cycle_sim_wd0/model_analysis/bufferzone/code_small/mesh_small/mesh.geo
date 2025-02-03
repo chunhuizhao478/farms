@@ -11,8 +11,8 @@ big_ymin = -30000;
 big_ymax = 30000;
 
 // Define the small box (2D)
-small_xmin = -2400;
-small_xmax = 2400;
+small_xmin = -3000;
+small_xmax = 3000;
 small_ymin = -1000;
 small_ymax = 1000;
 
