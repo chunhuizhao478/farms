@@ -162,6 +162,10 @@ protected:
   const bool _use_c2_aux;
   const VariableValue * _c2_aux;
 
+  /// @brief add option to provide cg as aux variable
+  const bool _use_cg_aux;
+  const VariableValue * _cg_aux;
+
   /// @brief add option to provide xi as aux variable
   const bool _use_const_xi_aux;
   const VariableValue * _const_xi_aux;
@@ -179,4 +183,8 @@ protected:
   /// @brief add option to use total strain rate
   // default is to use elastic strain rate
   const bool _use_total_strain_rate;
+
+  /// @brief add option to use damage perturbation
+  const bool _use_damage_perturb;
+  const MaterialProperty<Real> * _damage_perturb;
 };

@@ -33,7 +33,7 @@ DamageBreakageMaterial::validParams()
   params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
   params.addParam<Real>( "CdCb_multiplier", -1, "multiplier between Cd and Cb");
   params.addParam<Real>(    "CBH_constant", -1, "constant CBH value");
-  params.addRequiredParam<Real>(             "C_g", "compliance or fluidity of the fine grain granular material");
+  params.addParam<Real>(             "C_g", -1, "compliance or fluidity of the fine grain granular material");
   params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
   params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");
   params.addParam<bool>("use_xi0_aux", false, "Whether to use xi_0 from aux variable");
@@ -52,6 +52,8 @@ DamageBreakageMaterial::validParams()
   params.addCoupledVar("C1_aux", "AuxVariable for C1 block-restricted");
   params.addParam<bool>("use_c2_aux", false, "Whether to use C2 from aux variable");
   params.addCoupledVar("C2_aux", "AuxVariable for C2 block-restricted");
+  params.addParam<bool>("use_cg_aux", false, "Whether to use Cg from aux variable");
+  params.addCoupledVar("Cg_aux", "AuxVariable for Cg block-restricted");
   params.addParam<bool>("use_const_xi_aux", false, "Whether to use xi_0 from aux variable");
   params.addCoupledVar("const_xi_aux", "AuxVariable for xi");
   params.addParam<int>("const_xi_block_id", -1, "Block ID to apply the constant xi, currently it has to be one block");
@@ -61,6 +63,10 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
   params.addParam<int>("straindep_block_id_applied", -1, "Block ID to apply the rate-dependent Cd, currently it has to be one block");
   params.addParam<bool>("use_total_strain_rate", false, "Whether to use total strain rate, default is to use elastic strain rate");
+  params.addParam<bool>("use_damage_perturb", false, "Flag to use damage perturbation to generate dynamic rupture event");
+  params.addParam<MaterialPropertyName>("damage_perturb", "",
+                                        "Coupled material property for damage perturbation. "
+                                        "Must be specified if use_damage_perturb is true.");
   return params;
 }
 
@@ -130,6 +136,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _c1_aux(_use_c1_aux ? &coupledValue("C1_aux") : nullptr),
   _use_c2_aux(getParam<bool>("use_c2_aux")),
   _c2_aux(_use_c2_aux ? &coupledValue("C2_aux") : nullptr),
+  _use_cg_aux(getParam<bool>("use_cg_aux")),
+  _cg_aux(_use_cg_aux ? &coupledValue("Cg_aux") : nullptr),
   _use_const_xi_aux(getParam<bool>("use_const_xi_aux")),
   _const_xi_aux(_use_const_xi_aux ? &coupledValue("const_xi_aux") : nullptr),
   _const_xi_block_id(getParam<int>("const_xi_block_id")),
@@ -139,7 +147,9 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
   _straindep_block_id_applied(getParam<int>("straindep_block_id_applied")),
-  _use_total_strain_rate(getParam<bool>("use_total_strain_rate"))
+  _use_total_strain_rate(getParam<bool>("use_total_strain_rate")),
+  _use_damage_perturb(getParam<bool>("use_damage_perturb")),
+  _damage_perturb(_use_damage_perturb ? &getMaterialProperty<Real>("damage_perturb") : nullptr)
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -173,6 +183,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Global Param C1 must not be set when use_c1_aux is set to true");
   if (_C2 > 0 && _use_c2_aux)
     mooseError("Global Param C2 must not be set when use_c2_aux is set to true");
+  if (_C_g_value > 0 && _use_cg_aux)
+    mooseError("Global Param Cg must not be set when use_cg_aux is set to true");
   if (_CdCb_multiplier > 0 && _use_cb_multiplier_aux)
     mooseError("Global Param CdCb_multiplier must not be set when use_cb_multiplier_aux is set to true");
   if (_CBH_constant > 0 && _use_cbh_aux)
@@ -187,6 +199,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("block_id_applied must be set to a positive value when use_cd_strain_dependent is set to true");
   if ((_use_const_xi_aux) && (_const_xi_block_id < 0))
     mooseError("const_xi_block_id must be set to a positive value when use_const_xi_aux is set to true");
+  if (_use_damage_perturb && !parameters.isParamSetByUser("damage_perturb"))
+    mooseError("Must specify damage_perturb when use_damage_perturb = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -220,6 +234,9 @@ DamageBreakageMaterial::initQpStatefulProperties()
   /* define Cg m1 m2 */
   _m1[_qp] = _m1_value;
   _m2[_qp] = _m2_value;
+
+  // Get cg value
+  const Real _C_g_value = _use_cg_aux ? (*_cg_aux)[_qp] : _C_g_value;
   _C_g[_qp] = _C_g_value;
 
   //initialize maximum principal strain 
@@ -249,6 +266,9 @@ DamageBreakageMaterial::computeQpProperties()
   /* define Cg m1 m2 */
   _m1[_qp] = _m1_value;
   _m2[_qp] = _m2_value;
+
+  // Get cg value
+  const Real _C_g_value = _use_cg_aux ? (*_cg_aux)[_qp] : _C_g_value;
   _C_g[_qp] = _C_g_value;
 
   // Get xi_0 value
@@ -330,14 +350,20 @@ DamageBreakageMaterial::updatedamage()
   //update alpha at current time
   Real alpha_damagedvar = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
 
+  //check below initial damage (fix initial damage)
+  if ( alpha_damagedvar < _initial_damage[_qp] ){ alpha_damagedvar = _initial_damage[_qp]; }
+  else{}
+
+  //add damage perturbation
+  if (_use_damage_perturb)
+  {
+    alpha_damagedvar += (*_damage_perturb)[_qp]; 
+  }
+
   //check alpha within range
   if ( alpha_damagedvar < 0 ){ alpha_damagedvar = 0.0; }
   else if ( alpha_damagedvar > 1 ){ alpha_damagedvar = 1.0; }
   else{} 
-
-  //check below initial damage (fix initial damage)
-  if ( alpha_damagedvar < _initial_damage[_qp] ){ alpha_damagedvar = _initial_damage[_qp]; }
-  else{}
 
   _alpha_damagedvar[_qp] = alpha_damagedvar;
 
