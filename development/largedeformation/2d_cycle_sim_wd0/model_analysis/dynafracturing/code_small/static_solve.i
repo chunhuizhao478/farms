@@ -164,11 +164,11 @@
     [define_damage_perturb]
         type = DamagePerturbationSquare2D
         nucl_center = '0 0'
-        e_damage = 0.2
-        length = 2000
+        e_damage = 0.3
+        length = 8000
         thickness = 200
         duration = 1.0
-        sigma = 333.3
+        sigma = 1318.02
     []
 []  
 
@@ -226,12 +226,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 280e6
+            factor = 250e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 280e6
+            factor = 250e6
             displacements = 'disp_x disp_y'
         []     
     []        
