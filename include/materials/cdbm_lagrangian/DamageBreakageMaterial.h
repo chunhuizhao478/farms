@@ -184,4 +184,12 @@ protected:
   // default is to use elastic strain rate
   const bool _use_total_strain_rate;
 
+  /// @brief add option to use pore pressure to decrease mean stress
+  // pore pressure is saved as material property and will be used 
+  // in ComputeLagrangianDamageBreakageStressPK2.C
+  const bool _use_pore_pressure;
+  const VariableValue * _pore_pressure; 
+  MaterialProperty<Real> & _pore_pressure_mat;
+
+
 };

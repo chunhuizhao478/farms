@@ -104,4 +104,7 @@ protected:
   const MaterialProperty<Real> & _a3;  
   /// dimension of the problem
   const unsigned int _dim;
+
+  /// material property: pore pressure
+  const MaterialProperty<Real> & _pore_pressure_mat;
 };

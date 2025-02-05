@@ -49,7 +49,8 @@ ComputeLagrangianDamageBreakageStressPK2::ComputeLagrangianDamageBreakageStressP
   _a1(getMaterialProperty<Real>("a1")),
   _a2(getMaterialProperty<Real>("a2")),
   _a3(getMaterialProperty<Real>("a3")),
-  _dim(_mesh.dimension())
+  _dim(_mesh.dimension()),
+  _pore_pressure_mat(getMaterialProperty<Real>("pore_pressure_mat"))
 {
 }
 
@@ -267,6 +268,9 @@ ComputeLagrangianDamageBreakageStressPK2::computeQpPK2Stress()
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
+
+  //modify mean stress based on pore pressure
+  sigma_total -= _pore_pressure_mat[_qp] * RankTwoTensor::Identity();
 
   //save
   _Ep[_qp] = Ep;

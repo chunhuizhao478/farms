@@ -63,6 +63,11 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
   params.addParam<int>("straindep_block_id_applied", -1, "Block ID to apply the rate-dependent Cd, currently it has to be one block");
   params.addParam<bool>("use_total_strain_rate", false, "Whether to use total strain rate, default is to use elastic strain rate");
+  // Add option to use pore pressure to decrease mean stress
+  params.addParam<bool>("use_pore_pressure", false,
+                        "Flag to use pore pressure to decrease mean stress");
+  // Optional coupled variable: the user should supply the name of the pore pressure variable if used.
+  params.addCoupledVar("pore_pressure", "Name of the pore pressure coupled variable (leave empty if not used)");
   return params;
 }
 
@@ -143,7 +148,10 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
   _straindep_block_id_applied(getParam<int>("straindep_block_id_applied")),
-  _use_total_strain_rate(getParam<bool>("use_total_strain_rate"))
+  _use_total_strain_rate(getParam<bool>("use_total_strain_rate")),
+  _use_pore_pressure(getParam<bool>("use_pore_pressure")),
+  _pore_pressure(_use_pore_pressure ? &coupledValue("pore_pressure") : nullptr),
+  _pore_pressure_mat(declareProperty<Real>("pore_pressure_mat"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -191,6 +199,9 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("block_id_applied must be set to a positive value when use_cd_strain_dependent is set to true");
   if ((_use_const_xi_aux) && (_const_xi_block_id < 0))
     mooseError("const_xi_block_id must be set to a positive value when use_const_xi_aux is set to true");
+  // If use_pore_pressure is true but no pore_pressure is provided, you may throw an error:
+  if (_use_pore_pressure && !parameters.isParamSetByUser("pore_pressure"))
+    mooseError("Must specify pore_pressure when use_pore_pressure = true");  
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -231,6 +242,9 @@ DamageBreakageMaterial::initQpStatefulProperties()
   //initialize maximum principal strain 
   _strain_dir0_positive[_qp] = 0.0;
 
+  //initialize pore pressure
+  _pore_pressure_mat[_qp] = 0.0;
+
 }
 
 void
@@ -265,6 +279,10 @@ DamageBreakageMaterial::computeQpProperties()
   // Get shear_modulus_o value
   const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
   _shear_modulus_o_mat[_qp] = _shear_modulus_o;
+
+  // Get pore pressure value
+  if (_use_pore_pressure)
+    _pore_pressure_mat[_qp] = _use_pore_pressure && _pore_pressure ? (*_pore_pressure)[_qp] : 0.0;
 
 }
 
