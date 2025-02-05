@@ -545,12 +545,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 280e6
+            factor = 250e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 280e6
+            factor = 250e6
             displacements = 'disp_x disp_y'
         []        
     []        
