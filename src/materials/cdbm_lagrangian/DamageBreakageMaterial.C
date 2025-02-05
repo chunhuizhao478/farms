@@ -177,8 +177,6 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Global Param C1 must not be set when use_c1_aux is set to true");
   if (_C2 > 0 && _use_c2_aux)
     mooseError("Global Param C2 must not be set when use_c2_aux is set to true");
-  if (_C_g_value > 0 && _use_cg_aux)
-    mooseError("Global Param Cg must not be set when use_cg_aux is set to true");
   if (_CdCb_multiplier > 0 && _use_cb_multiplier_aux)
     mooseError("Global Param CdCb_multiplier must not be set when use_cb_multiplier_aux is set to true");
   if (_CBH_constant > 0 && _use_cbh_aux)
@@ -228,7 +226,6 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _m2[_qp] = _m2_value;
 
   // Get cg value
-  const Real _C_g_value = _use_cg_aux ? (*_cg_aux)[_qp] : _C_g_value;
   _C_g[_qp] = _C_g_value;
 
   //initialize maximum principal strain 
@@ -260,7 +257,6 @@ DamageBreakageMaterial::computeQpProperties()
   _m2[_qp] = _m2_value;
 
   // Get cg value
-  const Real _C_g_value = _use_cg_aux ? (*_cg_aux)[_qp] : _C_g_value;
   _C_g[_qp] = _C_g_value;
 
   // Get xi_0 value
