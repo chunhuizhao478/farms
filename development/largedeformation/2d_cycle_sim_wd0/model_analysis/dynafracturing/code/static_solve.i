@@ -156,8 +156,19 @@
         len_of_fault = 8000
         sigma = 5e2
         peak_val = 0.7
+        use_damage_perturb = true
+        damage_perturb = 'damage_perturb'
         output_properties = 'initial_damage'      
         outputs = exodus
+    []
+    [define_damage_perturb]
+        type = DamagePerturbationSquare2D
+        nucl_center = '0 0'
+        e_damage = 0.2
+        length = 2000
+        thickness = 200
+        duration = 1.0
+        sigma = 333.3
     []
 []  
 
@@ -215,12 +226,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 260e6
+            factor = 280e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 260e6
+            factor = 280e6
             displacements = 'disp_x disp_y'
         []     
     []        

@@ -235,7 +235,7 @@
     [get_cd_block13]
         type = ConstantAux
         variable = Cd_constant_aux
-        value = 1e4
+        value = 300
         block = '1 3'
         execute_on = 'INITIAL'
     []
@@ -388,8 +388,6 @@
         C1_aux = C1_aux
         use_c2_aux = true
         C2_aux = C2_aux
-        use_damage_perturb = true
-        damage_perturb = 'damage_perturb'
         # use_cd_strain_dependent = true
         # use_total_strain_rate = true
         # block_id_applied = 1
@@ -406,15 +404,6 @@
         coupled_variables = 'initial_damage_aux'
         expression = 'initial_damage_aux'
         outputs = exodus
-    []
-    [define_damage_perturb]
-        type = DamagePerturbationSquare2D
-        nucl_center = '0 0'
-        e_damage = 0.2
-        length = 2000
-        thickness = 200
-        duration = 1.0
-        sigma = 333.3
     []
 []  
 
@@ -456,16 +445,16 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    dt = 1e-2
+    # dt = 1e-2
     verbose = true
-    # [TimeStepper]
-    #     type = FarmsIterationAdaptiveDT
-    #     dt = 1e-2
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 8
-    #     growth_factor = 1.5
-    #     max_time_step_bound = 1e10
-    # []
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-2
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.5
+        max_time_step_bound = 1e10
+    []
     # [./TimeStepper]
     #     type = SolutionTimeAdaptiveDT
     #     dt = 0.01
@@ -516,7 +505,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
+      time_step_interval = 1
     #   show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
     [../]
     [./csv]
@@ -556,12 +545,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 260e6
+            factor = 280e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 260e6
+            factor = 280e6
             displacements = 'disp_x disp_y'
         []        
     []        
