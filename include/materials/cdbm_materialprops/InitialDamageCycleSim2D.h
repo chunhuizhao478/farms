@@ -40,4 +40,7 @@ protected:
   const bool _use_background_randalpha;
   const VariableValue * _randalpha;
 
+  const bool _use_damage_perturb;
+  const MaterialProperty<Real> * _damage_perturbation;
+
 };

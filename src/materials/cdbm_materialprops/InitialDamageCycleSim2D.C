@@ -25,8 +25,12 @@ InitialDamageCycleSim2D::validParams()
   params.addRequiredParam<Real>("len_of_fault", "length of the fault");
   params.addRequiredParam<Real>("sigma", "decay rate");
   params.addRequiredParam<Real>("peak_val", "peak value of the initial damage");
+  params.addParam<bool>("use_damage_perturb", false, "Whether to use damage perturbation");
   params.addParam<bool>("use_background_randalpha", false, "Whether to use random alpha background");
   params.addCoupledVar("randalpha", "Random alpha auxiliary variable");
+  params.addParam<MaterialPropertyName>("damage_perturb", "",
+                                        "Coupled material property for damage perturbation. "
+                                        "Must be specified if use_damage_perturb is true.");
   return params;
 }
 
@@ -37,8 +41,12 @@ InitialDamageCycleSim2D::InitialDamageCycleSim2D(const InputParameters & paramet
   _sigma(getParam<Real>("sigma")),
   _peak_val(getParam<Real>("peak_val")),
   _use_background_randalpha(getParam<bool>("use_background_randalpha")),
-  _randalpha(_use_background_randalpha ? &coupledValue("randalpha") : nullptr)
+  _randalpha(_use_background_randalpha ? &coupledValue("randalpha") : nullptr),
+  _use_damage_perturb(getParam<bool>("use_damage_perturb")),
+  _damage_perturbation(_use_damage_perturb ? &getMaterialProperty<Real>("damage_perturb") : nullptr)
 {
+  if (_use_damage_perturb && !parameters.isParamSetByUser("damage_perturb"))
+    mooseError("Must specify damage_perturb when use_damage_perturb = true");  
 }
 
 void
@@ -73,6 +81,11 @@ InitialDamageCycleSim2D::computeQpProperties()
   if (_use_background_randalpha)
   {
     alpha_o = std::max(alpha_o, (*_randalpha)[_qp]);
+  }
+
+  if (_use_damage_perturb)
+  {
+    alpha_o = alpha_o + (*_damage_perturbation)[_qp];
   }
 
   _initial_damage[_qp] = alpha_o; 

@@ -63,10 +63,6 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
   params.addParam<int>("straindep_block_id_applied", -1, "Block ID to apply the rate-dependent Cd, currently it has to be one block");
   params.addParam<bool>("use_total_strain_rate", false, "Whether to use total strain rate, default is to use elastic strain rate");
-  params.addParam<bool>("use_damage_perturb", false, "Flag to use damage perturbation to generate dynamic rupture event");
-  params.addParam<MaterialPropertyName>("damage_perturb", "",
-                                        "Coupled material property for damage perturbation. "
-                                        "Must be specified if use_damage_perturb is true.");
   return params;
 }
 
@@ -147,9 +143,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
   _straindep_block_id_applied(getParam<int>("straindep_block_id_applied")),
-  _use_total_strain_rate(getParam<bool>("use_total_strain_rate")),
-  _use_damage_perturb(getParam<bool>("use_damage_perturb")),
-  _damage_perturb(_use_damage_perturb ? &getMaterialProperty<Real>("damage_perturb") : nullptr)
+  _use_total_strain_rate(getParam<bool>("use_total_strain_rate"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -199,8 +193,6 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("block_id_applied must be set to a positive value when use_cd_strain_dependent is set to true");
   if ((_use_const_xi_aux) && (_const_xi_block_id < 0))
     mooseError("const_xi_block_id must be set to a positive value when use_const_xi_aux is set to true");
-  if (_use_damage_perturb && !parameters.isParamSetByUser("damage_perturb"))
-    mooseError("Must specify damage_perturb when use_damage_perturb = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -353,12 +345,6 @@ DamageBreakageMaterial::updatedamage()
   //check below initial damage (fix initial damage)
   if ( alpha_damagedvar < _initial_damage[_qp] ){ alpha_damagedvar = _initial_damage[_qp]; }
   else{}
-
-  //add damage perturbation
-  if (_use_damage_perturb)
-  {
-    alpha_damagedvar += (*_damage_perturb)[_qp]; 
-  }
 
   //check alpha within range
   if ( alpha_damagedvar < 0 ){ alpha_damagedvar = 0.0; }

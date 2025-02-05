@@ -184,7 +184,4 @@ protected:
   // default is to use elastic strain rate
   const bool _use_total_strain_rate;
 
-  /// @brief add option to use damage perturbation
-  const bool _use_damage_perturb;
-  const MaterialProperty<Real> * _damage_perturb;
 };
