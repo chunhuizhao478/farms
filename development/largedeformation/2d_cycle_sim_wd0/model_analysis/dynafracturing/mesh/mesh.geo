@@ -11,14 +11,14 @@ big_ymin = -30000;
 big_ymax = 30000;
 
 // Define the small box (2D)
-small_xmin = -5000;
-small_xmax = 5000;
+small_xmin = -10000;
+small_xmax = 10000;
 small_ymin = -2000;
 small_ymax = 2000;
 
 // Define the initial damage box (2D)
-smalld_xmin = -400;
-smalld_xmax = 400;
+smalld_xmin = -4000;
+smalld_xmax = 4000;
 smalld_ymin = -100;
 smalld_ymax = 100;
 

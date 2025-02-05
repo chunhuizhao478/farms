@@ -153,7 +153,7 @@
     []
     [initial_damage_surround]
         type = InitialDamageCycleSim2D
-        len_of_fault = 5000
+        len_of_fault = 8000
         sigma = 5e2
         peak_val = 0.7
         output_properties = 'initial_damage'      
@@ -205,12 +205,6 @@
         variable = disp_y
         value = 0
         boundary = bottom
-    [] 
-    [bc_fix_bottom_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = bottom
     []  
     # 
     [./Pressure]
@@ -221,28 +215,28 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 240e6
+            factor = 260e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 240e6
+            factor = 260e6
             displacements = 'disp_x disp_y'
         []     
     []        
     # # fix ptr
-    # [./fix_cptr1_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
-    # [./fix_cptr2_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr2_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
     #add initial shear stress
     # [./initial_shear_stress]
     #     type = NeumannBC

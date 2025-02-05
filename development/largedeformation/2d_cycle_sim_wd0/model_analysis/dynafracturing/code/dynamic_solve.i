@@ -407,23 +407,14 @@
         expression = 'initial_damage_aux'
         outputs = exodus
     []
-    [define_damage_perturb1]
-        type = GenericConstantMaterial
-        prop_names = 'damage_perturb'
-        prop_values = '0.3'
-        block = '1'
-    []
-    [define_damage_perturb2]
-        type = GenericConstantMaterial
-        prop_names = 'damage_perturb'
-        prop_values = '0.0'
-        block = '2'
-    []
-    [define_damage_perturb3]
-        type = GenericConstantMaterial
-        prop_names = 'damage_perturb'
-        prop_values = '0.0'
-        block = '3'
+    [define_damage_perturb]
+        type = DamagePerturbationSquare2D
+        nucl_center = '0 0'
+        e_damage = 0.2
+        length = 2000
+        thickness = 200
+        duration = 1.0
+        sigma = 333.3
     []
 []  
 
@@ -431,12 +422,6 @@
     [func_top_bc]
         type = ParsedFunction
         expression = 'if (t>dt, 1e-8 * t, 0)'
-        symbol_names = 'dt'
-        symbol_values = '1e-2'
-    []
-    [func_bottom_bc]
-        type = ParsedFunction
-        expression = 'if (t>dt, -1e-8 * t, 0)'
         symbol_names = 'dt'
         symbol_values = '1e-2'
     []
@@ -471,16 +456,16 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    # dt = 1e-2
+    dt = 1e-2
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 0.01
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
-        growth_factor = 1.5
-        max_time_step_bound = 1e10
-    []
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 1e-2
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 8
+    #     growth_factor = 1.5
+    #     max_time_step_bound = 1e10
+    # []
     # [./TimeStepper]
     #     type = SolutionTimeAdaptiveDT
     #     dt = 0.01
@@ -531,7 +516,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 50
     #   show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
     [../]
     [./csv]
@@ -556,15 +541,6 @@
         acceleration = accel_x
         function = func_top_bc
     []
-    [bc_load_bot_x]
-        type = PresetDisplacement
-        boundary = top
-        variable = disp_x
-        beta = 0.25
-        velocity = vel_x
-        acceleration = accel_x
-        function = func_bottom_bc
-    []
     [bc_fix_bottom_y]
         type = DirichletBC
         variable = disp_y
@@ -580,28 +556,28 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 240e6
+            factor = 260e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 240e6
+            factor = 260e6
             displacements = 'disp_x disp_y'
-        []     
+        []        
     []        
-    # # fix ptr
-    # [./fix_cptr1_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
-    # [./fix_cptr2_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
+    # fix ptr
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr2_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
     # #add initial shear stress
     # [./initial_shear_stress]
     #     type = NeumannBC
