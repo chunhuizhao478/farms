@@ -67,7 +67,7 @@
     # C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.01 #1e-3
+    beta_width = 0.03 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -79,7 +79,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.7
+    chi = 0.8
 
     #add strain rate dependent Cd option
     # m_exponent = 0.85
@@ -235,7 +235,7 @@
     [get_cd_block13]
         type = ConstantAux
         variable = Cd_constant_aux
-        value = 300
+        value = 1e4
         block = '1 3'
         execute_on = 'INITIAL'
     []
@@ -250,7 +250,7 @@
     [get_cb_multiplier_block13]
         type = ConstantAux
         variable = Cb_multiplier_aux
-        value = 500
+        value = 1e4
         block = '1 3'
         execute_on = 'INITIAL'
     []
@@ -505,7 +505,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
+      time_step_interval = 1
     #   show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
     [../]
     [./csv]
