@@ -235,7 +235,7 @@
     [get_cd_block13]
         type = ConstantAux
         variable = Cd_constant_aux
-        value = 1e5
+        value = 300
         block = '1 3'
         execute_on = 'INITIAL'
     []
