@@ -552,7 +552,7 @@
             boundary = right
             factor = 250e6
             displacements = 'disp_x disp_y'
-        []        
+        []         
     []        
     # fix ptr
     [./fix_cptr1_x]

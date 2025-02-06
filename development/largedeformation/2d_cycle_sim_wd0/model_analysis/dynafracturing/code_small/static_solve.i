@@ -160,6 +160,7 @@
         damage_perturb = 'damage_perturb'
         output_properties = 'initial_damage'      
         outputs = exodus
+        block = 1
     []
     [define_damage_perturb]
         type = DamagePerturbationSquare2D
@@ -169,6 +170,19 @@
         thickness = 200
         duration = 1.0
         sigma = 1318.02
+        block = 1
+    []
+    [const_damage_b2]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0.0'
+        block = 2
+    []
+    [const_damage_b3]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0.0'
+        block = 3
     []
 []  
 
@@ -248,11 +262,4 @@
         boundary = corner_ptr
         value = 0
     []
-    #add initial shear stress
-    # [./initial_shear_stress]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     value = 12.5e6
-    #     boundary = top
-    # []
 []
