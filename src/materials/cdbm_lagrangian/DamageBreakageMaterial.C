@@ -67,7 +67,11 @@ DamageBreakageMaterial::validParams()
   params.addParam<bool>("use_pore_pressure", false,
                         "Flag to use pore pressure to decrease mean stress");
   // Optional coupled variable: the user should supply the name of the pore pressure variable if used.
-  params.addCoupledVar("pore_pressure", "Name of the pore pressure coupled variable (leave empty if not used)");
+  params.addCoupledVar("pore_pressure", "Name of the pore pressure coupled variable");
+  params.addParam<bool>("use_overstress", false,
+                        "Flag to use overstress to nucleate the rupture");
+  params.addCoupledVar("overstress", "Name of the pore pressure coupled variable");
+  
   return params;
 }
 
@@ -151,7 +155,11 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _use_total_strain_rate(getParam<bool>("use_total_strain_rate")),
   _use_pore_pressure(getParam<bool>("use_pore_pressure")),
   _pore_pressure(_use_pore_pressure ? &coupledValue("pore_pressure") : nullptr),
-  _pore_pressure_mat(declareProperty<Real>("pore_pressure_mat"))
+  _pore_pressure_mat(declareProperty<Real>("pore_pressure_mat")),
+  _use_overstress(getParam<bool>("use_overstress")),
+  _overstress(_use_overstress ? &coupledValue("overstress") : nullptr),
+  _use_overstress_mat(declareProperty<bool>("use_overstress_mat")),
+  _overstress_mat(declareProperty<Real>("overstress_mat"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -202,6 +210,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   // If use_pore_pressure is true but no pore_pressure is provided, you may throw an error:
   if (_use_pore_pressure && !parameters.isParamSetByUser("pore_pressure"))
     mooseError("Must specify pore_pressure when use_pore_pressure = true");  
+  if (_use_overstress && !parameters.isParamSetByUser("overstress"))
+    mooseError("Must specify overstress when use_overstress = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -245,6 +255,10 @@ DamageBreakageMaterial::initQpStatefulProperties()
   //initialize pore pressure
   _pore_pressure_mat[_qp] = 0.0;
 
+  //initialize overstress
+  _use_overstress_mat[_qp] = false;
+  _overstress_mat[_qp] = 0.0;
+
 }
 
 void
@@ -283,6 +297,11 @@ DamageBreakageMaterial::computeQpProperties()
   // Get pore pressure value
   if (_use_pore_pressure)
     _pore_pressure_mat[_qp] = _use_pore_pressure && _pore_pressure ? (*_pore_pressure)[_qp] : 0.0;
+
+  // Get overstress value
+  if (_use_overstress)
+    _use_overstress_mat[_qp] = true;
+    _overstress_mat[_qp] = _use_overstress && _overstress ? (*_overstress)[_qp] : 0.0;
 
 }
 

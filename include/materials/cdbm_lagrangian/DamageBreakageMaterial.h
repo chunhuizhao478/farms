@@ -191,5 +191,10 @@ protected:
   const VariableValue * _pore_pressure; 
   MaterialProperty<Real> & _pore_pressure_mat;
 
+  /// @brief add option to use overstress to nucleate the rupture
+  const bool _use_overstress;
+  const VariableValue * _overstress;
+  MaterialProperty<bool> & _use_overstress_mat;
+  MaterialProperty<Real> & _overstress_mat;
 
 };
