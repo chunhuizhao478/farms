@@ -157,7 +157,7 @@
         outputs = exodus
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
