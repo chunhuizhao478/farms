@@ -463,7 +463,7 @@
         const_xi_block_id = 2
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
         output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain Cd_constant_aux'
         outputs = exodus
@@ -513,7 +513,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 8376325297.767156
+    end_time = 8376325303.899653
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
