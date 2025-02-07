@@ -146,7 +146,7 @@
         outputs = exodus
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
@@ -166,7 +166,7 @@
         type = DamagePerturbationSquare2D
         nucl_center = '0 0'
         e_damage = 0.3
-        length = 8000
+        length = 400
         thickness = 200
         duration = 1.0
         sigma = 1318.02

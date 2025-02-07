@@ -103,5 +103,12 @@ protected:
   const MaterialProperty<Real> & _a2;
   const MaterialProperty<Real> & _a3;  
   /// dimension of the problem
-  const unsigned int _dim;
+  //const unsigned int _dim;
+
+  /// material property: pore pressure
+  const MaterialProperty<Real> & _pore_pressure_mat;
+
+  /// material property: overstress
+  const MaterialProperty<bool> & _use_overstress_mat;
+  const MaterialProperty<Real> & _overstress_mat;
 };
