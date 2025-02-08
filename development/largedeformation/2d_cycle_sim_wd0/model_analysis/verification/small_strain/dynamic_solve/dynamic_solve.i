@@ -77,7 +77,7 @@
     m2 = 1
     
     # energy ratio
-    chi = 0.8
+    chi = 0.7
 
     #
     D = 0

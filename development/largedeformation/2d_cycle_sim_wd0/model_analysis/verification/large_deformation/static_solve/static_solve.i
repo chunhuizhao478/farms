@@ -16,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -10000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -79,17 +79,17 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.8
+    chi = 0.7
     
 []
 
 [Variables]
     [disp_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [disp_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
 []
@@ -230,6 +230,12 @@
         variable = disp_y
         value = 0
         boundary = bottom
+    []
+    [bc_fix_bottom_x]
+        type = DirichletBC
+        variable = disp_x
+        value = 0
+        boundary = bottom
     []  
     # 
     [./Pressure]
@@ -250,24 +256,24 @@
         []     
     []        
     # # fix ptr
-    [./fix_cptr1_x]
-        type = DirichletBC
-        variable = disp_x
-        boundary = corner_ptr
-        value = 0
-    []
-    [./fix_cptr2_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = corner_ptr
-        value = 0
-    []
+    # [./fix_cptr1_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     boundary = corner_ptr
+    #     value = 0
+    # []
+    # [./fix_cptr2_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = corner_ptr
+    #     value = 0
+    # []
     #
     #add initial shear stress
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x
-        value = 0
+        value = 12e6
         boundary = top
     []    
 []

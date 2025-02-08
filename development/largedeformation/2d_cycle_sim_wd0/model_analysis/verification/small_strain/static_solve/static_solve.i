@@ -177,7 +177,7 @@
         boundary = bottom
     []  
     [bc_fix_bottom_x]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_x
         value = 0
         boundary = bottom
