@@ -176,12 +176,12 @@
         value = 0
         boundary = bottom
     []  
-    [bc_fix_bottom_x]
-        type = ADDirichletBC
-        variable = disp_x
-        value = 0
-        boundary = bottom
-    []
+    # [bc_fix_bottom_x]
+    #     type = ADDirichletBC
+    #     variable = disp_x
+    #     value = 0
+    #     boundary = bottom
+    # []
     # 
     [./Pressure]
         [static_pressure_top]
@@ -201,18 +201,18 @@
         []     
     []        
     # fix ptr
-    # [./fix_cptr1_x]
-    #     type = ADDirichletBC
-    #     variable = disp_x
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
-    # [./fix_cptr2_y]
-    #     type = ADDirichletBC
-    #     variable = disp_y
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
+    [./fix_cptr1_x]
+        type = ADDirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr2_y]
+        type = ADDirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
     #
     #add initial shear stress
     [./initial_shear_stress]

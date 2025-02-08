@@ -222,7 +222,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1000
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
@@ -233,12 +233,12 @@
         value = 0
         boundary = bottom
     []  
-    [bc_fix_bottom_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = bottom
-    []    
+    # [bc_fix_bottom_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     value = 0
+    #     boundary = bottom
+    # []    
     # 
     [./Pressure]
         [static_pressure_top]
@@ -257,19 +257,19 @@
             displacements = 'disp_x disp_y'
         []     
     []        
-    # # fix ptr
-    # [./fix_cptr1_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
-    # [./fix_cptr2_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
+    # fix ptr
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr2_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
     #
     #add initial shear stress
     [./initial_shear_stress]
