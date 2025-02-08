@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_small.msh'
+        file = '../../mesh/mesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -118,23 +118,6 @@
         family = LAGRANGE
     []
     #
-    [alpha_damagedvar_aux]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [B_damagedvar_aux]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [strain_invariant_ratio_aux]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [initial_damage_aux]
-        order = FIRST
-        family = MONOMIAL 
-    []
-    #
     [Cd_constant_aux]
         order = CONSTANT
         family = MONOMIAL
@@ -156,7 +139,7 @@
         family = MONOMIAL
     []
     #
-    [strain_invariant_ratio_const_aux]
+    [initial_damage_aux]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -193,45 +176,7 @@
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
-    #get damage,breakage,strain invariant ratio in constant monomial
-    [alpha_damagedvar_aux]
-        type = MaterialRealAux
-        variable = alpha_damagedvar_aux
-        property = alpha_damagedvar
-        execute_on = 'timestep_end'
-    []
-    [B_damagedvar_aux]
-        type = MaterialRealAux
-        variable = B_damagedvar_aux
-        property = B_damagedvar
-        execute_on = 'timestep_end'
-    []  
-    [strain_invariant_ratio_aux]
-        type = MaterialRealAux
-        variable = strain_invariant_ratio_aux
-        property = strain_invariant_ratio
-        execute_on = 'timestep_end'
-    []
-    #block 1: inner block where damage is activated
-    #block 2: outer block where damage is not activated
-    #block 3: buffer block where damage/breakage accumulation is decreased, using xi only
-    #cd constant
-    # [get_cd_block13]
-    #     type = SolutionAux
-    #     variable = Cd_constant_aux
-    #     solution = init_sol_components
-    #     from_variable = initial_cd_aux
-    #     block = '1'
-    #     execute_on = 'INITIAL'
-    # []
-    # [get_cd_block23]
-    #     type = SolutionAux
-    #     variable = Cd_constant_aux
-    #     solution = init_sol_components
-    #     from_variable = initial_cd_aux
-    #     block = '2'
-    #     execute_on = 'INITIAL'
-    # [] 
+    #aux parameters for damage breakage model
     [get_cd_block13]
         type = ConstantAux
         variable = Cd_constant_aux
@@ -287,7 +232,7 @@
     [get_c1_block2]
         type = ConstantAux
         variable = C1_aux
-        value = 300
+        value = 0
         block = 2
         execute_on = 'INITIAL'
     []
@@ -310,7 +255,7 @@
         type = SolutionAux
         variable = initial_damage_aux
         solution = init_sol_components
-        from_variable = initial_damage_aux
+        from_variable = initial_damage
     []
 []
 
@@ -344,20 +289,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []
-    #
-    [damping_x_block13]
-        type = StiffPropDampingImplicit
-        variable = disp_x
-        component = 0
-        zeta = 0.5
-    []
-    [damping_y_block13]
-        type = StiffPropDampingImplicit
-        variable = disp_y
-        component = 1
-        zeta = 0.5
-    []        
+    []       
 []
 
 [Materials]
@@ -369,13 +301,12 @@
     [strain]
         type = ComputeLagrangianStrain
         large_kinematics = true
-        output_properties = 'deformation_gradient'
         outputs = exodus
     []
     # # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar C_g'
+        output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
         #options to use auxiliary variables
         use_cd_aux = true
@@ -393,9 +324,9 @@
         # block_id_applied = 1
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain Cd_constant_aux'
+        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain Cd_constant_aux cdbm_plastic_deformation_gradient_rate cdbm_deformation_gradient_rate'
         outputs = exodus
     []
     [define_initial_damage_matprop]
@@ -405,17 +336,7 @@
         expression = 'initial_damage_aux'
         outputs = exodus
     []
-[]  
-
-[Functions]
-    [func_top_bc]
-        type = ParsedFunction
-        expression = 'if (t>dt, 1e-8 * t, 0)'
-        symbol_names = 'dt'
-        symbol_values = '1e-2'
-    []
-[]
-
+[] 
 
 [Preconditioning]
     [smp]
@@ -429,7 +350,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 1e100
+    end_time = 50
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
@@ -445,16 +366,16 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    # dt = 1e-2
+    dt = 1e-2
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-2
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
-        growth_factor = 1.5
-        max_time_step_bound = 1e10
-    []
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 1e-4
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 8
+    #     growth_factor = 1.5
+    #     max_time_step_bound = 1e10
+    # []
     # [./TimeStepper]
     #     type = SolutionTimeAdaptiveDT
     #     dt = 0.01
@@ -476,7 +397,7 @@
 [Controls] # turns off inertial terms for the FIRST time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -494,30 +415,18 @@
         type = NodalExtremeValue
         variable = vel_y
     [../]
-    #must be named "flag", this will be called in FarmsNewmarkBeta
-    # [flag]
-    #     type = ElementExtremeValue
-    #     variable = timeintegratorflag
-    #     force_postaux = true
-    # []
 [../]
 
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
-    #   show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
+      time_step_interval = 100
     [../]
     [./csv]
       type = CSV
       time_step_interval = 1
       show = '_dt maxvelx maxvely'
     [../]
-    [out]
-        type = Checkpoint
-        time_step_interval = 100
-        num_files = 2
-    []
 []
 
 [BCs]
@@ -527,12 +436,12 @@
         value = 0
         boundary = bottom
     [] 
-    [bc_fix_bottom_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = bottom
-    [] 
+    # [bc_fix_bottom_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     value = 0
+    #     boundary = bottom
+    # [] 
     # 
     [./Pressure]
         [static_pressure_top]
@@ -552,89 +461,89 @@
         []        
     []        
     # fix ptr
-    # [./fix_cptr1_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
-    # [./fix_cptr2_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr2_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
     #add initial shear stress
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x
-        value = 12e6
+        value = 11e6
         boundary = top
     []    
-    #add dampers
-    [damp_left_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = left
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3333
-        p_wave_speed = 5773
-        density = 2700
-    []
-    [damp_left_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = left
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3333
-        p_wave_speed = 5773
-        density = 2700
-    []
-    [damp_right_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = right
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3333
-        p_wave_speed = 5773
-        density = 2700
-    []
-    [damp_right_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = right
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3333
-        p_wave_speed = 5773
-        density = 2700
-    []
+#     #add dampers
+#     [damp_left_x]
+#         type = FarmsNonReflectDashpotBC
+#         variable = disp_x
+#         displacements = 'disp_x disp_y'
+#         velocities = 'vel_x vel_y'
+#         accelerations = 'accel_x accel_y'
+#         component = 0
+#         boundary = left
+#         beta = 0.25
+#         gamma = 0.5
+#         shear_wave_speed = 3333
+#         p_wave_speed = 5773
+#         density = 2700
+#     []
+#     [damp_left_y]
+#         type = FarmsNonReflectDashpotBC
+#         variable = disp_y
+#         displacements = 'disp_x disp_y'
+#         velocities = 'vel_x vel_y'
+#         accelerations = 'accel_x accel_y'
+#         component = 1
+#         boundary = left
+#         beta = 0.25
+#         gamma = 0.5
+#         shear_wave_speed = 3333
+#         p_wave_speed = 5773
+#         density = 2700
+#     []
+#     [damp_right_x]
+#         type = FarmsNonReflectDashpotBC
+#         variable = disp_x
+#         displacements = 'disp_x disp_y'
+#         velocities = 'vel_x vel_y'
+#         accelerations = 'accel_x accel_y'
+#         component = 0
+#         boundary = right
+#         beta = 0.25
+#         gamma = 0.5
+#         shear_wave_speed = 3333
+#         p_wave_speed = 5773
+#         density = 2700
+#     []
+#     [damp_right_y]
+#         type = FarmsNonReflectDashpotBC
+#         variable = disp_y
+#         displacements = 'disp_x disp_y'
+#         velocities = 'vel_x vel_y'
+#         accelerations = 'accel_x accel_y'
+#         component = 1
+#         boundary = right
+#         beta = 0.25
+#         gamma = 0.5
+#         shear_wave_speed = 3333
+#         p_wave_speed = 5773
+#         density = 2700
+#     []
 []
 
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = './static_solve_out.e'
-      system_variables = 'initial_damage_aux disp_x disp_y'
+      mesh = '../static_solve/static_solve_out.e'
+      system_variables = 'initial_damage disp_x disp_y'
       timestep = LATEST
       force_preaux = true
     [../]

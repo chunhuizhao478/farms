@@ -33,10 +33,14 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _xi(declareProperty<Real>(_base_name + "strain_invariant_ratio")),
   _S(declareProperty<RankTwoTensor>(_base_name + "pk2_stress")),
   _C(declareProperty<RankFourTensor>(_base_name + "pk2_jacobian")),
+  _Dp(declareProperty<RankTwoTensor>(_base_name + "plastic_strain_rate")),
+  _Fp_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_plastic_deformation_gradient_rate")),
+  _F_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_deformation_gradient_rate")),
   _lambda_const(getMaterialProperty<Real>("lambda_const")),
   _shear_modulus(getMaterialProperty<Real>("shear_modulus")),
   _damaged_modulus(getMaterialProperty<Real>("damaged_modulus")),
   _B_breakagevar(getMaterialProperty<Real>("B_damagedvar")),
+  _D(getMaterialProperty<RankTwoTensor>(_base_name + "total_strain")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
   _Tau_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "deviatroic_stress")),
   _Fp_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_deformation_gradient")),
@@ -48,13 +52,8 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _a0(getMaterialProperty<Real>("a0")),
   _a1(getMaterialProperty<Real>("a1")),
   _a2(getMaterialProperty<Real>("a2")),
-  _a3(getMaterialProperty<Real>("a3")),
-  //_dim(_mesh.dimension()),
-  //nucleation: pore pressure
-  _pore_pressure_mat(getMaterialProperty<Real>("pore_pressure_mat")),
-  //nucleation: overstress
-  _use_overstress_mat(getMaterialProperty<bool>("use_overstress_mat")),
-  _overstress_mat(getMaterialProperty<Real>("overstress_mat"))
+  _a3(getMaterialProperty<Real>("a3"))
+  //_dim(_mesh.dimension())
 {
 }
 
@@ -241,12 +240,15 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
 
   //--------------------------------------------------------------------------
-  // Compute time derivatives Fp_dot and F_dot (first order approximation)
-  RankTwoTensor Fp_dot, F_dot;
+  // Compute time derivatives Fp_dot and F_dot
+  // From the web page: https://mooseframework.inl.gov/source/materials/lagrangian/ComputeLagrangianStrain.html
+  // total_strain is actually the strain rate D = 0.5*(l^T + l), l is the spatial velocity gradient
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
-      Fp_dot(i,j) = (_Fp[_qp](i,j) - _Fp_old[_qp](i,j)) / _dt;
-      F_dot(i,j)  = (_F[_qp](i,j)  - _F_old[_qp](i,j))  / _dt;
+      for (unsigned int m = 0; m < 3; m++){
+        _Fp_dot[_qp](i,j) = _Dp[_qp](i,m) * _Fp[_qp](m,j);
+        _F_dot[_qp](i,j) = _D[_qp](i,m) * _F[_qp](m,j);
+      }
     }
   }
 
@@ -259,10 +261,10 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
     for (unsigned int j = 0; j < 3; j++){
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
-          if (_dt == 0.0 || Fp_dot(i,j) == 0.0 || F_dot(k,l) == 0.0)
+          if (_dt == 0.0 || _Fp_dot[_qp](i,j) == 0.0 || _F_dot[_qp](k,l) == 0.0)
             dFpdF_tensor[i][j][k][l] = 0.0;
           else
-            dFpdF_tensor[i][j][k][l] = Fp_dot(i,j) / F_dot(k,l);
+            dFpdF_tensor[i][j][k][l] = _Fp_dot[_qp](i,j) / _F_dot[_qp](k,l);
         }
       }
     }
@@ -280,7 +282,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
           Real val = delta(i, k) * Fpinv(l, m);
-          for (unsigned int h = 0; h < 3; h++){
+          for (unsigned int h = 0; h < 3; h++){ //summation applies to h r
             for (unsigned int r = 0; r < 3; r++){
               val -= _Fe[_qp](i, h) * dFpdF_tensor[h][r][k][l] * Fpinv(r, m);
             }
@@ -300,7 +302,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
           Real sum = 0.0;
-          for (unsigned int m = 0; m < 3; m++){
+          for (unsigned int m = 0; m < 3; m++){ //summation applies to m
             sum += 0.5 * ( dFedF_tensor[m][p][k][l] * _Fe[_qp](m, q)
                          + _Fe[_qp](m, p) * dFedF_tensor[m][q][k][l] );
           }
@@ -319,7 +321,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
           Real sum = 0.0;
-          for (unsigned int i = 0; i < 3; i++){
+          for (unsigned int i = 0; i < 3; i++){ //summation applies to i, m
             for (unsigned int m = 0; m < 3; m++){
               sum += - Fpinv(j, i) * dFpdF_tensor[i][m][k][l] * Fpinv(m, n);
             }
@@ -426,15 +428,6 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK2Stress()
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
 
-  //modify mean stress based on pore pressure
-  sigma_total -= _pore_pressure_mat[_qp] * RankTwoTensor::Identity();
-
-  //modify shear stress based on overstress //here we fix the overstress value
-  if (_use_overstress_mat[_qp]){
-    sigma_total(0,1) = _overstress_mat[_qp];
-    sigma_total(1,0) = _overstress_mat[_qp];
-  }
-
   //save
   _Ep[_qp] = Ep;
   _S[_qp] = sigma_total;
@@ -478,6 +471,9 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpFp()
 
   //Use Implicit Euler Integration, Update Fp
   RankTwoTensor Fp_updated = Cp.inverse() * _Fp_old[_qp];
+
+  //Save Plastic Deformation Rate Tensor
+  _Dp[_qp] = Dp;
 
   return Fp_updated;
 }

@@ -67,6 +67,12 @@ protected:
   MaterialProperty<RankTwoTensor> & _S;
   /// 2nd PK Tangent (dS/dF)
   MaterialProperty<RankFourTensor> & _C;
+  /// Plastic Deformation Rate Tensor
+  MaterialProperty<RankTwoTensor> & _Dp;
+  /// Plastic Deformation Gradient Rate Tensor
+  MaterialProperty<RankTwoTensor> & _Fp_dot;
+  /// Total Deformation Gradient Rate Tensor
+  MaterialProperty<RankTwoTensor> & _F_dot;
 
   /* Get Up-to-date Material Properties*/
   /// Lambda
@@ -77,6 +83,8 @@ protected:
   const MaterialProperty<Real> & _damaged_modulus;
   /// Breakage Variable
   const MaterialProperty<Real> & _B_breakagevar;
+  /// Total Strain (Total Strain Rate)
+  const MaterialProperty<RankTwoTensor> & _D;
   
   /* Get Old Material Properties */
   /// Breakage Variable
@@ -104,11 +112,4 @@ protected:
   const MaterialProperty<Real> & _a3;  
   /// dimension of the problem
   //const unsigned int _dim;
-
-  /// material property: pore pressure
-  const MaterialProperty<Real> & _pore_pressure_mat;
-
-  /// material property: overstress
-  const MaterialProperty<bool> & _use_overstress_mat;
-  const MaterialProperty<Real> & _overstress_mat;
 };

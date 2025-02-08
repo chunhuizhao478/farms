@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_small.msh'
+        file = '../../mesh/mesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -166,7 +166,7 @@
         type = DamagePerturbationSquare2D
         nucl_center = '0 0'
         e_damage = 0.3
-        length = 400
+        length = 8000
         thickness = 200
         duration = 1.0
         sigma = 1318.02
@@ -231,12 +231,12 @@
         value = 0
         boundary = bottom
     []
-    [bc_fix_bottom_x]
-        type = DirichletBC
-        variable = disp_x
-        value = 0
-        boundary = bottom
-    []  
+    # [bc_fix_bottom_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     value = 0
+    #     boundary = bottom
+    # []  
     # 
     [./Pressure]
         [static_pressure_top]
@@ -255,25 +255,25 @@
             displacements = 'disp_x disp_y'
         []     
     []        
-    # # fix ptr
-    # [./fix_cptr1_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
-    # [./fix_cptr2_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = corner_ptr
-    #     value = 0
-    # []
+    # fix ptr
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr2_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
     #
     #add initial shear stress
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x
-        value = 12e6
+        value = 11e6
         boundary = top
     []    
 []
