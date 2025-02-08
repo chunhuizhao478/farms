@@ -222,7 +222,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1000
+    time_step_interval = 500
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress

@@ -64,8 +64,8 @@ ADDamagePerturbationSquare2D::computeQpProperties()
   ADReal dalpha = 0.0;
   // if ( _t <= _duration ){
     if ( (xcoord >= _nucl_center[0] - _length / 2.0) && (xcoord <= _nucl_center[0] + _length / 2.0) && (ycoord >= _nucl_center[1] - _thickness / 2.0) && (ycoord <= _nucl_center[1] + _thickness / 2.0) ){
-      //dalpha = _damage_perturbation_old[_qp] + _peak_damage*std::exp(-(xcoord*xcoord)/(2.0*_sigma*_sigma));
-      dalpha = _peak_damage;
+      dalpha = _damage_perturbation_old[_qp] + _peak_damage*std::exp(-(xcoord*xcoord)/(2.0*_sigma*_sigma));
+      //dalpha = _peak_damage;
     }
     else{
       dalpha = _damage_perturbation_old[_qp];

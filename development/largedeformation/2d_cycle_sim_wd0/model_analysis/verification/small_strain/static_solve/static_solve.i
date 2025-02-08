@@ -106,7 +106,7 @@
         type = ADDamagePerturbationSquare2D
         nucl_center = '0 0'
         e_damage = 0.3
-        length = 400
+        length = 8000
         thickness = 200
         duration = 1.0
         sigma = 1318.02
@@ -218,7 +218,7 @@
     [./initial_shear_stress]
         type = ADNeumannBC
         variable = disp_x
-        value = 12e6
+        value = 11e6
         boundary = top
     []    
 []
