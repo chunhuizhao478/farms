@@ -533,7 +533,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -562,7 +562,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
+      time_step_interval = 1
     #   show = 'disp_x disp_y vel_x vel_y initial_damage alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 deviatroic_stress_00 deviatroic_stress_01 deviatroic_stress_11 deviatroic_stress_22 strain_invariant_ratio total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 Cd_rate_dependent_aux strain_dir0_positive_aux Cd_constant_aux'
     [../]
     [./csv]
@@ -593,12 +593,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 265e6
+            factor = 240e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 265e6
+            factor = 240e6
             displacements = 'disp_x disp_y'
         []      
     []        
@@ -614,14 +614,7 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    []
-    # #add initial shear stress
-    # [./initial_shear_stress]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     value = 12.5e6
-    #     boundary = top
-    # []    
+    []    
     #add dampers
     [damp_left_x]
         type = FarmsNonReflectDashpotBC
@@ -673,6 +666,34 @@
         accelerations = 'accel_x accel_y'
         component = 1
         boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3333
+        p_wave_speed = 5773
+        density = 2700
+    []
+    [damp_top_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3333
+        p_wave_speed = 5773
+        density = 2700
+    []
+    [damp_top_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = top
         beta = 0.25
         gamma = 0.5
         shear_wave_speed = 3333

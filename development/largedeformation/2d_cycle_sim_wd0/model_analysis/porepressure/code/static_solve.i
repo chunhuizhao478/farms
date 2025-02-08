@@ -215,12 +215,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 265e6
+            factor = 240e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 265e6
+            factor = 240e6
             displacements = 'disp_x disp_y'
         []     
     []        
@@ -237,11 +237,4 @@
         boundary = corner_ptr
         value = 0
     []
-    #add initial shear stress
-    # [./initial_shear_stress]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     value = 12.5e6
-    #     boundary = top
-    # []
 []

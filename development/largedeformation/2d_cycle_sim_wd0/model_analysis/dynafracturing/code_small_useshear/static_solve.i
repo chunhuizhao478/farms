@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh.msh'
+        file = '../mesh/mesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -30000 0'
+        coord = '0 -10000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -156,19 +156,10 @@
         len_of_fault = 8000
         sigma = 5e2
         peak_val = 0.7
-        use_damage_perturb = true
-        damage_perturb = 'damage_perturb'
+        # use_damage_perturb = true
+        # damage_perturb = 'damage_perturb'
         output_properties = 'initial_damage'      
         outputs = exodus
-    []
-    [define_damage_perturb]
-        type = DamagePerturbationSquare2D
-        nucl_center = '0 0'
-        e_damage = 0.2
-        length = 2000
-        thickness = 200
-        duration = 1.0
-        sigma = 333.3
     []
 []  
 
@@ -226,12 +217,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 280e6
+            factor = 240e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 280e6
+            factor = 240e6
             displacements = 'disp_x disp_y'
         []     
     []        

@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh.msh'
+        file = '../mesh/mesh_small.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -30000 0'
+        coord = '0 -10000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -157,6 +157,11 @@
     []
     #
     [strain_invariant_ratio_const_aux]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #
+    [overstress_aux]
         order = CONSTANT
         family = MONOMIAL
     []
@@ -510,7 +515,7 @@
     [../]
     [./csv]
       type = CSV
-      time_step_interval = 1
+      time_step_interval = 100
       show = '_dt maxvelx maxvely'
     [../]
     [out]
@@ -545,12 +550,12 @@
         []    
         [static_pressure_left]
             boundary = left
-            factor = 280e6
+            factor = 250e6
             displacements = 'disp_x disp_y'
         []  
         [static_pressure_right]
             boundary = right
-            factor = 280e6
+            factor = 250e6
             displacements = 'disp_x disp_y'
         []        
     []        
