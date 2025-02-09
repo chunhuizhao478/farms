@@ -370,7 +370,7 @@
     verbose = true
     # [TimeStepper]
     #     type = FarmsIterationAdaptiveDT
-    #     dt = 1e-4
+    #     dt = 1e-2
     #     cutback_factor_at_failure = 0.5
     #     optimal_iterations = 8
     #     growth_factor = 1.5
@@ -420,7 +420,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 100
+      time_step_interval = 25
     [../]
     [./csv]
       type = CSV
@@ -480,63 +480,6 @@
         value = 11e6
         boundary = top
     []    
-#     #add dampers
-#     [damp_left_x]
-#         type = FarmsNonReflectDashpotBC
-#         variable = disp_x
-#         displacements = 'disp_x disp_y'
-#         velocities = 'vel_x vel_y'
-#         accelerations = 'accel_x accel_y'
-#         component = 0
-#         boundary = left
-#         beta = 0.25
-#         gamma = 0.5
-#         shear_wave_speed = 3333
-#         p_wave_speed = 5773
-#         density = 2700
-#     []
-#     [damp_left_y]
-#         type = FarmsNonReflectDashpotBC
-#         variable = disp_y
-#         displacements = 'disp_x disp_y'
-#         velocities = 'vel_x vel_y'
-#         accelerations = 'accel_x accel_y'
-#         component = 1
-#         boundary = left
-#         beta = 0.25
-#         gamma = 0.5
-#         shear_wave_speed = 3333
-#         p_wave_speed = 5773
-#         density = 2700
-#     []
-#     [damp_right_x]
-#         type = FarmsNonReflectDashpotBC
-#         variable = disp_x
-#         displacements = 'disp_x disp_y'
-#         velocities = 'vel_x vel_y'
-#         accelerations = 'accel_x accel_y'
-#         component = 0
-#         boundary = right
-#         beta = 0.25
-#         gamma = 0.5
-#         shear_wave_speed = 3333
-#         p_wave_speed = 5773
-#         density = 2700
-#     []
-#     [damp_right_y]
-#         type = FarmsNonReflectDashpotBC
-#         variable = disp_y
-#         displacements = 'disp_x disp_y'
-#         velocities = 'vel_x vel_y'
-#         accelerations = 'accel_x accel_y'
-#         component = 1
-#         boundary = right
-#         beta = 0.25
-#         gamma = 0.5
-#         shear_wave_speed = 3333
-#         p_wave_speed = 5773
-#         density = 2700
-#     []
 []
 
 [UserObjects]

@@ -156,7 +156,7 @@
         type = InertialForce
         use_displaced_mesh = false
         variable = disp_y
-    []    
+    []        
 []
 
 [AuxKernels]
@@ -170,8 +170,8 @@
     [] 
     [density]
         type = GenericConstantMaterial
-        prop_names = density
-        prop_values = 2700
+        prop_names = 'density nonADdensity'
+        prop_values = '2700 2700'
     []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBM
@@ -179,8 +179,18 @@
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
         output_properties = 'B alpha_damagedvar xi'
+        block = '1 3'
         outputs = exodus
     [] 
+    [stress_elastic]
+        type = ComputeLinearElasticStress
+        block = '2'
+    []
+    [elasticity_tensor]
+        type = ComputeIsotropicElasticityTensor
+        lambda = 30e9
+        shear_modulus = 30e9
+    []
     [initial_damage]
         type = ParsedMaterial
         property_name = initial_damage
@@ -215,14 +225,14 @@
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
-        solve_type = lumped
-        use_constant_mass = true
+        solve_type = consistent
+        # use_constant_mass = true
     []
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 500
+    time_step_interval = 2500
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
@@ -240,22 +250,26 @@
     #     boundary = bottom
     # []    
     # 
-    [./Pressure]
-        [static_pressure_top]
-            boundary = top
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []     
+    [static_pressure_top]
+        type = ADNeumannBC
+        variable = disp_y
+        boundary = top
+        value = -50e6
+        displacements = 'disp_x disp_y'
+    []    
+    [static_pressure_left]
+        type = ADNeumannBC
+        variable = disp_x
+        boundary = left
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []  
+    [static_pressure_right]
+        type = ADNeumannBC
+        variable = disp_x
+        boundary = right
+        value = -50e6
+        displacements = 'disp_x disp_y'
     []        
     # fix ptr
     [./fix_cptr1_x]
@@ -275,9 +289,9 @@
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x
-        value = 12e6
+        value = 11e6
         boundary = top
-    []    
+    []     
 []
 
 [ICs]

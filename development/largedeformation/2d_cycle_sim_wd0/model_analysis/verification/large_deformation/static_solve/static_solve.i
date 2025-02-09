@@ -202,9 +202,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-10
     nl_max_its = 20
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-12
     # petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
     # petsc_options_value = 'gmres     hypre  True'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'

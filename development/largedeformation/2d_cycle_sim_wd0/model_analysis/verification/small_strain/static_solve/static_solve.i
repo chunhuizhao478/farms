@@ -86,6 +86,16 @@
         chi = 0.7
         xi_d = -0.9
         outputs = exodus
+        block = '1 3'
+    [] 
+    [stress_elastic]
+        type = ADComputeLinearElasticStress
+        block = '2'
+    []
+    [elasticity_tensor]
+        type = ADComputeIsotropicElasticityTensor
+        lambda = 30e9
+        shear_modulus = 30e9
     []
     [getxi]
         type = ADComputeXi
@@ -147,9 +157,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-10
     nl_max_its = 20
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-12
     # petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
     # petsc_options_value = 'gmres     hypre  True'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -183,22 +193,27 @@
     #     boundary = bottom
     # []
     # 
-    [./Pressure]
-        [static_pressure_top]
-            boundary = top
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []     
+    #Note: use neuamnnBC gives minimum waves than pressureBC
+    [static_pressure_top]
+        type = ADNeumannBC
+        variable = disp_y
+        boundary = top
+        value = -50e6
+        displacements = 'disp_x disp_y'
+    []    
+    [static_pressure_left]
+        type = ADNeumannBC
+        variable = disp_x
+        boundary = left
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []  
+    [static_pressure_right]
+        type = ADNeumannBC
+        variable = disp_x
+        boundary = right
+        value = -50e6
+        displacements = 'disp_x disp_y'
     []        
     # fix ptr
     [./fix_cptr1_x]
@@ -214,11 +229,11 @@
         value = 0
     []
     #
-    #add initial shear stress
+    # add initial shear stress
     [./initial_shear_stress]
         type = ADNeumannBC
         variable = disp_x
         value = 11e6
         boundary = top
-    []    
+    []      
 []
