@@ -371,7 +371,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    dt = 1e-2
+    dt = 1e-3
     verbose = true
     # [TimeStepper]
     #     type = FarmsIterationAdaptiveDT
@@ -404,7 +404,7 @@
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
     start_time = -1e-12
-    end_time = 1e-2 # dt used in the simulation
+    end_time = 1e-3 # dt used in the simulation
   []
 [../]
 
@@ -425,7 +425,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 10
+      time_step_interval = 100
     [../]
     [./csv]
       type = CSV
