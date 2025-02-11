@@ -38,6 +38,12 @@ public:
 
   virtual void computecoefficients(); //compute coefficients a_0 a_1 a_2 a_3 of granular phase
 
+  //2D only
+  virtual void computeinitialdamage2D(); //compute initial damage with time dependent material
+
+  //2D only
+  virtual void computedamageperturbation2D(); //compute damage perturbation with time dependent material
+
   virtual Real alphacr_root1(Real xi); //alpha cr root 1
 
   virtual Real alphacr_root2(Real xi); //alpha cr root 2
@@ -54,6 +60,10 @@ protected:
   //declare material properties:
   MaterialProperty<Real> & _alpha_damagedvar; //damage variable
   MaterialProperty<Real> & _B_breakagevar;    //breakage variable
+
+  MaterialProperty<Real> & _initial_damage_time_dependent_mat; //initial damage handling time dependent damage
+  MaterialProperty<Real> & _damage_perturbation; //damage perturbation
+  const MaterialProperty<Real> & _damage_perturbation_old; //old damage perturbation
 
   MaterialProperty<Real> & _lambda;           //first lamé constant
   MaterialProperty<Real> & _shear_modulus;    //shear modulus
@@ -196,5 +206,20 @@ protected:
   const VariableValue * _overstress;
   MaterialProperty<bool> & _use_overstress_mat;
   MaterialProperty<Real> & _overstress_mat;
+
+  /// @brief add option to build initial damage profile inside this material object
+  const bool _build_param_use_initial_damage_time_dependent_mat;
+  const Real _build_param_peak_value;
+  const Real _build_param_sigma;
+  const Real _build_param_len_of_fault;
+
+  /// @brief add option to build time dependent damage perturbation inside this material object
+  const bool _perturbation_build_param_use_damage_perturb;
+  const std::vector<Real> _perturbation_build_param_nucl_center;
+  const Real _perturbation_build_param_length;
+  const Real _perturbation_build_param_peak_value;
+  const Real _perturbation_build_param_sigma;
+  const Real _perturbation_build_param_thickness;
+  const Real _perturbation_build_param_duration;
 
 };

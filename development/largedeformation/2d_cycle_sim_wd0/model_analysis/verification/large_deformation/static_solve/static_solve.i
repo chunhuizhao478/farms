@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../mesh/mesh_small.msh'
+        file = '../../mesh/mesh_localrefine.msh'
     []
     [./sidesets]
         input = msh
@@ -144,6 +144,11 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar shear_modulus_o_mat shear_modulus'
         outputs = exodus
+        # use initial damage time dependent
+        build_param_use_initial_damage_time_dependent_mat = true
+        build_param_peak_value = 0.7
+        build_param_sigma = 5e2
+        build_param_len_of_fault = 8000
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
@@ -151,38 +156,10 @@
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
         outputs = exodus
     []
-    [initial_damage_surround]
-        type = InitialDamageCycleSim2D
-        len_of_fault = 8000
-        sigma = 5e2
-        peak_val = 0.7
-        use_damage_perturb = true
-        damage_perturb = 'damage_perturb'
-        output_properties = 'initial_damage'      
-        outputs = exodus
-        block = 1
-    []
-    [define_damage_perturb]
-        type = DamagePerturbationSquare2D
-        nucl_center = '0 0'
-        e_damage = 0.3
-        length = 8000
-        thickness = 200
-        duration = 1.0
-        sigma = 1318.02
-        block = 1
-    []
-    [const_damage_b2]
+    [dummy_initial_damage]
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         prop_values = '0.0'
-        block = 2
-    []
-    [const_damage_b3]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
-        block = 3
     []
 []  
 
@@ -238,23 +215,27 @@
     #     boundary = bottom
     # []  
     # 
-    [./Pressure]
-        [static_pressure_top]
-            boundary = top
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []     
-    []        
+    [static_pressure_top]
+        type = NeumannBC
+        variable = disp_y
+        boundary = top
+        value = -50e6
+        displacements = 'disp_x disp_y'
+    []    
+    [static_pressure_left]
+        type = NeumannBC
+        variable = disp_x
+        boundary = left
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []  
+    [static_pressure_right]
+        type = NeumannBC
+        variable = disp_x
+        boundary = right
+        value = -50e6
+        displacements = 'disp_x disp_y'
+    []       
     # fix ptr
     [./fix_cptr1_x]
         type = DirichletBC
@@ -273,7 +254,7 @@
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x
-        value = 11e6
+        value = 12e6
         boundary = top
     []    
 []

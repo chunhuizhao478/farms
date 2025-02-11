@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../mesh/mesh_small.msh'
+        file = '../../mesh/mesh_localrefine.msh'
     []
     [./sidesets]
         input = msh
@@ -251,12 +251,6 @@
         block = '2'
         execute_on = 'INITIAL'
     []
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_aux
-        solution = init_sol_components
-        from_variable = initial_damage
-    []
 []
 
 [Kernels]
@@ -322,19 +316,30 @@
         # use_cd_strain_dependent = true
         # use_total_strain_rate = true
         # block_id_applied = 1
+        # use initial damage time dependent
+        build_param_use_initial_damage_time_dependent_mat = true
+        build_param_peak_value = 0.7
+        build_param_sigma = 5e2
+        build_param_len_of_fault = 8000
+        # use damage perturbation time dependent
+        perturbation_build_param_use_damage_perturb = true
+        perturbation_build_param_nucl_center = '0 0'
+        perturbation_build_param_length = 8000
+        perturbation_build_param_thickness = 200
+        perturbation_build_param_peak_value = 0.3
+        perturbation_build_param_sigma = 1318.02
+        perturbation_build_param_duration = 1.0
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
-        output_properties = 'pk1_stress pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio total_lagrange_strain Cd_constant_aux cdbm_plastic_deformation_gradient_rate cdbm_deformation_gradient_rate'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain strain_invariant_ratio'
         outputs = exodus
     []
-    [define_initial_damage_matprop]
-        type = ParsedMaterial
-        property_name = initial_damage
-        coupled_variables = 'initial_damage_aux'
-        expression = 'initial_damage_aux'
-        outputs = exodus
+    [dummy_initial_damage]
+        type = GenericConstantMaterial
+        prop_names = 'initial_damage'
+        prop_values = '0.0'
     []
 [] 
 
@@ -420,7 +425,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 25
+      time_step_interval = 10
     [../]
     [./csv]
       type = CSV
@@ -443,22 +448,26 @@
     #     boundary = bottom
     # [] 
     # 
-    [./Pressure]
-        [static_pressure_top]
-            boundary = top
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y'
-        []        
+    [static_pressure_top]
+        type = NeumannBC
+        variable = disp_y
+        boundary = top
+        value = -50e6
+        displacements = 'disp_x disp_y'
+    []    
+    [static_pressure_left]
+        type = NeumannBC
+        variable = disp_x
+        boundary = left
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []  
+    [static_pressure_right]
+        type = NeumannBC
+        variable = disp_x
+        boundary = right
+        value = -50e6
+        displacements = 'disp_x disp_y'
     []        
     # fix ptr
     [./fix_cptr1_x]
@@ -477,7 +486,7 @@
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x
-        value = 11e6
+        value = 12e6
         boundary = top
     []    
 []
@@ -486,7 +495,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = '../static_solve/static_solve_out.e'
-      system_variables = 'initial_damage disp_x disp_y'
+      system_variables = 'disp_x disp_y'
       timestep = LATEST
       force_preaux = true
     [../]

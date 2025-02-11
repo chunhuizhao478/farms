@@ -71,7 +71,30 @@ DamageBreakageMaterial::validParams()
   params.addParam<bool>("use_overstress", false,
                         "Flag to use overstress to nucleate the rupture");
   params.addCoupledVar("overstress", "Name of the pore pressure coupled variable");
-  
+  // Build initial damage profile inside this material object
+  params.addParam<bool>("build_param_use_initial_damage_time_dependent_mat", false,
+                        "Flag to build initial damage profile inside this material object");
+  params.addParam<Real>("build_param_peak_value", -1,
+                        "Peak value of the initial damage profile");
+  params.addParam<Real>("build_param_sigma", -1,
+                        "Sigma value of the initial damage profile");
+  params.addParam<Real>("build_param_len_of_fault", -1,
+                        "Length of the fault for the initial damage profile");
+  // Build time dependent damage perturbation inside this material object
+  params.addParam<bool>("perturbation_build_param_use_damage_perturb", false,
+                        "Use damage perturbation for the initial damage profile");
+  params.addParam<std::vector<Real>>("perturbation_build_param_nucl_center", std::vector<Real>(),
+                        "Center of the nucleation for the damage perturbation");
+  params.addParam<Real>("perturbation_build_param_length", -1,
+                        "Length of the nucleation for the damage perturbation");
+  params.addParam<Real>("perturbation_build_param_peak_value", -1,
+                        "Peak value of the nucleation for the damage perturbation");
+  params.addParam<Real>("perturbation_build_param_sigma", -1,
+                        "Sigma value of the nucleation for the damage perturbation");
+  params.addParam<Real>("perturbation_build_param_thickness", -1,
+                        "Thickness of the nucleation for the damage perturbation");
+  params.addParam<Real>("perturbation_build_param_duration", -1,
+                        "Duration of the nucleation for the damage perturbation");  
   return params;
 }
 
@@ -79,6 +102,9 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   : Material(parameters),
   _alpha_damagedvar(declareProperty<Real>("alpha_damagedvar")),
   _B_breakagevar(declareProperty<Real>("B_damagedvar")),
+  _initial_damage_time_dependent_mat(declareProperty<Real>("initial_damage_time_dependent_material")),
+  _damage_perturbation(declareProperty<Real>("damage_perturb")),
+  _damage_perturbation_old(getMaterialPropertyOldByName<Real>("damage_perturb")),
   _lambda(declareProperty<Real>("lambda_const")),
   _shear_modulus(declareProperty<Real>("shear_modulus")),
   _damaged_modulus(declareProperty<Real>("damaged_modulus")),
@@ -159,7 +185,20 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _use_overstress(getParam<bool>("use_overstress")),
   _overstress(_use_overstress ? &coupledValue("overstress") : nullptr),
   _use_overstress_mat(declareProperty<bool>("use_overstress_mat")),
-  _overstress_mat(declareProperty<Real>("overstress_mat"))
+  _overstress_mat(declareProperty<Real>("overstress_mat")),
+  // Build initial damage profile inside this material object
+  _build_param_use_initial_damage_time_dependent_mat(getParam<bool>("build_param_use_initial_damage_time_dependent_mat")),
+  _build_param_peak_value(getParam<Real>("build_param_peak_value")),
+  _build_param_sigma(getParam<Real>("build_param_sigma")),
+  _build_param_len_of_fault(getParam<Real>("build_param_len_of_fault")),
+  // Build time dependent damage perturbation inside this material object
+  _perturbation_build_param_use_damage_perturb(getParam<bool>("perturbation_build_param_use_damage_perturb")),
+  _perturbation_build_param_nucl_center(getParam<std::vector<Real>>("perturbation_build_param_nucl_center")),
+  _perturbation_build_param_length(getParam<Real>("perturbation_build_param_length")),
+  _perturbation_build_param_peak_value(getParam<Real>("perturbation_build_param_peak_value")),
+  _perturbation_build_param_sigma(getParam<Real>("perturbation_build_param_sigma")),
+  _perturbation_build_param_thickness(getParam<Real>("perturbation_build_param_thickness")),
+  _perturbation_build_param_duration(getParam<Real>("perturbation_build_param_duration"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -212,6 +251,26 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Must specify pore_pressure when use_pore_pressure = true");  
   if (_use_overstress && !parameters.isParamSetByUser("overstress"))
     mooseError("Must specify overstress when use_overstress = true");
+  // Check parameters for building initial damage
+  if (_build_param_use_initial_damage_time_dependent_mat && (_build_param_peak_value < 0))
+    mooseError("build_param_peak_value must be set to a positive value when build_param_use_initial_damage_time_dependent_mat is set to true");
+  if (_build_param_use_initial_damage_time_dependent_mat && (_build_param_sigma < 0))
+    mooseError("build_param_sigma must be set to a positive value when build_param_use_initial_damage_time_dependent_mat is set to true");
+  if (_build_param_use_initial_damage_time_dependent_mat && (_build_param_len_of_fault < 0))
+    mooseError("build_param_len_of_fault must be set to a positive value when build_param_use_initial_damage_time_dependent_mat is set to true");
+  // Check parameters for building time dependent damage perturbation
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_nucl_center.size() != 2))
+    mooseError("perturbation_build_param_nucl_center must be set to a 2D vector when perturbation_build_param_use_damage_perturb is set to true");
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_length < 0))
+    mooseError("perturbation_build_param_length must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_peak_value < 0))
+    mooseError("perturbation_build_param_peak_value must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");    
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_sigma < 0))
+    mooseError("perturbation_build_param_sigma must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_thickness < 0))
+    mooseError("perturbation_build_param_thickness must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_duration < 0))
+    mooseError("perturbation_build_param_duration must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -235,7 +294,7 @@ DamageBreakageMaterial::initQpStatefulProperties()
   /* compute a0 a1 a2 a3 coefficients */
   computecoefficients();
 
-  _alpha_damagedvar[_qp] = _initial_damage[_qp];
+  _alpha_damagedvar[_qp] = _initial_damage[_qp]; //
   _B_breakagevar[_qp] = 0.0;
 
   _lambda[_qp] = _lambda_o;
@@ -259,6 +318,12 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _use_overstress_mat[_qp] = false;
   _overstress_mat[_qp] = 0.0;
 
+  //initialize initial damage time dependent material
+  _initial_damage_time_dependent_mat[_qp] = 0.0;
+
+  //initialize damage perturbation
+  _damage_perturbation[_qp] = 0.0;
+
 }
 
 void
@@ -270,6 +335,16 @@ DamageBreakageMaterial::computeQpProperties()
 
   /* compute a0 a1 a2 a3 coefficients */
   computecoefficients();
+
+  // Build time dependent damage perturbation inside this material object
+  if (_perturbation_build_param_use_damage_perturb){
+    computedamageperturbation2D();
+  }
+
+  // Build initial damage profile inside this material object
+  if (_build_param_use_initial_damage_time_dependent_mat){
+    computeinitialdamage2D();
+  }
 
   /* compute alpha at t_{n+1} using quantities from t_{n} */
   Real alpha_updated = updatedamage();
@@ -375,14 +450,22 @@ DamageBreakageMaterial::updatedamage()
   //update alpha at current time
   Real alpha_damagedvar = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
 
-  //check below initial damage (fix initial damage)
-  if ( alpha_damagedvar < _initial_damage[_qp] ){ alpha_damagedvar = _initial_damage[_qp]; }
-  else{}
-
   //check alpha within range
   if ( alpha_damagedvar < 0 ){ alpha_damagedvar = 0.0; }
   else if ( alpha_damagedvar > 1 ){ alpha_damagedvar = 1.0; }
   else{} 
+
+  
+  //Get currernt initial damage
+  //This function will separate the case if time dependent initial damage is used
+  Real get_correct_initial_damage = _initial_damage[_qp];
+  if ( _build_param_use_initial_damage_time_dependent_mat ){
+    get_correct_initial_damage = _initial_damage_time_dependent_mat[_qp]; 
+  }
+
+  //check below initial damage (fix initial damage)
+  if ( alpha_damagedvar < get_correct_initial_damage ){ alpha_damagedvar = get_correct_initial_damage; }
+  else{}
 
   _alpha_damagedvar[_qp] = alpha_damagedvar;
 
@@ -551,6 +634,91 @@ DamageBreakageMaterial::computecoefficients()
   _a1[_qp] = a1;
   _a2[_qp] = a2;
   _a3[_qp] = a3;
+
+}
+
+// Function to compute initial damage with time dependent material
+// This function is the same as "InitialDamageCycleSim2D"
+void
+DamageBreakageMaterial::computeinitialdamage2D() {
+
+  /**
+   * Input Parameters:
+   * _build_param_peak_value: peak value of the initial damage
+   * _build_param_sigma: standard deviation of the Gaussian distribution
+   * _build_param_len_of_fault: length of the fault
+   * _perturbation_build_param_use_damage_perturb: use damage perturbation flag
+   */
+
+  Real x_coord = _q_point[_qp](0); //along the strike direction
+  Real y_coord = _q_point[_qp](1); //along the normal direction
+
+  Real alpha_o = 0;
+
+  Real r = 0.0;
+  Real sigma = _build_param_sigma;
+  if (x_coord > -0.5*_build_param_len_of_fault and x_coord < 0.5*_build_param_len_of_fault ){
+    r = y_coord;
+    alpha_o = std::max(_build_param_peak_value * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  }
+  else if (x_coord <= -0.5*_build_param_len_of_fault ){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (-0.5*_build_param_len_of_fault )) * (x_coord - (-0.5*_build_param_len_of_fault )));
+    alpha_o = std::max(_build_param_peak_value * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  }
+  else if (x_coord >= 0.5*_build_param_len_of_fault ){
+    r = std::sqrt((y_coord - 0) * (y_coord - 0) + (x_coord - (0.5*_build_param_len_of_fault)) * (x_coord - (0.5*_build_param_len_of_fault )));
+    alpha_o = std::max(_build_param_peak_value * std::exp(-1.0*(std::pow(r,2))/(sigma*sigma)),0.0);
+  }
+
+  if (_perturbation_build_param_use_damage_perturb)
+  {
+    alpha_o = alpha_o + _damage_perturbation[_qp];
+  }
+
+  _initial_damage_time_dependent_mat[_qp] = alpha_o; 
+
+}
+
+// Function for compute damage perturbation with time dependent material
+// This function is the same as "DamagePerturbationSquare2D"
+void
+DamageBreakageMaterial::computedamageperturbation2D(){
+
+  /**
+   * Input Parameters:
+   * _nucl_center: center of the nucleation zone
+   * _length: length of the nucleation zone
+   * _peak_damage: peak damage value
+   * _sigma: standard deviation of the Gaussian distribution
+   * _thickness: thickness of the nucleation zone
+   * _duration: duration of the nucleation zone
+   */
+
+  //Get coordinates
+  //here no rotation is applied yet
+  Real xcoord = _q_point[_qp](0); //strike
+  Real ycoord = _q_point[_qp](1); //normal
+
+  //Get damage increments
+  //Note: if the damage perturbation is used, the _dt within the nucleation phase (_t < _duration) should be used as constant
+  //Otherwise there could be a problem (need to think carefully how to handle this better), a possible solution
+  //is to find the function describing total damage perturbation: dd = k t, and if dd > 1, then dd = 1, and t > _duration, then dd = 0
+  Real damage_inc = _perturbation_build_param_peak_value / (_perturbation_build_param_duration / _dt);
+
+  //Assign initial damage perturbation
+  Real dalpha = 0.0;
+  if ( _t <= _perturbation_build_param_duration ){
+    if ( (xcoord >= _perturbation_build_param_nucl_center[0] - _perturbation_build_param_length / 2.0) && (xcoord <= _perturbation_build_param_nucl_center[0] + _perturbation_build_param_length / 2.0) && (ycoord >= _perturbation_build_param_nucl_center[1] - _perturbation_build_param_thickness / 2.0) && (ycoord <= _perturbation_build_param_nucl_center[1] + _perturbation_build_param_thickness / 2.0) ){
+      dalpha = _damage_perturbation_old[_qp] + damage_inc*std::exp(-(xcoord*xcoord)/(2.0*_perturbation_build_param_sigma*_perturbation_build_param_sigma));
+    }
+    else{
+      dalpha = _damage_perturbation_old[_qp];
+    }
+  }
+  else{
+    dalpha = _damage_perturbation_old[_qp];
+  }
+  _damage_perturbation[_qp] = dalpha;  
 
 }
 
