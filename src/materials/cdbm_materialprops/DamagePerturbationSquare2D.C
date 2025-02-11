@@ -58,21 +58,21 @@ DamagePerturbationSquare2D::computeQpProperties()
   Real ycoord = _q_point[_qp](1); //normal
 
   //Get damage increments
-  //Real damage_inc = _peak_damage / (_duration / _dt);
+  Real damage_inc = _peak_damage / (_duration / _dt);
 
   //Assign initial damage perturbation
   Real dalpha = 0.0;
-  // if ( _t <= _duration ){
+  if ( _t <= _duration ){
     if ( (xcoord >= _nucl_center[0] - _length / 2.0) && (xcoord <= _nucl_center[0] + _length / 2.0) && (ycoord >= _nucl_center[1] - _thickness / 2.0) && (ycoord <= _nucl_center[1] + _thickness / 2.0) ){
-      dalpha = _damage_perturbation_old[_qp] + _peak_damage*std::exp(-(xcoord*xcoord)/(2.0*_sigma*_sigma));
+      dalpha = _damage_perturbation_old[_qp] + damage_inc*std::exp(-(xcoord*xcoord)/(2.0*_sigma*_sigma));
       //dalpha = _peak_damage;
     }
     else{
       dalpha = _damage_perturbation_old[_qp];
     }
-  // }
-  // else{
-    // dalpha = _damage_perturbation_old[_qp];
-  // }
+  }
+  else{
+    dalpha = _damage_perturbation_old[_qp];
+  }
   _damage_perturbation[_qp] = dalpha;
 }
