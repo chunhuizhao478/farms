@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../mesh/mesh_localrefine.msh'
+        file = '../../mesh/mesh_localrefine2.msh'
     []
     [./sidesets]
         input = msh
