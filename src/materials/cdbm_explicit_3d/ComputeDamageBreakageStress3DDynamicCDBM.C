@@ -236,7 +236,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
     sigma_total(2,0) = _initial_shear_stress[_qp] + _shear_stress_perturbation[_qp];
   }
 
-  sigma_d = sigma_total - 1/3 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
+  sigma_d = sigma_total - 1.0/3.0 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
 
   _eps_total[_qp] = eps_p + eps_e;
   _eps_p[_qp] = eps_p;
