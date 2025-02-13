@@ -1,8 +1,8 @@
 SetFactory("OpenCASCADE");
 
 // Define mesh sizes
-lc_fault = 25;
-lc = 1e3;
+lc_fault = 12.5;
+lc = 125;
 
 // Define the big square (2D)
 big_xmin = -30000;

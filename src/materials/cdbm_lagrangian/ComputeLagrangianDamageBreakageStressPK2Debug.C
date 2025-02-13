@@ -433,7 +433,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK2Stress()
   _S[_qp] = sigma_total;
 
   //compute deviatroic stress tensor //save
-  _Tau[_qp] = sigma_total - 1.0 / 3.0 * ( sigma_total.trace() ) * RankTwoTensor::Identity();
+  _Tau[_qp] = sigma_total - 0.3333 * ( sigma_total.trace() ) * RankTwoTensor::Identity();
 
   /* Compute tangent */
   RankFourTensor tangent;

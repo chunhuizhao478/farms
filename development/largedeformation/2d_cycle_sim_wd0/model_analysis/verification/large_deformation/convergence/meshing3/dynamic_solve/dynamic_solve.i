@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../../../mesh/mesh_localrefine3.msh'
+        file = '../../../../mesh/mesh_25m.msh'
     []
     [./sidesets]
         input = msh
@@ -355,7 +355,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 50
+    end_time = 30
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
@@ -408,30 +408,17 @@
   []
 [../]
 
-[Postprocessors]
-    [./_dt]
-        type = TimestepSize
-    [../]
-    [./maxvelx]
-        type = NodalExtremeValue
-        variable = vel_x
-    [../]
-    [./maxvely]
-        type = NodalExtremeValue
-        variable = vel_y
-    [../]
-[../]
-
 [Outputs]
+    #save the solution to a exodus file every 0.1 seconds
     [./exodus]
       type = Exodus
       time_step_interval = 100
     [../]
-    # [./csv]
-    #   type = CSV
-    #   time_step_interval = 1
-    #   show = '_dt maxvelx maxvely'
-    # [../]
+    #save the solution to a csv file every 0.001 seconds
+    [./csv]
+      type = CSV
+      time_step_interval = 1
+    [../]
 []
 
 [BCs]
@@ -513,5 +500,40 @@
       variable = disp_y
       solution_uo = init_sol_components
       from_variable = disp_y
+    []
+[]
+
+## Postprocessors ##
+
+[Positions]
+    [pos]
+      type = InputPositions
+      positions = '    0  100 0
+                    -250  100 0
+                    -500  100 0
+                    -750  100 0
+                   -1000  100 0
+                   -1250  100 0
+                   -1500  100 0
+                   -1750  100 0
+                   -2000  100 0
+                   -2250  100 0
+                   -2500  100 0
+                   -2750  100 0
+                   -3000  100 0
+                   -3250  100 0                   
+                   -3500  100 0
+                   -3750  100 0
+                   -4000  100 0 '
+    []
+[]
+
+[VectorPostprocessors]
+    [point_sample]
+      type = PositionsFunctorValueSampler
+      functors = 'vel_x vel_y disp_x disp_y B_damagedvar alpha_damagedvar strain_invariant_ratio'
+      positions = 'pos'
+      sort_by = x
+      execute_on = TIMESTEP_END
     []
 []
