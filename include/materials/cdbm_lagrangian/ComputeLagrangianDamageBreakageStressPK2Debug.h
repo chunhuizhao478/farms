@@ -65,6 +65,8 @@ protected:
   MaterialProperty<Real> & _xi;
   /// 2nd PK Stress
   MaterialProperty<RankTwoTensor> & _S;
+  /// Plastic Stress
+  MaterialProperty<RankTwoTensor> & _Tp;
   /// 2nd PK Tangent (dS/dF)
   MaterialProperty<RankFourTensor> & _C;
   /// Plastic Deformation Rate Tensor

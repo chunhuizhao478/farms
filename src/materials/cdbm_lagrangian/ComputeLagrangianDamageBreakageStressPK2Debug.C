@@ -32,6 +32,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _I2(declareProperty<Real>(_base_name + "second_elastic_strain_invariant")),
   _xi(declareProperty<Real>(_base_name + "strain_invariant_ratio")),
   _S(declareProperty<RankTwoTensor>(_base_name + "pk2_stress")),
+  _Tp(declareProperty<RankTwoTensor>(_base_name + "plastic_stress")),
   _C(declareProperty<RankFourTensor>(_base_name + "pk2_jacobian")),
   _Dp(declareProperty<RankTwoTensor>(_base_name + "plastic_strain_rate")),
   _Fp_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_plastic_deformation_gradient_rate")),
@@ -423,7 +424,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK2Stress()
   //Catch the nan error in the initial solve
   if (std::isnan(xi)){xi = -std::sqrt(3);}
 
-  /* Compute stress */
+  /* Compute PK2 stress */
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
@@ -432,8 +433,11 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK2Stress()
   _Ep[_qp] = Ep;
   _S[_qp] = sigma_total;
 
+  /* Compute plastic stress */
+  _Tp[_qp] = Fe.transpose() * Fe * sigma_total;
+
   //compute deviatroic stress tensor //save
-  _Tau[_qp] = sigma_total - 0.3333 * ( sigma_total.trace() ) * RankTwoTensor::Identity();
+  _Tau[_qp] = _Tp[_qp] - 0.3333 * ( _Tp[_qp].trace() ) * RankTwoTensor::Identity();
 
   /* Compute tangent */
   RankFourTensor tangent;

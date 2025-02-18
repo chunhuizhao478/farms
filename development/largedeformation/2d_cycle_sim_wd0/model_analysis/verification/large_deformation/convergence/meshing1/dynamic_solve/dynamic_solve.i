@@ -413,12 +413,13 @@
     [./exodus]
       type = Exodus
       time_step_interval = 100
+      show = 'disp_x disp_y vel_x vel_y alpha_damagedvar B_damagedvar strain_invariant_ratio pk2_stress_00 pk2_stress_01 pk2_stress_02 pk2_stress_11 pk2_stress_12 pk2_stress_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_02 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_12 green_lagrange_elastic_strain_22 plastic_strain_00 plastic_strain_01 plastic_strain_02 plastic_strain_11 plastic_strain_12 plastic_strain_22' 
     [../]
-    #save the solution to a csv file every 0.001 seconds
-    [./csv]
-      type = CSV
-      time_step_interval = 1
-    [../]
+    # #save the solution to a csv file every 0.001 seconds
+    # [./csv]
+    #   type = CSV
+    #   time_step_interval = 1
+    # [../]
 []
 
 [BCs]
@@ -503,37 +504,37 @@
     []
 []
 
-## Postprocessors ##
+# ## Postprocessors ##
 
-[Positions]
-    [pos]
-      type = InputPositions
-      positions = '    0  100 0
-                    -250  100 0
-                    -500  100 0
-                    -750  100 0
-                   -1000  100 0
-                   -1250  100 0
-                   -1500  100 0
-                   -1750  100 0
-                   -2000  100 0
-                   -2250  100 0
-                   -2500  100 0
-                   -2750  100 0
-                   -3000  100 0
-                   -3250  100 0                   
-                   -3500  100 0
-                   -3750  100 0
-                   -4000  100 0 '
-    []
-[]
+# [Positions]
+#     [pos]
+#       type = InputPositions
+#       positions = '    0  100 0
+#                     -250  100 0
+#                     -500  100 0
+#                     -750  100 0
+#                    -1000  100 0
+#                    -1250  100 0
+#                    -1500  100 0
+#                    -1750  100 0
+#                    -2000  100 0
+#                    -2250  100 0
+#                    -2500  100 0
+#                    -2750  100 0
+#                    -3000  100 0
+#                    -3250  100 0                   
+#                    -3500  100 0
+#                    -3750  100 0
+#                    -4000  100 0 '
+#     []
+# []
 
-[VectorPostprocessors]
-    [point_sample]
-      type = PositionsFunctorValueSampler
-      functors = 'vel_x vel_y disp_x disp_y B_damagedvar alpha_damagedvar strain_invariant_ratio'
-      positions = 'pos'
-      sort_by = x
-      execute_on = TIMESTEP_END
-    []
-[]
+# [VectorPostprocessors]
+#     [point_sample]
+#       type = PositionsFunctorValueSampler
+#       functors = 'vel_x vel_y disp_x disp_y B_damagedvar alpha_damagedvar strain_invariant_ratio'
+#       positions = 'pos'
+#       sort_by = x
+#       execute_on = TIMESTEP_END
+#     []
+# []
