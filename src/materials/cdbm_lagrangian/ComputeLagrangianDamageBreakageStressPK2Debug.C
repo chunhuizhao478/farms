@@ -41,7 +41,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _shear_modulus(getMaterialProperty<Real>("shear_modulus")),
   _damaged_modulus(getMaterialProperty<Real>("damaged_modulus")),
   _B_breakagevar(getMaterialProperty<Real>("B_damagedvar")),
-  _D(getMaterialProperty<RankTwoTensor>(_base_name + "total_strain")),
+  _D(getMaterialProperty<RankTwoTensor>(_base_name + "mechanical_strain")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
   _Tau_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "deviatroic_stress")),
   _Fp_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_deformation_gradient")),
@@ -247,8 +247,8 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
       for (unsigned int m = 0; m < 3; m++){
-        _Fp_dot[_qp](i,j) = _Dp[_qp](i,m) * _Fp[_qp](m,j);
-        _F_dot[_qp](i,j) = _D[_qp](i,m) * _F[_qp](m,j);
+        _Fp_dot[_qp](i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
+        _F_dot[_qp](i,j) += _D[_qp](i,m) * _F[_qp](m,j);
       }
     }
   }
