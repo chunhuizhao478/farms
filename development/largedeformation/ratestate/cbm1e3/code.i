@@ -59,7 +59,7 @@
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 500
+    CdCb_multiplier = 1000 #
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
@@ -234,7 +234,7 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 1e10
+    end_time = 400
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7

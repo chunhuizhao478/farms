@@ -44,6 +44,8 @@ public:
   //2D only
   virtual void computedamageperturbation2D(); //compute damage perturbation with time dependent material
 
+  virtual void buildLmatrix(); //build L matrix
+
   virtual Real alphacr_root1(Real xi); //alpha cr root 1
 
   virtual Real alphacr_root2(Real xi); //alpha cr root 2
@@ -94,6 +96,10 @@ protected:
   MaterialProperty<Real> & _strain_dir0_positive; //strain_dir0_positive_old
   const MaterialProperty<Real> & _strain_dir0_positive_old; //strain_dir0_positive_old
 
+  //Velocity gradient L
+  MaterialProperty<bool> & _use_vels_build_L_mat; //use_vels_build_L
+  MaterialProperty<RankTwoTensor> & _velgrad_L; //L
+
   //get old material properties:
   const MaterialProperty<Real> & _alpha_damagedvar_old; //old damage variable
   const MaterialProperty<Real> & _B_breakagevar_old;     //old breakage variable
@@ -107,6 +113,12 @@ protected:
   const MaterialProperty<Real> & _a3_old;     //old a3
   const MaterialProperty<RankTwoTensor> & _elastic_strain_old;   //old elastic strain
   const MaterialProperty<RankTwoTensor> & _total_lagrange_strain_old;   //old total lagrangian strain
+
+  //use velocity to build L
+  const bool _use_vels_build_L;
+  const VariableGradient * _grad_vel_x;
+  const VariableGradient * _grad_vel_y;
+  const VariableGradient * _grad_vel_z;
 
   //get const values
   Real _lambda_o;

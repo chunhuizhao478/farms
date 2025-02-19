@@ -55,7 +55,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 30
+    Cd_constant = 300 #
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -234,7 +234,7 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 1e10
+    end_time = 400
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7

@@ -20,6 +20,10 @@ DamageBreakageMaterial::validParams()
 {
   InputParameters params = Material::validParams();
   params.addClassDescription("Material used in three field poro dynamics simulations");
+  params.addParam<bool>("use_vels_build_L", false, "Whether to use velocity to build L matrix");
+  params.addCoupledVar(           "vel_x", "velocity in x direction"); //to build L matrix
+  params.addCoupledVar(           "vel_y", "velocity in y direction"); //to build L matrix
+  params.addCoupledVar(           "vel_z", "velocity in z direction"); //to build L matrix
   params.addRequiredParam<Real>(        "lambda_o", "initial lambda constant value");
   params.addRequiredParam<Real>( "shear_modulus_o", "initial shear modulus value");
   params.addRequiredParam<Real>(            "xi_0", "strain invariants ratio: onset of damage evolution");
@@ -122,6 +126,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _Cd_rate_dependent(declareProperty<Real>("Cd_rate_dependent")),
   _strain_dir0_positive(declareProperty<Real>("strain_dir0_positive")),
   _strain_dir0_positive_old(getMaterialPropertyOldByName<Real>("strain_dir0_positive")),
+  _use_vels_build_L_mat(declareProperty<bool>("use_vels_build_L_mat")),
+  _velgrad_L(declareProperty<RankTwoTensor>("velgrad_L")),
   _alpha_damagedvar_old(getMaterialPropertyOldByName<Real>("alpha_damagedvar")),
   _B_breakagevar_old(getMaterialPropertyOldByName<Real>("B_damagedvar")),
   _I2_old(getMaterialPropertyOldByName<Real>("second_elastic_strain_invariant")),
@@ -134,6 +140,10 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a3_old(getMaterialPropertyOldByName<Real>("a3")),
   _elastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("green_lagrange_elastic_strain")),
   _total_lagrange_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("total_lagrange_strain")),
+  _use_vels_build_L(getParam<bool>("use_vels_build_L")),
+  _grad_vel_x(_use_vels_build_L ? &coupledGradient("vel_x") : nullptr),
+  _grad_vel_y(_use_vels_build_L ? &coupledGradient("vel_y") : nullptr),
+  _grad_vel_z(_use_vels_build_L ? &coupledGradient("vel_z") : nullptr),
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_d(getParam<Real>("xi_d")),
@@ -271,6 +281,12 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("perturbation_build_param_thickness must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
   if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_duration < 0))
     mooseError("perturbation_build_param_duration must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
+  if (_use_vels_build_L && !parameters.isParamSetByUser("vel_x"))
+    mooseError("Must specify vel_x when use_vels_build_L = true");
+  if (_use_vels_build_L && !parameters.isParamSetByUser("vel_y"))
+    mooseError("Must specify vel_y when use_vels_build_L = true");
+  if (_use_vels_build_L && !parameters.isParamSetByUser("vel_z"))
+    mooseError("Must specify vel_z when use_vels_build_L = true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -323,6 +339,12 @@ DamageBreakageMaterial::initQpStatefulProperties()
 
   //initialize damage perturbation
   _damage_perturbation[_qp] = 0.0;
+
+  //initialize velocity gradient L
+  _velgrad_L[_qp].zero();
+
+  //initialize bool for using velocity to build L matrix
+  _use_vels_build_L_mat[_qp] = _use_vels_build_L;
 
 }
 
@@ -377,6 +399,12 @@ DamageBreakageMaterial::computeQpProperties()
   if (_use_overstress)
     _use_overstress_mat[_qp] = true;
     _overstress_mat[_qp] = _use_overstress && _overstress ? (*_overstress)[_qp] : 0.0;
+
+  // Build velocity gradient L matrix
+  _use_vels_build_L_mat[_qp] = _use_vels_build_L;
+  if (_use_vels_build_L){
+    buildLmatrix();
+  }
 
 }
 
@@ -562,6 +590,14 @@ DamageBreakageMaterial::updatemodulus(Real alpha_updated)
   _lambda[_qp] = _lambda_o;
   _shear_modulus[_qp] = shear_modulus;
   _damaged_modulus[_qp] = gamma_damaged;
+}
+
+void
+DamageBreakageMaterial::buildLmatrix()
+{
+  _velgrad_L[_qp](0,0) = (*_grad_vel_x)[_qp](0); _velgrad_L[_qp](0,1) = (*_grad_vel_x)[_qp](1); _velgrad_L[_qp](0,2) = (*_grad_vel_x)[_qp](2);
+  _velgrad_L[_qp](1,0) = (*_grad_vel_y)[_qp](0); _velgrad_L[_qp](1,1) = (*_grad_vel_y)[_qp](1); _velgrad_L[_qp](1,2) = (*_grad_vel_y)[_qp](2);
+  _velgrad_L[_qp](2,0) = (*_grad_vel_z)[_qp](0); _velgrad_L[_qp](2,1) = (*_grad_vel_z)[_qp](1); _velgrad_L[_qp](2,2) = (*_grad_vel_z)[_qp](2);
 }
 
 void 

@@ -72,7 +72,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.01 #1e-3
+    beta_width = 0.005 #
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -234,7 +234,7 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 1e10
+    end_time = 400
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7

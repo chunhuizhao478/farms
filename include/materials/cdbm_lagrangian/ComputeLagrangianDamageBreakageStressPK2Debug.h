@@ -75,6 +75,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _Fp_dot;
   /// Total Deformation Gradient Rate Tensor
   MaterialProperty<RankTwoTensor> & _F_dot;
+  /// Total Strain (Total Strain Rate)
+  MaterialProperty<RankTwoTensor> & _D;
 
   /* Get Up-to-date Material Properties*/
   /// Lambda
@@ -85,8 +87,6 @@ protected:
   const MaterialProperty<Real> & _damaged_modulus;
   /// Breakage Variable
   const MaterialProperty<Real> & _B_breakagevar;
-  /// Total Strain (Total Strain Rate)
-  const MaterialProperty<RankTwoTensor> & _D;
   
   /* Get Old Material Properties */
   /// Breakage Variable
@@ -114,4 +114,8 @@ protected:
   const MaterialProperty<Real> & _a3;  
   /// dimension of the problem
   //const unsigned int _dim;
+
+  //get velocity gradient L
+  const MaterialProperty<bool> & _use_vels_build_L_mat;
+  const MaterialProperty<RankTwoTensor> & _velgrad_L;
 };

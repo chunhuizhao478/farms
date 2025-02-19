@@ -84,7 +84,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.5
+    chi = 0.25 #
     
 []
 
@@ -234,7 +234,7 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 1e10
+    end_time = 400
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
