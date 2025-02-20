@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
+        nx = 50
         ny = 10
         nz = 10
         xmin = 0
-        xmax = 1
+        xmax = 5
         ymin = 0
         ymax = 1
         zmin = 0
