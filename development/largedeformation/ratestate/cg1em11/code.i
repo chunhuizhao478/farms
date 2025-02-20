@@ -234,7 +234,7 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 1000 #extend the time
+    end_time = 10000 #extend the time
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -256,7 +256,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 10
 []
 
 [BCs]
