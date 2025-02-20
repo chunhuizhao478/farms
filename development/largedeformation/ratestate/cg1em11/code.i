@@ -234,7 +234,7 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 400
+    end_time = 1000 #extend the time
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
