@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
+        nx = 50
         ny = 10
         nz = 10
         xmin = 0
-        xmax = 1
+        xmax = 5
         ymin = 0
         ymax = 1
         zmin = 0
@@ -17,14 +17,14 @@
         input = msh
         block_id = 1
         bottom_left = '0 0 0'
-        top_right = '1 0.5 1'
+        top_right = '5.0 0.5 1'
     []
     [./box2]
         type = SubdomainBoundingBoxGenerator
         input = box
         block_id = 1
         bottom_left = '0 0.6 0'
-        top_right = '1.0 1.0 1.0'
+        top_right = '5.0 1.0 1.0'
     [] 
 []
 
@@ -75,7 +75,7 @@
     beta_width = 0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 8e-12 #
+    C_g = 1e-11 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -290,61 +290,61 @@
         boundary = top
         function = applied_load_top
     []
-    [./Pressure]
-        [static_pressure_back]
-            boundary = back
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_front]
-            boundary = front
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []         
-    []    
+    # [./Pressure]
+    #     [static_pressure_back]
+    #         boundary = back
+    #         factor = 50e6
+    #         displacements = 'disp_x disp_y disp_z'
+    #         use_displaced_mesh = false
+    #     []  
+    #     [static_pressure_front]
+    #         boundary = front
+    #         factor = 50e6
+    #         displacements = 'disp_x disp_y disp_z'
+    #         use_displaced_mesh = false
+    #     []    
+    #     [static_pressure_left]
+    #         boundary = left
+    #         factor = 50e6
+    #         displacements = 'disp_x disp_y disp_z'
+    #         use_displaced_mesh = false
+    #     []  
+    #     [static_pressure_right]
+    #         boundary = right
+    #         factor = 50e6
+    #         displacements = 'disp_x disp_y disp_z'
+    #         use_displaced_mesh = false
+    #     []         
+    # []    
 []
 
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = 'initial_load_check_out.e'
-      system_variables = 'disp_x disp_y disp_z'
-      timestep = LATEST
-      force_preaux = true
-    [../]
-[]
+# [UserObjects]
+#     [./init_sol_components]
+#       type = SolutionUserObject
+#       mesh = 'initial_load_check_out.e'
+#       system_variables = 'disp_x disp_y disp_z'
+#       timestep = LATEST
+#       force_preaux = true
+#     [../]
+# []
 
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-    [disp_z_ic]
-      type = SolutionIC
-      variable = disp_z
-      solution_uo = init_sol_components
-      from_variable = disp_z
-    []
-[]
+# [ICs]
+#     [disp_x_ic]
+#       type = SolutionIC
+#       variable = disp_x
+#       solution_uo = init_sol_components
+#       from_variable = disp_x
+#     []
+#     [disp_y_ic]
+#       type = SolutionIC
+#       variable = disp_y
+#       solution_uo = init_sol_components
+#       from_variable = disp_y
+#     []
+#     [disp_z_ic]
+#       type = SolutionIC
+#       variable = disp_z
+#       solution_uo = init_sol_components
+#       from_variable = disp_z
+#     []
+# []
