@@ -117,8 +117,8 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
 
     for (unsigned int i = 0; i < 3; i++){
       for (unsigned int j = 0; j < 3; j++){
-          // F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
-          F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
+          F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
+          //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
           for (unsigned int m = 0; m < 3; m++){
             Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
           }
@@ -498,12 +498,21 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK2Stress()
 RankTwoTensor
 ComputeLagrangianDamageBreakageStressPK2Debug::computeQpFp()
 {
-  //Apply power operation on every element of Tau
-  //let's assume m2 = 1, and not apply pow on its elements
-  RankTwoTensor Tau_old_power_m2 = _Tau_old[_qp];
+  //Get old Tau
+  RankTwoTensor Tau_old = _Tau_old[_qp];
+
+  //Get equvialent deviatroic stress scalar
+  Real Tau_eq = 0.0;
+  for (unsigned int p = 0; p < 3; p++){
+    for (unsigned int q = 0; q < 3; q++){
+      Tau_eq += 1.5 * Tau_old(p,q) * Tau_old(p,q);
+    }
+  }
+
+  Tau_eq = std::sqrt(Tau_eq); 
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
-  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * Tau_old_power_m2; 
+  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]-1.0) * Tau_old; 
 
   // //Update Plastic Strain
   // _Ep[_qp] = _Ep_old[_qp] + Dp * _dt;

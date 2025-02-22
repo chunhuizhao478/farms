@@ -16,16 +16,9 @@
         type = SubdomainBoundingBoxGenerator
         input = msh
         block_id = 1
-        bottom_left = '0 0 0'
-        top_right = '1 0.5 1'
+        bottom_left = '0.3 0.3 0.3'
+        top_right = '0.7 0.7 0.7'
     []
-    [./box2]
-        type = SubdomainBoundingBoxGenerator
-        input = box
-        block_id = 1
-        bottom_left = '0 0.6 0'
-        top_right = '1.0 1.0 1.0'
-    [] 
 []
 
 [GlobalParams]
@@ -34,10 +27,10 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 30e9
+    lambda_o = 10e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 30e9
+    shear_modulus_o = 10e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
@@ -55,7 +48,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 30
+    Cd_constant = 0
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -72,7 +65,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.1 #
+    beta_width = 0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
@@ -109,44 +102,13 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    [vel_x]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [vel_y]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [vel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
 []
 
 [AuxKernels]
     [compute_xi]
         type = CompXi3D
         variable = xi_computed
-        execute_on = 'TIMESTEP_BEGIN TIMESTEP_END'
-    []
-    #
-    [Vel_x]
-        type = CompVarRate
-        variable = vel_x
-        coupled = disp_x
-        execute_on = 'TIMESTEP_BEGIN TIMESTEP_END'
-    []
-    [Vel_y]
-        type = CompVarRate
-        variable = vel_y
-        coupled = disp_y
-        execute_on = 'TIMESTEP_BEGIN TIMESTEP_END'
-    []
-    [Vel_z]
-        type = CompVarRate
-        variable = vel_z
-        coupled = disp_z
-        execute_on = 'TIMESTEP_BEGIN TIMESTEP_END'
+        execute_on = 'TIMESTEP_END'
     []
 []
 
@@ -181,13 +143,8 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L'
-        # use_vels_build_L = true
-        # vel_x = vel_x
-        # vel_y = vel_y
-        # vel_z = vel_z
+        output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        block = 0
     [] 
     [initial_damage]
         type = GenericConstantMaterial
@@ -195,30 +152,31 @@
         prop_values = 0
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2Debug
+        type = ComputeLagrangianDamageBreakageStressPK2
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain plastic_deformation_gradient_det'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
-        block = 0
     []
     # elastic
-    [elastic_tensor]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 30e9
-        shear_modulus = 30e9
-        block = 1
-    []
-    [compute_stress]
-        type = ComputeStVenantKirchhoffStress
-        large_kinematics = true
-        block = 1
-    []
+    # [elastic_tensor]
+    #     type = ComputeIsotropicElasticityTensor
+    #     lambda = 1e10
+    #     shear_modulus = 1e10
+    # []
+    # [compute_stress]
+    #     type = ComputeStVenantKirchhoffStress
+    #     large_kinematics = true
+    #     output_properties = 'green_lagrange_strain pk2_stress'
+    #     outputs = exodus
+    # []
 []  
 
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '1e-4 * t'
+        expression = 'if (t>dt, 1e-2 + 1e-4 * t, 1e-2)'
+        symbol_names = 'dt'
+        symbol_values = '1e-2'
     []
 []
 
@@ -227,6 +185,9 @@
     [smp]
       type = SMP
       full = true
+    #   petsc_options = '-ksp_view'
+    #   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    #   petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     []
 []
   
@@ -234,23 +195,44 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = 0
-    end_time = 400
+    end_time = 1e10
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 5
-    nl_abs_tol = 1e-6
+    nl_max_its = 20
+    nl_abs_tol = 1e-8
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1
+    dt = 20
+    # [TimeStepper]
+    #     type = IterationAdaptiveDT
+    #     dt = 0.01
+    #     cutback_factor_at_failure = 0.1
+    #     optimal_iterations = 10
+    #     growth_factor = 1.2
+    #     enable = true
+    #     reject_large_step_threshold = 0.01
+    #     reject_large_step = true
+    # []
     [./TimeIntegrator]
-        # type = ImplicitEuler
-        type = BDF2
+        type = ImplicitEuler
+        # type = BDF2
         # type = CrankNicolson
+        # type = ImplicitMidpoint
+        # type = LStableDirk2
+        # type = LStableDirk3
+        # type = LStableDirk4
+        # type = AStableDirk4
+        #
+        # Explicit methods
+        # type = ExplicitEuler
+        # type = ExplicitMidpoint
+        # type = Heun
+        # type = Ralston
     [../]
 []
 
@@ -260,6 +242,12 @@
 []
 
 [BCs]
+    [fix_back_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = back
+        value = 0
+    []
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
@@ -272,50 +260,18 @@
         boundary = bottom
         value = 0
     []
-    [fix_bottom_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = bottom
-        value = 0
-    []   
     [fix_top_y]
         type = DirichletBC
         variable = disp_y
         boundary = top
         value = 0
-    [] 
+    []
     [applied_top_x]
         type = FunctionDirichletBC
         variable = disp_x
         boundary = top
         function = applied_load_top
     []
-    [./Pressure]
-        [static_pressure_back]
-            boundary = back
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_front]
-            boundary = front
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []         
-    []    
 []
 
 [UserObjects]

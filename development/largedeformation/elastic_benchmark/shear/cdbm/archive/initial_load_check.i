@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 50
+        nx = 10
         ny = 10
         nz = 10
         xmin = 0
-        xmax = 5
+        xmax = 1
         ymin = 0
         ymax = 1
         zmin = 0
@@ -78,8 +78,8 @@
 [Materials]
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
-        lambda = 30e9
-        shear_modulus = 30e9
+        lambda = 1e10
+        shear_modulus = 1e10
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
@@ -101,6 +101,12 @@
 []
 
 [BCs]
+    [fix_back_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = back
+        value = 0
+    []
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
@@ -113,48 +119,16 @@
         boundary = bottom
         value = 0
     []
-    [fix_bottom_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = bottom
-        value = 0
-    []   
     [fix_top_y]
         type = DirichletBC
         variable = disp_y
         boundary = top
         value = 0
-    [] 
+    []
     [applied_top_x]
         type = DirichletBC
         variable = disp_x
         boundary = top
-        value = 0
+        value = 1e-2
     []
-    [./Pressure]
-        [static_pressure_back]
-            boundary = back
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_front]
-            boundary = front
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []    
-        [static_pressure_left]
-            boundary = left
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []  
-        [static_pressure_right]
-            boundary = right
-            factor = 50e6
-            displacements = 'disp_x disp_y disp_z'
-            use_displaced_mesh = false
-        []         
-    []    
 []

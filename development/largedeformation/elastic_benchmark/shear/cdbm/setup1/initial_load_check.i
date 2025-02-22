@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
-        ny = 10
-        nz = 10
+        nx = 25
+        ny = 5
+        nz = 5
         xmin = 0
-        xmax = 1
+        xmax = 5
         ymin = 0
         ymax = 1
         zmin = 0
@@ -78,8 +78,8 @@
 [Materials]
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
-        lambda = 1e10
-        shear_modulus = 1e10
+        lambda = 30e9
+        shear_modulus = 30e9
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
@@ -105,6 +105,12 @@
         type = DirichletBC
         variable = disp_z
         boundary = back
+        value = 0
+    []
+    [fix_front_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = front
         value = 0
     []
     [fix_bottom_x]

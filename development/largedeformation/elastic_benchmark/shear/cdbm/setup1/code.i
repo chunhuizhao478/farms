@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 10
-        ny = 10
-        nz = 10
+        nx = 25
+        ny = 5
+        nz = 5
         xmin = 0
-        xmax = 1
+        xmax = 5
         ymin = 0
         ymax = 1
         zmin = 0
@@ -27,10 +27,10 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 10e9
+    lambda_o = 30e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 10e9
+    shear_modulus_o = 30e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
@@ -152,7 +152,7 @@
         prop_values = 0
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress'
         outputs = exodus
@@ -160,8 +160,8 @@
     # elastic
     # [elastic_tensor]
     #     type = ComputeIsotropicElasticityTensor
-    #     lambda = 1e10
-    #     shear_modulus = 1e10
+    #     lambda = 30e9
+    #     shear_modulus = 30e9
     # []
     # [compute_stress]
     #     type = ComputeStVenantKirchhoffStress
@@ -246,6 +246,12 @@
         type = DirichletBC
         variable = disp_z
         boundary = back
+        value = 0
+    []
+    [fix_front_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = front
         value = 0
     []
     [fix_bottom_x]
