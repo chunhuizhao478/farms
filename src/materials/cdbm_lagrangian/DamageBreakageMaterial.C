@@ -99,6 +99,11 @@ DamageBreakageMaterial::validParams()
                         "Thickness of the nucleation for the damage perturbation");
   params.addParam<Real>("perturbation_build_param_duration", -1,
                         "Duration of the nucleation for the damage perturbation");  
+  // Add constant parameters for state variable evolution
+  params.addParam<bool>("use_state_var_evolution", false, "Flag to use state variable evolution");
+  params.addParam<Real>("const_A", -1.0,"Constant A value, A = a * sigma_N");
+  params.addParam<Real>("const_B", -1.0,"Constant B value, B = b * sigma_N");
+  params.addParam<Real>("const_theta_o", -1.0,"Constant theta_o value");
   return params;
 }
 
@@ -208,7 +213,16 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _perturbation_build_param_peak_value(getParam<Real>("perturbation_build_param_peak_value")),
   _perturbation_build_param_sigma(getParam<Real>("perturbation_build_param_sigma")),
   _perturbation_build_param_thickness(getParam<Real>("perturbation_build_param_thickness")),
-  _perturbation_build_param_duration(getParam<Real>("perturbation_build_param_duration"))
+  _perturbation_build_param_duration(getParam<Real>("perturbation_build_param_duration")),
+  // Add constant parameters for state variable evolution
+  _use_state_var_evolution(getParam<bool>("use_state_var_evolution")),
+  _const_A(getParam<Real>("const_A")),
+  _const_B(getParam<Real>("const_B")),
+  _const_theta_o(getParam<Real>("const_theta_o")),
+  _use_state_var_evolution_mat(declareProperty<bool>("use_state_var_evolution_mat")),
+  _const_A_mat(declareProperty<Real>("const_A_mat")),
+  _const_B_mat(declareProperty<Real>("const_B_mat")),
+  _const_theta_o_mat(declareProperty<Real>("const_theta_o_mat"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -287,6 +301,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Must specify vel_y when use_vels_build_L = true");
   if (_use_vels_build_L && !parameters.isParamSetByUser("vel_z"))
     mooseError("Must specify vel_z when use_vels_build_L = true");
+  if (_use_state_var_evolution && _const_A < 0 && _const_B < 0 && _const_theta_o < 0)
+    mooseError("const_A, const_B, and const_theta_o must be set to a positive value when use_state_var_evolution is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -345,6 +361,12 @@ DamageBreakageMaterial::initQpStatefulProperties()
 
   //initialize bool for using velocity to build L matrix
   _use_vels_build_L_mat[_qp] = _use_vels_build_L;
+
+  //initialize state variable evolution parameters
+  _use_state_var_evolution_mat[_qp] = _use_state_var_evolution;
+  _const_A_mat[_qp] = _const_A;
+  _const_B_mat[_qp] = _const_B;
+  _const_theta_o_mat[_qp] = _const_theta_o;
 
 }
 
@@ -405,6 +427,12 @@ DamageBreakageMaterial::computeQpProperties()
   if (_use_vels_build_L){
     buildLmatrix();
   }
+
+  // Get state variable evolution parameters
+  _use_state_var_evolution_mat[_qp] = _use_state_var_evolution;
+  _const_A_mat[_qp] = _const_A;
+  _const_B_mat[_qp] = _const_B;
+  _const_theta_o_mat[_qp] = _const_theta_o;
 
 }
 

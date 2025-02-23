@@ -121,6 +121,20 @@
         order = FIRST
         family = LAGRANGE
     []
+    #
+    [shear_strain]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [shear_strain_rate]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #
+    [state_variable_rate]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -147,6 +161,27 @@
         variable = vel_z
         coupled = disp_z
         execute_on = 'TIMESTEP_BEGIN TIMESTEP_END'
+    []
+    #
+    [shear_strain]
+        type = MaterialRankTwoTensorAux
+        property = total_lagrange_strain
+        i = 0
+        j = 1
+        variable = shear_strain
+        block = 0
+    []
+    [shear_strain_rate]
+        type = TimeDerivativeAux
+        variable = shear_strain_rate
+        functor = shear_strain
+    []
+    #
+    [state_variable_rate]
+        type = MaterialRateRealAux
+        variable = state_variable_rate
+        property = state_variable
+        block = 0
     []
 []
 
@@ -181,11 +216,11 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L'
-        # use_vels_build_L = true
-        # vel_x = vel_x
-        # vel_y = vel_y
-        # vel_z = vel_z
+        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus' 
+        use_state_var_evolution = true
+        const_A = 1.8e6
+        const_B = 1.2e6
+        const_theta_o = 5e3
         outputs = exodus
         block = 0
     [] 
@@ -195,9 +230,9 @@
         prop_values = 0
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2Debug
+        type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain plastic_deformation_gradient_det'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable'
         outputs = exodus
         block = 0
     []
@@ -235,30 +270,31 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = 0
-    end_time = 30000 #extend the time
+    end_time = 300000 #extend the time
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 5
     nl_abs_tol = 1e-6
-    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    # petsc_options_value = 'lu       NONZERO'
-    petsc_options_iname = '-ksp_type -pc_type'
-    petsc_options_value = 'gmres     hypre'
+    petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-ksp_type -pc_type'
+    # petsc_options_value = 'gmres     hypre'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
     dt = 1
     [./TimeIntegrator]
-        # type = ImplicitEuler
-        type = BDF2
+        type = ImplicitEuler
+        # type = BDF2
         # type = CrankNicolson
     [../]
 []
 
 [Outputs] 
     exodus = true
+    show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
     time_step_interval = 1
 []
 

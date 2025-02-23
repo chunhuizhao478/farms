@@ -234,4 +234,14 @@ protected:
   const Real _perturbation_build_param_thickness;
   const Real _perturbation_build_param_duration;
 
+  /// @brief add constant parameters for state variable evolution
+  const bool _use_state_var_evolution;
+  const Real _const_A;
+  const Real _const_B;
+  const Real _const_theta_o;
+  MaterialProperty<bool> & _use_state_var_evolution_mat;
+  MaterialProperty<Real> & _const_A_mat;
+  MaterialProperty<Real> & _const_B_mat;
+  MaterialProperty<Real> & _const_theta_o_mat;
+
 };
