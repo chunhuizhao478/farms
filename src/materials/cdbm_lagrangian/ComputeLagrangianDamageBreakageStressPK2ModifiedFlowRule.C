@@ -364,14 +364,14 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeTheta()
   Real Dp_eq = 0.0;
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
-      Dp_eq += _Dp_old[_qp](i,j) * _Dp_old[_qp](i,j);
+      Dp_eq += _Dp[_qp](i,j) * _Dp[_qp](i,j);
     }
   }
 
   Dp_eq = std::sqrt(2.0/3.0 * Dp_eq);
 
   //Compute theta using explicit time integration
-  _Theta[_qp] = _Theta_old[_qp] + (1.0 - Dp_eq * _Theta_old[_qp]) * _dt;
+  _Theta[_qp] = ( _dt + _Theta_old[_qp] ) / ( 1.0 + Dp_eq * _dt );
 }
 
 RankTwoTensor
@@ -391,17 +391,17 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpFp()
 
   // ExpTau = Q * diag * Q.transpose();
 
-  //Compute state variable theta
-  computeTheta();
-
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp;
   if (_use_state_var_evolution_mat[_qp]){
-    _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * _Tau_old[_qp] * std::pow(_Theta[_qp]/_const_theta_o_mat[_qp],-1.0*_const_B_mat[_qp]/_const_A_mat[_qp]);
+    _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * _Tau_old[_qp] * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
   }
   else{
     mooseError("Must select 'use_state_var_evolution_mat = true' option in DamageBreakageMaterial to use this material object");
   }
+
+  //Compute state variable theta
+  computeTheta();
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - _Dp[_qp] * _dt;
@@ -420,128 +420,128 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulu
                                                                   RankTwoTensor Ee)
 {
 
-  //define functions for derivatives
+  // //define functions for derivatives
 
-  //delta function
-  auto delta = [](int i, int j) -> Real {
-    return (i == j) ? 1.0 : 0.0;
-  };
+  // //delta function
+  // auto delta = [](int i, int j) -> Real {
+  //   return (i == j) ? 1.0 : 0.0;
+  // };
 
-  //dI1_dE_{kl}
-  auto dI1dE = [&](int k, int l) -> Real {
-    return delta(k,l);
-  };
+  // //dI1_dE_{kl}
+  // auto dI1dE = [&](int k, int l) -> Real {
+  //   return delta(k,l);
+  // };
 
-  //dI2_dE_{kl}
-  auto dI2dE = [&](int k, int l) -> Real {
-    return 2 * Ee(k,l);
-  };
+  // //dI2_dE_{kl}
+  // auto dI2dE = [&](int k, int l) -> Real {
+  //   return 2 * Ee(k,l);
+  // };
 
-  //dxi_dE_{kl}
-  auto dxidE = [&](int k, int l) -> Real {
+  // //dxi_dE_{kl}
+  // auto dxidE = [&](int k, int l) -> Real {
     
-    // Epsilon to avoid division by zero
-    const Real epsilon = 1e-12;
-    // Adjust I2 if necessary
-    Real adjusted_I2 = I2;
-    if (I2 <= epsilon) {
-      //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
-      adjusted_I2 = epsilon;
-    }
+  //   // Epsilon to avoid division by zero
+  //   const Real epsilon = 1e-12;
+  //   // Adjust I2 if necessary
+  //   Real adjusted_I2 = I2;
+  //   if (I2 <= epsilon) {
+  //     //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
+  //     adjusted_I2 = epsilon;
+  //   }
 
-    Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-    //mooseInfo("I1 = ", I1, ", I2 = ", I2);
-    if (std::isnan(dxidE)){mooseError("dxidE");}
-    return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-  };
+  //   Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
+  //   //mooseInfo("I1 = ", I1, ", I2 = ", I2);
+  //   if (std::isnan(dxidE)){mooseError("dxidE");}
+  //   return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
+  // };
 
-  //dE_{ij}_dE_{kl}
-  auto dEdE = [&](int i, int j, int k, int l) -> Real {
-    return delta(i,k) * delta(j,l);
-    //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
-  };
+  // //dE_{ij}_dE_{kl}
+  // auto dEdE = [&](int i, int j, int k, int l) -> Real {
+  //   return delta(i,k) * delta(j,l);
+  //   //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
+  // };
 
-  //dxi^{-1}_dE_{kl}
-  auto dxim1dE = [&](int k, int l) -> Real {
-    return -1.0 * pow(xi,-2.0) * dxidE(k,l);
-  };
+  // //dxi^{-1}_dE_{kl}
+  // auto dxim1dE = [&](int k, int l) -> Real {
+  //   return -1.0 * pow(xi,-2.0) * dxidE(k,l);
+  // };
 
-  //dxi^3_dE_{kl}
-  auto dxi3dE = [&](int k, int l) -> Real {
-    return 3 * pow(xi,2) * dxidE(k,l);
-  };
+  // //dxi^3_dE_{kl}
+  // auto dxi3dE = [&](int k, int l) -> Real {
+  //   return 3 * pow(xi,2) * dxidE(k,l);
+  // };
 
-  //dSe_{ij}_dE_{kl}
-  auto dSedE = [&](int i, int j, int k, int l) -> Real {
-    Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
-    dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
-    dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
-    dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
-    if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
-    return dSedE_components;
-  };
+  // //dSe_{ij}_dE_{kl}
+  // auto dSedE = [&](int i, int j, int k, int l) -> Real {
+  //   Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
+  //   dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
+  //   dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
+  //   dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
+  //   if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
+  //   return dSedE_components;
+  // };
 
-  //dSb_{ij}_dE_{kl}
-  auto dSbdE = [&](int i, int j, int k, int l) -> Real {
-    Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
-    dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
-    dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
-    dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
-    return dSbdE_components;
-  };
+  // //dSb_{ij}_dE_{kl}
+  // auto dSbdE = [&](int i, int j, int k, int l) -> Real {
+  //   Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
+  //   dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
+  //   dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
+  //   dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
+  //   return dSbdE_components;
+  // };
 
-  //dS_{ij}_dE_{kl}
-  auto dSdE = [&](int i, int j, int k, int l) -> Real {
-    return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
-  };
+  // //dS_{ij}_dE_{kl}
+  // auto dSdE = [&](int i, int j, int k, int l) -> Real {
+  //   return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
+  // };
 
-  // Compute tangent modulus C
-  for (unsigned int i = 0; i < 3; i++){
-    for (unsigned int j = 0; j < 3; j++){
-      for (unsigned int k = 0; k < 3; k++){
-        for (unsigned int l = 0; l < 3; l++){
-          if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
-          tangent(i,j,k,l) += dSdE(i,j,k,l);
-        }
-      }
-    }
-  }
+  // // Compute tangent modulus C
+  // for (unsigned int i = 0; i < 3; i++){
+  //   for (unsigned int j = 0; j < 3; j++){
+  //     for (unsigned int k = 0; k < 3; k++){
+  //       for (unsigned int l = 0; l < 3; l++){
+  //         if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
+  //         tangent(i,j,k,l) += dSdE(i,j,k,l);
+  //       }
+  //     }
+  //   }
+  // }
 
-  // const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
-  // const RankTwoTensor identity = RankTwoTensor::Identity();
+  const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
+  const RankTwoTensor identity = RankTwoTensor::Identity();
 
-  // // Precompute dxidE tensor
-  // RankTwoTensor dxidE_tensor;
-  // for (unsigned int k = 0; k < 3; ++k)
-  //   for (unsigned int l = 0; l < 3; ++l)
-  //     dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
+  // Precompute dxidE tensor
+  RankTwoTensor dxidE_tensor;
+  for (unsigned int k = 0; k < 3; ++k)
+    for (unsigned int l = 0; l < 3; ++l)
+      dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
 
-  // const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
+  const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
 
-  // // Compute terms for dSedE
-  // const Real lambda_term = _lambda_const[_qp] - _damaged_modulus[_qp] / xi;
-  // const Real shear_term = 2.0 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi;
+  // Compute terms for dSedE
+  const Real lambda_term = _lambda_const[_qp] - _damaged_modulus[_qp] / xi;
+  const Real shear_term = 2.0 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi;
 
-  // RankFourTensor term_se1 = identity.outerProduct(-_damaged_modulus[_qp] * I1 * dxim1dE_tensor);
-  // RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
-  // RankFourTensor term_se3 = Ee.outerProduct(-_damaged_modulus[_qp] * dxidE_tensor);
-  // RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
+  RankFourTensor term_se1 = identity.outerProduct(-_damaged_modulus[_qp] * I1 * dxim1dE_tensor);
+  RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
+  RankFourTensor term_se3 = Ee.outerProduct(-_damaged_modulus[_qp] * dxidE_tensor);
+  RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
 
-  // RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
+  RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
 
-  // // Compute terms for dSbdE
-  // const Real coeff2_b = 2.0 * _a2[_qp] + _a1[_qp] / xi + 3.0 * _a3[_qp] * xi;
-  // const Real coeff4_b = 2.0 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * xi * xi * xi;
+  // Compute terms for dSbdE
+  const Real coeff2_b = 2.0 * _a2[_qp] + _a1[_qp] / xi + 3.0 * _a3[_qp] * xi;
+  const Real coeff4_b = 2.0 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * xi * xi * xi;
 
-  // RankFourTensor term_b1 = identity.outerProduct((_a1[_qp] * dxim1dE_tensor + 3 * _a3[_qp] * dxidE_tensor) * I1);
-  // RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
-  // RankFourTensor term_b3 = Ee.outerProduct(_a1[_qp] * dxidE_tensor - _a3[_qp] * 3 * xi * xi * dxidE_tensor);
-  // RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
+  RankFourTensor term_b1 = identity.outerProduct((_a1[_qp] * dxim1dE_tensor + 3 * _a3[_qp] * dxidE_tensor) * I1);
+  RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
+  RankFourTensor term_b3 = Ee.outerProduct(_a1[_qp] * dxidE_tensor - _a3[_qp] * 3 * xi * xi * dxidE_tensor);
+  RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
 
-  // RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
+  RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
 
-  // // Combine and assign tangent
-  // tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
+  // Combine and assign tangent
+  tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
 
 }
 
@@ -551,56 +551,52 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulu
 //   // Tolerances and maximum iterations for the predictor-corrector loop
 //   const Real tol_theta = 1e-6;
 //   const Real tol_tau   = 1e-6;
-//   const Real tol_Dp    = 1e-6;
-//   const unsigned int max_iter = 50;
-  
-//   // Old state (θ_old) from previous time step
-//   const Real theta_old = _Theta_old[_qp];
-//   // Initial guess for theta is the old value
-//   Real theta_new = theta_old;
-  
-//   // Set initial guess for deviatoric stress from stored old value
-//   RankTwoTensor tau_new = _Tau_old[_qp];
+//   const unsigned int max_iter = 20;
 
 //   // Declare kinematics variables outside the loop so they remain in scope later
-//   RankTwoTensor Fp_updated, Fe, Ee, Ep, E;
-//   Real I1 = 0.0, I2 = 0.0, xi = 0.0;
-//   RankTwoTensor Dp_new, Dp_old; // For comparing Dp updates
+//   RankTwoTensor Fp_updated, Fe, Ee, Ep, E, sigma_s, sigma_b, sigma_total, Tp, tau_updated, Dp, Cp;
+//   Real I1 = 0.0, I2 = 0.0, xi = 0.0, Dp_eq = 0.0;
 
-//   // Initialize Dp_old to zero for first iteration comparison.
-//   Dp_old.zero();
+//   // Initialize equivalent checks for convergence
+//   Real theta_new = _Theta_old[_qp]; Real theta_updated = 0.0;
+//   Real tau_eq_new = 0.0; Real tau_eq_updated = 0.0; RankTwoTensor tau_new = _Tau_old[_qp];
 
 //   // Loop to update theta and plastic strain rate concurrently with tau
 //   for (unsigned int iter = 0; iter < max_iter; iter++)
 //   {
 //     // --- Compute Plastic Strain Rate Dp using current tau guess ---
-//     Dp_new = _C_g[_qp] *
-//              std::pow(_B_breakagevar_old[_qp], _m1[_qp]) *
-//              tau_new *
-//              std::pow(theta_new / _const_theta_o_mat[_qp], -1.0 * _const_B_mat[_qp] / _const_A_mat[_qp]);
+//     Dp = _C_g[_qp] *
+//         std::pow(_B_breakagevar[_qp], _m1[_qp]) *
+//         tau_new *
+//         std::pow(theta_new / _const_theta_o_mat[_qp], -1.0 * _const_B_mat[_qp] / _const_A_mat[_qp]);
     
 //     // --- Compute Equivalent Plastic Strain Rate ---
-//     Real Dp_eq = 0.0;
+//     Dp_eq = 0.0;
 //     for (unsigned int i = 0; i < 3; i++){
 //       for (unsigned int j = 0; j < 3; j++){
-//         Dp_eq += Dp_new(i,j) * Dp_new(i,j);
+//         Dp_eq += Dp(i,j) * Dp(i,j);
 //       }
 //     }
 //     Dp_eq = std::sqrt((2.0/3.0) * Dp_eq);
     
 //     // --- Update Theta using Implicit Time Integration ---
-//     Real dtheta_dt = 1.0 - Dp_eq * theta_new; 
-//     Real theta_updated = theta_old + _dt * dtheta_dt;
+//     theta_updated = _Theta_old[_qp] + (1.0 - Dp_eq * theta_new) * _dt;
     
 //     // --- Compute Updated Kinematics & Stress using new Dp ---
 //     // Update plastic deformation gradient
-//     RankTwoTensor Cp = RankTwoTensor::Identity() - Dp_new * _dt;
+//     Cp = RankTwoTensor::Identity() - Dp * _dt;
 //     Fp_updated = Cp.inverse() * _Fp_old[_qp];
     
 //     // Compute elastic deformation gradient Fe
 //     Fe = _F[_qp] * Fp_updated.inverse();
 //     // Compute elastic strain: Ee = 0.5*(Fe^T * Fe - I)
 //     Ee = 0.5 * (Fe.transpose() * Fe - RankTwoTensor::Identity());
+
+//     // Compute plastic strain: Ep = 0.5*(Fp^T * Fp - I)
+//     Ep = 0.5 * (Fp_updated.transpose() * Fp_updated - RankTwoTensor::Identity());
+
+//     // Compute total strain: E = Fp^T * Ee * Fp + Ep
+//     E = Fp_updated.transpose() * Ee * Fp_updated + Ep;
     
 //     // Compute invariants
 //     I1 = Ee.trace();
@@ -616,44 +612,47 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulu
 //     if (std::isnan(xi)) { xi = -std::sqrt(3); }
     
 //     // --- Compute Stress Components ---
-//     RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() +
+//     sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() +
 //                              (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
-//     RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() +
+//     sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() +
 //                              (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
-//     RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
-    
-//     // Save total stress (if needed)
-//     _S[_qp] = sigma_total;
+//     sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
     
 //     /* Compute plastic stress */
-//     _Tp[_qp] = Fe.transpose() * Fe * sigma_total;
+//     Tp = Fe.transpose() * Fe * sigma_total;
     
 //     // --- Update Deviatoric Stress using updated plastic stress ---
-//     RankTwoTensor tau_updated = _Tp[_qp] - 0.3333 * (_Tp[_qp].trace()) * RankTwoTensor::Identity();
+//     tau_updated = Tp - 0.3333 * Tp.trace() * RankTwoTensor::Identity();
+
+//     // --- Compute Equivalent Deviatoric Stress for convergence check ---
+//     tau_eq_updated = 0.0;
+//     for (unsigned int i = 0; i < 3; i++){
+//       for (unsigned int j = 0; j < 3; j++){
+//         tau_eq_updated += tau_updated(i,j) * tau_updated(i,j);
+//       }
+//     }
+//     tau_eq_updated = std::sqrt((2.0/3.0) * tau_eq_updated);
     
 //     // --- Convergence Check ---
 //     // Check change in theta, tau, and Dp between iterations.
 //     bool converged_theta = (std::fabs(theta_updated - theta_new) < tol_theta);
-//     bool converged_tau   = ((tau_updated - tau_new).norm() < tol_tau);
-//     bool converged_Dp    = ((Dp_new - Dp_old).norm() < tol_Dp);
+//     bool converged_tau   = (std::fabs(tau_eq_updated - tau_eq_new) < tol_tau);
 
 //     // if (converged_theta && converged_tau && converged_Dp)
-//     if (converged_theta)
+//     if (converged_theta && converged_tau)
 //     {
 //       theta_new = theta_updated;
-//       _Theta[_qp] = theta_new;
-//       _Dp[_qp] = Dp_new;
+//       tau_eq_new = tau_eq_updated;
+
 //       tau_new = tau_updated;
 //       break;
 //     }
     
 //     // Update guesses for next iteration:
 //     theta_new = theta_updated;
-//     _Theta[_qp] = theta_new;
-//     _Dp[_qp] = Dp_new;
+//     tau_eq_new = tau_eq_updated;
 //     tau_new = tau_updated;
-//     Dp_old = Dp_new;
-    
+
 //     if (iter == max_iter - 1)
 //     {
 //       mooseWarning("Failed to converge in the predictor-corrector loop!");
@@ -662,6 +661,8 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulu
 
 //   // Save final updated tau state
 //   _Tau[_qp] = tau_new;
+//   _Theta[_qp] = theta_new;
+//   _Dp[_qp] = Dp;
 
 //   /* Compute tangent */
 //   RankFourTensor tangent;
@@ -674,10 +675,14 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulu
 //   _Fp[_qp] = Fp_updated;
 //   _Fe[_qp] = Fe;
 //   _Ee[_qp] = Ee;
+//   _Ep[_qp] = Ep;
 //   // Make sure to compute E if needed before saving it:
 //   // e.g., E = Fp_updated.transpose() * Ee * Fp_updated + Ep; // if Ep computed earlier
 //   _E[_qp]  = E;
 //   _I1[_qp] = I1;
 //   _I2[_qp] = I2;
 //   _xi[_qp] = xi;
+//   _S[_qp] = sigma_total;
+//   _Tp[_qp] = Tp;
+
 // }

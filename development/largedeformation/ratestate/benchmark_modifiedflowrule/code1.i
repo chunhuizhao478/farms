@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 25
+        nx = 5
         ny = 5
         nz = 5
         xmin = 0
-        xmax = 5
+        xmax = 1
         ymin = 0
         ymax = 1
         zmin = 0
@@ -175,6 +175,7 @@
         type = TimeDerivativeAux
         variable = shear_strain_rate
         functor = shear_strain
+        block = 0
     []
     #
     [state_variable_rate]
@@ -218,9 +219,9 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus' 
         use_state_var_evolution = true
-        const_A = 1.2e6
-        const_B = 1.8e6
-        const_theta_o = 5e3
+        const_A = 2e6
+        const_B = 1.2e6
+        const_theta_o = 1e3
         outputs = exodus
         block = 0
     [] 
@@ -294,7 +295,7 @@
 
 [Outputs] 
     exodus = true
-    show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate'
+    show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
     time_step_interval = 1
 []
 
