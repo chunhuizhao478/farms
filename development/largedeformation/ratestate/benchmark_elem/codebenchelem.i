@@ -2,86 +2,16 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 25
-        ny = 5
-        nz = 5
+        nx = 1
+        ny = 1
+        nz = 1
         xmin = 0
-        xmax = 5
+        xmax = 1
         ymin = 0
         ymax = 1
         zmin = 0
         zmax = 1
     [] 
-    [./box]
-        type = SubdomainBoundingBoxGenerator
-        input = msh
-        block_id = 1
-        bottom_left = '0 0 0'
-        top_right = '5 0.4 1'
-    []
-    [./box2]
-        type = SubdomainBoundingBoxGenerator
-        input = box
-        block_id = 2
-        bottom_left = '0 0.6 0'
-        top_right = '5 1 1'
-    [] 
-    [./sideset1]
-        type = SideSetsAroundSubdomainGenerator
-        input = box2
-        new_boundary = 'top_elastic_left'
-        block = 2
-        normal = '-1 0 0'
-    []
-    [./sideset2]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset1
-        new_boundary = 'top_elastic_right'
-        block = 2
-        normal = '1 0 0'
-    []
-    [./sideset3]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset2
-        new_boundary = 'bottom_elastic_left'
-        block = 1
-        normal = '-1 0 0'
-    []
-    [./sideset4]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset3
-        new_boundary = 'bottom_elastic_right'
-        block = 1
-        normal = '1 0 0'
-    [] 
-    [./sideset5]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset4
-        new_boundary = 'top_elastic_front'
-        block = 2
-        normal = '0 0 1'
-    []
-    [./sideset6]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset5
-        new_boundary = 'top_elastic_back'
-        block = 2
-        normal = '0 0 -1'
-    [] 
-    [./sideset7]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset6
-        new_boundary = 'bottom_elastic_front'
-        block = 1
-        normal = '0 0 1'
-    []
-    [./sideset8]
-        type = SideSetsAroundSubdomainGenerator
-        input = sideset7
-        new_boundary = 'bottom_elastic_back'
-        block = 1
-        normal = '0 0 -1'
-    []    
 []
 
 [GlobalParams]
@@ -140,7 +70,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.5
+    chi = 0.7
     
 []
 
@@ -233,13 +163,13 @@
         functor = shear_strain
         block = 0
     []
-    #
-    [state_variable_rate]
-        type = MaterialRateRealAux
-        variable = state_variable_rate
-        property = state_variable
-        block = 0
-    []
+    # #
+    # [state_variable_rate]
+    #     type = MaterialRateRealAux
+    #     variable = state_variable_rate
+    #     property = state_variable
+    #     block = 0
+    # []
 []
 
 [Kernels]
@@ -274,12 +204,7 @@
     [damage_mat]
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus' 
-        use_state_var_evolution = true
-        const_A = 2e6
-        const_B = 1.2e6
-        const_theta_o = 5e3
         outputs = exodus
-        block = 0
     [] 
     [initial_damage]
         type = GenericConstantMaterial
@@ -287,23 +212,10 @@
         prop_values = 0
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain'
         outputs = exodus
-        block = 0
-    []
-    # elastic
-    [elastic_tensor]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 30e9
-        shear_modulus = 30e9
-        block = '1 2'
-    []
-    [compute_stress]
-        type = ComputeStVenantKirchhoffStress
-        large_kinematics = true
-        block = '1 2'
     []
 []  
 
@@ -324,16 +236,16 @@
   
 [Executioner]
     type = Transient
-    solve_type = 'NEWTON'
-    # solve_type = 'PJFNK'
+    # solve_type = 'NEWTON'
+    solve_type = 'PJFNK'
     start_time = 0
     end_time = 300000 #extend the time
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-6
+    nl_rel_tol = 1e-8
     nl_max_its = 5
-    nl_abs_tol = 1e-6
+    nl_abs_tol = 1e-10
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
     petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type'
@@ -351,23 +263,11 @@
 
 [Outputs] 
     exodus = true
-    show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
+    show = 'pk2_stress_01 total_lagrange_strain_01 shear_modulus shear_strain_rate pk2_stress_11'
     time_step_interval = 1
 []
 
 [BCs]
-    [fix_back_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = 'top_elastic_back bottom_elastic_back'
-        value = 0
-    []
-    [fix_front_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = 'top_elastic_front bottom_elastic_front'
-        value = 0
-    []
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
@@ -381,21 +281,41 @@
         value = 0
     []
     [fix_top_y]
-        type = NeumannBC
+        type = DirichletBC
         variable = disp_y
         boundary = top
-        value = -120e6
-    []
-    [fix_bottomblock_leftright_x]
-        type = DirichletBC
-        variable = disp_x
-        boundary = 'bottom_elastic_left bottom_elastic_right'
         value = 0
     []
     [applied_top_x]
         type = FunctionDirichletBC
         variable = disp_x
-        boundary = 'top'
+        boundary = top
         function = applied_load_top
     [] 
+    [fix_back_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = back
+        value = 0
+    []
+    [./Pressure]
+        [static_pressure_left]
+            boundary = left
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []
+        [static_pressure_right]
+            boundary = right
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []  
+        [static_pressure_front]
+            boundary = front
+            factor = 10e6
+            displacements = 'disp_x disp_y disp_z'
+            use_displaced_mesh = false
+        []          
+    []
 []

@@ -277,7 +277,7 @@
         use_state_var_evolution = true
         const_A = 2e6
         const_B = 1.2e6
-        const_theta_o = 5e3
+        const_theta_o = 1e5
         outputs = exodus
         block = 0
     [] 

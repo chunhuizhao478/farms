@@ -2,11 +2,11 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 3
-        nx = 5
+        nx = 25
         ny = 5
         nz = 5
         xmin = 0
-        xmax = 1
+        xmax = 5
         ymin = 0
         ymax = 1
         zmin = 0
@@ -22,10 +22,66 @@
     [./box2]
         type = SubdomainBoundingBoxGenerator
         input = box
-        block_id = 1
+        block_id = 2
         bottom_left = '0 0.6 0'
         top_right = '5 1 1'
     [] 
+    [./sideset1]
+        type = SideSetsAroundSubdomainGenerator
+        input = box2
+        new_boundary = 'top_elastic_left'
+        block = 2
+        normal = '-1 0 0'
+    []
+    [./sideset2]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset1
+        new_boundary = 'top_elastic_right'
+        block = 2
+        normal = '1 0 0'
+    []
+    [./sideset3]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset2
+        new_boundary = 'bottom_elastic_left'
+        block = 1
+        normal = '-1 0 0'
+    []
+    [./sideset4]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset3
+        new_boundary = 'bottom_elastic_right'
+        block = 1
+        normal = '1 0 0'
+    [] 
+    [./sideset5]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset4
+        new_boundary = 'top_elastic_front'
+        block = 2
+        normal = '0 0 1'
+    []
+    [./sideset6]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset5
+        new_boundary = 'top_elastic_back'
+        block = 2
+        normal = '0 0 -1'
+    [] 
+    [./sideset7]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset6
+        new_boundary = 'bottom_elastic_front'
+        block = 1
+        normal = '0 0 1'
+    []
+    [./sideset8]
+        type = SideSetsAroundSubdomainGenerator
+        input = sideset7
+        new_boundary = 'bottom_elastic_back'
+        block = 1
+        normal = '0 0 -1'
+    []    
 []
 
 [GlobalParams]
@@ -238,12 +294,12 @@
         type = ComputeIsotropicElasticityTensor
         lambda = 30e9
         shear_modulus = 30e9
-        block = 1
+        block = '1 2'
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
-        block = 1
+        block = '1 2'
     []
 []  
 
@@ -291,23 +347,23 @@
 
 [Outputs] 
     exodus = true
-    show = 'pk2_stress_01 total_lagrange_strain_01 shear_modulus shear_strain_rate pk2_stress_11'
+    # show = 'pk2_stress_01 total_lagrange_strain_01 shear_modulus shear_strain_rate pk2_stress_11'
     time_step_interval = 1
 []
 
 [BCs]
-    # [fix_back_z]
-    #     type = DirichletBC
-    #     variable = disp_z
-    #     boundary = back
-    #     value = 0
-    # []
-    # [fix_front_z]
-    #     type = DirichletBC
-    #     variable = disp_z
-    #     boundary = front
-    #     value = 0
-    # []
+    [fix_back_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = 'top_elastic_back bottom_elastic_back'
+        value = 0
+    []
+    [fix_front_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = 'top_elastic_front bottom_elastic_front'
+        value = 0
+    []
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
@@ -320,40 +376,22 @@
         boundary = bottom
         value = 0
     []
-    [fix_bottom_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = bottom
-        value = 0
-    []
-    # [fix_top_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = top
-    #     value = 0
-    # []
     [fix_top_y]
         type = NeumannBC
         variable = disp_y
         boundary = top
         value = -120e6
     []
-    [fix_front_z]
-        type = NeumannBC
-        variable = disp_y
-        boundary = top
-        value = -120e6
-    []
-    [fix_back_z]
-        type = NeumannBC
-        variable = disp_y
-        boundary = top
-        value = 120e6
+    [fix_bottomblock_leftright_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = 'bottom_elastic_left bottom_elastic_right'
+        value = 0
     []
     [applied_top_x]
         type = FunctionDirichletBC
         variable = disp_x
-        boundary = top
+        boundary = 'top'
         function = applied_load_top
     [] 
 []
