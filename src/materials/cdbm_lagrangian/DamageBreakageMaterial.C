@@ -30,6 +30,7 @@ DamageBreakageMaterial::validParams()
   params.addRequiredParam<Real>(            "xi_d", "strain invariants ratio: onset of breakage healing");
   params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
   params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
+  params.addParam<Real>(        "xi_given", 0.0, "strain invariants ratio: given value for energy difference");
   params.addRequiredParam<Real>(             "chi", "coefficient of energy ratio Fb/Fs = chi < 1");
   params.addParam<Real>(     "Cd_constant", -1, "coefficient gives positive damage evolution");
   params.addParam<Real>(             "C_1", -1, "coefficient of healing for damage evolution");
@@ -104,6 +105,7 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("const_A", -1.0,"Constant A value, A = a * sigma_N");
   params.addParam<Real>("const_B", -1.0,"Constant B value, B = b * sigma_N");
   params.addParam<Real>("const_theta_o", -1.0,"Constant theta_o value");
+  params.addParam<Real>("initial_theta0", -1.0,"Initial theta0 value");
   return params;
 }
 
@@ -154,6 +156,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _xi_d(getParam<Real>("xi_d")),
   _xi_min(getParam<Real>("xi_min")),
   _xi_max(getParam<Real>("xi_max")),
+  _xi_given(getParam<Real>("xi_given")),
   _chi(getParam<Real>("chi")),
   _Cd_constant(getParam<Real>("Cd_constant")), 
   _C1(getParam<Real>("C_1")),
@@ -219,10 +222,12 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _const_A(getParam<Real>("const_A")),
   _const_B(getParam<Real>("const_B")),
   _const_theta_o(getParam<Real>("const_theta_o")),
+  _initial_theta0(getParam<Real>("initial_theta0")),
   _use_state_var_evolution_mat(declareProperty<bool>("use_state_var_evolution_mat")),
   _const_A_mat(declareProperty<Real>("const_A_mat")),
   _const_B_mat(declareProperty<Real>("const_B_mat")),
-  _const_theta_o_mat(declareProperty<Real>("const_theta_o_mat"))
+  _const_theta_o_mat(declareProperty<Real>("const_theta_o_mat")),
+  _initial_theta0_mat(declareProperty<Real>("initial_theta0_mat"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -301,7 +306,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Must specify vel_y when use_vels_build_L = true");
   if (_use_vels_build_L && !parameters.isParamSetByUser("vel_z"))
     mooseError("Must specify vel_z when use_vels_build_L = true");
-  if (_use_state_var_evolution && _const_A < 0 && _const_B < 0 && _const_theta_o < 0)
+  if (_use_state_var_evolution && (_const_A < 0 || _const_B < 0 || _const_theta_o < 0 || _initial_theta0 < 0))
     mooseError("const_A, const_B, and const_theta_o must be set to a positive value when use_state_var_evolution is set to true");
 }
 
@@ -324,7 +329,8 @@ DamageBreakageMaterial::initQpStatefulProperties()
   computegammar();
 
   /* compute a0 a1 a2 a3 coefficients */
-  computecoefficients();
+  //computecoefficients();
+  computecoefficientsgivenxi();
 
   _alpha_damagedvar[_qp] = _initial_damage[_qp]; //
   _B_breakagevar[_qp] = 0.0;
@@ -367,6 +373,7 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _const_A_mat[_qp] = _const_A;
   _const_B_mat[_qp] = _const_B;
   _const_theta_o_mat[_qp] = _const_theta_o;
+  _initial_theta0_mat[_qp] = _initial_theta0;
 
 }
 
@@ -378,7 +385,8 @@ DamageBreakageMaterial::computeQpProperties()
   computegammar();
 
   /* compute a0 a1 a2 a3 coefficients */
-  computecoefficients();
+  //computecoefficients();
+  computecoefficientsgivenxi();
 
   // Build time dependent damage perturbation inside this material object
   if (_perturbation_build_param_use_damage_perturb){
@@ -433,6 +441,7 @@ DamageBreakageMaterial::computeQpProperties()
   _const_A_mat[_qp] = _const_A;
   _const_B_mat[_qp] = _const_B;
   _const_theta_o_mat[_qp] = _const_theta_o;
+  _initial_theta0_mat[_qp] = _initial_theta0;
 
 }
 
@@ -692,6 +701,49 @@ DamageBreakageMaterial::computecoefficients()
                        + _lambda_o * pow(_xi_1, 2) * pow(_xi_d, 2) + 2 * _shear_modulus_o * pow(_xi_1, 2);
   Real denominator_a3 = 2 * pow(_xi_1, 4) * _xi_d - 4 * pow(_xi_1, 3) * pow(_xi_d, 2) + 2 * pow(_xi_1, 2) * pow(_xi_d, 3);
   Real a3 = numerator_a3 / denominator_a3; 
+
+  //save
+  _a0[_qp] = a0;
+  _a1[_qp] = a1;
+  _a2[_qp] = a2;
+  _a3[_qp] = a3;
+
+}
+
+void
+DamageBreakageMaterial::computecoefficientsgivenxi()
+{
+
+  // Get xi_0 value
+  const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+  // Get shear_modulus_o value
+  const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
+
+  //compute xi_1
+  Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
+
+  //compute alpha_cr | xi = xi_given
+  Real alpha_cr_xi0 = alphacr_root1(_xi_given);
+
+  //compute mu_cr
+  Real mu_cr = _shear_modulus_o + alpha_cr_xi0 * _xi_0 * _gamma_damaged_r[_qp];
+
+  //compute gamma_cr
+  Real gamma_cr = alpha_cr_xi0 * _gamma_damaged_r[_qp];
+
+  //pre-compute coefficients
+  Real A1 = - 0.5 * _xi_1 + _xi_given - std::pow(_xi_given, 2) / (2.0 * _xi_1);
+  Real A2 = - 0.5 * _xi_1 + _xi_d     - std::pow(_xi_d, 2)     / (2.0 * _xi_1);
+  Real B1 = 0.5 * std::pow(_xi_1, 3) - 1.5 * _xi_1 * std::pow(_xi_given, 2) + std::pow(_xi_given, 3);
+  Real B2 = 0.5 * std::pow(_xi_1, 3) - 1.5 * _xi_1 * std::pow(_xi_d, 2)     + std::pow(_xi_d, 3);
+  Real RHSg = _chi * (mu_cr - gamma_cr * _xi_given + 0.5 * _lambda_o * std::pow(_xi_given, 2));
+  Real RHSd = (_lambda_o + _xi_0 * _gamma_damaged_r[_qp]) - _gamma_damaged_r[_qp] * _xi_d + 0.5 * _lambda_o * std::pow(_xi_d, 2);
+
+  //a0, a1, a2, a3
+  Real a1 = (RHSg * B2 - RHSd * B1)/(A1 * B2 - A2 * B1);
+  Real a3 = (A1 * RHSd - A2 * RHSg)/(A1 * B2 - A2 * B1);
+  Real a0 = - 0.5 * _xi_1 * a1 + 0.5 * std::pow(_xi_1, 3) * a3;
+  Real a2 = - 0.5 * a1 / _xi_1 - 1.5 * _xi_1 * a3;
 
   //save
   _a0[_qp] = a0;

@@ -38,6 +38,8 @@ public:
 
   virtual void computecoefficients(); //compute coefficients a_0 a_1 a_2 a_3 of granular phase
 
+  virtual void computecoefficientsgivenxi(); //compute coefficients a_0 a_1 a_2 a_3 with given xi for energy difference
+
   //2D only
   virtual void computeinitialdamage2D(); //compute initial damage with time dependent material
 
@@ -129,6 +131,8 @@ protected:
   Real _xi_min;
   /// strain invariants ratio: maximum allowable value
   Real _xi_max;
+  /// strain invariants ratio: given value
+  Real _xi_given;
   /// coefficient of energy ratio Fb/Fs = chi < 1
   Real _chi;
   /// coefficient of positive damage evolution
@@ -239,9 +243,11 @@ protected:
   const Real _const_A;
   const Real _const_B;
   const Real _const_theta_o;
+  const Real _initial_theta0;
   MaterialProperty<bool> & _use_state_var_evolution_mat;
   MaterialProperty<Real> & _const_A_mat;
   MaterialProperty<Real> & _const_B_mat;
   MaterialProperty<Real> & _const_theta_o_mat;
+  MaterialProperty<Real> & _initial_theta0_mat;
 
 };

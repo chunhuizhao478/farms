@@ -81,7 +81,13 @@
         new_boundary = 'bottom_elastic_back'
         block = 1
         normal = '0 0 -1'
-    []    
+    []
+    [refine]
+        type = RefineBlockGenerator
+        input = sideset8
+        block = '0'
+        refinement = 2
+    []        
 []
 
 [GlobalParams]
@@ -131,7 +137,7 @@
     beta_width = 0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 5e-12 #
+    C_g = 5e-13 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -273,11 +279,13 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus' 
+        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus a0 a1 a2 a3' 
         use_state_var_evolution = true
         const_A = 2e6
         const_B = 1.2e6
-        const_theta_o = 5e4
+        const_theta_o = 1e4
+        initial_theta0 = 1e4
+        xi_given = 0
         outputs = exodus
         block = 0
     [] 
@@ -289,7 +297,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable state_variable_tensor strain_invariant_ratio'
         outputs = exodus
         block = 0
     []
@@ -334,10 +342,12 @@
     nl_rel_tol = 1e-6
     nl_max_its = 5
     nl_abs_tol = 1e-6
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
+    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_type'
+    petsc_options_value = 'lu superlu_dist gmres'
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
@@ -351,7 +361,7 @@
 
 [Outputs] 
     exodus = true
-    show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
+    # show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
     time_step_interval = 1
 []
 
@@ -359,13 +369,13 @@
     [fix_back_z]
         type = DirichletBC
         variable = disp_z
-        boundary = 'top_elastic_back bottom_elastic_back'
+        boundary = 'back'
         value = 0
     []
     [fix_front_z]
         type = DirichletBC
         variable = disp_z
-        boundary = 'top_elastic_front bottom_elastic_front'
+        boundary = 'front'
         value = 0
     []
     [fix_bottom_x]
@@ -386,6 +396,12 @@
         boundary = top
         value = -120e6
     []
+    # [fix_top_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = top
+    #     value = 0
+    # []
     [fix_bottomblock_leftright_x]
         type = DirichletBC
         variable = disp_x

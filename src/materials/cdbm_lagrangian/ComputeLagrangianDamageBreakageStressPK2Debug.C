@@ -537,127 +537,127 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpTangentModulus(RankFourT
                                                                   RankTwoTensor Ee)
 {
 
-  //define functions for derivatives
+  // //define functions for derivatives
 
-  //delta function
-  auto delta = [](int i, int j) -> Real {
-    return (i == j) ? 1.0 : 0.0;
-  };
+  // //delta function
+  // auto delta = [](int i, int j) -> Real {
+  //   return (i == j) ? 1.0 : 0.0;
+  // };
 
-  //dI1_dE_{kl}
-  auto dI1dE = [&](int k, int l) -> Real {
-    return delta(k,l);
-  };
+  // //dI1_dE_{kl}
+  // auto dI1dE = [&](int k, int l) -> Real {
+  //   return delta(k,l);
+  // };
 
-  //dI2_dE_{kl}
-  auto dI2dE = [&](int k, int l) -> Real {
-    return 2 * Ee(k,l);
-  };
+  // //dI2_dE_{kl}
+  // auto dI2dE = [&](int k, int l) -> Real {
+  //   return 2 * Ee(k,l);
+  // };
 
-  //dxi_dE_{kl}
-  auto dxidE = [&](int k, int l) -> Real {
+  // //dxi_dE_{kl}
+  // auto dxidE = [&](int k, int l) -> Real {
     
-    // Epsilon to avoid division by zero
-    const Real epsilon = 1e-12;
-    // Adjust I2 if necessary
-    Real adjusted_I2 = I2;
-    if (I2 <= epsilon) {
-      //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
-      adjusted_I2 = epsilon;
-    }
+  //   // Epsilon to avoid division by zero
+  //   const Real epsilon = 1e-12;
+  //   // Adjust I2 if necessary
+  //   Real adjusted_I2 = I2;
+  //   if (I2 <= epsilon) {
+  //     //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
+  //     adjusted_I2 = epsilon;
+  //   }
 
-    Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-    //mooseInfo("I1 = ", I1, ", I2 = ", I2);
-    if (std::isnan(dxidE)){mooseError("dxidE");}
-    return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-  };
+  //   Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
+  //   //mooseInfo("I1 = ", I1, ", I2 = ", I2);
+  //   if (std::isnan(dxidE)){mooseError("dxidE");}
+  //   return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
+  // };
 
-  //dE_{ij}_dE_{kl}
-  auto dEdE = [&](int i, int j, int k, int l) -> Real {
-    return delta(i,k) * delta(j,l);
-    //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
-  };
+  // //dE_{ij}_dE_{kl}
+  // auto dEdE = [&](int i, int j, int k, int l) -> Real {
+  //   return delta(i,k) * delta(j,l);
+  //   //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
+  // };
 
-  //dxi^{-1}_dE_{kl}
-  auto dxim1dE = [&](int k, int l) -> Real {
-    return -1.0 * pow(xi,-2.0) * dxidE(k,l);
-  };
+  // //dxi^{-1}_dE_{kl}
+  // auto dxim1dE = [&](int k, int l) -> Real {
+  //   return -1.0 * pow(xi,-2.0) * dxidE(k,l);
+  // };
 
-  //dxi^3_dE_{kl}
-  auto dxi3dE = [&](int k, int l) -> Real {
-    return 3 * pow(xi,2) * dxidE(k,l);
-  };
+  // //dxi^3_dE_{kl}
+  // auto dxi3dE = [&](int k, int l) -> Real {
+  //   return 3 * pow(xi,2) * dxidE(k,l);
+  // };
 
-  //dSe_{ij}_dE_{kl}
-  auto dSedE = [&](int i, int j, int k, int l) -> Real {
-    Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
-    dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
-    dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
-    dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
-    if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
-    return dSedE_components;
-  };
+  // //dSe_{ij}_dE_{kl}
+  // auto dSedE = [&](int i, int j, int k, int l) -> Real {
+  //   Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
+  //   dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
+  //   dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
+  //   dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
+  //   if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
+  //   return dSedE_components;
+  // };
 
-  //dSb_{ij}_dE_{kl}
-  auto dSbdE = [&](int i, int j, int k, int l) -> Real {
-    Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
-    dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
-    dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
-    dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
-    return dSbdE_components;
-  };
+  // //dSb_{ij}_dE_{kl}
+  // auto dSbdE = [&](int i, int j, int k, int l) -> Real {
+  //   Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
+  //   dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
+  //   dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
+  //   dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
+  //   return dSbdE_components;
+  // };
 
-  //dS_{ij}_dE_{kl}
-  auto dSdE = [&](int i, int j, int k, int l) -> Real {
-    return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
-  };
+  // //dS_{ij}_dE_{kl}
+  // auto dSdE = [&](int i, int j, int k, int l) -> Real {
+  //   return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
+  // };
 
-  // Compute tangent modulus C
-  for (unsigned int i = 0; i < 3; i++){
-    for (unsigned int j = 0; j < 3; j++){
-      for (unsigned int k = 0; k < 3; k++){
-        for (unsigned int l = 0; l < 3; l++){
-          if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
-          tangent(i,j,k,l) += dSdE(i,j,k,l);
-        }
-      }
-    }
-  }
+  // // Compute tangent modulus C
+  // for (unsigned int i = 0; i < 3; i++){
+  //   for (unsigned int j = 0; j < 3; j++){
+  //     for (unsigned int k = 0; k < 3; k++){
+  //       for (unsigned int l = 0; l < 3; l++){
+  //         if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
+  //         tangent(i,j,k,l) += dSdE(i,j,k,l);
+  //       }
+  //     }
+  //   }
+  // }
 
-  // const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
-  // const RankTwoTensor identity = RankTwoTensor::Identity();
+  const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
+  const RankTwoTensor identity = RankTwoTensor::Identity();
 
-  // // Precompute dxidE tensor
-  // RankTwoTensor dxidE_tensor;
-  // for (unsigned int k = 0; k < 3; ++k)
-  //   for (unsigned int l = 0; l < 3; ++l)
-  //     dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
+  // Precompute dxidE tensor
+  RankTwoTensor dxidE_tensor;
+  for (unsigned int k = 0; k < 3; ++k)
+    for (unsigned int l = 0; l < 3; ++l)
+      dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
 
-  // const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
+  const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
 
-  // // Compute terms for dSedE
-  // const Real lambda_term = _lambda_const[_qp] - _damaged_modulus[_qp] / xi;
-  // const Real shear_term = 2.0 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi;
+  // Compute terms for dSedE
+  const Real lambda_term = _lambda_const[_qp] - _damaged_modulus[_qp] / xi;
+  const Real shear_term = 2.0 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi;
 
-  // RankFourTensor term_se1 = identity.outerProduct(-_damaged_modulus[_qp] * I1 * dxim1dE_tensor);
-  // RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
-  // RankFourTensor term_se3 = Ee.outerProduct(-_damaged_modulus[_qp] * dxidE_tensor);
-  // RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
+  RankFourTensor term_se1 = identity.outerProduct(-_damaged_modulus[_qp] * I1 * dxim1dE_tensor);
+  RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
+  RankFourTensor term_se3 = Ee.outerProduct(-_damaged_modulus[_qp] * dxidE_tensor);
+  RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
 
-  // RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
+  RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
 
-  // // Compute terms for dSbdE
-  // const Real coeff2_b = 2.0 * _a2[_qp] + _a1[_qp] / xi + 3.0 * _a3[_qp] * xi;
-  // const Real coeff4_b = 2.0 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * xi * xi * xi;
+  // Compute terms for dSbdE
+  const Real coeff2_b = 2.0 * _a2[_qp] + _a1[_qp] / xi + 3.0 * _a3[_qp] * xi;
+  const Real coeff4_b = 2.0 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * xi * xi * xi;
 
-  // RankFourTensor term_b1 = identity.outerProduct((_a1[_qp] * dxim1dE_tensor + 3 * _a3[_qp] * dxidE_tensor) * I1);
-  // RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
-  // RankFourTensor term_b3 = Ee.outerProduct(_a1[_qp] * dxidE_tensor - _a3[_qp] * 3 * xi * xi * dxidE_tensor);
-  // RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
+  RankFourTensor term_b1 = identity.outerProduct((_a1[_qp] * dxim1dE_tensor + 3 * _a3[_qp] * dxidE_tensor) * I1);
+  RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
+  RankFourTensor term_b3 = Ee.outerProduct(_a1[_qp] * dxidE_tensor - _a3[_qp] * 3 * xi * xi * dxidE_tensor);
+  RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
 
-  // RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
+  RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
 
-  // // Combine and assign tangent
-  // tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
+  // Combine and assign tangent
+  tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
 
 }

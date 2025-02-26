@@ -70,6 +70,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::ComputeLagrangianDamag
   _F_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_deformation_gradient_rate")),
   _D(declareProperty<RankTwoTensor>(_base_name + "deformation_rate")),
   _Theta(declareProperty<Real>(_base_name + "state_variable")),
+  _Theta_Tensor(declareProperty<RankTwoTensor>(_base_name + "state_variable_tensor")),
   _lambda_const(getMaterialProperty<Real>("lambda_const")),
   _shear_modulus(getMaterialProperty<Real>("shear_modulus")),
   _damaged_modulus(getMaterialProperty<Real>("damaged_modulus")),
@@ -80,6 +81,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::ComputeLagrangianDamag
   _F_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "deformation_gradient")),
   _Ep_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_strain")),
   _Theta_old(getMaterialPropertyOldByName<Real>(_base_name + "state_variable")),
+  _Theta_Tensor_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "state_variable_tensor")),
   _Dp_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_strain_rate")),
   _C_g(getMaterialProperty<Real>("C_g")),
   _m1(getMaterialProperty<Real>("m1")),
@@ -92,6 +94,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::ComputeLagrangianDamag
   _const_A_mat(getMaterialProperty<Real>("const_A_mat")),
   _const_B_mat(getMaterialProperty<Real>("const_B_mat")),
   _const_theta_o_mat(getMaterialProperty<Real>("const_theta_o_mat")),
+  _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat")),
   _use_vels_build_L_mat(getMaterialProperty<bool>("use_vels_build_L_mat")),
   _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L"))
   //_dim(_mesh.dimension())
@@ -118,7 +121,13 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::initQpStatefulProperti
   _xi[_qp] = -sqrt(3);
   _S[_qp].zero();
   _C[_qp].zero();
-  _Theta[_qp] = _const_theta_o_mat[_qp];
+  _Theta[_qp] = _initial_theta0_mat[_qp];
+  _Theta_Tensor[_qp].zero();
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int j = 0; j < 3; j++){
+      _Theta_Tensor[_qp](i,j) = _initial_theta0_mat[_qp];
+    }
+  }
   _Dp[_qp].zero();
 }
 
@@ -138,8 +147,8 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
   // Compute Fp_dot, F_dot
   // Here we approximate the rate by first-order, not sure if this is sufficient for varying time steps
   // currently MOOSE don't support getMaterialPropertyDot
-  RankTwoTensor Fp_dot;
-  RankTwoTensor F_dot;
+  RankTwoTensor Fp_dot; Fp_dot.zero();
+  RankTwoTensor F_dot; F_dot.zero();
   
   if (_use_vels_build_L_mat[_qp]){ //use true deformation rate
 
@@ -172,7 +181,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
     return (i == j) ? 1.0 : 0.0;
   };  
 
-  //Compute dFpdF //need to confirm
+  //Compute dFpdF //this is an approximation, which neglects the full coupling between Fp and F
   auto dFpdF = [&](int i, int j, int k, int l) -> Real {
     if (_dt == 0.0){ //Steady, set zero
       return 0.0;
@@ -185,6 +194,17 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
         return Fp_dot(i,j)/F_dot(k,l);
       }
     }
+  };
+
+  // Compute dJpdF
+  auto dJpdF = [&](int k, int l) -> Real {
+    Real dJpdF_val = 0.0;
+    for (unsigned int m = 0; m < 3; m++){
+      for (unsigned int n = 0; n < 3; n++){
+        dJpdF_val += _Jp[_qp] * Fpinv(n,m) * dFpdF(m,n,k,l);
+      }
+    }
+    return dJpdF_val;
   };
 
   // Compute dFedF
@@ -245,23 +265,29 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
         for (unsigned int l = 0; l < 3; l++){
           for (unsigned int m = 0; m < 3; m++)
           {
-            // First term: dFedF(i,m,k,l) * S(m,n) * Fpinv(j,n)
+
+            // First term: dJpdF(k,l) * Fe(i,m) * S(m,n) * Fpinv(j,n)
             for (unsigned int n = 0; n < 3; n++){
-              pk_jacobian_val(i,j,k,l) += dFedF(i,m,k,l) * _S[_qp](m,n) * Fpinv(j,n);
+              pk_jacobian_val(i,j,k,l) += dJpdF(k,l) * _Fe[_qp](i,m) * _S[_qp](m,n) * Fpinv(j,n);
+            }
+
+            // Second term: Jp * dFedF(i,m,k,l) * S(m,n) * Fpinv(j,n)
+            for (unsigned int n = 0; n < 3; n++){
+              pk_jacobian_val(i,j,k,l) += _Jp[_qp] * dFedF(i,m,k,l) * _S[_qp](m,n) * Fpinv(j,n);
             }
             
-            // Second term: Fe(i,m) * C(m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n)
+            // Third term: Fe(i,m) * C(m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n)
             for (unsigned int n = 0; n < 3; n++){
               for (unsigned int p = 0; p < 3; p++){
                 for (unsigned int q = 0; q < 3; q++){
-                  pk_jacobian_val(i,j,k,l) += _Fe[_qp](i,m) * _C[_qp](m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n);
+                  pk_jacobian_val(i,j,k,l) += _Jp[_qp] * _Fe[_qp](i,m) * _C[_qp](m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n);
                 }
               }
             }
             
-            // Third term: Fe(i,m) * S(m,n) * dFpmdF(j,n,k,l)
+            // Fourth term: Fe(i,m) * S(m,n) * dFpmdF(j,n,k,l)
             for (unsigned int n = 0; n < 3; n++){
-              pk_jacobian_val(i,j,k,l) += _Fe[_qp](i,m) * _S[_qp](m,n) * dFpmdF(j,n,k,l);
+              pk_jacobian_val(i,j,k,l) += _Jp[_qp] * _Fe[_qp](i,m) * _S[_qp](m,n) * dFpmdF(j,n,k,l);
             }
           }
         }
@@ -274,7 +300,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
   {
     //if there is plastic
     // Compute pk1 stress
-    _pk1_stress[_qp] = _Fe[_qp] * _S[_qp] * Fpinv.transpose();
+    _pk1_stress[_qp] = _Jp[_qp] * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
 
     // Compute pk1 jacobian
     _pk1_jacobian[_qp] = pk_jacobian_val;
@@ -292,7 +318,8 @@ void
 ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK2Stress()
 {
   /* Evaluate Fp */
-  RankTwoTensor Fp_updated = computeQpFp();
+  //RankTwoTensor Fp_updated = computeQpFp();
+  RankTwoTensor Fp_updated = computeQpFpTensor();
 
   /* Compute Fe */
   RankTwoTensor Fe = _F[_qp] * Fp_updated.inverse();
@@ -374,27 +401,38 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeTheta()
   _Theta[_qp] = ( _dt + _Theta_old[_qp] ) / ( 1.0 + Dp_eq * _dt );
 }
 
+void
+ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeThetaTensor()
+{
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int j = 0; j < 3; j++){
+      _Theta_Tensor[_qp](i,j) = ( _dt + _Theta_Tensor_old[_qp](i,j) ) / ( 1.0 + _Dp[_qp](i,j) * _dt );
+    }
+  }
+}
+
 RankTwoTensor
 ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpFp()
 {
   //Compute eigen-decomposition of Tau
-  // std::vector<Real> eigval(3, 0.0);
-  // RankTwoTensor<Real> diag;
-  // RankTwoTensor<Real> Q;
-  // RankTwoTensor<Real> ExpTau;
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor diag;
+  RankTwoTensor Q;
+  RankTwoTensor ExpTau;
 
-  // _Tau_old[_qp].symmetricEigenvaluesEigenvectors(eigval, Q);
+  _Tau_old[_qp].symmetricEigenvaluesEigenvectors(eigval, Q);
 
-  // diag[0][0] = std::exp(eigval[0]/_const_A_mat[_qp]);
-  // diag[1][1] = std::exp(eigval[1]/_const_A_mat[_qp]);
-  // diag[2][2] = std::exp(eigval[2]/_const_A_mat[_qp]);
+  diag(0,0) = std::exp(eigval[0]/_const_A_mat[_qp]);
+  diag(1,1) = std::exp(eigval[1]/_const_A_mat[_qp]);
+  diag(2,2) = std::exp(eigval[2]/_const_A_mat[_qp]);
 
-  // ExpTau = Q * diag * Q.transpose();
+  ExpTau = Q * diag * Q.transpose();
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp;
   if (_use_state_var_evolution_mat[_qp]){
-    _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * _Tau_old[_qp] * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
+    _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * _Tau_old[_qp] * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
+    //_Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * ExpTau * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
   }
   else{
     mooseError("Must select 'use_state_var_evolution_mat = true' option in DamageBreakageMaterial to use this material object");
@@ -412,6 +450,61 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpFp()
   return Fp_updated;
 }
 
+RankTwoTensor
+ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpFpTensor()
+{
+  //Compute eigen-decomposition of Tau
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor diag;
+  RankTwoTensor Q;
+  RankTwoTensor ExpTau;
+
+  _Tau_old[_qp].symmetricEigenvaluesEigenvectors(eigval, Q);
+
+  diag(0,0) = std::exp(eigval[0]/_const_A_mat[_qp]);
+  diag(1,1) = std::exp(eigval[1]/_const_A_mat[_qp]);
+  diag(2,2) = std::exp(eigval[2]/_const_A_mat[_qp]);
+
+  ExpTau = Q * diag * Q.transpose();
+
+  //Compute theta/theta_o component-wise
+  computeThetaTensor();
+
+  RankTwoTensor _Theta_Tensor_pow_mB_over_A;
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int j = 0; j < 3; j++){
+      _Theta_Tensor_pow_mB_over_A(i,j) = std::pow((1.0*_Theta_Tensor[_qp](i,j))/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
+    }
+  }
+
+  //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
+  if (_use_state_var_evolution_mat[_qp]){
+    //_Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * _Tau_old[_qp] * _Theta_Tensor_pow_mB_over_A;
+    for (unsigned int i = 0; i < 3; i++){
+      for (unsigned int j = 0; j < 3; j++){
+        _Dp[_qp](i,j) = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * _Tau_old[_qp](i,j) * _Theta_Tensor_pow_mB_over_A(i,j);
+      }
+    }
+    //_Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * ExpTau * _Theta_Tensor_pow_mB_over_A;
+    // for (unsigned int i = 0; i < 3; i++){
+    //   for (unsigned int j = 0; j < 3; j++){
+    //     _Dp[_qp](i,j) = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * ExpTau(i,j) * _Theta_Tensor_pow_mB_over_A(i,j);
+    //   }
+    // }
+  }
+  else{
+    mooseError("Must select 'use_state_var_evolution_mat = true' option in DamageBreakageMaterial to use this material object");
+  }
+
+  //Compute Cp = I - Dp dt
+  RankTwoTensor Cp = RankTwoTensor::Identity() - _Dp[_qp] * _dt;
+
+  //Use Implicit Euler Integration, Update Fp
+  RankTwoTensor Fp_updated = Cp.inverse() * _Fp_old[_qp];
+
+  return Fp_updated;
+}
+
 void
 ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulus(RankFourTensor & tangent, 
                                                                   Real I1, 
@@ -419,93 +512,6 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpTangentModulu
                                                                   Real xi, 
                                                                   RankTwoTensor Ee)
 {
-
-  // //define functions for derivatives
-
-  // //delta function
-  // auto delta = [](int i, int j) -> Real {
-  //   return (i == j) ? 1.0 : 0.0;
-  // };
-
-  // //dI1_dE_{kl}
-  // auto dI1dE = [&](int k, int l) -> Real {
-  //   return delta(k,l);
-  // };
-
-  // //dI2_dE_{kl}
-  // auto dI2dE = [&](int k, int l) -> Real {
-  //   return 2 * Ee(k,l);
-  // };
-
-  // //dxi_dE_{kl}
-  // auto dxidE = [&](int k, int l) -> Real {
-    
-  //   // Epsilon to avoid division by zero
-  //   const Real epsilon = 1e-12;
-  //   // Adjust I2 if necessary
-  //   Real adjusted_I2 = I2;
-  //   if (I2 <= epsilon) {
-  //     //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
-  //     adjusted_I2 = epsilon;
-  //   }
-
-  //   Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-  //   //mooseInfo("I1 = ", I1, ", I2 = ", I2);
-  //   if (std::isnan(dxidE)){mooseError("dxidE");}
-  //   return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-  // };
-
-  // //dE_{ij}_dE_{kl}
-  // auto dEdE = [&](int i, int j, int k, int l) -> Real {
-  //   return delta(i,k) * delta(j,l);
-  //   //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
-  // };
-
-  // //dxi^{-1}_dE_{kl}
-  // auto dxim1dE = [&](int k, int l) -> Real {
-  //   return -1.0 * pow(xi,-2.0) * dxidE(k,l);
-  // };
-
-  // //dxi^3_dE_{kl}
-  // auto dxi3dE = [&](int k, int l) -> Real {
-  //   return 3 * pow(xi,2) * dxidE(k,l);
-  // };
-
-  // //dSe_{ij}_dE_{kl}
-  // auto dSedE = [&](int i, int j, int k, int l) -> Real {
-  //   Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
-  //   dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
-  //   dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
-  //   dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
-  //   if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
-  //   return dSedE_components;
-  // };
-
-  // //dSb_{ij}_dE_{kl}
-  // auto dSbdE = [&](int i, int j, int k, int l) -> Real {
-  //   Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
-  //   dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
-  //   dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
-  //   dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
-  //   return dSbdE_components;
-  // };
-
-  // //dS_{ij}_dE_{kl}
-  // auto dSdE = [&](int i, int j, int k, int l) -> Real {
-  //   return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
-  // };
-
-  // // Compute tangent modulus C
-  // for (unsigned int i = 0; i < 3; i++){
-  //   for (unsigned int j = 0; j < 3; j++){
-  //     for (unsigned int k = 0; k < 3; k++){
-  //       for (unsigned int l = 0; l < 3; l++){
-  //         if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
-  //         tangent(i,j,k,l) += dSdE(i,j,k,l);
-  //       }
-  //     }
-  //   }
-  // }
 
   const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
   const RankTwoTensor identity = RankTwoTensor::Identity();

@@ -203,12 +203,14 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus' 
+        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus a0 a1 a2 a3' 
         use_state_var_evolution = true
-        const_A = 3.0e6
-        const_B = 1.2e6
-        const_theta_o = 0.1
+        const_A = 2e9
+        const_B = 1.2e9
+        const_theta_o = 1e4
+        initial_theta0 = 1e4
         outputs = exodus
+        block = 0
     [] 
     [initial_damage]
         type = GenericConstantMaterial
@@ -218,7 +220,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable state_variable_tensor strain_invariant_ratio'
         outputs = exodus
     []
 []  
@@ -267,7 +269,7 @@
 
 [Outputs] 
     exodus = true
-    show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
+    # show = 'pk2_stress_01 total_lagrange_strain_01 state_variable shear_modulus shear_strain_rate state_variable_rate pk2_stress_11'
     time_step_interval = 1
 []
 

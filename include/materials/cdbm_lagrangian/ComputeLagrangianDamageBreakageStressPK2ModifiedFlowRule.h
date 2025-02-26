@@ -60,9 +60,11 @@ protected:
   /// @brief Compute state variable theta
   /// @return none
   virtual void computeTheta();
+  virtual void computeThetaTensor();
   /// @brief Update plastic deformation gradient
   /// @return plastic deformation gradient
   virtual RankTwoTensor computeQpFp();
+  virtual RankTwoTensor computeQpFpTensor();
   /// @brief Compute tangent modulus components vector
   /// @return tangent modulus components vector, we pass reference and modify in-place
   virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
@@ -104,6 +106,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _D;
   /// State Variable
   MaterialProperty<Real> & _Theta;
+  /// State Variable Tensor
+  MaterialProperty<RankTwoTensor> & _Theta_Tensor;
 
   /* Get Up-to-date Material Properties*/
   /// Lambda
@@ -128,6 +132,8 @@ protected:
   const MaterialProperty<RankTwoTensor> & _Ep_old;
   /// Theta
   const MaterialProperty<Real> & _Theta_old;
+  /// Theta Tensor
+  const MaterialProperty<RankTwoTensor> & _Theta_Tensor_old;
   /// Plastic Strain Rate
   const MaterialProperty<RankTwoTensor> & _Dp_old;
   
@@ -150,6 +156,7 @@ protected:
   const MaterialProperty<Real> & _const_A_mat;
   const MaterialProperty<Real> & _const_B_mat;
   const MaterialProperty<Real> & _const_theta_o_mat;
+  const MaterialProperty<Real> & _initial_theta0_mat;
 
   //get velocity gradient L
   const MaterialProperty<bool> & _use_vels_build_L_mat;
