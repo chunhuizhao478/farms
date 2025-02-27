@@ -1,1 +1,0 @@
-Here we use the smaller damage strip to restrict the motion of breakage evolution

@@ -131,7 +131,7 @@
     beta_width = 0.01 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 5e-13 #
+    C_g = 5e-11 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -140,7 +140,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.5
+    chi = 1.0
     
 []
 
@@ -396,12 +396,12 @@
     #     boundary = top
     #     value = 0
     # []
-    [fix_bottomblock_leftright_x]
-        type = DirichletBC
-        variable = disp_x
-        boundary = 'bottom_elastic_left bottom_elastic_right'
-        value = 0
-    []
+    # [fix_bottomblock_leftright_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     boundary = 'bottom_elastic_left bottom_elastic_right'
+    #     value = 0
+    # []
     [applied_top_x]
         type = FunctionDirichletBC
         variable = disp_x
