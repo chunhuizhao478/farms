@@ -393,7 +393,7 @@
 [Executioner]
     type = Transient
     dt = 1e-3
-    end_time = 2.0
+    end_time = 50.0
     # num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
@@ -415,7 +415,7 @@
 [Outputs] 
     ### save the solution to a exodus file every [time_step_interval] time steps]
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 100
     #############################################
     ##disp_x, disp_y, disp_z: displacement field
     ##vel_x, vel_y, vel_z: velocity field
@@ -751,7 +751,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_out_25e6.e'
+      mesh = '../static_solve/static_solve_out.e'
       system_variables = 'disp_x disp_y disp_z stress_01'
       timestep = LATEST
       force_preaux = true
