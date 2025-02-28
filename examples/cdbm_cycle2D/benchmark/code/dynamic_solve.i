@@ -519,7 +519,7 @@
     #save the solution to a exodus file every 0.1 seconds
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 50
       show = 'disp_x disp_y vel_x vel_y initial_damage_aux alpha_damagedvar_aux B_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 state_variable_tensor_01'
     [../]
     # #save the solution to a csv file every 0.001 seconds
@@ -527,6 +527,11 @@
       type = CSV
       time_step_interval = 1
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 50
+        num_files = 2
+    []
 []
 
 [Functions]
