@@ -328,14 +328,14 @@
         type = ADNeumannBC
         variable = disp_x
         boundary = front
-        value = -30e6
+        value = -25e6
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = ADNeumannBC
         variable = disp_x
         boundary = back
-        value = 30e6
+        value = 25e6
         displacements = 'disp_x disp_y disp_z'
     []    
     # fix ptr
