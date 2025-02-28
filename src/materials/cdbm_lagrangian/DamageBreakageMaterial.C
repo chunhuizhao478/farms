@@ -331,6 +331,7 @@ DamageBreakageMaterial::initQpStatefulProperties()
   /* compute a0 a1 a2 a3 coefficients */
   //computecoefficients();
   computecoefficientsgivenxi();
+  //computecoefficientsgivenchi();
 
   _alpha_damagedvar[_qp] = _initial_damage[_qp]; //
   _B_breakagevar[_qp] = 0.0;
@@ -387,6 +388,7 @@ DamageBreakageMaterial::computeQpProperties()
   /* compute a0 a1 a2 a3 coefficients */
   //computecoefficients();
   computecoefficientsgivenxi();
+  //computecoefficientsgivenchi();
 
   // Build time dependent damage perturbation inside this material object
   if (_perturbation_build_param_use_damage_perturb){
@@ -752,6 +754,33 @@ DamageBreakageMaterial::computecoefficientsgivenxi()
   _a3[_qp] = a3;
 
 }
+
+// void 
+// DamageBreakageMaterial::computecoefficientsgivenchi()
+// {
+  
+//   // Get xi_0 value
+//   const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
+//   // Get shear_modulus_o value
+//   const Real _shear_modulus_o = _use_shear_modulus_o_aux ? (*_shear_modulus_o_aux)[_qp] : _shear_modulus_o_value;
+
+//   //compute xi_1
+//   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );  
+  
+//   //compute alpha_cr | xi = xi_1
+//   Real alpha_cr_xi1 = alphacr_root1(_xi_1);
+
+//   //compute a0 a1 a2 a3 coefficients
+//   Real a0 = _chi * (_shear_modulus_o + alpha_cr_xi1 * _xi_0 * _gamma_damaged_r[_qp]);
+//   Real a1 = _chi * (-1.0 * alpha_cr_xi1 * _gamma_damaged_r[_qp]);
+//   Real a2 = _chi * ( 0.5 * _lambda_o);
+
+//   _a0[_qp] = a0;
+//   _a1[_qp] = a1;
+//   _a2[_qp] = a2;
+//   _a3[_qp] = (_shear_modulus_o + 1 * _xi_0 * _gamma_damaged_r[_qp] - 1 * _gamma_damaged_r[_qp] * _xi_d + 0.5 * _lambda_o * _xi_d * _xi_d - a0 - a1 * _xi_d - a2 * _xi_d * _xi_d) / (_xi_d * _xi_d * _xi_d); 
+
+// }
 
 // Function to compute initial damage with time dependent material
 // This function is the same as "InitialDamageCycleSim2D"

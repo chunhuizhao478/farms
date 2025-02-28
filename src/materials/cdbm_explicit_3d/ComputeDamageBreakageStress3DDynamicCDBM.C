@@ -149,13 +149,18 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   Real alpha_out = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
 
   //check alpha within range
-  if ( alpha_out < 0 ){ alpha_out = 0.0; }
-  else if ( alpha_out > 1 ){ alpha_out = 1.0; }
-  else{}       
+  // if ( alpha_out < 0 ){ alpha_out = 0.0; }
+  // else if ( alpha_out > 1 ){ alpha_out = 1.0; }
+  // else{}       
 
   //check below initial damage (fix initial damage)
-  if ( alpha_out < _initial_damage[_qp] + _damage_perturbation[_qp] ){ alpha_out = _initial_damage[_qp] + _damage_perturbation[_qp]; }
+  if ( alpha_out < _initial_damage[_qp]){ alpha_out = _initial_damage[_qp]; }
   else{}
+
+  //check alpha within range
+  if ( alpha_out < 0 ){ alpha_out = 0.0; }
+  else if ( alpha_out > 1 ){ alpha_out = 1.0; }
+  else{} 
 
   _alpha_damagedvar[_qp] = alpha_out;
 
@@ -232,8 +237,8 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
 
   //Add shear perturbation
   if (_shear_stress_perturbation[_qp] != 0){
-    sigma_total(0,2) = _initial_shear_stress[_qp] + _shear_stress_perturbation[_qp];
-    sigma_total(2,0) = _initial_shear_stress[_qp] + _shear_stress_perturbation[_qp];
+    sigma_total(0,1) += _shear_stress_perturbation[_qp];
+    sigma_total(1,0) += _shear_stress_perturbation[_qp];
   }
 
   //1.0/3.0 = 0.33333

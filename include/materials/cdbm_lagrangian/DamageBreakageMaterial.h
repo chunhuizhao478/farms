@@ -40,6 +40,8 @@ public:
 
   virtual void computecoefficientsgivenxi(); //compute coefficients a_0 a_1 a_2 a_3 with given xi for energy difference
 
+  // virtual void computecoefficientsgivenchi(); //compute coefficients a_0 a_1 a_2 a_3 with given chi for energy difference
+
   //2D only
   virtual void computeinitialdamage2D(); //compute initial damage with time dependent material
 

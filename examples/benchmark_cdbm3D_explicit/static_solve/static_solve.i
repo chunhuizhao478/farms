@@ -24,10 +24,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -12000 -10000 -13000;
-                   12000 -10000 -13000;
-                   12000 10000  -13000;
-                  -12000 10000  -13000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -186,8 +186,8 @@
         sigma = 5e2
         peak_val = 0.7
         len_of_fault_strike = 10000
-        len_of_fault_dip = 5000
-        nucl_center = '0 0 -6500'
+        len_of_fault_dip = 1000
+        nucl_center = '0 0 -8500'
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -210,8 +210,8 @@
         sigma = 5e2
         peak_val = 0.0
         len_of_fault_strike = 10000
-        len_of_fault_dip = 5000
-        nucl_center = '0 0 -6500'
+        len_of_fault_dip = 1000
+        nucl_center = '0 0 -8500'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
@@ -328,14 +328,14 @@
         type = ADNeumannBC
         variable = disp_x
         boundary = front
-        value = -20e6
+        value = -30e6
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = ADNeumannBC
         variable = disp_x
         boundary = back
-        value = 20e6
+        value = 30e6
         displacements = 'disp_x disp_y disp_z'
     []    
     # fix ptr

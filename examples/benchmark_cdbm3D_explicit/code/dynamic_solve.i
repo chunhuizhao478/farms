@@ -24,10 +24,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -12000 -10000 -13000;
-                   12000 -10000 -13000;
-                   12000 10000  -13000;
-                  -12000 10000  -13000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -236,8 +236,8 @@
     [] 
     [density]
         type = GenericConstantMaterial
-        prop_names = 'density'
-        prop_values = '2700'
+        prop_names = 'density nonADdensity'
+        prop_values = '2700 2700'
     []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBM
@@ -278,8 +278,9 @@
         sigma = 5e2
         peak_val = 0.7
         len_of_fault_strike = 10000
-        len_of_fault_dip = 5000
-        nucl_center = '0 0 -6500'
+        len_of_fault_dip = 1000
+        nucl_center = '0 0 -8500'
+        use_damage_perturb = false
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -302,8 +303,9 @@
         sigma = 5e2
         peak_val = 0.0
         len_of_fault_strike = 10000
-        len_of_fault_dip = 5000
-        nucl_center = '0 0 -6500'
+        len_of_fault_dip = 1000
+        nucl_center = '0 0 -8500'
+        use_breakage_perturb = true
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
@@ -341,15 +343,20 @@
     ################################################################################
     [shear_stress_perturbation]
         type = PerturbationRadial
-        nucl_center = '3500 0 -6500'
-        peak_value = 10e6
+        nucl_center = '3500 0 -8500'
+        peak_value = 1.0
         thickness = 200
         length = 1000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
+        duration = 0.001
+        perturbation_type = 'breakage'
         sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
+        output_properties = 'breakage_perturbation shear_stress_perturbation damage_perturbation'
         outputs = exodus
+    []
+    [dummy_material]
+        type = GenericConstantMaterial
+        prop_names = 'initial_shear_stress'
+        prop_values = '0'
     []
 []  
 
@@ -408,7 +415,7 @@
 [Outputs] 
     ### save the solution to a exodus file every [time_step_interval] time steps]
     exodus = true
-    time_step_interval = 20
+    time_step_interval = 1
     #############################################
     ##disp_x, disp_y, disp_z: displacement field
     ##vel_x, vel_y, vel_z: velocity field
@@ -423,7 +430,7 @@
     ##xi: strain invariants ratio
     ##shear_stress_perturbation: perturbation field
     #############################################
-    show = 'disp_x disp_y disp_z vel_x vel_y vel_z alpha_damagedvar B initial_damage initial_breakage stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22 xi shear_stress_perturbation'
+    show = 'disp_x disp_y disp_z vel_x vel_y vel_z alpha_damagedvar B initial_damage initial_breakage stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22 xi shear_stress_perturbation damage_perturbation breakage_perturbation'
     [./csv]
         type = CSV
         time_step_interval = 1
@@ -490,14 +497,14 @@
         type = ADNeumannBC
         variable = disp_x
         boundary = front
-        value = -20e6
+        value = -25e6
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = ADNeumannBC
         variable = disp_x
         boundary = back
-        value = 20e6
+        value = 25e6
         displacements = 'disp_x disp_y disp_z'
     []      
     # fix ptr
@@ -744,7 +751,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = 'static_solve_out.e'
+      mesh = '../static_solve/static_solve_out_25e6.e'
       system_variables = 'disp_x disp_y disp_z stress_01'
       timestep = LATEST
       force_preaux = true
