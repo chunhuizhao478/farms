@@ -826,45 +826,46 @@ DamageBreakageMaterial::computeinitialdamage2D() {
 
 // Function for compute damage perturbation with time dependent material
 // This function is the same as "DamagePerturbationSquare2D"
-void
-DamageBreakageMaterial::computedamageperturbation2D(){
-
+void 
+DamageBreakageMaterial::computedamageperturbation2D()
+{
   /**
    * Input Parameters:
-   * _nucl_center: center of the nucleation zone
-   * _length: length of the nucleation zone
-   * _peak_damage: peak damage value
-   * _sigma: standard deviation of the Gaussian distribution
-   * _thickness: thickness of the nucleation zone
-   * _duration: duration of the nucleation zone
+   * _perturbation_build_param_nucl_center: nucleation zone center (vector of 2 values)
+   * _perturbation_build_param_length: length of the nucleation zone (in strike direction)
+   * _perturbation_build_param_thickness: thickness of the nucleation zone (in normal direction)
+   * _perturbation_build_param_peak_value: peak damage value (maximum allowed)
+   * _perturbation_build_param_sigma: standard deviation (controls spatial decay)
+   * _perturbation_build_param_duration: duration over which the damage ramps from 0 to peak
    */
 
-  //Get coordinates
-  //here no rotation is applied yet
-  Real xcoord = _q_point[_qp](0); //strike
-  Real ycoord = _q_point[_qp](1); //normal
+  // Get coordinates (no rotation applied)
+  Real xcoord = _q_point[_qp](0); // strike direction
+  Real ycoord = _q_point[_qp](1); // normal direction
 
-  //Get damage increments
-  //Note: if the damage perturbation is used, the _dt within the nucleation phase (_t < _duration) should be used as constant
-  //Otherwise there could be a problem (need to think carefully how to handle this better), a possible solution
-  //is to find the function describing total damage perturbation: dd = k t, and if dd > 1, then dd = 1, and t > _duration, then dd = 0
-  Real damage_inc = _perturbation_build_param_peak_value / (_perturbation_build_param_duration / _dt);
+  // Initialize new damage value to previous (or zero)
+  Real dalpha = _damage_perturbation_old[_qp];
 
-  //Assign initial damage perturbation
-  Real dalpha = 0.0;
-  if ( _t <= _perturbation_build_param_duration ){
-    if ( (xcoord >= _perturbation_build_param_nucl_center[0] - _perturbation_build_param_length / 2.0) && (xcoord <= _perturbation_build_param_nucl_center[0] + _perturbation_build_param_length / 2.0) && (ycoord >= _perturbation_build_param_nucl_center[1] - _perturbation_build_param_thickness / 2.0) && (ycoord <= _perturbation_build_param_nucl_center[1] + _perturbation_build_param_thickness / 2.0) ){
-      dalpha = _damage_perturbation_old[_qp] + damage_inc*std::exp(-(xcoord*xcoord)/(2.0*_perturbation_build_param_sigma*_perturbation_build_param_sigma));
-    }
-    else{
-      dalpha = _damage_perturbation_old[_qp];
-    }
+  // Check if the point is within the nucleation patch
+  if ( xcoord >= _perturbation_build_param_nucl_center[0] - _perturbation_build_param_length / 2.0 &&
+       xcoord <= _perturbation_build_param_nucl_center[0] + _perturbation_build_param_length / 2.0 &&
+       ycoord >= _perturbation_build_param_nucl_center[1] - _perturbation_build_param_thickness / 2.0 &&
+       ycoord <= _perturbation_build_param_nucl_center[1] + _perturbation_build_param_thickness / 2.0 )
+  {
+    // Compute spatial decay factor (Gaussian distribution in the strike direction)
+    Real dx = xcoord - _perturbation_build_param_nucl_center[0];
+    Real spatial_factor = std::exp( - (dx * dx) / (2.0 * _perturbation_build_param_sigma * _perturbation_build_param_sigma) );
+    // Note: The Gaussian factor is always ≤ 1.
+
+    // Compute time ramp factor: linearly increase from 0 to 1 over the prescribed duration.
+    Real ramp_factor = std::min(_t, _perturbation_build_param_duration) / _perturbation_build_param_duration;
+
+    // Compute damage perturbation: it ramps up from 0 to the peak value (scaled by spatial factor).
+    dalpha = ramp_factor * _perturbation_build_param_peak_value * spatial_factor;
   }
-  else{
-    dalpha = _damage_perturbation_old[_qp];
-  }
-  _damage_perturbation[_qp] = dalpha;  
 
+  // Outside the nucleation zone, keep the old value (or set to zero if desired)
+  _damage_perturbation[_qp] = dalpha;
 }
 
 // Function for alpha_func_root1

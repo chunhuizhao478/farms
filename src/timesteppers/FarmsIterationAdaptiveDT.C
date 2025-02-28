@@ -89,6 +89,23 @@ FarmsIterationAdaptiveDT::validParams()
                         "Maximum time step allowed");
   params.addParam<PostprocessorName>("max_vel", "Maximum velocity postprocessor");
   params.addParam<Real>("vel_increase_factor", 2.0, "Maximum allowed ratio of velocity increase");  
+  // The following parameter is only used if 'max_vel' is specified
+  // New parameters for velocity constraint
+  params.addParam<bool>("constrain_by_velocity",
+                         false,
+                         "If true, constrain the time step if maximum velocity exceeds threshold");
+  params.addParam<Real>("vel_threshold",
+                        10.0,
+                        "The velocity threshold above which a constant dt is used");
+  params.addParam<Real>("constant_dt_on_overspeed",
+                        0.001,
+                        "The constant dt to use when the maximum velocity exceeds the threshold");
+
+  // Two new postprocessor names for max velocity in x and y directions
+  params.addParam<PostprocessorName>("maxvelx",
+                                     "Postprocessor for maximum nodal velocity in x direction");
+  params.addParam<PostprocessorName>("maxvely",
+                                     "Postprocessor for maximum nodal velocity in y direction");
   return params;
 }
 
@@ -128,6 +145,15 @@ FarmsIterationAdaptiveDT::FarmsIterationAdaptiveDT(const InputParameters & param
     _reject_large_step(getParam<bool>("reject_large_step")),
     _large_step_rejection_threshold(getParam<Real>("reject_large_step_threshold")),
     _max_time_step_bound(getParam<Real>("max_time_step_bound")),
+    // START New velocity-based timestep modifiers:
+    // New velocity-based timestep modifiers:
+    _constrain_by_velocity(getParam<bool>("constrain_by_velocity")),
+    _vel_threshold(getParam<Real>("vel_threshold")),
+    _constant_dt_on_overspeed(getParam<Real>("constant_dt_on_overspeed")),
+    // New postprocessor pointers for maxvelx and maxvely:
+    _max_vel_x(isParamValid("maxvelx") ? &getPostprocessorValue("maxvelx") : nullptr),
+    _max_vel_y(isParamValid("maxvely") ? &getPostprocessorValue("maxvely") : nullptr),
+    // END New velocity-based timestep modifiers
     _max_vel(isParamValid("max_vel") ? &getPostprocessorValue("max_vel") : nullptr),
     _max_vel_old(isParamValid("max_vel") ? &getPostprocessorValueOld("max_vel") : nullptr),
     _vel_increase_factor(getParam<Real>("vel_increase_factor")),
@@ -246,6 +272,34 @@ FarmsIterationAdaptiveDT::computeInitialDT()
 Real
 FarmsIterationAdaptiveDT::computeDT()
 {
+
+  // If velocity constraint is enabled, check max velocity.
+  if (_constrain_by_velocity)
+  {
+    // Ensure that both velocity postprocessors are provided.
+    if (_max_vel_x && _max_vel_y)
+    {
+      Real vel_x = *_max_vel_x;
+      Real vel_y = *_max_vel_y;
+      Real vel = std::sqrt(vel_x*vel_x + vel_y*vel_y);
+
+      if (_verbose)
+        _console << "Computed velocity = " << vel << ", threshold = " << _vel_threshold << std::endl;
+
+      if (vel > _vel_threshold)
+      {
+        if (_verbose)
+          _console << "Velocity exceeds threshold. Using constant dt = " 
+                   << _constant_dt_on_overspeed << std::endl;
+        return _constant_dt_on_overspeed;
+      }
+    }
+    else
+    {
+      mooseWarning("constrain_by_velocity set to true but maxvelx and/or maxvely postprocessors are not provided.");
+    }
+  }
+
   Real dt = _dt_old;
 
   if (_cutback_occurred)

@@ -134,10 +134,188 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::initQpStatefulProperti
 void
 ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
 {
+  // // PK2 update
+  // computeQpPK2Stress();
+
+  // // Compute Jp, Fp^{-1} //depends on the plastic deformation rate, here no volumetric strain upodate, Jp = 1 (checked)
+  // _Jp[_qp] = _Fp[_qp].det();
+  // RankTwoTensor Fpinv = _Fp[_qp].inverse();
+
+  // //Compute deformation rate D
+  // _D[_qp] = 0.5 * ( _velgrad_L[_qp] + _velgrad_L[_qp].transpose() );
+
+  // // Compute Fp_dot, F_dot
+  // // Here we approximate the rate by first-order, not sure if this is sufficient for varying time steps
+  // // currently MOOSE don't support getMaterialPropertyDot
+  // RankTwoTensor Fp_dot; Fp_dot.zero();
+  // RankTwoTensor F_dot; F_dot.zero();
+  
+  // if (_use_vels_build_L_mat[_qp]){ //use true deformation rate
+
+  //   for (unsigned int i = 0; i < 3; i++){
+  //     for (unsigned int j = 0; j < 3; j++){
+  //       for (unsigned int m = 0; m < 3; m++){
+  //         Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
+  //         F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j); 
+  //       }
+  //     }
+  //   } 
+
+  // }
+  // else{ //finite difference approximation
+
+  //   for (unsigned int i = 0; i < 3; i++){
+  //     for (unsigned int j = 0; j < 3; j++){
+  //         F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
+  //         //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
+  //         for (unsigned int m = 0; m < 3; m++){
+  //           Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
+  //         }
+  //     }
+  //   }
+  
+  // }
+ 
+  // // Compute delta function
+  // auto delta = [](int i, int j) -> Real {
+  //   return (i == j) ? 1.0 : 0.0;
+  // };  
+
+  // //Compute dFpdF //this is an approximation, which neglects the full coupling between Fp and F
+  // auto dFpdF = [&](int i, int j, int k, int l) -> Real {
+  //   if (_dt == 0.0){ //Steady, set zero
+  //     return 0.0;
+  //   } 
+  //   else{ //Transient
+  //     if (Fp_dot(i,j) == 0.0 || F_dot(k,l) == 0.0 ){ //no change of viscoelastic dg, set zero
+  //       return 0.0;
+  //     }
+  //     else{
+  //       return Fp_dot(i,j)/F_dot(k,l);
+  //     }
+  //   }
+  // };
+
+  // // Compute dJpdF
+  // auto dJpdF = [&](int k, int l) -> Real {
+  //   Real dJpdF_val = 0.0;
+  //   for (unsigned int m = 0; m < 3; m++){
+  //     for (unsigned int n = 0; n < 3; n++){
+  //       dJpdF_val += _Jp[_qp] * Fpinv(n,m) * dFpdF(m,n,k,l);
+  //     }
+  //   }
+  //   return dJpdF_val;
+  // };
+
+  // // Compute dFedF
+  // auto dFedF = [&](int i, int m, int k, int l) -> Real {
+
+  //   // Since dFp/dF is zero (Fp is explicit), dFedF simplifies
+  //   Real dFedF_val = delta(i,k) * Fpinv(l,m);
+
+  //   //here apply summations to {h,r}
+  //   for (unsigned int h = 0; h < 3; h++){
+  //     for (unsigned int r = 0; r < 3; r++){
+  //       dFedF_val -= _Fe[_qp](i,h) * dFpdF(h,r,k,l) * Fpinv(r,m);
+  //     }
+  //   }    
+
+  //   return dFedF_val;
+
+  // }; 
+
+  // // Compute dEdF
+  // auto dEdF = [&](int p, int q, int k, int l) -> Real {
+    
+  //   //initialize value
+  //   Real dEdF_val = 0.0;
+
+  //   //here apply summations to {m}
+  //   for (unsigned int m = 0; m < 3; m++){
+  //     dEdF_val += 0.5 * ( dFedF(m,p,k,l) * _Fe[_qp](m,q) + _Fe[_qp](m,p) * dFedF(m,q,k,l) );
+  //   }
+
+  //   return dEdF_val;
+
+  // };
+
+  // // Compute dFpmdF
+  // auto dFpmdF = [&](int j, int n, int k, int l) -> Real {
+
+  //   //initialize value
+  //   Real dFpmdF_val = 0.0;
+
+  //   //here apply summations to {i,a}
+  //   for (unsigned int i = 0; i < 3; i++){
+  //     for (unsigned int m = 0; m < 3; m++){
+  //       dFpmdF_val += -1.0 * Fpinv(j,i) * dFpdF(i,m,k,l) * Fpinv(m,n);
+  //     }
+  //   }
+
+  //   return dFpmdF_val;
+
+  // };
+
+  // //Compute pk_jacobian
+  // RankFourTensor pk_jacobian_val;
+  // pk_jacobian_val.zero();  // Make sure the tensor starts with zero values
+  // for (unsigned int i = 0; i < 3; i++){
+  //   for (unsigned int j = 0; j < 3; j++){
+  //     for (unsigned int k = 0; k < 3; k++){
+  //       for (unsigned int l = 0; l < 3; l++){
+  //         for (unsigned int m = 0; m < 3; m++)
+  //         {
+
+  //           // First term: dJpdF(k,l) * Fe(i,m) * S(m,n) * Fpinv(j,n)
+  //           for (unsigned int n = 0; n < 3; n++){
+  //             pk_jacobian_val(i,j,k,l) += dJpdF(k,l) * _Fe[_qp](i,m) * _S[_qp](m,n) * Fpinv(j,n);
+  //           }
+
+  //           // Second term: Jp * dFedF(i,m,k,l) * S(m,n) * Fpinv(j,n)
+  //           for (unsigned int n = 0; n < 3; n++){
+  //             pk_jacobian_val(i,j,k,l) += _Jp[_qp] * dFedF(i,m,k,l) * _S[_qp](m,n) * Fpinv(j,n);
+  //           }
+            
+  //           // Third term: Fe(i,m) * C(m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n)
+  //           for (unsigned int n = 0; n < 3; n++){
+  //             for (unsigned int p = 0; p < 3; p++){
+  //               for (unsigned int q = 0; q < 3; q++){
+  //                 pk_jacobian_val(i,j,k,l) += _Jp[_qp] * _Fe[_qp](i,m) * _C[_qp](m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n);
+  //               }
+  //             }
+  //           }
+            
+  //           // Fourth term: Fe(i,m) * S(m,n) * dFpmdF(j,n,k,l)
+  //           for (unsigned int n = 0; n < 3; n++){
+  //             pk_jacobian_val(i,j,k,l) += _Jp[_qp] * _Fe[_qp](i,m) * _S[_qp](m,n) * dFpmdF(j,n,k,l);
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+
+  // // Complicated wrapping from PK2 to PK1, see documentation on overleaf
+  // if (_large_kinematics)
+  // {
+  //   //if there is plastic
+  //   // Compute pk1 stress
+  //   _pk1_stress[_qp] = _Jp[_qp] * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
+
+  //   // Compute pk1 jacobian
+  //   _pk1_jacobian[_qp] = pk_jacobian_val;
+
+  // }
+  // else
+  // {
+  //   mooseError("Must selection 'large_kinematics' option!");
+  // }
+
+  //--------------------------------------------------------------------------
   // PK2 update
   computeQpPK2Stress();
 
-  // Compute Jp, Fp^{-1} //depends on the plastic deformation rate, here no volumetric strain upodate, Jp = 1 (checked)
+  // Compute Jp and the inverse of Fp
   _Jp[_qp] = _Fp[_qp].det();
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
 
@@ -175,140 +353,165 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK1Stress()
     }
   
   }
- 
-  // Compute delta function
-  auto delta = [](int i, int j) -> Real {
-    return (i == j) ? 1.0 : 0.0;
-  };  
 
-  //Compute dFpdF //this is an approximation, which neglects the full coupling between Fp and F
-  auto dFpdF = [&](int i, int j, int k, int l) -> Real {
-    if (_dt == 0.0){ //Steady, set zero
-      return 0.0;
-    } 
-    else{ //Transient
-      if (Fp_dot(i,j) == 0.0 || F_dot(k,l) == 0.0 ){ //no change of viscoelastic dg, set zero
-        return 0.0;
-      }
-      else{
-        return Fp_dot(i,j)/F_dot(k,l);
-      }
-    }
-  };
-
-  // Compute dJpdF
-  auto dJpdF = [&](int k, int l) -> Real {
-    Real dJpdF_val = 0.0;
-    for (unsigned int m = 0; m < 3; m++){
-      for (unsigned int n = 0; n < 3; n++){
-        dJpdF_val += _Jp[_qp] * Fpinv(n,m) * dFpdF(m,n,k,l);
-      }
-    }
-    return dJpdF_val;
-  };
-
-  // Compute dFedF
-  auto dFedF = [&](int i, int m, int k, int l) -> Real {
-
-    // Since dFp/dF is zero (Fp is explicit), dFedF simplifies
-    Real dFedF_val = delta(i,k) * Fpinv(l,m);
-
-    //here apply summations to {h,r}
-    for (unsigned int h = 0; h < 3; h++){
-      for (unsigned int r = 0; r < 3; r++){
-        dFedF_val -= _Fe[_qp](i,h) * dFpdF(h,r,k,l) * Fpinv(r,m);
-      }
-    }    
-
-    return dFedF_val;
-
-  }; 
-
-  // Compute dEdF
-  auto dEdF = [&](int p, int q, int k, int l) -> Real {
-    
-    //initialize value
-    Real dEdF_val = 0.0;
-
-    //here apply summations to {m}
-    for (unsigned int m = 0; m < 3; m++){
-      dEdF_val += 0.5 * ( dFedF(m,p,k,l) * _Fe[_qp](m,q) + _Fe[_qp](m,p) * dFedF(m,q,k,l) );
-    }
-
-    return dEdF_val;
-
-  };
-
-  // Compute dFpmdF
-  auto dFpmdF = [&](int j, int n, int k, int l) -> Real {
-
-    //initialize value
-    Real dFpmdF_val = 0.0;
-
-    //here apply summations to {i,a}
-    for (unsigned int i = 0; i < 3; i++){
-      for (unsigned int m = 0; m < 3; m++){
-        dFpmdF_val += -1.0 * Fpinv(j,i) * dFpdF(i,m,k,l) * Fpinv(m,n);
-      }
-    }
-
-    return dFpmdF_val;
-
-  };
-
-  //Compute pk_jacobian
-  RankFourTensor pk_jacobian_val;
-  pk_jacobian_val.zero();  // Make sure the tensor starts with zero values
+  //--------------------------------------------------------------------------
+  // Precompute the 4D tensor dFpdF_tensor[i][j][k][l] = dFpdF(i,j,k,l)
+  // where dFpdF(i,j,k,l) = 0 if _dt==0 or if either Fp_dot(i,j) or F_dot(k,l) vanish;
+  // otherwise dFpdF = Fp_dot(i,j)/F_dot(k,l)
+  Real dFpdF_tensor[3][3][3][3];
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
-          for (unsigned int m = 0; m < 3; m++)
-          {
-
-            // First term: dJpdF(k,l) * Fe(i,m) * S(m,n) * Fpinv(j,n)
-            for (unsigned int n = 0; n < 3; n++){
-              pk_jacobian_val(i,j,k,l) += dJpdF(k,l) * _Fe[_qp](i,m) * _S[_qp](m,n) * Fpinv(j,n);
-            }
-
-            // Second term: Jp * dFedF(i,m,k,l) * S(m,n) * Fpinv(j,n)
-            for (unsigned int n = 0; n < 3; n++){
-              pk_jacobian_val(i,j,k,l) += _Jp[_qp] * dFedF(i,m,k,l) * _S[_qp](m,n) * Fpinv(j,n);
-            }
-            
-            // Third term: Fe(i,m) * C(m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n)
-            for (unsigned int n = 0; n < 3; n++){
-              for (unsigned int p = 0; p < 3; p++){
-                for (unsigned int q = 0; q < 3; q++){
-                  pk_jacobian_val(i,j,k,l) += _Jp[_qp] * _Fe[_qp](i,m) * _C[_qp](m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n);
-                }
-              }
-            }
-            
-            // Fourth term: Fe(i,m) * S(m,n) * dFpmdF(j,n,k,l)
-            for (unsigned int n = 0; n < 3; n++){
-              pk_jacobian_val(i,j,k,l) += _Jp[_qp] * _Fe[_qp](i,m) * _S[_qp](m,n) * dFpmdF(j,n,k,l);
-            }
-          }
+          if (_dt == 0.0 || _Fp_dot[_qp](i,j) == 0.0 || _F_dot[_qp](k,l) == 0.0)
+            dFpdF_tensor[i][j][k][l] = 0.0;
+          else
+            dFpdF_tensor[i][j][k][l] = _Fp_dot[_qp](i,j) / _F_dot[_qp](k,l);
         }
       }
     }
   }
 
-  // Complicated wrapping from PK2 to PK1, see documentation on overleaf
+  // Define a simple inline delta function
+  auto delta = [](int i, int j) -> Real { return (i == j) ? 1.0 : 0.0; };
+
+  //--------------------------------------------------------------------------
+  // Precompute dJpdF(k,l)
+  // dJpdF(k,l) = Jp * Fpinv(n,m) * dFpdF(m,n,k,l)
+  Real dJpdF_tensor[3][3];
+  for (unsigned int k = 0; k < 3; k++){
+    for (unsigned int l = 0; l < 3; l++){
+      Real sum = 0.0;
+      for (unsigned int m = 0; m < 3; m++){
+        for (unsigned int n = 0; n < 3; n++){
+          sum += _Jp[_qp] * Fpinv(n, m) * dFpdF_tensor[m][n][k][l];
+        }
+      }
+      dJpdF_tensor[k][l] = sum;
+    }
+  }
+
+  //--------------------------------------------------------------------------
+  // Precompute dFedF_tensor(i, m, k, l)
+  // dFedF(i,m,k,l) = delta(i,k)*Fpinv(l,m) - sum_{h,r}[ _Fe(i,h)*dFpdF(h,r,k,l)*Fpinv(r,m) ]
+  Real dFedF_tensor[3][3][3][3];
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int m = 0; m < 3; m++){
+      for (unsigned int k = 0; k < 3; k++){
+        for (unsigned int l = 0; l < 3; l++){
+          Real val = delta(i, k) * Fpinv(l, m);
+          for (unsigned int h = 0; h < 3; h++){ //summation applies to h r
+            for (unsigned int r = 0; r < 3; r++){
+              val -= _Fe[_qp](i, h) * dFpdF_tensor[h][r][k][l] * Fpinv(r, m);
+            }
+          }
+          dFedF_tensor[i][m][k][l] = val;
+        }
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------------
+  // Precompute dEdF_tensor(p,q,k,l)
+  // dEdF(p,q,k,l) = 0.5 * sum_{m}[ dFedF(m,p,k,l)*_Fe(m,q) + _Fe(m,p)*dFedF(m,q,k,l) ]
+  Real dEdF_tensor[3][3][3][3];
+  for (unsigned int p = 0; p < 3; p++){
+    for (unsigned int q = 0; q < 3; q++){
+      for (unsigned int k = 0; k < 3; k++){
+        for (unsigned int l = 0; l < 3; l++){
+          Real sum = 0.0;
+          for (unsigned int m = 0; m < 3; m++){ //summation applies to m
+            sum += 0.5 * ( dFedF_tensor[m][p][k][l] * _Fe[_qp](m, q)
+                         + _Fe[_qp](m, p) * dFedF_tensor[m][q][k][l] );
+          }
+          dEdF_tensor[p][q][k][l] = sum;
+        }
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------------
+  // Precompute dFpmdF_tensor(j, n, k, l)
+  // dFpmdF(j,n,k,l) = - sum_{i,m}[ Fpinv(j,i)*dFpdF(i,m,k,l)*Fpinv(m,n) ]
+  Real dFpmdF_tensor[3][3][3][3];
+  for (unsigned int j = 0; j < 3; j++){
+    for (unsigned int n = 0; n < 3; n++){
+      for (unsigned int k = 0; k < 3; k++){
+        for (unsigned int l = 0; l < 3; l++){
+          Real sum = 0.0;
+          for (unsigned int i = 0; i < 3; i++){ //summation applies to i, m
+            for (unsigned int m = 0; m < 3; m++){
+              sum += - Fpinv(j, i) * dFpdF_tensor[i][m][k][l] * Fpinv(m, n);
+            }
+          }
+          dFpmdF_tensor[j][n][k][l] = sum;
+        }
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------------
+  // Compute pk_jacobian using the precomputed tensors.
+  RankFourTensor pk_jacobian_val;
+  pk_jacobian_val.zero();
+  // We sum over the three contributions for every (i,j,k,l):
+  // 1. Term1: sum_{m,n} dJpdF(k,l) * _Fe(i,m) * _S(m,n) * Fpinv(j,n)
+  // 1. Term1: sum_{m,n} dFedF(i, m, k, l) * _S(m,n) * Fpinv(j,n)
+  // 2. Term2: sum_{m,n,p,q} _Fe(i,m)*_C(m,n,p,q)*dEdF(p,q,k,l)*Fpinv(j,n)
+  // 3. Term3: sum_{m,n} _Fe(i,m)*_S(m,n)*dFpmdF(j,n,k,l)
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int j = 0; j < 3; j++){
+      for (unsigned int k = 0; k < 3; k++){
+        for (unsigned int l = 0; l < 3; l++){
+          Real accum = 0.0;
+          // Term 1
+          for (unsigned int m = 0; m < 3; m++){
+            for (unsigned int n = 0; n < 3; n++){
+              accum += dJpdF_tensor[k][l] * _Fe[_qp](i, m) * _S[_qp](m, n) * Fpinv(j, n);
+            }
+          }
+          // Term 2
+          for (unsigned int m = 0; m < 3; m++){
+            for (unsigned int n = 0; n < 3; n++){
+              accum += _Jp[_qp] * dFedF_tensor[i][m][k][l] * _S[_qp](m, n) * Fpinv(j, n);
+            }
+          }
+          // Term 3
+          for (unsigned int m = 0; m < 3; m++){
+            for (unsigned int n = 0; n < 3; n++){
+              for (unsigned int p = 0; p < 3; p++){
+                for (unsigned int q = 0; q < 3; q++){
+                  accum += _Jp[_qp] * _Fe[_qp](i, m) * _C[_qp](m, n, p, q) * dEdF_tensor[p][q][k][l] * Fpinv(j, n);
+                }
+              }
+            }
+          }
+          // Term 4
+          for (unsigned int m = 0; m < 3; m++){
+            for (unsigned int n = 0; n < 3; n++){
+              accum += _Jp[_qp] * _Fe[_qp](i, m) * _S[_qp](m, n) * dFpmdF_tensor[j][n][k][l];
+            }
+          }
+          pk_jacobian_val(i, j, k, l) = accum;
+        }
+      }
+    }
+  }
+
+  //--------------------------------------------------------------------------
+  // PK2-to-PK1 wrapping: using large kinematics formulation.
   if (_large_kinematics)
   {
-    //if there is plastic
-    // Compute pk1 stress
+    // Compute PK1 stress: P = Jp * Fe * S * (Fpinv)^T
     _pk1_stress[_qp] = _Jp[_qp] * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
-
-    // Compute pk1 jacobian
+    // Here we assume Jp = 1
+    //_pk1_stress[_qp] = _Fe[_qp] * _S[_qp] * Fpinv.transpose();
+    // Assign the computed consistent tangent operator
     _pk1_jacobian[_qp] = pk_jacobian_val;
-
   }
   else
   {
-    mooseError("Must selection 'large_kinematics' option!");
+    mooseError("Must select 'large_kinematics' option!");
   }
 
 }

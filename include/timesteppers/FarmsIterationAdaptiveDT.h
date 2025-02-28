@@ -116,6 +116,21 @@ protected:
   /// Maximum time step bound
   const Real & _max_time_step_bound;
 
+  //---------------------------------------------------//
+  // New velocity-based timestep constraint members:   //
+  //---------------------------------------------------//
+  // New velocity-based timestep constraint members:
+  /// If true, use the velocity constraint to limit the time step.
+  const bool _constrain_by_velocity;
+  /// The velocity threshold above which a constant dt is used.
+  const Real _vel_threshold;
+  /// The constant dt to be used if the maximum velocity exceeds _vel_threshold.
+  const Real _constant_dt_on_overspeed;
+  /// Postprocessor for maximum nodal velocity in the x direction.
+  const PostprocessorValue * _max_vel_x;
+  /// Postprocessor for maximum nodal velocity in the y direction.
+  const PostprocessorValue * _max_vel_y;
+
   const PostprocessorValue * _max_vel;
   const PostprocessorValue * _max_vel_old;
   const Real _vel_increase_factor;
