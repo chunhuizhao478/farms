@@ -79,7 +79,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.95
+    chi = 0.8
 
     #add strain rate dependent Cd option
     # m_exponent = 0.85
@@ -464,7 +464,7 @@
         #constrain dt by velocity
         constrain_by_velocity = true
         vel_threshold = 0.1
-        constant_dt_on_overspeed = 1e-2
+        constant_dt_on_overspeed = 1e-3
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
     []
@@ -520,7 +520,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 100
-      show = 'disp_x disp_y vel_x vel_y initial_damage_aux alpha_damagedvar_aux B_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 state_variable_tensor_01 alpha_damagedvar B_damagedvar strain_invariant_ratio'
+      show = 'vel_x vel_y initial_damage_aux alpha_damagedvar_aux B_aux strain_invariant_ratio_aux pk2_stress_00 pk2_stress_11 pk2_stress_01 pk2_stress_22 plastic_strain_00 plastic_strain_01 plastic_strain_11 plastic_strain_22 green_lagrange_elastic_strain_00 green_lagrange_elastic_strain_01 green_lagrange_elastic_strain_11 green_lagrange_elastic_strain_22 total_lagrange_strain_00 total_lagrange_strain_01 total_lagrange_strain_11 total_lagrange_strain_22 alpha_damagedvar B_damagedvar strain_invariant_ratio'
     [../]
     # #save the solution to a csv file every 0.001 seconds
     [./csv]
