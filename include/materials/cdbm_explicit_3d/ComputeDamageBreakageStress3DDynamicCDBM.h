@@ -156,4 +156,5 @@ protected:
   /// strain rate
   MaterialProperty<Real> & _strain_rate;
   MaterialProperty<Real> & _cd_ratedependent;
+  const bool _use_rate_dependent_cd;
 };

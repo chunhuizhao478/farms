@@ -39,6 +39,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::validParams()
   params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
   params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
   params.addRequiredParam<Real>(    "D", "D value");
+  params.addParam<bool>("use_rate_dependent_cd", "use rate-dependent Cd", false);
   
   //variable parameters
   params.addRequiredCoupledVar("alpha_grad_x", "damage variable gradient component in x computed from subApp");
@@ -88,7 +89,8 @@ ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCD
     _CBH_constant(getParam<Real>("CBH_constant")),
     _dim(_mesh.dimension()),
     _strain_rate(declareProperty<Real>("strain_rate")),
-    _cd_ratedependent(declareProperty<Real>("cd_ratedependent"))
+    _cd_ratedependent(declareProperty<Real>("cd_ratedependent")),
+    _use_rate_dependent_cd(getParam<bool>("use_rate_dependent_cd"))
 {
 }
 
@@ -134,30 +136,38 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   use rate-dependent cd
   */
 
-  Real _strain_rate_hat = 1.0e-4; //strain rate threshold
-  Real _m_exponent = 0.85; //exponent for rate-dependent Cd
-  Real _cd_hat = 10; //minimum Cd value
-  Real Cd_ratedepdent = 1e-2; //initial Cd value
-  //compute deviatoric strain
-  RankTwoTensor dev_strain = _mechanical_strain[_qp] - 0.3333 * _mechanical_strain[_qp].trace() * RankTwoTensor::Identity();
-  RankTwoTensor dev_strain_old = _mechanical_strain_old[_qp] - 0.3333 * _mechanical_strain_old[_qp].trace() * RankTwoTensor::Identity();
-  RankTwoTensor dev_strain_rate = (dev_strain - dev_strain_old) / _dt; //deviatoric strain rate
-  //compute deviatoric strain norm
-  Real dev_strain_rate_norm = 0.0;
-  for (unsigned int i = 0; i < 3; i++){
-    for (unsigned int j = 0; j < 3; j++){
-      dev_strain_rate_norm += dev_strain_rate(i,j) * dev_strain_rate(i,j);
+  Real Cd_final = 0.0;
+
+  if (_use_rate_dependent_cd){
+    Real _strain_rate_hat = 1.0e-4; //strain rate threshold
+    Real _m_exponent = 0.85; //exponent for rate-dependent Cd
+    Real _cd_hat = 10; //minimum Cd value
+    Real Cd_ratedepdent = 1e-2; //initial Cd value
+    //compute deviatoric strain
+    RankTwoTensor dev_strain = _mechanical_strain[_qp] - 0.3333 * _mechanical_strain[_qp].trace() * RankTwoTensor::Identity();
+    RankTwoTensor dev_strain_old = _mechanical_strain_old[_qp] - 0.3333 * _mechanical_strain_old[_qp].trace() * RankTwoTensor::Identity();
+    RankTwoTensor dev_strain_rate = (dev_strain - dev_strain_old) / _dt; //deviatoric strain rate
+    //compute deviatoric strain norm
+    Real dev_strain_rate_norm = 0.0;
+    for (unsigned int i = 0; i < 3; i++){
+      for (unsigned int j = 0; j < 3; j++){
+        dev_strain_rate_norm += dev_strain_rate(i,j) * dev_strain_rate(i,j);
+      }
     }
+    dev_strain_rate_norm = std::sqrt(2.0/3.0*dev_strain_rate_norm);
+    //compute strain rate
+    Real strain_rate = dev_strain_rate_norm; //strain rate
+    //save strain_dir0_positive
+    _strain_rate[_qp] = strain_rate;
+    //compute rate-dependent Cd
+    if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
+    Cd_ratedepdent = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
+    _cd_ratedependent[_qp] = Cd_ratedepdent;
+    Cd_final = Cd_ratedepdent;
   }
-  dev_strain_rate_norm = std::sqrt(2.0/3.0*dev_strain_rate_norm);
-  //compute strain rate
-  Real strain_rate = dev_strain_rate_norm; //strain rate
-  //save strain_dir0_positive
-  _strain_rate[_qp] = strain_rate;
-  //compute rate-dependent Cd
-  if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
-  Cd_ratedepdent = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
-  _cd_ratedependent[_qp] = Cd_ratedepdent;
+  else{
+    Cd_final = _Cd_constant;
+  }
 
   /* 
   compute alpha and B parameters
@@ -168,7 +178,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   Real alpha_forcingterm;
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
     //alpha_forcingterm = (1 - _B_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
-    alpha_forcingterm = (1 - _B_old[_qp]) * ( Cd_ratedepdent * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+    alpha_forcingterm = (1 - _B_old[_qp]) * ( Cd_final * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     alpha_forcingterm = (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
@@ -198,7 +208,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
 
   /* compute B */
   //Real C_B = _CdCb_multiplier * _Cd_constant;
-  Real C_B = _CdCb_multiplier * Cd_ratedepdent;
+  Real C_B = _CdCb_multiplier * Cd_final;
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
