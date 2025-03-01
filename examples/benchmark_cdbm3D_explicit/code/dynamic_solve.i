@@ -9,7 +9,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh.msh'
+        file = '../meshfile/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -61,7 +61,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e4
+    Cd_constant = 1e-2
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -134,8 +134,20 @@
     []
     [vel_z]
     []
-    [initial_shear_stress_aux]
-        order = CONSTANT
+    [initial_damage_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [alpha_damagedvar_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [xi_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [B_aux]
+        order = FIRST
         family = MONOMIAL
     []
 []
@@ -164,11 +176,28 @@
         coupled = disp_z
         execute_on = 'TIMESTEP_END'
     []
-    [initial_shear_stress_aux]
-        type = SolutionAux
-        variable = initial_shear_stress_aux
-        solution = init_sol_components
-        from_variable = stress_01
+    [get_initial_damage]
+        type = MaterialRealAux
+        variable = initial_damage_aux
+        property = initial_damage
+    []
+    [get_damage]
+        type = MaterialRealAux
+        variable = alpha_damagedvar_aux
+        property = alpha_damagedvar
+        block = '1 3'
+    []
+    [get_strain_invariant_ratio]
+        type = MaterialRealAux
+        variable = xi_aux
+        property = xi
+        block = '1 3'
+    []
+    [get_B]
+        type = MaterialRealAux
+        variable = B_aux
+        property = B
+        block = '1 3'
     []
 []
 
@@ -244,7 +273,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi eps_p eps_e I1 I2 xi stress'
+        output_properties = 'eps_p eps_e I1 I2 stress xi strain_rate cd_ratedependent'
         block = '1 3'
         outputs = exodus
     [] 
@@ -277,10 +306,10 @@
         type = InitialDamageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0.7
-        len_of_fault_strike = 10000
-        len_of_fault_dip = 1000
-        nucl_center = '0 0 -8500'
-        use_damage_perturb = false
+        len_of_fault_strike = 14000
+        len_of_fault_dip = 10000
+        nucl_center = '0 0 -10000'
+        use_damage_perturb = true
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -302,9 +331,9 @@
         type = InitialBreakageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0.0
-        len_of_fault_strike = 10000
-        len_of_fault_dip = 1000
-        nucl_center = '0 0 -8500'
+        len_of_fault_strike = 14000
+        len_of_fault_dip = 10000
+        nucl_center = '0 0 -10000'
         use_breakage_perturb = true
         output_properties = 'initial_breakage'      
         outputs = exodus
@@ -343,12 +372,12 @@
     ################################################################################
     [shear_stress_perturbation]
         type = PerturbationRadial
-        nucl_center = '3500 0 -8500'
-        peak_value = 1.0
+        nucl_center = '0 0 -10000'
+        peak_value = 0.3
         thickness = 200
         length = 1000
         duration = 0.001
-        perturbation_type = 'breakage'
+        perturbation_type = 'damage'
         sigma_divisor = 2.0
         output_properties = 'breakage_perturbation shear_stress_perturbation damage_perturbation'
         outputs = exodus
@@ -393,8 +422,8 @@
 [Executioner]
     type = Transient
     dt = 1e-3
-    end_time = 50.0
-    # num_steps = 10
+    end_time = 100.0
+    # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
         solve_type = consistent
@@ -415,7 +444,7 @@
 [Outputs] 
     ### save the solution to a exodus file every [time_step_interval] time steps]
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 50
     #############################################
     ##disp_x, disp_y, disp_z: displacement field
     ##vel_x, vel_y, vel_z: velocity field
@@ -430,7 +459,7 @@
     ##xi: strain invariants ratio
     ##shear_stress_perturbation: perturbation field
     #############################################
-    show = 'disp_x disp_y disp_z vel_x vel_y vel_z alpha_damagedvar B initial_damage initial_breakage stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22 xi shear_stress_perturbation damage_perturbation breakage_perturbation'
+    show = 'strain_rate cd_ratedependent xi vel_x vel_y vel_z alpha_damagedvar_aux B_aux stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22 xi_aux'
     [./csv]
         type = CSV
         time_step_interval = 1
@@ -449,296 +478,127 @@
 #Shear stress: static_pressure_front_shear, static_pressure_back_shear
 #Constraints on corner_ptr: fix_cptr1_x, fix_cptr1_y, fix_cptr1_z
 #############################################################################################################################################################
+#####################################
+#BCs Section
+#Absorbing boundary conditions
+#####################################
 [BCs]
     #Note: use neuamnnBC gives minimum waves than pressureBC
-    [static_pressure_top]
-        type = NeumannBC
-        variable = disp_z
-        boundary = top
-        value = -50e6
-        displacements = 'disp_x disp_y disp_z'
-    []
-    [static_pressure_bottom]
-        type = NeumannBC
-        variable = disp_z
-        boundary = bottom
-        value = 50e6
-        displacements = 'disp_x disp_y disp_z'
-    []     
+    # [static_pressure_top]
+    #     type = ADNeumannBC
+    #     variable = disp_z
+    #     boundary = top
+    #     value = -100e6
+    #     displacements = 'disp_x disp_y disp_z'
+    # []
+    # [static_pressure_bottom]
+    #     type = ADNeumannBC
+    #     variable = disp_z
+    #     boundary = bottom
+    #     value = 100e6
+    #     displacements = 'disp_x disp_y disp_z'
+    # []     
     [static_pressure_left]
-        type = NeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = left
-        value = 50e6
+        function = func_pos_normal_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right]
-        type = NeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = right
-        value = -50e6
+        function = func_neg_normal_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
+    #
     [static_pressure_front]
-        type = NeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = front
-        value = 50e6
+        function = func_pos_normal_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back]
-        type = NeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = back
-        value = -50e6
+        function = func_neg_normal_stress
         displacements = 'disp_x disp_y disp_z'
     []
+    #
     [static_pressure_front_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = front
-        value = -25e6
+        function = -25e6
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = back
-        value = 25e6
+        function = 25e6
         displacements = 'disp_x disp_y disp_z'
-    []      
+    [] 
+    [static_pressure_left_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = left
+        function = -25e6
+        displacements = 'disp_x disp_y disp_z'
+    []  
+    [static_pressure_right_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = right
+        function = 25e6
+        displacements = 'disp_x disp_y disp_z'
+    []   
     # fix ptr
     [./fix_cptr1_x]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_x
         boundary = corner_ptr
         value = 0
     []
     [./fix_cptr1_y]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_y
         boundary = corner_ptr
         value = 0
     []
     [./fix_cptr1_z]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_z
         boundary = corner_ptr
         value = 0
     []     
 []
 
-#####################################
-#BCs Section
-#Absorbing boundary conditions
-#####################################
-[BCs]
-    ##non-reflecting bc
-    #
-    [./dashpot_top_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = top
+[Functions]
+    [func_pos_normal_stress]
+        type = ParsedFunction
+        # expression = '-1 * ( 1.073206 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) ) - (1000 * 9.81 * (-z)) )'        
+        expression = 'if (-z>15000, 2700 * 9.81 * (-z), 2700 * 9.81 * 15000)'
     []
-    [./dashpot_top_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = top
+    [func_neg_normal_stress]
+        type = ParsedFunction
+        # expression = '1.073206 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) ) - (1000 * 9.81 * (-z))'  
+        expression = 'if (-z>15000, -2700 * 9.81 * (-z), -2700 * 9.81 * 15000)'
     []
-    [./dashpot_top_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = top
+    [func_pos_shear]
+        type = ParsedFunction
+        # expression = '-0.169029 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) )'
+        expression = 'if (-z>15000, 0.5 * 2700 * 9.81 * (-z), 0.5 * 2700 * 9.81 * 15000)'
     []
-    #
-    [./dashpot_bottom_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = bottom
+    [func_neg_shear]
+        type = ParsedFunction
+        # expression = '-1 * ( -0.169029 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) ) )'
+        expression = 'if (-z>15000, -0.5 * 2700 * 9.81 * (-z), -0.5 * 2700 * 9.81 * 15000)'
     []
-    [./dashpot_bottom_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = bottom
-    []
-    [./dashpot_bottom_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = bottom
-    []
-    #
-    [./dashpot_left_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = left
-    []
-    [./dashpot_left_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = left
-    []
-    [./dashpot_left_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = left
-    []
-    #
-    [./dashpot_right_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = right
-    []
-    [./dashpot_right_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = right
-    []
-    [./dashpot_right_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = right
-    []
-    #
-    [./dashpot_front_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = front
-    []
-    [./dashpot_front_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = front
-    []
-    [./dashpot_front_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = front
-    []
-    #
-    [./dashpot_back_x]
-        type = NonReflectDashpotBC3d
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = back
-    []
-    [./dashpot_back_y]
-        type = NonReflectDashpotBC3d
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = back
-    []
-    [./dashpot_back_z]
-        type = NonReflectDashpotBC3d
-        component = 2
-        variable = disp_z
-        disp_x = disp_x
-        disp_y = disp_y
-        disp_z = disp_z
-        p_wave_speed = 5773.5
-        shear_wave_speed = 3333.3
-        boundary = back
-    []
-[]    
+[]
 
 #############################################################################################################################################################
 #UserObjects Section
@@ -752,7 +612,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = '../static_solve/static_solve_out.e'
-      system_variables = 'disp_x disp_y disp_z stress_01'
+      system_variables = 'disp_x disp_y disp_z'
       timestep = LATEST
       force_preaux = true
     [../]

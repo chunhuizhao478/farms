@@ -9,7 +9,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh.msh'
+        file = '../meshfile/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -124,6 +124,11 @@
 #Block 2: use linear elastic model
 ###############################################################################################
 [Materials]
+    [density]
+        type = ADGenericConstantMaterial
+        prop_names = 'density'
+        prop_values = '2700'
+    []
     [strain]
         type = ADComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
@@ -185,9 +190,9 @@
         type = ADInitialDamageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0.7
-        len_of_fault_strike = 10000
-        len_of_fault_dip = 1000
-        nucl_center = '0 0 -8500'
+        len_of_fault_strike = 14000
+        len_of_fault_dip = 10000
+        nucl_center = '0 0 -10000'
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -209,9 +214,9 @@
         type = ADInitialBreakageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0.0
-        len_of_fault_strike = 10000
-        len_of_fault_dip = 1000
-        nucl_center = '0 0 -8500'
+        len_of_fault_strike = 14000
+        len_of_fault_dip = 10000
+        nucl_center = '0 0 -10000'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
@@ -266,7 +271,7 @@
 #exodus: save the solution to a exodus file
 ################################################
 [Outputs]
-    exodus = true       
+    exodus = true    
 []
 
 #We assume the simulation is loaded with compressive pressure and shear stress
@@ -282,62 +287,78 @@
 #############################################################################################################################################################
 [BCs]
     #Note: use neuamnnBC gives minimum waves than pressureBC
-    [static_pressure_top]
-        type = ADNeumannBC
-        variable = disp_z
-        boundary = top
-        value = -50e6
-        displacements = 'disp_x disp_y disp_z'
-    []
-    [static_pressure_bottom]
-        type = ADNeumannBC
-        variable = disp_z
-        boundary = bottom
-        value = 50e6
-        displacements = 'disp_x disp_y disp_z'
-    []     
+    # [static_pressure_top]
+    #     type = ADNeumannBC
+    #     variable = disp_z
+    #     boundary = top
+    #     value = -100e6
+    #     displacements = 'disp_x disp_y disp_z'
+    # []
+    # [static_pressure_bottom]
+    #     type = ADNeumannBC
+    #     variable = disp_z
+    #     boundary = bottom
+    #     value = 100e6
+    #     displacements = 'disp_x disp_y disp_z'
+    # []     
     [static_pressure_left]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = left
-        value = 50e6
+        function = func_pos_normal_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = right
-        value = -50e6
+        function = func_neg_normal_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
+    #
     [static_pressure_front]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = front
-        value = 50e6
+        function = func_pos_normal_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = back
-        value = -50e6
+        function = func_neg_normal_stress
         displacements = 'disp_x disp_y disp_z'
     []
+    #
     [static_pressure_front_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = front
-        value = -25e6
+        function = -25e6
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = back
-        value = 25e6
+        function = 25e6
         displacements = 'disp_x disp_y disp_z'
-    []    
+    [] 
+    [static_pressure_left_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = left
+        function = -25e6
+        displacements = 'disp_x disp_y disp_z'
+    []  
+    [static_pressure_right_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = right
+        function = 25e6
+        displacements = 'disp_x disp_y disp_z'
+    []   
     # fix ptr
     [./fix_cptr1_x]
         type = ADDirichletBC
@@ -357,4 +378,27 @@
         boundary = corner_ptr
         value = 0
     []     
+[]
+
+[Functions]
+    [func_pos_normal_stress]
+        type = ParsedFunction
+        # expression = '-1 * ( 1.073206 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) ) - (1000 * 9.81 * (-z)) )'        
+        expression = 'if (-z>15000, 2700 * 9.81 * (-z), 2700 * 9.81 * 15000)'
+    []
+    [func_neg_normal_stress]
+        type = ParsedFunction
+        # expression = '1.073206 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) ) - (1000 * 9.81 * (-z))'  
+        expression = 'if (-z>15000, -2700 * 9.81 * (-z), -2700 * 9.81 * 15000)'
+    []
+    [func_pos_shear]
+        type = ParsedFunction
+        # expression = '-0.169029 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) )'
+        expression = 'if (-z>15000, 0.5 * 2700 * 9.81 * (-z), 0.5 * 2700 * 9.81 * 15000)'
+    []
+    [func_neg_shear]
+        type = ParsedFunction
+        # expression = '-1 * ( -0.169029 * ( (-2700 * 9.81 * (-z)) + (1000 * 9.81 * (-z)) ) )'
+        expression = 'if (-z>15000, -0.5 * 2700 * 9.81 * (-z), -0.5 * 2700 * 9.81 * 15000)'
+    []
 []

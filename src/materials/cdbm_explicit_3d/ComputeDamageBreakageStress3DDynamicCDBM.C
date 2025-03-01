@@ -86,7 +86,9 @@ ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCD
     _beta_width(getParam<Real>("beta_width")),
     _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
     _CBH_constant(getParam<Real>("CBH_constant")),
-    _dim(_mesh.dimension())
+    _dim(_mesh.dimension()),
+    _strain_rate(declareProperty<Real>("strain_rate")),
+    _cd_ratedependent(declareProperty<Real>("cd_ratedependent"))
 {
 }
 
@@ -128,6 +130,35 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   Real a2 = avec[2];
   Real a3 = avec[3];
 
+  /*
+  use rate-dependent cd
+  */
+
+  Real _strain_rate_hat = 1.0e-4; //strain rate threshold
+  Real _m_exponent = 0.85; //exponent for rate-dependent Cd
+  Real _cd_hat = 10; //minimum Cd value
+  Real Cd_ratedepdent = 1e-2; //initial Cd value
+  //compute deviatoric strain
+  RankTwoTensor dev_strain = _mechanical_strain[_qp] - 0.3333 * _mechanical_strain[_qp].trace() * RankTwoTensor::Identity();
+  RankTwoTensor dev_strain_old = _mechanical_strain_old[_qp] - 0.3333 * _mechanical_strain_old[_qp].trace() * RankTwoTensor::Identity();
+  RankTwoTensor dev_strain_rate = (dev_strain - dev_strain_old) / _dt; //deviatoric strain rate
+  //compute deviatoric strain norm
+  Real dev_strain_rate_norm = 0.0;
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int j = 0; j < 3; j++){
+      dev_strain_rate_norm += dev_strain_rate(i,j) * dev_strain_rate(i,j);
+    }
+  }
+  dev_strain_rate_norm = std::sqrt(2.0/3.0*dev_strain_rate_norm);
+  //compute strain rate
+  Real strain_rate = dev_strain_rate_norm; //strain rate
+  //save strain_dir0_positive
+  _strain_rate[_qp] = strain_rate;
+  //compute rate-dependent Cd
+  if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
+  Cd_ratedepdent = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
+  _cd_ratedependent[_qp] = Cd_ratedepdent;
+
   /* 
   compute alpha and B parameters
   */
@@ -136,7 +167,8 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   //compute forcing term
   Real alpha_forcingterm;
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    alpha_forcingterm = (1 - _B_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+    //alpha_forcingterm = (1 - _B_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+    alpha_forcingterm = (1 - _B_old[_qp]) * ( Cd_ratedepdent * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     alpha_forcingterm = (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
@@ -165,7 +197,8 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   _alpha_damagedvar[_qp] = alpha_out;
 
   /* compute B */
-  Real C_B = _CdCb_multiplier * _Cd_constant;
+  //Real C_B = _CdCb_multiplier * _Cd_constant;
+  Real C_B = _CdCb_multiplier * Cd_ratedepdent;
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
@@ -357,6 +390,31 @@ ComputeDamageBreakageStress3DDynamicCDBM::alphacr_root1(Real xi, Real gamma_dama
 Real 
 ComputeDamageBreakageStress3DDynamicCDBM::alphacr_root2(Real xi, Real gamma_damaged_r) {
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
+}
+
+void
+ComputeDamageBreakageStress3DDynamicCDBM::computePrincipalStrainAndOrientation(
+    RealVectorValue & strain_in_crack_dir)
+{
+  // The rotation tensor is ordered such that directions for pre-existing cracks appear first
+  // in the list of columns.  For example, if there is one existing crack, its direction is in the
+  // first column in the rotation tensor.
+
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor eigvec;
+
+  _eps_total_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+
+  // If the elastic strain is beyond the cracking strain, save the eigen vectors as
+  // the rotation tensor. Reverse their order so that the third principal strain
+  // (most tensile) will correspond to the first crack.
+  // _crack_rotation[_qp].fillColumn(0, eigvec.column(2));
+  // _crack_rotation[_qp].fillColumn(1, eigvec.column(1));
+  // _crack_rotation[_qp].fillColumn(2, eigvec.column(0));
+
+  strain_in_crack_dir(0) = eigval[2];
+  strain_in_crack_dir(1) = eigval[1];
+  strain_in_crack_dir(2) = eigval[0];
 }
 
 // void

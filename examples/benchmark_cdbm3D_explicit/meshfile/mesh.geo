@@ -17,21 +17,21 @@ big_zmax = 0;
 
 // Define the small fault zone box
 // The region will be block 3, and use continuum damage breakage material
-small_xmin = -6000;
-small_xmax = 6000;
+small_xmin = -2000;
+small_xmax = 2000;
 small_ymin = -1000;
 small_ymax = 1000;
-small_zmin = -10000;
-small_zmax = -7000;
+small_zmin = -16000;
+small_zmax = -4000;
 
 // Define the inner damage zone box
 // The region will be block 1, and use continuum damage breakage material   
-damage_xmin = -5000;
-damage_xmax = 5000;
+damage_xmin = -1000;
+damage_xmax = 1000;
 damage_ymin = -100;
 damage_ymax = 100;
-damage_zmin = -9000;
-damage_zmax = -8000;
+damage_zmin = -15000;
+damage_zmax = -5000;
 
 // Create the big outer box
 big_box = newv;

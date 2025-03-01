@@ -63,6 +63,9 @@ protected:
                                Real a2, 
                                Real a3, 
                                RankTwoTensor Ee);
+  
+  /// @brief Compute equivalent strain rate
+  void computePrincipalStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
 
   /// additional variables
   /// strain invariants ratio: onset of damage evolution
@@ -149,4 +152,8 @@ protected:
 
   /// dimension
   const unsigned int _dim;
+
+  /// strain rate
+  MaterialProperty<Real> & _strain_rate;
+  MaterialProperty<Real> & _cd_ratedependent;
 };
