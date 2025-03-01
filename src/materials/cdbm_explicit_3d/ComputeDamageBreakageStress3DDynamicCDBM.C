@@ -39,7 +39,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::validParams()
   params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
   params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
   params.addRequiredParam<Real>(    "D", "D value");
-  params.addParam<bool>("use_rate_dependent_cd", "use rate-dependent Cd", false);
+  params.addParam<bool>("use_rate_dependent_cd", false, "Whether to use rate dependent Cd");
   
   //variable parameters
   params.addRequiredCoupledVar("alpha_grad_x", "damage variable gradient component in x computed from subApp");
