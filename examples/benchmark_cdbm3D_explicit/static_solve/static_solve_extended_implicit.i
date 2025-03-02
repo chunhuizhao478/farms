@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_large_extended.msh'
+        file = '../meshfile/mesh_large.msh'
     []
     [./sidesets]
         input = msh
