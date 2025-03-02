@@ -411,7 +411,6 @@
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
-        variables = 'disp_x disp_y'
     []
 []
     
