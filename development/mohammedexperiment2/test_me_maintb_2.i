@@ -418,21 +418,21 @@
     exodus = true
     time_step_interval = 20
     show = 'vel_slipweakening_x vel_slipweakening_y'
-    #save
-    [Checkpoints]
-        type = Checkpoint
-        num_files = 2
-        time_step_interval = 2000
-    []
-    [sample_snapshots]
-        type = Exodus
-        time_step_interval = 2000
-    []
-    [snapshots]
-        type = Exodus
-        time_step_interval = 2000
-        overwrite = true
-    []
+    # #save
+    # [Checkpoints]
+    #     type = Checkpoint
+    #     num_files = 2
+    #     time_step_interval = 2000
+    # []
+    # [sample_snapshots]
+    #     type = Exodus
+    #     time_step_interval = 2000
+    # []
+    # [snapshots]
+    #     type = Exodus
+    #     time_step_interval = 2000
+    #     overwrite = true
+    # []
 []
 
 [MultiApps]
