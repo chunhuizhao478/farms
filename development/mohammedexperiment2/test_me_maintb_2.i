@@ -408,7 +408,6 @@
     dt = 3.015e-8 
     end_time = 10.0
     num_steps = 8000
-    show = 'vel_slipweakening_x vel_slipweakening_y'
     [TimeIntegrator]
         type = CentralDifference
         solve_type = lumped
@@ -418,6 +417,7 @@
 [Outputs]
     exodus = true
     time_step_interval = 20
+    show = 'vel_slipweakening_x vel_slipweakening_y'
     #save
     [Checkpoints]
         type = Checkpoint
