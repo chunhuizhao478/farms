@@ -45,8 +45,14 @@ public:
   //2D only
   virtual void computeinitialdamage2D(); //compute initial damage with time dependent material
 
+  //3D only
+  virtual void computeinitialdamage3D(); //compute initial damage with time dependent material
+
   //2D only
   virtual void computedamageperturbation2D(); //compute damage perturbation with time dependent material
+
+  //3D only
+  virtual void computedamageperturbation3D(); //compute damage perturbation with time dependent material
 
   virtual void buildLmatrix(); //build L matrix
 
@@ -230,6 +236,11 @@ protected:
   const Real _build_param_peak_value;
   const Real _build_param_sigma;
   const Real _build_param_len_of_fault;
+
+  /// @brief add option to build initial damage profile in 3D
+  const bool _build_param_use_initial_damage_3D;
+  const Real _build_param_len_of_fault_dip;
+  const std::vector<Real> _build_param_center_point;
 
   /// @brief add option to build time dependent damage perturbation inside this material object
   const bool _perturbation_build_param_use_damage_perturb;

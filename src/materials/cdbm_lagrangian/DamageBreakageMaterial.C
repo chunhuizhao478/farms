@@ -85,6 +85,15 @@ DamageBreakageMaterial::validParams()
                         "Sigma value of the initial damage profile");
   params.addParam<Real>("build_param_len_of_fault", -1,
                         "Length of the fault for the initial damage profile");
+  // 3D case
+  //----------------------------------------------------------------------------------//
+  params.addParam<bool>("build_param_use_initial_damage_3D", false,
+                        "Flag to build initial damage profile in 3D, default is 2D");
+  params.addParam<Real>("build_param_len_of_fault_dip", -1,
+                        "Length of the fault dip for the initial damage profile");
+  params.addParam<std::vector<Real>>("build_param_center_point", std::vector<Real>(),
+                        "Center point of the fault for the initial damage profile");
+  //----------------------------------------------------------------------------------//
   // Build time dependent damage perturbation inside this material object
   params.addParam<bool>("perturbation_build_param_use_damage_perturb", false,
                         "Use damage perturbation for the initial damage profile");
@@ -209,6 +218,12 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _build_param_peak_value(getParam<Real>("build_param_peak_value")),
   _build_param_sigma(getParam<Real>("build_param_sigma")),
   _build_param_len_of_fault(getParam<Real>("build_param_len_of_fault")),
+  // 3D case
+  //----------------------------------------------------------------------------------//
+  _build_param_use_initial_damage_3D(getParam<bool>("build_param_use_initial_damage_3D")),
+  _build_param_len_of_fault_dip(getParam<Real>("build_param_len_of_fault_dip")),
+  _build_param_center_point(getParam<std::vector<Real>>("build_param_center_point")),
+  //----------------------------------------------------------------------------------//
   // Build time dependent damage perturbation inside this material object
   _perturbation_build_param_use_damage_perturb(getParam<bool>("perturbation_build_param_use_damage_perturb")),
   _perturbation_build_param_nucl_center(getParam<std::vector<Real>>("perturbation_build_param_nucl_center")),
@@ -288,8 +303,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   if (_build_param_use_initial_damage_time_dependent_mat && (_build_param_len_of_fault < 0))
     mooseError("build_param_len_of_fault must be set to a positive value when build_param_use_initial_damage_time_dependent_mat is set to true");
   // Check parameters for building time dependent damage perturbation
-  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_nucl_center.size() != 2))
-    mooseError("perturbation_build_param_nucl_center must be set to a 2D vector when perturbation_build_param_use_damage_perturb is set to true");
+  if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_nucl_center.size() == 0))
+    mooseError("perturbation_build_param_nucl_center must be set to a non-zero vector when perturbation_build_param_use_damage_perturb is set to true");
   if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_length < 0))
     mooseError("perturbation_build_param_length must be set to a positive value when perturbation_build_param_use_damage_perturb is set to true");
   if (_perturbation_build_param_use_damage_perturb && (_perturbation_build_param_peak_value < 0))
@@ -308,6 +323,10 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("Must specify vel_z when use_vels_build_L = true");
   if (_use_state_var_evolution && (_const_A < 0 || _const_B < 0 || _const_theta_o < 0 || _initial_theta0 < 0))
     mooseError("const_A, const_B, and const_theta_o must be set to a positive value when use_state_var_evolution is set to true");
+  if (_build_param_use_initial_damage_3D && !_build_param_use_initial_damage_time_dependent_mat)
+    mooseError("build_param_use_initial_damage_time_dependent_mat must be set to true when build_param_use_initial_damage_3D is set to true");
+  if (_build_param_use_initial_damage_3D && (_build_param_len_of_fault_dip < 0))
+    mooseError("build_param_len_of_fault_dip must be set to a positive value when build_param_use_initial_damage_3D is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -392,12 +411,20 @@ DamageBreakageMaterial::computeQpProperties()
 
   // Build time dependent damage perturbation inside this material object
   if (_perturbation_build_param_use_damage_perturb){
-    computedamageperturbation2D();
+    if (_build_param_use_initial_damage_3D){
+      computedamageperturbation3D();
+    } else {
+      computedamageperturbation2D();
+    }
   }
 
   // Build initial damage profile inside this material object
   if (_build_param_use_initial_damage_time_dependent_mat){
-    computeinitialdamage2D();
+    if (_build_param_use_initial_damage_3D){
+      computeinitialdamage3D();
+    } else {
+      computeinitialdamage2D();
+    }
   }
 
   /* compute alpha at t_{n+1} using quantities from t_{n} */
@@ -825,6 +852,59 @@ DamageBreakageMaterial::computeinitialdamage2D() {
 }
 
 // Function for compute damage perturbation with time dependent material
+// This function is the same as "InitialDamageCycleSim3DPlane"
+void
+DamageBreakageMaterial::computeinitialdamage3D() {
+
+  /**
+   * Input Parameters:
+   * _build_param_peak_value: peak value of the initial damage
+   * _build_param_sigma: standard deviation of the Gaussian distribution
+   * _build_param_len_of_fault: length of the fault
+   * _build_param_len_of_fault_dip: length of the fault in the dip direction #
+   * _build_param_center_point: center point of the fault #
+   * _perturbation_build_param_use_damage_perturb: use damage perturbation flag
+   */
+
+  // Coordinates of the current quadrature point
+  const Real x_coord = _q_point[_qp](0);
+  const Real y_coord = _q_point[_qp](1);
+  const Real z_coord = _q_point[_qp](2);
+
+  // Define our rectangular fault plane at y=0.
+  // The rectangle is: x in [-0.5*len_of_fault, +0.5*len_of_fault],
+  //                  z in [-0.5*len_of_fault_dip+center_point, +0.5*len_of_fault_dip+center_point].
+
+  // 1) Clamp x to the fault rectangle in the x-direction
+  const Real x_min = _build_param_center_point[0] - 0.5 * _build_param_len_of_fault;
+  const Real x_max = _build_param_center_point[0] + 0.5 * _build_param_len_of_fault;
+  const Real x_clamped = std::max(x_min, std::min(x_coord, x_max));;
+
+  // 2) Clamp z to the fault rectangle in the z-direction
+  const Real z_min = _build_param_center_point[2] - 0.5 * _build_param_len_of_fault_dip;
+  const Real z_max = _build_param_center_point[2] + 0.5 * _build_param_len_of_fault_dip;
+  const Real z_clamped = std::max(z_min, std::min(z_coord, z_max));
+
+  // The plane is at y = 0, so the closest point on the plane to (x, y, z)
+  // is (x_clamped, 0, z_clamped). Compute the distance from that point.
+  const Real dx = x_coord - x_clamped;
+  const Real dy = y_coord - _build_param_center_point[1];           // because plane is at y=0
+  const Real dz = z_coord - z_clamped;
+  const Real r = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+  // Exponential decay
+  Real alpha_o = _build_param_peak_value * std::exp(-1.0 * (r * r) / (_build_param_sigma * _build_param_sigma));
+
+  if (_perturbation_build_param_use_damage_perturb)
+  {
+    alpha_o = alpha_o + _damage_perturbation[_qp];
+  }
+
+  _initial_damage_time_dependent_mat[_qp] = alpha_o;  
+
+}
+
+// Function for compute damage perturbation with time dependent material
 // This function is the same as "DamagePerturbationSquare2D"
 void 
 DamageBreakageMaterial::computedamageperturbation2D()
@@ -866,6 +946,68 @@ DamageBreakageMaterial::computedamageperturbation2D()
 
   // Outside the nucleation zone, keep the old value (or set to zero if desired)
   _damage_perturbation[_qp] = dalpha;
+}
+
+// Function for compute damage perturbation with time dependent material
+// This function is the same as "PerturbationRadial"
+void
+DamageBreakageMaterial::computedamageperturbation3D()
+{
+
+  /**
+   * Input Parameters:
+   * _perturbation_build_param_nucl_center: nucleation zone center (vector of 2 values)
+   * _perturbation_build_param_length: length of the nucleation zone (in strike direction)
+   * _perturbation_build_param_thickness: thickness of the nucleation zone (in normal direction)
+   * _perturbation_build_param_peak_value: peak damage value (maximum allowed)
+   * _perturbation_build_param_sigma: standard deviation (controls spatial decay)
+   * _perturbation_build_param_duration: duration over which the damage ramps from 0 to peak
+   */
+
+  // Get the current point coordinates in the mesh
+  const Real xcoord = _q_point[_qp](0); // strike direction
+  const Real ycoord = _q_point[_qp](1); // normal direction
+  const Real zcoord = _q_point[_qp](2); // dip direction
+
+  // Compute the 2D Gaussian in the XZ plane (ignoring y in the exponent)
+  // Characteristic sigma is defined as (length / sigma_divisor)
+  const Real sigma_x = _perturbation_build_param_length / _perturbation_build_param_sigma;
+  const Real sigma_z = _perturbation_build_param_length / _perturbation_build_param_sigma;
+  const Real gaussian_factor = _perturbation_build_param_peak_value; // maximum amplitude
+
+  // Compute distances in X and Z from the nucleation center
+  const Real dx = xcoord - _perturbation_build_param_nucl_center[0];
+  const Real dz = zcoord - _perturbation_build_param_nucl_center[2];
+
+  // 2D Gaussian distribution in the XZ plane:
+  //   G(x,z) = gaussian_factor * exp( - [dx^2/(2*sigma_x^2) + dz^2/(2*sigma_z^2)] )
+  const Real gaussian_value = gaussian_factor *
+                              std::exp(-((dx * dx) / (2.0 * sigma_x * sigma_x) +
+                                         (dz * dz) / (2.0 * sigma_z * sigma_z)));
+
+  // Scale Gaussian value over time: ramp from 0 to gaussian_value over _perturbation_build_param_duration
+  Real scaled_gaussian_value = 0.0;
+  if (_t <= _perturbation_build_param_duration)
+  {
+    scaled_gaussian_value = gaussian_value * (_t / _perturbation_build_param_duration);
+  }
+  else
+  {
+    scaled_gaussian_value = gaussian_value;
+  }
+
+  // Apply the perturbation only if the current y-coordinate is within the specified thickness
+  if (ycoord >= _perturbation_build_param_nucl_center[1] - _perturbation_build_param_thickness / 2.0 && 
+      ycoord <= _perturbation_build_param_nucl_center[1] + _perturbation_build_param_thickness / 2.0)
+  {
+    // Directly set the damage perturbation to follow the ramping function
+    _damage_perturbation[_qp] = scaled_gaussian_value;
+  }
+  else
+  {
+    // Outside the perturbation zone, leave the old values unchanged
+    _damage_perturbation[_qp] = _damage_perturbation_old[_qp];
+  }
 }
 
 // Function for alpha_func_root1
