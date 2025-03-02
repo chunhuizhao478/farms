@@ -496,7 +496,7 @@
     ### save the solution to a exodus file every [time_step_interval] time steps]
     exodus = true
     time_step_interval = 100
-    show = 'strain_invariant_ratio vel_x vel_y vel_z alpha_damagedvar_aux B_aux xi_aux'
+    show = 'alpha_damagedvar B_damagedvar strain_invariant_ratio vel_x vel_y vel_z alpha_damagedvar_aux B_aux xi_aux'
     # [./csv]
     #     type = CSV
     #     time_step_interval = 1

@@ -278,7 +278,7 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'eps_p eps_e I1 I2 stress xi strain_rate cd_ratedependent'
+        output_properties = 'eps_p eps_e I1 I2 stress xi strain_rate cd_ratedependent alpha_damagedvar B xi'
         block = '1 3'
         outputs = exodus
     [] 
@@ -464,7 +464,7 @@
     ##xi: strain invariants ratio
     ##shear_stress_perturbation: perturbation field
     #############################################
-    show = 'strain_rate cd_ratedependent xi vel_x vel_y vel_z alpha_damagedvar_aux B_aux xi_aux'
+    show = 'alpha_damagedvar B xi vel_x vel_y vel_z alpha_damagedvar_aux B_aux xi_aux'
     [./csv]
         type = CSV
         time_step_interval = 1
