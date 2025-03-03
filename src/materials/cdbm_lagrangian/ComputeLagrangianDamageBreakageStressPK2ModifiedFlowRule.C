@@ -521,8 +521,8 @@ void
 ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpPK2Stress()
 {
   /* Evaluate Fp */
-  //RankTwoTensor Fp_updated = computeQpFp();
-  RankTwoTensor Fp_updated = computeQpFpTensor();
+  RankTwoTensor Fp_updated = computeQpFp();
+  //RankTwoTensor Fp_updated = computeQpFpTensor();
 
   /* Compute Fe */
   RankTwoTensor Fe = _F[_qp] * Fp_updated.inverse();
