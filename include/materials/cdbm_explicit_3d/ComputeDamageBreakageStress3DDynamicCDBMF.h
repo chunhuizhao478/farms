@@ -160,4 +160,8 @@ protected:
 
   /// @brief static initial stress tensor
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
+
+  /// @brief static initial strain tensor
+  const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
+
 };

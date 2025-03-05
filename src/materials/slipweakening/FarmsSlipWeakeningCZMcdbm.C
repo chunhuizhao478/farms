@@ -287,7 +287,7 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
     //parameter f2
     //here we close the gradual reduction on mud, replace it by overstress
     Real f2 = 0.0;
-    Real t0 = 0.5; //0.5;
+    Real t0 = 0; //0.5;
     Real T = (*_T)[_qp];
     if ( _t < T ){
       f2 = 0.0;
@@ -298,6 +298,7 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
     else{
       f2 = 1;
     }
+    // f2 = 0.0;
 
     Real mu = mu_s + ( mu_d - mu_s ) * std::max(f1,f2);
 
@@ -311,7 +312,11 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
     //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
     //treat tension on the fault the same as if the effective normal stress equals zero.
     Real effective_stress = (-Tnormal) - Pf;
-    tau_f = (*_Co)[_qp] + mu * std::max(effective_stress,0.0);    
+
+    tau_f = (*_Co)[_qp] + mu * std::max(effective_stress,0.0);
+    
+    tau_f = tau_f + ( 0.1 * tau_f - tau_f ) * f2;
+
   //}
 
   //Compute fault traction
@@ -336,9 +341,9 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
   //Assign back traction in CZM
   RealVectorValue traction_local(0.0,0.0,0.0);
 
-  traction_local(0) = 0.0; //Tstrike - T_strike_o; 
-  traction_local(1) = 0.0; //Tdip    - T_dip_o; 
-  traction_local(2) = 0.0; //Tnormal - T_normal_o;
+  traction_local(0) = Tstrike - T_strike_o; 
+  traction_local(1) = Tdip    - T_dip_o; 
+  traction_local(2) = Tnormal - T_normal_o;
 
   //Rotate back traction difference to global coordinates
   _traction_on_interface[_qp] = LocaltoGlobalVector(traction_local, _rot[_qp]);

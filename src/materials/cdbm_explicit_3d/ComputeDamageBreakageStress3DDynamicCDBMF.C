@@ -91,7 +91,8 @@ ComputeDamageBreakageStress3DDynamicCDBMF::ComputeDamageBreakageStress3DDynamicC
     _strain_rate(declareProperty<Real>("strain_rate")),
     _cd_ratedependent(declareProperty<Real>("cd_ratedependent")),
     _use_rate_dependent_cd(getParam<bool>("use_rate_dependent_cd")),
-    _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor"))
+    _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_stress_tensor")),
+    _static_initial_strain_tensor(getMaterialPropertyByName<RankTwoTensor>("static_initial_strain_tensor"))
 {
 }
 
@@ -291,10 +292,10 @@ ComputeDamageBreakageStress3DDynamicCDBMF::computeQpStress()
   _sigma_d[_qp] = sigma_d;
 
   // Rotate the stress state to the current configuration
-  _stress[_qp] = sigma_total - _static_initial_stress_tensor[_qp];
+  _stress[_qp] = sigma_total - _static_initial_stress_tensor[_qp]; //here you can relative stress to the initial stress
 
   // Assign value for elastic strain, which is equal to the mechanical strain
-  _elastic_strain[_qp] = _mechanical_strain[_qp]; //!
+  _elastic_strain[_qp] = _mechanical_strain[_qp] - _static_initial_strain_tensor[_qp]; //here you can relative strain to the initial strain
 
   // Compute jacobian //_Jacobian_mult[_qp]
   // computeQpTangentModulus(I1, 
