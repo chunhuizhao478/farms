@@ -348,8 +348,8 @@ DamageBreakageMaterial::initQpStatefulProperties()
   computegammar();
 
   /* compute a0 a1 a2 a3 coefficients */
-  //computecoefficients();
-  computecoefficientsgivenxi();
+  computecoefficients();
+  //computecoefficientsgivenxi();
   //computecoefficientsgivenchi();
 
   _alpha_damagedvar[_qp] = _initial_damage[_qp]; //
@@ -405,8 +405,8 @@ DamageBreakageMaterial::computeQpProperties()
   computegammar();
 
   /* compute a0 a1 a2 a3 coefficients */
-  //computecoefficients();
-  computecoefficientsgivenxi();
+  computecoefficients();
+  //computecoefficientsgivenxi();
   //computecoefficientsgivenchi();
 
   // Build time dependent damage perturbation inside this material object
