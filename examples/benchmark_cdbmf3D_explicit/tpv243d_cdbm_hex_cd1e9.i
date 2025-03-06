@@ -83,7 +83,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e6
+    Cd_constant = 1e9
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -746,7 +746,7 @@
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = 0
-    loc_y = -8000
+    loc_y = -4000
     loc_z = 0
     r_crit = 4000
     Vs = 3333
