@@ -315,7 +315,7 @@ FarmsSlipWeakeningCZMcdbm::computeTractionAndDisplacements()
 
     tau_f = (*_Co)[_qp] + mu * std::max(effective_stress,0.0);
     
-    tau_f = tau_f + ( 0.1 * tau_f - tau_f ) * f2;
+    // tau_f = tau_f + ( 0.1 * tau_f - tau_f ) * f2;
 
   //}
 
