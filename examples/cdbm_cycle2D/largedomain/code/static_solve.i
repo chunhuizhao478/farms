@@ -158,7 +158,8 @@
         build_param_len_of_fault = 8000
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
+        # type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable state_variable_tensor strain_invariant_ratio'
         outputs = exodus
