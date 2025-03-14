@@ -172,7 +172,7 @@ degree = np.degrees(radian)
 sigma_N, tau_S = stress_transformation(sigmaxx, sigmaxy, sigmayy, degree)
 
 #increase the normal stress by 6MPa
-sigma_N = sigma_N - 6.0e6
+sigma_N = sigma_N - 12.0e6
 
 #group arr_data
 arr_data = [tau_S, sigma_N, mu_s, mu_d, Dc]

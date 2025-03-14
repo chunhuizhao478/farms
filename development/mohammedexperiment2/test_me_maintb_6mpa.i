@@ -497,7 +497,7 @@
 [UserObjects]
     [./properties]
         type = PropertyReadFile
-        prop_file_name = './mohammedexperiment/outputs/faults_elem_properties.csv'
+        prop_file_name = './mohammedexperiment/outputs/6mpa/faults_elem_properties.csv'
         read_type = 'element'
         nprop = 5
     []
