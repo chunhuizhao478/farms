@@ -9,7 +9,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_large_extended.msh'
+        file = '../meshfile/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -24,10 +24,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -40000 -40000 -40000;
-                   40000 -40000 -40000;
-                   40000 40000  -40000;
-                  -40000 40000  -40000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -335,11 +335,11 @@
     [initial_breakage_surround]
         type = InitialBreakageCycleSim3DPlane
         sigma = 5e2
-        peak_val = 0.0
+        peak_val = 0.1
         len_of_fault_strike = 14000
         len_of_fault_dip = 10000
         nucl_center = '0 0 -10000'
-        use_breakage_perturb = true
+        use_breakage_perturb = false
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
