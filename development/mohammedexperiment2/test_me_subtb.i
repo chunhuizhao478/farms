@@ -84,6 +84,14 @@
     []
 []
 
+[Kernels]
+    #dummy time kernel for strain_zz
+    [./dummy_strain_zz]
+        type = TimeDerivative
+        variable = strain_sub_zz
+    []
+[]
+
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
