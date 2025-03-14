@@ -367,6 +367,10 @@
         variable = 'disp_y'
         component = '1'
     []
+    [./solid_z]
+        type = WeakPlaneStress
+        variable = strain_zz
+    [../]
 []
 
 [Materials]
