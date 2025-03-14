@@ -371,6 +371,11 @@
         type = WeakPlaneStress
         variable = strain_zz
     [../]
+    #dummy time kernel for strain_zz
+    [./dummy_strain_zz]
+        type = TimeDerivative
+        variable = strain_zz
+    []
 []
 
 [Materials]
