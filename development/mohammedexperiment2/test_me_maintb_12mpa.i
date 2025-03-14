@@ -182,26 +182,12 @@
     [../]
 []
 
-# [Modules]
-#     [./TensorMechanics]
-#       [./Master]
-#         [./all]
-#           strain = SMALL
-#           add_variables = true
-#           planar_formulation = WEAK_PLANE_STRESS
-#           out_of_plane_strain = strain_zz
-#           generate_output = 'stress_xx stress_yy stress_xy'
-#         [../]
-#       [../]
-#     [../]
-# []
-
-
 [Physics/SolidMechanics/QuasiStatic]
     [plane_stress]
       planar_formulation = WEAK_PLANE_STRESS
       strain = SMALL
       generate_output = 'stress_xx stress_yy stress_xy'
+      extra_vector_tags = 'restore_tag'
     []
 []
 
@@ -210,51 +196,39 @@
         type = CompVarRate
         variable = vel_slipweakening_x
         coupled = disp_x
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [Vel_y]
         type = CompVarRate
         variable = vel_slipweakening_y
         coupled = disp_y
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     #jump rate (element)
     [TJump_rate]
         type = FDCompVarRate
         variable = tangent_jump_rate
         coupled = tangent_jump
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [NJump_rate]
         type = FDCompVarRate
         variable = normal_jump_rate
         coupled = normal_jump
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     #
     [Displacment_x]
         type = CompVar
         variable = disp_slipweakening_x
         coupled = disp_x
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [Displacement_y]
         type = CompVar
         variable = disp_slipweakening_y
         coupled = disp_y
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    [Residual_x]
-        type = CompVar
-        variable = resid_slipweakening_x
-        coupled = resid_x
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    [Residual_y]
-        type = CompVar
-        variable = resid_slipweakening_y
-        coupled = resid_y
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     #func->aux
     [ShearStress]
@@ -344,6 +318,21 @@
         boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #
+    [restore_x]
+        type = TagVectorAux
+        vector_tag = 'restore_tag'
+        v = 'disp_x'
+        variable = 'resid_x'
+        execute_on = 'TIMESTEP_END'
+    []
+    [restore_y]
+        type = TagVectorAux
+        vector_tag = 'restore_tag'
+        v = 'disp_y'
+        variable = 'resid_y'
+        execute_on = 'TIMESTEP_END'
+    []
 []
 
 [Kernels]
@@ -366,15 +355,6 @@
         type = StiffPropDamping
         variable = 'disp_y'
         component = '1'
-    []
-    [./solid_z]
-        type = WeakPlaneStress
-        variable = strain_zz
-    [../]
-    #dummy time kernel for strain_zz
-    [./dummy_strain_zz]
-        type = TimeDerivative
-        variable = strain_zz
     []
 []
 
@@ -399,8 +379,8 @@
         type = SlipWeakeningMultifaultsGeneralizedPropCSV
         disp_slipweakening_x     = disp_slipweakening_x
         disp_slipweakening_y     = disp_slipweakening_y
-        reaction_slipweakening_x = resid_slipweakening_x
-        reaction_slipweakening_y = resid_slipweakening_y
+        reaction_slipweakening_x = resid_x
+        reaction_slipweakening_y = resid_y
         nodal_area = nodal_area
         D_c = D_c
         mu_d = mu_d
@@ -426,47 +406,15 @@
 [Outputs]
     exodus = true
     time_step_interval = 20
-    # show = 'vel_slipweakening_x vel_slipweakening_y'
-    # #save
-    # [Checkpoints]
-    #     type = Checkpoint
-    #     num_files = 2
-    #     time_step_interval = 2000
-    # []
-    # [sample_snapshots]
-    #     type = Exodus
-    #     time_step_interval = 2000
-    # []
-    # [snapshots]
-    #     type = Exodus
-    #     time_step_interval = 2000
-    #     overwrite = true
-    # []
+    show = 'vel_slipweakening_x vel_slipweakening_y'
 []
 
-[MultiApps]
-    [./sub_app]
-        type = TransientMultiApp
-        positions = '0 0 0'
-        input_files = 'test_me_subtb.i'
-        execute_on = 'TIMESTEP_BEGIN'
-    [../]
-[]
-
-[Transfers]
-    [pull_resid]
-        type = MultiAppCopyTransfer
-        from_multi_app = sub_app
-        source_variable = 'resid_sub_x resid_sub_y'
-        variable = 'resid_x resid_y'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    [push_disp]
-        type = MultiAppCopyTransfer
-        to_multi_app = sub_app
-        source_variable = 'disp_x disp_y'
-        variable = 'disp_sub_x disp_sub_y'
-        execute_on = 'TIMESTEP_BEGIN'
+[UserObjects]
+    [recompute_residual_tag]
+        type = ResidualEvaluationUserObject
+        vector_tag = 'restore_tag'
+        force_preaux = true
+        execute_on = 'TIMESTEP_END'
     []
 []
 
@@ -510,4 +458,8 @@
         read_type = 'element'
         nprop = 5
     []
+[]
+
+[Problem]
+    extra_tag_vectors = 'restore_tag'
 []
