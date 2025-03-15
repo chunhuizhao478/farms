@@ -8,15 +8,15 @@
     [msh]
       type = GeneratedMeshGenerator
       dim = 3
-      xmin = -15000
-      xmax = 15000
-      ymin = -20000
+      xmin = -4000
+      xmax = 4000
+      ymin = -8000
       ymax = 0
-      zmin = -8000
-      zmax = 8000
-      nx = 150
-      ny = 100
-      nz = 80
+      zmin = -2000
+      zmax = 2000
+      nx = 40
+      ny = 40
+      nz = 20
       subdomain_ids = 1
     []
     [./new_block_1]
@@ -62,10 +62,10 @@
 
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 30e9
+    lambda_o = 32.04e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 30e9
+    shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -1.6
@@ -83,7 +83,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 0
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -680,8 +680,8 @@
     #compute eigenstrain
     [./elasticity_tensor]
       type = ComputeIsotropicElasticityTensor
-      lambda = 30e9
-      shear_modulus = 30e9
+      lambda = 32.04e9
+      shear_modulus = 32.04e9
     [../]
     [./strain_from_initial_stress]
       type = ComputeEigenstrainFromInitialStress
@@ -726,7 +726,7 @@
     expression = 'if(-y<15600, 1 * (-0.169029 * ( (-2700 * 9.8 * (-y)) + (1000 * 9.8 * (-y)) )), 0.0)'
     # type = InitialShearStressCDBM
     # benchmark_type = 'tpv24'
-  []  
+  []   
   [./func_initial_stress_yy]
     type = ParsedFunction
     expression = '-2700 * 9.8 * (-y)'
@@ -746,7 +746,7 @@
   [./func_forced_rupture_time]
     type = ForcedRuptureTimeTPV243D
     loc_x = 0
-    loc_y = -8000
+    loc_y = -4000
     loc_z = 0
     r_crit = 4000
     Vs = 3333
@@ -788,13 +788,180 @@
     # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
-        solve_type = lumped
-        use_constant_mass = true
+        solve_type = consistent
     []
 []
 
 [Outputs]
     exodus = true
-    time_step_interval = 40
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar B xi'
+    time_step_interval = 50
+    # show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar B xi'
+[]
+
+[BCs]
+  [bottom_x]
+    type = NonReflectDashpotBC3d
+    variable = disp_x
+    boundary = bottom
+    component = 0
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [bottom_y]
+    type = NonReflectDashpotBC3d
+    variable = disp_y
+    boundary = bottom
+    component = 1
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [bottom_z]
+    type = NonReflectDashpotBC3d
+    variable = disp_z
+    boundary = bottom
+    component = 2
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [left_x]
+    type = NonReflectDashpotBC3d
+    variable = disp_x
+    boundary = left
+    component = 0
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [left_y]
+    type = NonReflectDashpotBC3d
+    variable = disp_y
+    boundary = left
+    component = 1
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [left_z]
+    type = NonReflectDashpotBC3d
+    variable = disp_z
+    boundary = left
+    component = 2
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [right_x]
+    type = NonReflectDashpotBC3d
+    variable = disp_x
+    boundary = right
+    component = 0
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [right_y]
+    type = NonReflectDashpotBC3d
+    variable = disp_y
+    boundary = right
+    component = 1
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [right_z]
+    type = NonReflectDashpotBC3d
+    variable = disp_z
+    boundary = right
+    component = 2
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [front_x]
+    type = NonReflectDashpotBC3d
+    variable = disp_x
+    boundary = front
+    component = 0
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [front_y]
+    type = NonReflectDashpotBC3d
+    variable = disp_y
+    boundary = front
+    component = 1
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [front_z]
+    type = NonReflectDashpotBC3d
+    variable = disp_z
+    boundary = front
+    component = 2
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [back_x]
+    type = NonReflectDashpotBC3d
+    variable = disp_x
+    boundary = back
+    component = 0
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [back_y]
+    type = NonReflectDashpotBC3d
+    variable = disp_y
+    boundary = back
+    component = 1
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
+  [back_z]
+    type = NonReflectDashpotBC3d
+    variable = disp_z
+    boundary = back
+    component = 2
+    disp_x = disp_x
+    disp_y = disp_y
+    disp_z = disp_z 
+    p_wave_speed = 5967
+    shear_wave_speed = 3333
+  []
 []

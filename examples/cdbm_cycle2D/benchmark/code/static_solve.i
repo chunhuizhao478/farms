@@ -144,21 +144,15 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar shear_modulus_o_mat shear_modulus'
         outputs = exodus
-        #state variable evolution
-        use_state_var_evolution = true
-        const_A = 2e6
-        const_B = 1.2e6
-        const_theta_o = 1e4
-        initial_theta0 = 1e4
-        xi_given = 0
+        use_energy_breakage_evolution = true
         # use initial damage time dependent
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 8000
+        build_param_len_of_fault = 4000
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain state_variable state_variable_tensor strain_invariant_ratio'
         outputs = exodus

@@ -263,4 +263,7 @@ protected:
   MaterialProperty<Real> & _const_theta_o_mat;
   MaterialProperty<Real> & _initial_theta0_mat;
 
+  /// @brief add option to use energy breakage evolution equation
+  const bool _use_energy_breakage_evolution;
+
 };

@@ -365,15 +365,7 @@
         vel_x = vel_x
         vel_y = vel_y
         vel_z = vel_z #dummy in the 2D case
-        #--------------------------------------#
-        #   state variable evolution           #
-        #--------------------------------------#
-        use_state_var_evolution = true
-        const_A = 2e6
-        const_B = 1.2e6
-        const_theta_o = 1e4
-        initial_theta0 = 1e4
-        xi_given = 0
+        use_energy_breakage_evolution = true
         #--------------------------------------#
         #   auxiliary variables                #
         #--------------------------------------#
@@ -398,14 +390,14 @@
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 8000
+        build_param_len_of_fault = 4000
         #------------------------------------------#
         #  use damage perturbation time dependent  #
         #------------------------------------------#
         # use damage perturbation time dependent
         perturbation_build_param_use_damage_perturb = true
         perturbation_build_param_nucl_center = '0 0'
-        perturbation_build_param_length = 8000
+        perturbation_build_param_length = 4000
         perturbation_build_param_thickness = 200
         perturbation_build_param_peak_value = 0.3
         perturbation_build_param_sigma = 1318.02
@@ -458,13 +450,13 @@
         type = FarmsIterationAdaptiveDT
         dt = 1e-3
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 5
+        optimal_iterations = 10
         growth_factor = 1.5
         max_time_step_bound = 1e10
         #constrain dt by velocity
-        constrain_by_velocity = true
-        vel_threshold = 0.1
-        constant_dt_on_overspeed = 1e-3
+        # constrain_by_velocity = true
+        # vel_threshold = 0.1
+        # constant_dt_on_overspeed = 1e-3
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
     []

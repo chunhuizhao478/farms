@@ -115,6 +115,9 @@ DamageBreakageMaterial::validParams()
   params.addParam<Real>("const_B", -1.0,"Constant B value, B = b * sigma_N");
   params.addParam<Real>("const_theta_o", -1.0,"Constant theta_o value");
   params.addParam<Real>("initial_theta0", -1.0,"Initial theta0 value");
+  //----------------------------------------------------------------------------------//
+  // Add option to use energy breakage evolution equation
+  params.addParam<bool>("use_energy_breakage_evolution", false, "Flag to use energy breakage evolution equation");
   return params;
 }
 
@@ -242,7 +245,9 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _const_A_mat(declareProperty<Real>("const_A_mat")),
   _const_B_mat(declareProperty<Real>("const_B_mat")),
   _const_theta_o_mat(declareProperty<Real>("const_theta_o_mat")),
-  _initial_theta0_mat(declareProperty<Real>("initial_theta0_mat"))
+  _initial_theta0_mat(declareProperty<Real>("initial_theta0_mat")),
+  // Add option to use energy breakage evolution equation
+  _use_energy_breakage_evolution(getParam<bool>("use_energy_breakage_evolution"))
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -620,11 +625,27 @@ DamageBreakageMaterial::updatebreakage()
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha_damagedvar_old[_qp]) / _beta_width ) + 1.0 );
   Real B_forcingterm;
-  if ( xi >= _xi_d ){
-    B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (xi - _xi_d); //could heal if xi < xi_0
+
+  //use energy breakage evolution equation
+  if (_use_energy_breakage_evolution){
+    
+    if ( xi >= _xi_d ){
+      B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * ((_shear_modulus[_qp] - _a0[_qp]) - (_a1[_qp] + _damaged_modulus[_qp]) * xi + (0.5 * _lambda[_qp] - _a2[_qp]) * xi * xi - _a3[_qp] * xi * xi * xi); //could heal if xi < xi_0
+    }
+    else if ( xi < _xi_d ){
+      B_forcingterm = 1.0 * CBH_constant * _I2_old[_qp] * ((_shear_modulus[_qp] - _a0[_qp]) - (_a1[_qp] + _damaged_modulus[_qp]) * xi + (0.5 * _lambda[_qp] - _a2[_qp]) * xi * xi - _a3[_qp] * xi * xi * xi);
+    }
+  
   }
-  else if ( xi < _xi_d ){
-    B_forcingterm = 1.0 * CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
+  else{
+
+    if ( xi >= _xi_d ){
+      B_forcingterm = 1.0 * C_B * Prob * (1-_B_breakagevar_old[_qp]) * _I2_old[_qp] * (xi - _xi_d); //could heal if xi < xi_0
+    }
+    else if ( xi < _xi_d ){
+      B_forcingterm = 1.0 * CBH_constant * _I2_old[_qp] * ( xi - _xi_d );
+    }
+  
   }
   // else{
   //   mooseError("xi_old is OUT-OF-RANGE!.");
