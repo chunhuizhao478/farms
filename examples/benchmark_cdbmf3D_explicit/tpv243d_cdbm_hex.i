@@ -788,7 +788,7 @@
     # num_steps = 1
     [TimeIntegrator]
         type = CentralDifference
-        solve_type = consistent
+        solve_type = lumped
     []
 []
 
@@ -807,8 +807,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [bottom_y]
     type = NonReflectDashpotBC3d
@@ -818,8 +818,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [bottom_z]
     type = NonReflectDashpotBC3d
@@ -829,8 +829,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [left_x]
     type = NonReflectDashpotBC3d
@@ -840,8 +840,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [left_y]
     type = NonReflectDashpotBC3d
@@ -851,8 +851,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [left_z]
     type = NonReflectDashpotBC3d
@@ -862,8 +862,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [right_x]
     type = NonReflectDashpotBC3d
@@ -873,8 +873,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [right_y]
     type = NonReflectDashpotBC3d
@@ -884,8 +884,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [right_z]
     type = NonReflectDashpotBC3d
@@ -895,8 +895,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [front_x]
     type = NonReflectDashpotBC3d
@@ -906,8 +906,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [front_y]
     type = NonReflectDashpotBC3d
@@ -917,8 +917,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [front_z]
     type = NonReflectDashpotBC3d
@@ -928,8 +928,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [back_x]
     type = NonReflectDashpotBC3d
@@ -939,8 +939,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [back_y]
     type = NonReflectDashpotBC3d
@@ -950,8 +950,8 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
   [back_z]
     type = NonReflectDashpotBC3d
@@ -961,7 +961,7 @@
     disp_x = disp_x
     disp_y = disp_y
     disp_z = disp_z 
-    p_wave_speed = 5967
-    shear_wave_speed = 3333
+    p_wave_speed = 5966.57
+    shear_wave_speed = 3444.8
   []
 []
