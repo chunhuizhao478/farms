@@ -57,7 +57,6 @@
 
 [GlobalParams]
     displacements = 'disp_sub_x disp_sub_y'
-    q = 0.2
 []
 
 # [Modules]
@@ -85,38 +84,6 @@
     []
 []
 
-[Kernels]
-    [./inertia_x]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_sub_x
-    []
-    [./inertia_y]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_sub_y
-    []
-    [./Reactionx]
-        type = StiffPropDamping
-        variable = 'disp_sub_x'
-        component = '0'
-    []
-    [./Reactiony]
-        type = StiffPropDamping
-        variable = 'disp_sub_y'
-        component = '1'
-    []
-    [./solid_z]
-        type = WeakPlaneStress
-        variable = strain_sub_zz
-    [../]
-    #dummy time kernel for strain_zz
-    [./dummy_strain_zz]
-        type = TimeDerivative
-        variable = strain_sub_zz
-    []
-[]
-
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
@@ -126,11 +93,6 @@
     []
     [stress]
         type = ComputeLinearElasticStress
-    []
-    [density]
-        type = GenericConstantMaterial
-        prop_names = density
-        prop_values = 1180 #kg/m^3
     []
 []
 
