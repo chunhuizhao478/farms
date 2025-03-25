@@ -270,8 +270,8 @@
   
 [Executioner]
     type = Transient
-    solve_type = 'NEWTON'
-    # solve_type = 'PJFNK'
+    # solve_type = 'NEWTON'
+    solve_type = 'PJFNK'
     start_time = 0
     end_time = 4000 #extend the time
     # num_steps = 1
