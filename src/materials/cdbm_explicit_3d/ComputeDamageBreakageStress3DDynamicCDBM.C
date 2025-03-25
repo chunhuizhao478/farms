@@ -39,7 +39,6 @@ ComputeDamageBreakageStress3DDynamicCDBM::validParams()
   params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
   params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
   params.addRequiredParam<Real>(    "D", "D value");
-  params.addParam<bool>("use_rate_dependent_cd", false, "Whether to use rate dependent Cd");
   
   //variable parameters
   params.addRequiredCoupledVar("alpha_grad_x", "damage variable gradient component in x computed from subApp");
@@ -78,19 +77,14 @@ ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCD
     _D(getParam<Real>("D")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
     _initial_breakage(getMaterialPropertyByName<Real>("initial_breakage")),
-    _initial_shear_stress(getMaterialPropertyByName<Real>("initial_shear_stress")),
-    _damage_perturbation(getMaterialPropertyByName<Real>("damage_perturbation")),
-    _shear_stress_perturbation(getMaterialPropertyByName<Real>("shear_stress_perturbation")),
+    _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation")),
     _Cd_constant(getParam<Real>("Cd_constant")),
     _C1(getParam<Real>("C_1")),
     _C2(getParam<Real>("C_2")),
     _beta_width(getParam<Real>("beta_width")),
     _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
     _CBH_constant(getParam<Real>("CBH_constant")),
-    _dim(_mesh.dimension()),
-    _strain_rate(declareProperty<Real>("strain_rate")),
-    _cd_ratedependent(declareProperty<Real>("cd_ratedependent")),
-    _use_rate_dependent_cd(getParam<bool>("use_rate_dependent_cd"))
+    _dim(_mesh.dimension())
 {
 }
 
@@ -132,43 +126,6 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   Real a2 = avec[2];
   Real a3 = avec[3];
 
-  /*
-  use rate-dependent cd
-  */
-
-  Real Cd_final = 0.0;
-
-  if (_use_rate_dependent_cd){
-    Real _strain_rate_hat = 1.0e-4; //strain rate threshold
-    Real _m_exponent = 0.85; //exponent for rate-dependent Cd
-    Real _cd_hat = 10; //minimum Cd value
-    Real Cd_ratedepdent = 1e-2; //initial Cd value
-    //compute deviatoric strain
-    RankTwoTensor dev_strain = _mechanical_strain[_qp] - 0.3333 * _mechanical_strain[_qp].trace() * RankTwoTensor::Identity();
-    RankTwoTensor dev_strain_old = _mechanical_strain_old[_qp] - 0.3333 * _mechanical_strain_old[_qp].trace() * RankTwoTensor::Identity();
-    RankTwoTensor dev_strain_rate = (dev_strain - dev_strain_old) / _dt; //deviatoric strain rate
-    //compute deviatoric strain norm
-    Real dev_strain_rate_norm = 0.0;
-    for (unsigned int i = 0; i < 3; i++){
-      for (unsigned int j = 0; j < 3; j++){
-        dev_strain_rate_norm += dev_strain_rate(i,j) * dev_strain_rate(i,j);
-      }
-    }
-    dev_strain_rate_norm = std::sqrt(2.0/3.0*dev_strain_rate_norm);
-    //compute strain rate
-    Real strain_rate = dev_strain_rate_norm; //strain rate
-    //save strain_dir0_positive
-    _strain_rate[_qp] = strain_rate;
-    //compute rate-dependent Cd
-    if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
-    Cd_ratedepdent = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
-    _cd_ratedependent[_qp] = Cd_ratedepdent;
-    Cd_final = Cd_ratedepdent;
-  }
-  else{
-    Cd_final = _Cd_constant;
-  }
-
   /* 
   compute alpha and B parameters
   */
@@ -177,8 +134,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   //compute forcing term
   Real alpha_forcingterm;
   if ( _xi_old[_qp] >= _xi_0 && _xi_old[_qp] <= _xi_max ){
-    //alpha_forcingterm = (1 - _B_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
-    alpha_forcingterm = (1 - _B_old[_qp]) * ( Cd_final * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
+    alpha_forcingterm = (1 - _B_old[_qp]) * ( _Cd_constant * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
   }
   else if ( _xi_old[_qp] < _xi_0 && _xi_old[_qp] >= _xi_min ){
     alpha_forcingterm = (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( _xi_old[_qp] - _xi_0 ) );
@@ -191,24 +147,18 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   Real alpha_out = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
 
   //check alpha within range
-  // if ( alpha_out < 0 ){ alpha_out = 0.0; }
-  // else if ( alpha_out > 1 ){ alpha_out = 1.0; }
-  // else{}       
+  if ( alpha_out < 0 ){ alpha_out = 0.0; }
+  else if ( alpha_out > 1 ){ alpha_out = 1.0; }
+  else{}       
 
   //check below initial damage (fix initial damage)
   if ( alpha_out < _initial_damage[_qp]){ alpha_out = _initial_damage[_qp]; }
   else{}
 
-  //check alpha within range
-  if ( alpha_out < 0 ){ alpha_out = 0.0; }
-  else if ( alpha_out > 1 ){ alpha_out = 1.0; }
-  else{} 
-
   _alpha_damagedvar[_qp] = alpha_out;
 
   /* compute B */
-  //Real C_B = _CdCb_multiplier * _Cd_constant;
-  Real C_B = _CdCb_multiplier * Cd_final;
+  Real C_B = _CdCb_multiplier * _Cd_constant;
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
@@ -284,8 +234,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
     sigma_total(1,0) += _shear_stress_perturbation[_qp];
   }
 
-  //1.0/3.0 = 0.33333
-  sigma_d = sigma_total - 0.33333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
+  sigma_d = sigma_total - 0.3333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
 
   _eps_total[_qp] = eps_p + eps_e;
   _eps_p[_qp] = eps_p;
@@ -301,14 +250,10 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   // Assign value for elastic strain, which is equal to the mechanical strain
   _elastic_strain[_qp] = eps_e;
 
-  // Compute jacobian //_Jacobian_mult[_qp]
-  // computeQpTangentModulus(I1, 
-  //                         I2, 
-  //                         xi, 
-  //                         B_out,
-  //                         shear_modulus_out, 
-  //                         gamma_damaged_out, 
-  //                         a0, a1, a2, a3, eps_e);
+  // Compute tangent
+  RankFourTensor tangent;
+  computeQpTangentModulus(tangent,I1,I2,xi,eps_e);
+  _Jacobian_mult[_qp] = tangent;
 
   //Compute equivalent strain rate
   RankTwoTensor epsilon_rate = (eps_p - _eps_p_old[_qp])/_dt;
@@ -403,133 +348,57 @@ ComputeDamageBreakageStress3DDynamicCDBM::alphacr_root2(Real xi, Real gamma_dama
 }
 
 void
-ComputeDamageBreakageStress3DDynamicCDBM::computePrincipalStrainAndOrientation(
-    RealVectorValue & strain_in_crack_dir)
+ComputeDamageBreakageStress3DDynamicCDBM::computeQpTangentModulus(RankFourTensor & tangent, 
+                                                      Real I1, 
+                                                      Real I2, 
+                                                      Real xi, 
+                                                      RankTwoTensor Ee)
 {
-  // The rotation tensor is ordered such that directions for pre-existing cracks appear first
-  // in the list of columns.  For example, if there is one existing crack, its direction is in the
-  // first column in the rotation tensor.
 
-  std::vector<Real> eigval(3, 0.0);
-  RankTwoTensor eigvec;
+  /*
+  compute gammar, breakage coefficients
+  */
+  Real gamma_damaged_r = computegammar();
+  std::vector<Real> avec = computecoefficients(gamma_damaged_r);
+  Real a0 = avec[0];
+  Real a1 = avec[1];
+  Real a2 = avec[2];
+  Real a3 = avec[3];
 
-  _eps_total_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
+  const RankTwoTensor identity = RankTwoTensor::Identity();
 
-  // If the elastic strain is beyond the cracking strain, save the eigen vectors as
-  // the rotation tensor. Reverse their order so that the third principal strain
-  // (most tensile) will correspond to the first crack.
-  // _crack_rotation[_qp].fillColumn(0, eigvec.column(2));
-  // _crack_rotation[_qp].fillColumn(1, eigvec.column(1));
-  // _crack_rotation[_qp].fillColumn(2, eigvec.column(0));
+  // Precompute dxidE tensor
+  RankTwoTensor dxidE_tensor;
+  for (unsigned int k = 0; k < 3; ++k)
+    for (unsigned int l = 0; l < 3; ++l)
+      dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
 
-  strain_in_crack_dir(0) = eigval[2];
-  strain_in_crack_dir(1) = eigval[1];
-  strain_in_crack_dir(2) = eigval[0];
+  const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
+
+  // Compute terms for dSedE
+  const Real lambda_term = _lambda[_qp] - _gamma_damaged[_qp] / xi;
+  const Real shear_term = 2.0 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi;
+
+  RankFourTensor term_se1 = identity.outerProduct(-_gamma_damaged[_qp] * I1 * dxim1dE_tensor);
+  RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
+  RankFourTensor term_se3 = Ee.outerProduct(-_gamma_damaged[_qp] * dxidE_tensor);
+  RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
+
+  RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
+
+  // Compute terms for dSbdE
+  const Real coeff2_b = 2.0 * a2 + a1 / xi + 3.0 * a3 * xi;
+  const Real coeff4_b = 2.0 * a0 + a1 * xi - a3 * xi * xi * xi;
+
+  RankFourTensor term_b1 = identity.outerProduct((a1 * dxim1dE_tensor + 3 * a3 * dxidE_tensor) * I1);
+  RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
+  RankFourTensor term_b3 = Ee.outerProduct(a1 * dxidE_tensor - a3 * 3 * xi * xi * dxidE_tensor);
+  RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
+
+  RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
+
+  // Combine and assign tangent
+  tangent = (1.0 - _B[_qp]) * dSedE + _B[_qp] * dSbdE;  
+
 }
-
-// void
-// ComputeDamageBreakageStress3DDynamicCDBM::computeQpTangentModulus(Real I1, 
-//                                                        Real I2, 
-//                                                        Real xi, 
-//                                                        Real B,
-//                                                        Real shear_modulus_out,
-//                                                        Real gamma_damaged_out,
-//                                                        Real a0,
-//                                                        Real a1,
-//                                                        Real a2,
-//                                                        Real a3,
-//                                                        RankTwoTensor Ee)
-// {
-
-//   // //define functions for derivatives dstress_dstrain
-//   RankFourTensor tangent;
-
-//   //delta function
-//   auto delta = [](int i, int j) -> Real {
-//     return (i == j) ? 1.0 : 0.0;
-//   };
-
-//   //dI1_dE_{kl}
-//   auto dI1dE = [&](int k, int l) -> Real {
-//     return delta(k,l);
-//   };
-
-//   //dI2_dE_{kl}
-//   auto dI2dE = [&](int k, int l) -> Real {
-//     return 2 * Ee(k,l);
-//   };
-
-//   //dxi_dE_{kl}
-//   auto dxidE = [&](int k, int l) -> Real {
-    
-//     // Epsilon to avoid division by zero
-//     const Real epsilon = 1e-12;
-//     // Adjust I2 if necessary
-//     Real adjusted_I2 = I2;
-//     if (I2 <= epsilon) {
-//       //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
-//       adjusted_I2 = epsilon;
-//     }
-
-//     Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-//     //mooseInfo("I1 = ", I1, ", I2 = ", I2);
-//     if (std::isnan(dxidE)){mooseError("dxidE");}
-//     return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-//   };
-
-//   //dE_{ij}_dE_{kl}
-//   auto dEdE = [&](int i, int j, int k, int l) -> Real {
-//     return delta(i,k) * delta(j,l);
-//     //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
-//   };
-
-//   //dxi^{-1}_dE_{kl}
-//   auto dxim1dE = [&](int k, int l) -> Real {
-//     return -1.0 * pow(xi,-2.0) * dxidE(k,l);
-//   };
-
-//   //dxi^3_dE_{kl}
-//   auto dxi3dE = [&](int k, int l) -> Real {
-//     return 3 * pow(xi,2) * dxidE(k,l);
-//   };
-
-//   //dSe_{ij}_dE_{kl}
-//   auto dSedE = [&](int i, int j, int k, int l) -> Real {
-//     Real dSedE_components = (- gamma_damaged_out * dxim1dE(k,l) ) * I1 * delta(i,j);
-//     dSedE_components += ( _lambda_o - gamma_damaged_out / xi ) * dI1dE(k,l) * delta(i,j);
-//     dSedE_components += (- gamma_damaged_out * dxidE(k,l) ) * Ee(i,j);
-//     dSedE_components += ( 2 * shear_modulus_out - gamma_damaged_out * xi ) * dEdE(i,j,k,l);
-//     if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
-//     return dSedE_components;
-//   };
-
-//   //dSb_{ij}_dE_{kl}
-//   auto dSbdE = [&](int i, int j, int k, int l) -> Real {
-//     Real dSbdE_components = ( a1 * dxim1dE(k,l) + 3 * a3 * dxidE(k,l) ) * I1 * delta(i,j);
-//     dSbdE_components += ( 2 * a2 + a1 / xi + 3 * a3 * xi ) * dI1dE(k,l) * delta(i,j);
-//     dSbdE_components += ( a1 * dxidE(k,l) - a3 * dxi3dE(k,l) ) * Ee(i,j);
-//     dSbdE_components += ( 2 * a0 + a1 * xi - a3 * pow(xi,3) ) * dEdE(i,j,k,l);
-//     return dSbdE_components;
-//   };
-
-//   //dS_{ij}_dE_{kl}
-//   auto dSdE = [&](int i, int j, int k, int l) -> Real {
-//     return (1 - B) * dSedE(i,j,k,l) + B * dSbdE(i,j,k,l);
-//   };
-
-//   // Compute tangent modulus C
-//   for (unsigned int i = 0; i < _dim; i++){
-//     for (unsigned int j = 0; j < _dim; j++){
-//       for (unsigned int k = 0; k < _dim; k++){
-//         for (unsigned int l = 0; l < _dim; l++){
-//           if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
-//           tangent(i,j,k,l) += dSdE(i,j,k,l);
-//         }
-//       }
-//     }
-//   }
-
-//   //update jacobian
-//   _Jacobian_mult[_qp] = tangent;
-
-// }

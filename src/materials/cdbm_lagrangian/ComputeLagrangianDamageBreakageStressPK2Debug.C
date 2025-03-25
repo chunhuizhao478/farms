@@ -38,6 +38,12 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _Fp_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_plastic_deformation_gradient_rate")),
   _F_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_deformation_gradient_rate")),
   _D(declareProperty<RankTwoTensor>(_base_name + "deformation_rate")),
+  //---------------------------------------------------------------------------------------------//
+  // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
+  _eta(declareProperty<Real>(_base_name + "plastic_volume_change")),
+  _dilatancy_function_beta(declareProperty<Real>(_base_name + "dilatancy_function_beta")),
+  _shear_rate_nu(declareProperty<Real>(_base_name + "shear_rate_nu")),
+  //---------------------------------------------------------------------------------------------//
   _lambda_const(getMaterialProperty<Real>("lambda_const")),
   _shear_modulus(getMaterialProperty<Real>("shear_modulus")),
   _damaged_modulus(getMaterialProperty<Real>("damaged_modulus")),
@@ -47,6 +53,10 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _Fp_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_deformation_gradient")),
   _F_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "deformation_gradient")),
   _Ep_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "plastic_strain")),
+  //---------------------------------------------------------------------------------------------//
+  // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
+  _eta_old(getMaterialPropertyOldByName<Real>(_base_name + "plastic_volume_change")),
+  //---------------------------------------------------------------------------------------------//
   _C_g(getMaterialProperty<Real>("C_g")),
   _m1(getMaterialProperty<Real>("m1")),
   _m2(getMaterialProperty<Real>("m2")),
@@ -55,7 +65,14 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _a2(getMaterialProperty<Real>("a2")),
   _a3(getMaterialProperty<Real>("a3")),
   _use_vels_build_L_mat(getMaterialProperty<bool>("use_vels_build_L_mat")),
-  _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L"))
+  _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L")),
+  //---------------------------------------------------------------------------------------------//
+  // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
+  _add_dilatancy_compaction_anand_mat(getMaterialProperty<bool>("add_dilatancy_compaction_anand_mat")),
+  _anand_param_go_mat(getMaterialProperty<Real>("anand_param_go_mat")),
+  _anand_param_eta_cv_mat(getMaterialProperty<Real>("anand_param_eta_cv_mat")),
+  _anand_param_p_mat(getMaterialProperty<Real>("anand_param_p_mat"))
+  //---------------------------------------------------------------------------------------------//
   //_dim(_mesh.dimension())
 {
 }
@@ -80,6 +97,9 @@ ComputeLagrangianDamageBreakageStressPK2Debug::initQpStatefulProperties()
   _xi[_qp] = -sqrt(3);
   _S[_qp].zero();
   _C[_qp].zero();
+  _eta[_qp] = 0.0;
+  _dilatancy_function_beta[_qp] = 0.0;
+  _shear_rate_nu[_qp] = 0.0;
 }
 
 void
@@ -260,7 +280,15 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
   computeQpPK2Stress();
 
   // Compute Jp and the inverse of Fp
-  _Jp[_qp] = _Fp[_qp].det();
+  if (_add_dilatancy_compaction_anand_mat[_qp]){
+    //here we assume exponential dependence of the plastic volume change eta: 
+    //eta = ln(J^p), J^p = exp(eta)
+    _Jp[_qp] = std::exp(_eta[_qp]);
+  }
+  else{
+    _Jp[_qp] = _Fp[_qp].det();
+  }
+  
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
 
   //Compute deformation rate D
@@ -288,8 +316,8 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK1Stress()
 
     for (unsigned int i = 0; i < 3; i++){
       for (unsigned int j = 0; j < 3; j++){
-          F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
-          //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
+          //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
+          F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
           for (unsigned int m = 0; m < 3; m++){
             Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
           }
@@ -537,14 +565,43 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpFp()
   Real Tau_eq = 0.0;
   for (unsigned int p = 0; p < 3; p++){
     for (unsigned int q = 0; q < 3; q++){
-      Tau_eq += 1.5 * Tau_old(p,q) * Tau_old(p,q);
+      Tau_eq += 2.0/3.0 * Tau_old(p,q) * Tau_old(p,q);
     }
   }
 
   Tau_eq = std::sqrt(Tau_eq); 
 
+  //Get deviatroic stress direction
+  RankTwoTensor N; N.zero();
+  // Epsilon to avoid division by zero
+  if (Tau_eq != 0.0){
+    //Compute deviatroic stress direction
+    for (unsigned int p = 0; p < 3; p++){
+      for (unsigned int q = 0; q < 3; q++){
+        N(p,q) = Tau_old(p,q) / Tau_eq;
+      }
+    }
+  }
+
+  //Define equvialent shear rate nu
+  _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]);
+
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
-  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]-1.0) * Tau_old; 
+  RankTwoTensor Dp = _shear_rate_nu[_qp] * N; 
+
+  //Add dilatancy/compaction effect
+  if (_add_dilatancy_compaction_anand_mat[_qp]){
+    
+    //Compute dilatancy function beta //_dilatancy_function_beta[_qp]
+    computedilatancyfunction();
+
+    //Update Plastic Deformation Rate Tensor
+    Dp = Dp + _dilatancy_function_beta[_qp] * _shear_rate_nu[_qp] * RankTwoTensor::Identity();
+
+    //Update plastic volume change
+    computeplasticvolumechange();
+
+  }
 
   // //Update Plastic Strain
   // _Ep[_qp] = _Ep_old[_qp] + Dp * _dt;
@@ -692,4 +749,18 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpTangentModulus(RankFourT
   // Combine and assign tangent
   tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
 
+}
+
+//Compute dilatancy function beta
+void
+ComputeLagrangianDamageBreakageStressPK2Debug::computedilatancyfunction()
+{
+  _dilatancy_function_beta[_qp] = _anand_param_go_mat[_qp] * std::pow( 1 - _eta[_qp] / _anand_param_eta_cv_mat[_qp] , _anand_param_p_mat[_qp] );
+}
+
+//Compute plastic volume change eta
+void
+ComputeLagrangianDamageBreakageStressPK2Debug::computeplasticvolumechange()
+{
+  _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * _shear_rate_nu[_qp] * _dt;
 }

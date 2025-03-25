@@ -40,7 +40,11 @@ protected:
   /// @return the first root of critical alpha_cr
   ADReal alphacr_root1(ADReal xi, ADReal gamma_damaged_r);  
 
-  /// Material property initial damage profile
+  /// @brief Compute effective stress
+  void compute_effective_stress();
+
+  /// @brief Add cohesion
+  void add_cohesion();
 
   /// initial lambda value 
   ADReal _lambda_o;
@@ -62,5 +66,15 @@ protected:
 
   /// @brief initial breakage value
   const ADMaterialProperty<Real> & _initial_breakage_val;
+
+  /// @brief compute effective stress
+  bool _compute_effective_stress;
+  ADReal _fluid_density;
+  ADReal _gravity;
+
+  /// @brief add cohesion
+  bool _add_cohesion;
+  ADReal _constant_cohesion;
+  ADReal _constant_cohesion_cutoff_distance;
 
 };

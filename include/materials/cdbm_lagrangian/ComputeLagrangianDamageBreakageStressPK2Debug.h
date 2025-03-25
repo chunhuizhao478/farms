@@ -40,6 +40,11 @@ protected:
   /// @brief Compute tangent modulus components vector
   /// @return tangent modulus components vector, we pass reference and modify in-place
   virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
+  
+  /// @brief Compute dilatancy function beta
+  virtual void computedilatancyfunction();
+  /// @brief Compute plastic volume change
+  virtual void computeplasticvolumechange();
 
 protected:
   /* Declare Material Properties */
@@ -77,6 +82,12 @@ protected:
   MaterialProperty<RankTwoTensor> & _F_dot;
   /// Total Strain (Total Strain Rate)
   MaterialProperty<RankTwoTensor> & _D;
+  // Plastic Volume Change
+  MaterialProperty<Real> & _eta;
+  // Dilatancy Function
+  MaterialProperty<Real> & _dilatancy_function_beta;
+  // Shear-rate 
+  MaterialProperty<Real> & _shear_rate_nu;
 
   /* Get Up-to-date Material Properties*/
   /// Lambda
@@ -99,6 +110,8 @@ protected:
   const MaterialProperty<RankTwoTensor> & _F_old;
   /// Plastic Strain
   const MaterialProperty<RankTwoTensor> & _Ep_old;
+  /// Plastic Volume Change
+  const MaterialProperty<Real> & _eta_old;
   
   /* Get Constant Parameters */
   /// material parameter: compliance or fluidity of the fine grain granular material
@@ -118,4 +131,11 @@ protected:
   //get velocity gradient L
   const MaterialProperty<bool> & _use_vels_build_L_mat;
   const MaterialProperty<RankTwoTensor> & _velgrad_L;
+
+  /// @brief Add option to add dilatancy/compaction effect //Follow paper Section 7.1
+  const MaterialProperty<bool> & _add_dilatancy_compaction_anand_mat;
+  const MaterialProperty<Real> & _anand_param_go_mat;
+  const MaterialProperty<Real> & _anand_param_eta_cv_mat;
+  const MaterialProperty<Real> & _anand_param_p_mat;
+
 };

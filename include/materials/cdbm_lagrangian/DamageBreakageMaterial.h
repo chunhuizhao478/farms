@@ -60,6 +60,9 @@ public:
 
   virtual Real alphacr_root2(Real xi); //alpha cr root 2
 
+  /* Additional Features */
+  virtual void addDilatancyCompactionAnand(); //add dilatancy/compaction effect using anand model
+
   /**
    * Compute the crack strain in the crack coordinate system. Also
    * computes the crack orientations, and stores in _crack_rotation.
@@ -265,5 +268,15 @@ protected:
 
   /// @brief add option to use energy breakage evolution equation
   const bool _use_energy_breakage_evolution;
+
+  /// @brief add option to add dilatancy/compaction effect
+  const bool _add_dilatancy_compaction_anand;
+  const Real _anand_param_go;
+  const Real _anand_param_eta_cv;
+  const Real _anand_param_p;
+  MaterialProperty<bool> & _add_dilatancy_compaction_anand_mat;
+  MaterialProperty<Real> & _anand_param_go_mat;
+  MaterialProperty<Real> & _anand_param_eta_cv_mat;
+  MaterialProperty<Real> & _anand_param_p_mat;
 
 };

@@ -118,6 +118,12 @@ DamageBreakageMaterial::validParams()
   //----------------------------------------------------------------------------------//
   // Add option to use energy breakage evolution equation
   params.addParam<bool>("use_energy_breakage_evolution", false, "Flag to use energy breakage evolution equation");
+  //----------------------------------------------------------------------------------//
+  // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
+  params.addParam<bool>("add_dilatancy_compaction_anand", false, "Flag to add dilatancy/compression effect using anand model");
+  params.addParam<Real>("anand_param_go", -1.0, "Anand model parameter go");
+  params.addParam<Real>("anand_param_eta_cv", -1.0, "Anand model parameter eta_cv");
+  params.addParam<Real>("anand_param_p", -1.0, "Anand model parameter p");
   return params;
 }
 
@@ -235,6 +241,7 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _perturbation_build_param_sigma(getParam<Real>("perturbation_build_param_sigma")),
   _perturbation_build_param_thickness(getParam<Real>("perturbation_build_param_thickness")),
   _perturbation_build_param_duration(getParam<Real>("perturbation_build_param_duration")),
+  //----------------------------------------------------------------------------------//
   // Add constant parameters for state variable evolution
   _use_state_var_evolution(getParam<bool>("use_state_var_evolution")),
   _const_A(getParam<Real>("const_A")),
@@ -246,8 +253,20 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _const_B_mat(declareProperty<Real>("const_B_mat")),
   _const_theta_o_mat(declareProperty<Real>("const_theta_o_mat")),
   _initial_theta0_mat(declareProperty<Real>("initial_theta0_mat")),
+  //----------------------------------------------------------------------------------//
   // Add option to use energy breakage evolution equation
-  _use_energy_breakage_evolution(getParam<bool>("use_energy_breakage_evolution"))
+  _use_energy_breakage_evolution(getParam<bool>("use_energy_breakage_evolution")),
+  //----------------------------------------------------------------------------------//
+  // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
+  _add_dilatancy_compaction_anand(getParam<bool>("add_dilatancy_compaction_anand")),
+  _anand_param_go(getParam<Real>("anand_param_go")),
+  _anand_param_eta_cv(getParam<Real>("anand_param_eta_cv")),
+  _anand_param_p(getParam<Real>("anand_param_p")),
+  _add_dilatancy_compaction_anand_mat(declareProperty<bool>("add_dilatancy_compaction_anand_mat")),
+  _anand_param_go_mat(declareProperty<Real>("anand_param_go_mat")),
+  _anand_param_eta_cv_mat(declareProperty<Real>("anand_param_eta_cv_mat")),
+  _anand_param_p_mat(declareProperty<Real>("anand_param_p_mat"))
+  //----------------------------------------------------------------------------------//
 {
   if (_use_xi0_aux && !parameters.isParamSetByUser("xi0_aux"))
     mooseError("Must specify xi0_aux when use_xi0_aux = true");
@@ -332,6 +351,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("build_param_use_initial_damage_time_dependent_mat must be set to true when build_param_use_initial_damage_3D is set to true");
   if (_build_param_use_initial_damage_3D && (_build_param_len_of_fault_dip < 0))
     mooseError("build_param_len_of_fault_dip must be set to a positive value when build_param_use_initial_damage_3D is set to true");
+  if (_add_dilatancy_compaction_anand && (_anand_param_go < 0 || _anand_param_eta_cv < 0 || _anand_param_p < 0))
+    mooseError("anand_param_go, anand_param_eta_cv, and anand_param_p must be set to a positive value when add_dilatancy_compaction_anand is set to true");
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -399,6 +420,9 @@ DamageBreakageMaterial::initQpStatefulProperties()
   _const_B_mat[_qp] = _const_B;
   _const_theta_o_mat[_qp] = _const_theta_o;
   _initial_theta0_mat[_qp] = _initial_theta0;
+
+  //initialize add dilatancy/compaction effect using anand model
+  addDilatancyCompactionAnand();
 
 }
 
@@ -476,6 +500,9 @@ DamageBreakageMaterial::computeQpProperties()
   _const_B_mat[_qp] = _const_B;
   _const_theta_o_mat[_qp] = _const_theta_o;
   _initial_theta0_mat[_qp] = _initial_theta0;
+
+  //add dilatancy/compaction effect using anand model
+  addDilatancyCompactionAnand();
 
 }
 
@@ -1095,4 +1122,14 @@ DamageBreakageMaterial::computePrincipalStrainAndOrientation(
   strain_in_crack_dir(0) = eigval[2];
   strain_in_crack_dir(1) = eigval[1];
   strain_in_crack_dir(2) = eigval[0];
+}
+
+//add dilatancy/compaction effect using anand model
+void
+DamageBreakageMaterial::addDilatancyCompactionAnand()
+{
+  _add_dilatancy_compaction_anand_mat[_qp] = _add_dilatancy_compaction_anand;
+  _anand_param_go_mat[_qp] = _anand_param_go;
+  _anand_param_eta_cv_mat[_qp] = _anand_param_eta_cv;
+  _anand_param_p_mat[_qp] = _anand_param_p;
 }
