@@ -4,15 +4,15 @@ lc = 0.0025;
 
 // Define main cylinder
 Point(1) = {0, 0, 0, lc};
-Point(2) = {0, 0, 0.075, lc};
-Cylinder(1) = {0, 0, 0, 0, 0, 0.075, 0.025, 2*Pi};
+Point(2) = {0, 0, 0.105, lc};
+Cylinder(1) = {0, 0, 0, 0, 0, 0.105, 0.027, 2*Pi};
 
 // Define parameters for the cuts
-r_cut = 0.025;
+r_cut = 0.027;
 h_cut = 0.005;
 
 // Top cutting cylinder
-Cylinder(2) = {0, 0, 0.075 - h_cut, 0, 0, h_cut, r_cut, 2*Pi};
+Cylinder(2) = {0, 0, 0.105 - h_cut, 0, 0, h_cut, r_cut, 2*Pi};
 // Bottom cutting cylinder
 Cylinder(3) = {0, 0, 0, 0, 0, h_cut, r_cut, 2*Pi};
 
