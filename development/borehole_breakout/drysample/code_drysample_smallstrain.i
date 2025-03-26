@@ -17,7 +17,7 @@
     shear_modulus_o = 15.6e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.75
+    xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e3
+    Cd_constant = 4e2
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -256,7 +256,7 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-5e-6 * t'
+        expression = '-3.3e-7 * t'
     []
 []
 
@@ -297,33 +297,50 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 40
     show = 'stress_22 B alpha_damagedvar xi eps_e_22'
 []
 
-# [BCs]
-#     [fix_bottom_x]
-#         type = DirichletBC
-#         variable = disp_x
-#         boundary = 6
-#         value = 0
-#     []
-#     [fix_bottom_y]
-#         type = DirichletBC
-#         variable = disp_y
-#         boundary = 6
-#         value = 0
-#     []
-#     [fix_bottom_z]
-#         type = DirichletBC
-#         variable = disp_z
-#         boundary = 6
-#         value = 0
-#     []
-#     [applied_top_z]
-#         type = FunctionDirichletBC
-#         variable = disp_z
-#         boundary = 5
-#         function = applied_load_top
-#     [] 
-# []
+[BCs]
+    #fix bottom boundary
+    [fix_bottom_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = 7
+        value = 0
+    []
+    [fix_bottom_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = 7
+        value = 0
+    []
+    [fix_bottom_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = 7
+        value = 0
+    []
+    #applied seating pressure
+    [applied_top_z_pressure]
+        type = NeumannBC
+        variable = disp_z
+        boundary = 6
+        value = -1e6
+    []
+    #applied load on top boundary
+    [applied_top_z_dispload]
+        type = FunctionDirichletBC
+        variable = disp_z
+        boundary = 6
+        function = applied_load_top
+    [] 
+    #applied confining pressure on the outer boundary
+    [./Pressure]
+        [./outer_boundary]
+          boundary = 4
+          factor = 17.2e6
+          displacements = 'disp_x disp_y'
+        [../]
+    []
+[]
