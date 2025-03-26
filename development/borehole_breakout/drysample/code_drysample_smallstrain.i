@@ -253,10 +253,11 @@
     []    
 []  
 
+#18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-3.3e-7 * t'
+        expression = '-2.6477e-5 - 3.3e-7 * t'
     []
 []
 
@@ -287,17 +288,25 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-1
+    # dt = 1e-1
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
         # type = CrankNicolson
     [../]
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 0.1
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.5
+        max_time_step_bound = 10
+    []
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 40
+    time_step_interval = 20
     show = 'stress_22 B alpha_damagedvar xi eps_e_22'
 []
 
@@ -320,13 +329,6 @@
         variable = disp_z
         boundary = 7
         value = 0
-    []
-    #applied seating pressure
-    [applied_top_z_pressure]
-        type = NeumannBC
-        variable = disp_z
-        boundary = 6
-        value = -1e6
     []
     #applied load on top boundary
     [applied_top_z_dispload]
