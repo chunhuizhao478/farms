@@ -36,6 +36,7 @@ EndFor
 // You must determine these surface tags (e.g., by using the gmsh GUI)
 // Example:
 Physical Surface("Outer")  = {8};
+Physical Surface("Inner")  = {9};
 Physical Surface("Top")    = {5};
 Physical Surface("Bottom") = {7};
 // ------------------------------
