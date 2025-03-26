@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_wohole_coarse.msh'
+        file = '../meshfile/mesh_wohole.msh'
     [] 
 []
 
