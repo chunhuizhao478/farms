@@ -313,6 +313,11 @@
         time_step_interval = 1
         show = 'strain_z react_z'
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 50
+        num_files = 2
+    []
 []
 
 [BCs]
