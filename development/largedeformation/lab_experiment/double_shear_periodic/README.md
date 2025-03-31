@@ -1,0 +1,1 @@
+Use periodic boundary conditions for the double shear test
