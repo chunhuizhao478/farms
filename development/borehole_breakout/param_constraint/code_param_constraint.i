@@ -20,7 +20,7 @@
     xi_0 = -0.5
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.5
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 2e3
+    Cd_constant = 2.25e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -287,7 +287,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-1
+    dt = 1
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
@@ -299,6 +299,11 @@
     exodus = true
     time_step_interval = 1
     show = 'stress_22 B alpha_damagedvar xi eps_e_22'
+    [./csv]
+        type = CSV
+        time_step_interval = 1
+        show = 'strain_z react_z'
+    [../]
 []
 
 [BCs]
@@ -326,4 +331,18 @@
         boundary = 5
         function = applied_load_top
     [] 
+[]
+
+#compute the reaction force on the top boundary
+[Postprocessors]
+    [./react_z]
+      type = SidesetReaction
+      direction = '0 0 1'
+      stress_tensor = stress
+      boundary = 6
+    [../]
+    [./strain_z]
+        type = FunctionValuePostprocessor
+        function = applied_load_top
+    []
 []

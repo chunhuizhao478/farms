@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../meshfile/mesh_wohole_coarse.msh'
     [] 
 []
 
@@ -20,7 +20,7 @@
     xi_0 = -0.5
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.5
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -31,7 +31,7 @@
     #Xu_etal_P15-2D
     xi_min = -1.8
 
-    #if option 2, use Cd_constant #determined by param_constraint
+    #if option 2, use Cd_constant
     Cd_constant = 2.25e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -183,36 +183,36 @@
         variable = disp_z
         component = 2
     []
-    [./inertia_x]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_x
-        acceleration = accel_x
-        velocity = vel_x
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
-    [./inertia_y]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_y
-        acceleration = accel_y
-        velocity = vel_y
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    [] 
-    [./inertia_z]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_z
-        acceleration = accel_z
-        velocity = vel_z
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    [] 
+    # [./inertia_x]
+    #     type = InertialForce
+    #     use_displaced_mesh = false
+    #     variable = disp_x
+    #     acceleration = accel_x
+    #     velocity = vel_x
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # []
+    # [./inertia_y]
+    #     type = InertialForce
+    #     use_displaced_mesh = false
+    #     variable = disp_y
+    #     acceleration = accel_y
+    #     velocity = vel_y
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # [] 
+    # [./inertia_z]
+    #     type = InertialForce
+    #     use_displaced_mesh = false
+    #     variable = disp_z
+    #     acceleration = accel_z
+    #     velocity = vel_z
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # [] 
 []
 
 [Materials]
@@ -253,11 +253,10 @@
     []    
 []  
 
-#18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-2.6477e-5 - 3.3e-7 * t'
+        expression = '5e-6 * t'
     []
 []
 
@@ -288,73 +287,50 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-1
+    dt = 1
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
         # type = CrankNicolson
     [../]
-    # [TimeStepper]
-    #     type = FarmsIterationAdaptiveDT
-    #     dt = 0.1
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 8
-    #     growth_factor = 1.5
-    #     max_time_step_bound = 10
-    # []
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 50
-    show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z'
+    time_step_interval = 1
+    show = 'stress_22 B alpha_damagedvar xi eps_e_22'
     [./csv]
         type = CSV
         time_step_interval = 1
         show = 'strain_z react_z'
     [../]
-    [out]
-        type = Checkpoint
-        time_step_interval = 50
-        num_files = 2
-    []
 []
 
 [BCs]
-    #fix bottom boundary
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
-        boundary = 7
+        boundary = 6
         value = 0
     []
     [fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        boundary = 7
+        boundary = 6
         value = 0
     []
     [fix_bottom_z]
         type = DirichletBC
         variable = disp_z
-        boundary = 7
+        boundary = 6
         value = 0
     []
-    #applied load on top boundary
-    [applied_top_z_dispload]
+    [applied_top_z]
         type = FunctionDirichletBC
         variable = disp_z
-        boundary = 6
+        boundary = 5
         function = applied_load_top
     [] 
-    #applied confining pressure on the outer boundary
-    [./Pressure]
-        [./outer_boundary]
-          boundary = 4
-          factor = 17.2e6
-          displacements = 'disp_x disp_y'
-        [../]
-    []
 []
 
 #compute the reaction force on the top boundary
