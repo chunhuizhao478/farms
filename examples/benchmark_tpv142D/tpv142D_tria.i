@@ -272,7 +272,7 @@
     type = Transient
     dt = 0.0025
     end_time = 12
-    num_steps = 10
+    # num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
