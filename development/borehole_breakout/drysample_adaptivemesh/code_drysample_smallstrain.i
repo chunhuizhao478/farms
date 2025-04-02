@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #determined by param_constraint
-    Cd_constant = 2.25e3
+    Cd_constant = 4e2
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
