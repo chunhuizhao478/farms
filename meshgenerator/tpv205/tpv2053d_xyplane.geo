@@ -111,8 +111,8 @@ Field[1].FacesList = {101};
 // Matheval field returns "distance squared + lc/20"
 Field[2] = MathEval;
 //Field[2].F = Sprintf("0.02*F1 + 0.00001*F1^2 + %g", lc_fault);
-Field[2].F = Sprintf("0.02*F1 +(F1/2e3)^2 + %g", lc_fault);
-//Field[2].F = Sprintf("0.05*F1 +(F1/2.5e3)^2 + %g", lc_fault);
+//Field[2].F = Sprintf("0.02*F1 +(F1/2e3)^2 + %g", lc_fault);
+Field[2].F = Sprintf("0.05*F1 +(F1/2.5e3)^2 + %g", lc_fault);
 
 // Managing coarsening around the nucleation Patch
 Field[3] = Distance;

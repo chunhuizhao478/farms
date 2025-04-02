@@ -18,9 +18,15 @@
       nz = 110
       subdomain_ids = 1
     []
+    [rename_boundary]
+      type = RenameBoundaryGenerator
+      input = msh
+      old_boundary = 'top bottom left right front back'
+      new_boundary = 'back front left right top bottom'
+    []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
-      input = msh
+      input = rename_boundary
       combinatorial_geometry = 'x >= -15000 & x <= 15000 & y > 0 & z >= -15000'
       block_id = 2
     []
@@ -35,18 +41,7 @@
         input = new_block_2
         split_interface = true
         block_pairs = '2 3'
-    []      
-    [./sidesets]
-      input = split_1
-      type = SideSetsFromNormalsGenerator
-      normals = '-1 0 0
-                  1 0 0
-                  0 -1 0
-                  0 1 0
-                  0 0 -1
-                  0 0 1'
-      new_boundary = 'left right bottom top back front'
-    [] 
+    []  
   []
 
   [GlobalParams]

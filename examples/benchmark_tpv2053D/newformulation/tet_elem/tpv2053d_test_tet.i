@@ -10,7 +10,8 @@
     # file =  '../../../meshgenerator/tpv205/tpv2053d_xyplane_farms.msh'
     # file =  '../../../meshgenerator/tpv205/tpv2053d_local_xyplane.msh'
     # file = '../../../meshgenerator/tpv205/tpv2053d_xyplane.msh'
-    file = '../../../../meshgenerator/tpv205/tpv2053d_xyplane_box.msh'
+    # file = '../../../../meshgenerator/tpv205/tpv2053d_xyplane_box.msh'
+    file = '../../../../meshgenerator/tpv205/tpv2053d_xyplane_2block.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -245,6 +246,7 @@
         component = 0
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []
     [YJump]
         type = MaterialRealVectorValueAux
@@ -253,6 +255,7 @@
         component = 1
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []
     [ZJump]
         type = MaterialRealVectorValueAux
@@ -261,6 +264,7 @@
         component = 2
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []
     #
     [XJumpRate]
@@ -270,6 +274,7 @@
         component = 0
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []
     [YJumpRate]
         type = MaterialRealVectorValueAux
@@ -278,6 +283,7 @@
         component = 1
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []
     [ZJumpRate]
         type = MaterialRealVectorValueAux
@@ -286,6 +292,7 @@
         component = 2
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []    
     #
     [TractionX]
@@ -294,7 +301,8 @@
         variable = traction_x
         component = 0
         execute_on = 'TIMESTEP_END'
-        boundary = 'Block2_Block3'        
+        boundary = 'Block2_Block3'      
+        check_boundary_restricted = false  
     []
     [TractionY]
         type = MaterialRealVectorValueAux
@@ -303,6 +311,7 @@
         component = 1
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []
     [TractionZ]
         type = MaterialRealVectorValueAux
@@ -311,6 +320,7 @@
         component = 2
         execute_on = 'TIMESTEP_END'
         boundary = 'Block2_Block3'
+        check_boundary_restricted = false
     []        
     #
     [restore_x]
@@ -541,7 +551,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.001
+    dt = 0.04
     end_time = 15.0
     # num_steps = 1
     [TimeIntegrator]
@@ -553,12 +563,12 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1
     #show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z jump_x jump_y jump_z jump_rate_x jump_rate_y jump_rate_z mu_s'
-    show = 'traction_x jump_x jump_rate_x'
+    show = 'traction_x jump_x jump_rate_x vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z'
     [checkpoints]
       type = Checkpoint
-      interval = 1000
+      time_step_interval = 1000
       num_files = 2
     []
 []

@@ -113,7 +113,7 @@ SlipWeakeningFrictionczm2d::computeInterfaceTractionAndDerivatives()
   // Compute node mass and area based on elem type
   Real M = 0;
   if (_current_elem->type() == libMesh::ElemType::TRI3){
-    M = _density[_qp] * sqrt(3) / 4 * _len * _len / 3 * 3;
+    M = _density[_qp] * sqrt(3) / 4 * _len * _len / 3;
   }
   else if (_current_elem->type() == libMesh::ElemType::QUAD4){
     M = _density[_qp] * _len * _len / 4 * 2;
@@ -140,25 +140,60 @@ SlipWeakeningFrictionczm2d::computeInterfaceTractionAndDerivatives()
     T2 = 0;
   }
 
-  // Compute friction strength
-  if (std::abs(displacement_jump_t) < _Dc)
-  {
-    tau_f = (_mu_s[_qp] - (_mu_s[_qp] - _mu_d) * std::abs(displacement_jump_t) / _Dc) *
-            (-T2); // square for shear component
-  }
-  else
-  {
-    tau_f = _mu_d * (-T2);
-  }
+  // // Compute friction strength
+  // if (std::abs(displacement_jump_t) < _Dc)
+  // {
+  //   tau_f = (_mu_s[_qp] - (_mu_s[_qp] - _mu_d) * std::abs(displacement_jump_t) / _Dc) *
+  //           (-T2); // square for shear component
+  // }
+  // else
+  // {
+  //   tau_f = _mu_d * (-T2);
+  // }
 
-  // Compute fault traction
-  if (std::abs(T1) < tau_f)
-  {
-  }
-  else
-  {
-    T1 = tau_f * T1 / std::abs(T1);
-  }
+  // // Compute fault traction
+  // if (std::abs(T1) < tau_f)
+  // {
+  // }
+  // else
+  // {
+  //   T1 = tau_f * T1 / std::abs(T1);
+  // }
+
+  if ( T1 > 0 ){
+    if (std::abs(displacement_jump_t) < _Dc)
+    {
+      tau_f = (_mu_s[_qp] - (_mu_s[_qp] - _mu_d)*std::abs(displacement_jump_t)/_Dc)*(-T2); // square for shear component
+    } 
+    else
+    {
+      tau_f = _mu_d * (-T2);
+    }
+ }
+ else{
+    if (std::abs(displacement_jump_t) < _Dc)
+    {
+      tau_f = (-_mu_s[_qp] + (_mu_s[_qp] - _mu_d)*std::abs(displacement_jump_t)/_Dc)*(-T2); // square for shear component
+    } 
+    else
+    {
+      tau_f = -_mu_d * (-T2);
+    }
+ }
+ 
+
+ //Compute fault traction
+ if ( (T1 < 0 && T1 > tau_f) || (T1 > 0 && T1 < tau_f) ) //stuck
+ {
+
+ }else{ //slip //pass diff in traction vector // std::abs(T1) may cause problem from neg to pos 
+   if (T1 > 0){ 
+      T1 =  1 * tau_f*T1/std::abs(T1);
+   }
+   else{
+      T1 = -1 * tau_f*T1/std::abs(T1);
+   }
+ }
 
   // Assign back traction in CZM
   RealVectorValue traction(T2 + T2_o, -T1 + T1_o, 0);

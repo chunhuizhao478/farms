@@ -13,7 +13,7 @@ benchmark_label_100m = "benchmark-eqsim-100m"
 farms_label = "farms-200m"
 
 #time farms 0.1s interval
-time = np.linspace(0,12.0,121)
+time = np.linspace(0,14.1,140)
 
 #check dir
 def ensure_dir(directory):

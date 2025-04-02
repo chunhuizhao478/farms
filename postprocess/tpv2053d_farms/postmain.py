@@ -37,7 +37,7 @@ ptr_coords = [[0     , -0    , 0],
 
 #multiple files
 decodeflags = ["name_elem_var"]
-file_paths = ["/Users/chunhuizhao/Downloads/tpv2053d/tpv2053d_test_tet_out.e"]
+file_paths = ["/Users/chunhuizhao/Downloads/tpv2053d/farms/tpv2053d_test_tet_out_2657823.e"]
 
 if __name__ == '__main__':
 

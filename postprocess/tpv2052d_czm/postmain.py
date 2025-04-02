@@ -32,10 +32,7 @@ ptr_coords = [[ 4500 , 0, -7500],
 
 #multiple files
 decodeflags = ["name_elem_var"]
-# file_paths = ["/Users/chunhuizhao/Downloads/tpv2052d/tpv2052D_quad_out.e"]
-# file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv2052D/czm/tpv2052D_quad_out.e"]
-# file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv2052D/czm/tpv2052D_tria_out.e"]
-file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv2052D/czm/tpv2052D_tria_directcentral_out.e"]
+file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv142D/tpv142D_tria_out.e"]
 
 if __name__ == '__main__':
 
