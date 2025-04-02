@@ -63,7 +63,7 @@ RateStateFriction2d::computeInterfaceTractionAndDerivatives()
   
   // Compute interface traction (relative to the background traction)
   _interface_traction[_qp](0) = 0.0;
-  _interface_traction[_qp](1) = _a * _T2_o * std::asinh( (_slip_rate_magnitude[_qp] / 2 * _slip_rate_ref) * std::exp((_fo + _b * std::log(_slip_rate_ref * _state_variable[_qp] / _length_scale_ref))/(_a)) ) + T1_o;
+  _interface_traction[_qp](1) = _a * _T2_o * std::asinh( (_slip_rate_magnitude[_qp] / 2 * _slip_rate_ref) * std::exp((_fo + _b * std::log(_slip_rate_ref * _state_variable[_qp] / _length_scale_ref))/(_a)) ) + _T1_o;
   _interface_traction[_qp](2) = 0.0;
 
   // Compute interface traction derivatives
