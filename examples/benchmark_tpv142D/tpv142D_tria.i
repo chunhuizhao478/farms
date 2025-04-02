@@ -24,7 +24,7 @@
       type = BreakMeshByBlockGenerator
       input = subdomain_id
       split_interface = true
-      block_pairs = '100 200'
+      block_pairs = '100 200; 300 400'
     []
     [./sidesets]
       input = split
@@ -41,7 +41,7 @@
     #primary variables
     displacements = 'disp_x disp_y'
     #damping ratio
-    q = 0.2
+    q = 0.1
     #characteristic length (m)
     Dc = 0.4
     #initial normal stress (Pa)
@@ -101,7 +101,7 @@
 
   [Physics/SolidMechanics/CohesiveZone]
     [./czm_ik]
-      boundary = 'Block100_Block200'
+      boundary = 'Block100_Block200 Block300_Block400'
       strain = SMALL
       generate_output='traction_x traction_y jump_x jump_y'
     [../]
@@ -255,7 +255,7 @@
         reaction_slipweakening_y = resid_slipweakening_y
         mu_s = mu_s
         ini_shear_sts = ini_shear_stress
-        boundary = 'Block100_Block200'
+        boundary = 'Block100_Block200 Block300_Block400'
     [../]
   []
 
