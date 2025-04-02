@@ -17,7 +17,7 @@
     shear_modulus_o = 15.6e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.5
+    xi_0 = -0.9 #-0.5
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
