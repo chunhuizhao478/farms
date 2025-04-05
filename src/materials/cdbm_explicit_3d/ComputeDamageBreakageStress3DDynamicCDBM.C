@@ -45,6 +45,11 @@ ComputeDamageBreakageStress3DDynamicCDBM::validParams()
   params.addRequiredCoupledVar("alpha_grad_y", "damage variable gradient component in y computed from subApp");
   params.addRequiredCoupledVar("alpha_grad_z", "damage variable gradient component in z computed from subApp");
 
+  //porous flow coupling
+  params.addParam<bool>("porous_flow_coupling", false, "Flag to indicate if this material is coupled to a porous flow module");
+  params.addParam<Real>("crack_surface_roughness_correction_factor", -1.0, "the factor to correct the crack opening based on crack surface roughness");
+  params.addParam<Real>("length_scale", -1.0, "the length scale for nonlocal eqstrain");
+  params.addParam<Real>("intrinsic_permeability", -1.0, "the intrisic permeability for the material, the intrisic permeability is used to take diagonal of the permeability tensor");
   return params;
 }
 
@@ -71,6 +76,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCD
     _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
     _sigma_d_old(getMaterialPropertyOldByName<RankTwoTensor>("sigma_d")),
+    _crack_rotation_old(getMaterialPropertyOldByName<RankTwoTensor>("crack_rotation")),
     _alpha_grad_x(coupledValue("alpha_grad_x")),
     _alpha_grad_y(coupledValue("alpha_grad_y")),
     _alpha_grad_z(coupledValue("alpha_grad_z")),
@@ -84,8 +90,18 @@ ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCD
     _beta_width(getParam<Real>("beta_width")),
     _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
     _CBH_constant(getParam<Real>("CBH_constant")),
-    _dim(_mesh.dimension())
+    _dim(_mesh.dimension()),
+    _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
+    _crack_surface_roughness_correction_factor(getParam<Real>("crack_surface_roughness_correction_factor")),
+    _length_scale(getParam<Real>("length_scale")),
+    _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
+    //## DEBUG ##
+    _elasticity_tensor_name(_base_name + "elasticity_tensor"),
+    _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_elasticity_tensor_name))
 {
+  if (_porous_flow_coupling && ( _crack_surface_roughness_correction_factor < 0.0 || _length_scale < 0.0 || _intrinsic_permeability < 0.0) ){
+    mooseError("The crack surface roughness correction factor, length scale and intrinsic permeability must be positive when using the porous flow coupling.");
+  }
 }
 
 void
@@ -109,6 +125,7 @@ ComputeDamageBreakageStress3DDynamicCDBM::initQpStatefulProperties()
   _elastic_strain[_qp].zero();
   _stress[_qp].zero();
   // _alpha_damagedvar[_qp] = _initial_damage[_qp];
+  _crack_rotation[_qp] = RankTwoTensor::Identity(); 
 
 }
 
@@ -212,17 +229,17 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   RankTwoTensor eps_e = _mechanical_strain[_qp] - eps_p;
 
   /* convert stress perturbation to strain perturbation */
-  Real shear_strain_perturbation = 0.0;
-  if (_shear_stress_perturbation[_qp] != 0){
-    shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
-    eps_e(0,1) += shear_strain_perturbation;
-    eps_e(1,0) += shear_strain_perturbation;
-  }  
+  // Real shear_strain_perturbation = 0.0;
+  // if (_shear_stress_perturbation[_qp] != 0){
+  //   shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
+  //   eps_e(0,1) += shear_strain_perturbation;
+  //   eps_e(1,0) += shear_strain_perturbation;
+  // }  
 
-  const Real epsilon = 1e-12;
-  Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
-  Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
-  Real xi = I1/std::sqrt(I2);
+  //const Real epsilon = 1e-16;
+  Real I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
+  Real I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
+  Real xi = I1/std::sqrt(I2) + 1e-12; //catch the nan error in the initial solve
 
   //Represent sigma (solid(s) + granular(b))
   RankTwoTensor sigma_s;
@@ -231,16 +248,29 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   RankTwoTensor sigma_d;
   const auto I = RankTwoTensor::Identity();
 
+  /* Compute effective elasticity tensor */
+  // C_ijkl = lambda_eff * delta_ij * delta_kl + 2 * mu_eff * (delta_ik * delta_jl + delta_il * delta_jk);
+  // sigma_ij = lambda_eff * delta_ij * I1 + 2 * mu_eff * eps_ij;
+  // lambda_eff = (1 - B) * (lambda_out - gamma_damaged_out / xi) + B * (2 * a2 + a1 / xi + 3 * a3 * xi)
+  // mu_eff = (1 - B) * 1/2 * (2 * shear_modulus_out - gamma_damaged_out * xi) + B * 1/2 * (2 * a0 + a1 * xi - a3 * std::pow(xi, 3))
+  Real lambda_eff = (1 - B_out) * (lambda_out - gamma_damaged_out / xi) + B_out * (2 * a2 + a1 / xi + 3 * a3 * xi);
+  Real mu_eff = (1 - B_out) * 0.5 * (2 * shear_modulus_out - gamma_damaged_out * xi) + B_out * 0.5 * (2 * a0 + a1 * xi - a3 * std::pow(xi, 3));
+  _Eeff[_qp].fillFromInputVector({lambda_eff, mu_eff}, RankFourTensor::symmetric_isotropic);
+
   /* Compute stress */
-  sigma_s = (lambda_out - gamma_damaged_out / xi) * I1 * RankTwoTensor::Identity() + (2 * shear_modulus_out - gamma_damaged_out * xi) * eps_e;
-  sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
+  // sigma_s = (lambda_out - gamma_damaged_out / xi) * I1 * RankTwoTensor::Identity() + (2 * shear_modulus_out - gamma_damaged_out * xi) * eps_e;
+  // sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
   sigma_total = (1 - B_out) * sigma_s + B_out * sigma_b;
 
-  // //Add shear perturbation
-  // if (_shear_stress_perturbation[_qp] != 0){
-  //   sigma_total(0,1) += _shear_stress_perturbation[_qp];
-  //   sigma_total(1,0) += _shear_stress_perturbation[_qp];
-  // }
+  /* Compute Principal Strains and Rotation Matrix */
+  RealVectorValue strain_in_crack_dir; //principal strains
+  computeCrackStrainAndOrientation(strain_in_crack_dir);
+
+  /* Update solid bulk compliance */
+  updateSolidBulkCompliance();
+
+  /* Update effective permeability */
+  updatePermeabilityForCracking();  
 
   sigma_d = sigma_total - 0.3333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
 
@@ -252,16 +282,25 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   _xi[_qp] = xi;
   _sigma_d[_qp] = sigma_d;
 
-  // Rotate the stress state to the current configuration
-  _stress[_qp] = sigma_total;
+  // stress = C * e
+  _stress[_qp] = _Eeff[_qp] * _mechanical_strain[_qp];
 
   // Assign value for elastic strain, which is equal to the mechanical strain
-  _elastic_strain[_qp] = eps_e;
+  _elastic_strain[_qp] = _mechanical_strain[_qp];
 
-  // Compute tangent
-  RankFourTensor tangent;
-  computeQpTangentModulus(tangent,I1,I2,xi,eps_e);
-  _Jacobian_mult[_qp] = tangent;
+  // Compute dstress_dstrain
+  _Jacobian_mult[_qp] = _Eeff[_qp];
+
+  // // Rotate the stress state to the current configuration
+  // _stress[_qp] = sigma_total;
+
+  // // Assign value for elastic strain, which is equal to the mechanical strain
+  // _elastic_strain[_qp] = eps_e;
+
+  // // Compute tangent
+  // RankFourTensor tangent;
+  // computeQpTangentModulus(tangent,I1,I2,xi,eps_e);
+  // _Jacobian_mult[_qp] = tangent;
 
   //Compute equivalent strain rate
   RankTwoTensor epsilon_rate = (eps_p - _eps_p_old[_qp])/_dt;
@@ -355,58 +394,174 @@ ComputeDamageBreakageStress3DDynamicCDBM::alphacr_root2(Real xi, Real gamma_dama
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
 }
 
+// void
+// ComputeDamageBreakageStress3DDynamicCDBM::computeQpTangentModulus(RankFourTensor & tangent, 
+//                                                       Real I1, 
+//                                                       Real I2, 
+//                                                       Real xi, 
+//                                                       RankTwoTensor Ee)
+// {
+
+//   /*
+//   compute gammar, breakage coefficients
+//   */
+//   Real gamma_damaged_r = computegammar();
+//   std::vector<Real> avec = computecoefficients(gamma_damaged_r);
+//   Real a0 = avec[0];
+//   Real a1 = avec[1];
+//   Real a2 = avec[2];
+//   Real a3 = avec[3];
+
+//   const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
+//   const RankTwoTensor identity = RankTwoTensor::Identity();
+
+//   // Precompute dxidE tensor
+//   RankTwoTensor dxidE_tensor;
+//   for (unsigned int k = 0; k < 3; ++k)
+//     for (unsigned int l = 0; l < 3; ++l)
+//       dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
+
+//   const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
+
+//   // Compute terms for dSedE
+//   const Real lambda_term = _lambda[_qp] - _gamma_damaged[_qp] / xi;
+//   const Real shear_term = 2.0 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi;
+
+//   RankFourTensor term_se1 = identity.outerProduct(-_gamma_damaged[_qp] * I1 * dxim1dE_tensor);
+//   RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
+//   RankFourTensor term_se3 = Ee.outerProduct(-_gamma_damaged[_qp] * dxidE_tensor);
+//   RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
+
+//   RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
+
+//   // Compute terms for dSbdE
+//   const Real coeff2_b = 2.0 * a2 + a1 / xi + 3.0 * a3 * xi;
+//   const Real coeff4_b = 2.0 * a0 + a1 * xi - a3 * xi * xi * xi;
+
+//   RankFourTensor term_b1 = identity.outerProduct((a1 * dxim1dE_tensor + 3 * a3 * dxidE_tensor) * I1);
+//   RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
+//   RankFourTensor term_b3 = Ee.outerProduct(a1 * dxidE_tensor - a3 * 3 * xi * xi * dxidE_tensor);
+//   RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
+
+//   RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
+
+//   // Combine and assign tangent
+//   tangent = (1.0 - _B[_qp]) * dSedE + _B[_qp] * dSbdE;  
+
+// }
+
 void
-ComputeDamageBreakageStress3DDynamicCDBM::computeQpTangentModulus(RankFourTensor & tangent, 
-                                                      Real I1, 
-                                                      Real I2, 
-                                                      Real xi, 
-                                                      RankTwoTensor Ee)
+ComputeDamageBreakageStress3DDynamicCDBM::computeCrackStrainAndOrientation(
+    RealVectorValue & strain_in_crack_dir)
+{
+  // The rotation tensor is ordered such that directions for pre-existing cracks appear first
+  // in the list of columns.  For example, if there is one existing crack, its direction is in the
+  // first column in the rotation tensor.
+  
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+  return;
+
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor eigvec;
+
+  _elastic_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+
+  // If the elastic strain is beyond the cracking strain, save the eigen vectors as
+  // the rotation tensor. Reverse their order so that the third principal strain
+  // (most tensile) will correspond to the first crack.
+  _crack_rotation[_qp].fillColumn(0, eigvec.column(2));
+  _crack_rotation[_qp].fillColumn(1, eigvec.column(1));
+  _crack_rotation[_qp].fillColumn(2, eigvec.column(0));
+
+  strain_in_crack_dir(0) = eigval[2];
+  strain_in_crack_dir(1) = eigval[1];
+  strain_in_crack_dir(2) = eigval[0];
+}
+
+void
+ComputeDamageBreakageStress3DDynamicCDBM::updateSolidBulkCompliance()
 {
 
-  /*
-  compute gammar, breakage coefficients
-  */
-  Real gamma_damaged_r = computegammar();
-  std::vector<Real> avec = computecoefficients(gamma_damaged_r);
-  Real a0 = avec[0];
-  Real a1 = avec[1];
-  Real a2 = avec[2];
-  Real a3 = avec[3];
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+  return;
 
-  const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
-  const RankTwoTensor identity = RankTwoTensor::Identity();
+  // bulk modulus 
+  // solid bulk moduls is a measure of a material's resistance to uniform compression
+  // solid bulk modulus = (1/9) * sum_i(1,2,3) * sum_j(1,2,3) C_iijj
+  Real solid_bulk_modulus = 0.0;
+  RankFourTensor Eeff = _Eeff[_qp];
+  for (int i = 0; i < 3; i++){
+    for (int j = 0; j < 3; j++){
+      solid_bulk_modulus += Eeff(i,i,j,j);
+    }
+  }
 
-  // Precompute dxidE tensor
-  RankTwoTensor dxidE_tensor;
-  for (unsigned int k = 0; k < 3; ++k)
-    for (unsigned int l = 0; l < 3; ++l)
-      dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
+  solid_bulk_modulus = 1.0/9.0 * solid_bulk_modulus;
 
-  const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
+  //compute compliance
+  _solid_bulk_compliance_damaged[_qp] = 1.0 / solid_bulk_modulus;
+}
 
-  // Compute terms for dSedE
-  const Real lambda_term = _lambda[_qp] - _gamma_damaged[_qp] / xi;
-  const Real shear_term = 2.0 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi;
+void
+ComputeDamageBreakageStress3DDynamicCDBM::updatePermeabilityForCracking()
+{
 
-  RankFourTensor term_se1 = identity.outerProduct(-_gamma_damaged[_qp] * I1 * dxim1dE_tensor);
-  RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
-  RankFourTensor term_se3 = Ee.outerProduct(-_gamma_damaged[_qp] * dxidE_tensor);
-  RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+    return;
 
-  RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
+  // Get transformation matrix
+  const RankTwoTensor & R = _crack_rotation[_qp];
 
-  // Compute terms for dSbdE
-  const Real coeff2_b = 2.0 * a2 + a1 / xi + 3.0 * a3 * xi;
-  const Real coeff4_b = 2.0 * a0 + a1 * xi - a3 * xi * xi * xi;
+  // The first column of the rotation tensor is the direction of the maximum principal strain, extract it as the normal to the crack plane
+  RealVectorValue normal_to_crack_plane = R.column(0);
 
-  RankFourTensor term_b1 = identity.outerProduct((a1 * dxim1dE_tensor + 3 * a3 * dxidE_tensor) * I1);
-  RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
-  RankFourTensor term_b3 = Ee.outerProduct(a1 * dxidE_tensor - a3 * 3 * xi * xi * dxidE_tensor);
-  RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
+  // Normalize the normal to the crack plane
+  RealVectorValue normalized_normal_to_crack_plane = normal_to_crack_plane / normal_to_crack_plane.norm();
 
-  RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
+  // Compute the crack opening
+  Real xid = _alpha_damagedvar[_qp] -  0.5;
+  HeavisideFunction(xid);
 
-  // Combine and assign tangent
-  tangent = (1.0 - _B[_qp]) * dSedE + _B[_qp] * dSbdE;  
+  // Compute open crack width w_c
+  Real w_c = std::norm(_length_scale * ( 1 + normalized_normal_to_crack_plane * _elastic_strain[_qp] * normalized_normal_to_crack_plane ) );
 
+  // Compute closed crack width w_r
+  Real w_r = std::sqrt(12 * ( 10 * _intrinsic_permeability) );
+
+  // Compute the aperture w_h, take the maximum between w_c and w_r
+  Real w_h = std::max(_crack_surface_roughness_correction_factor * w_c * xid, _crack_surface_roughness_correction_factor * w_r * xid);
+
+  //Compute the effective permeability
+  RankTwoTensor perm_frac = (w_h * w_h / 12.0) * (RankTwoTensor::Identity() - RankTwoTensor::outerProduct(normalized_normal_to_crack_plane, normalized_normal_to_crack_plane));
+
+  //Compute the intrinsic permeability
+  RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
+
+  //Compute the effective permeability
+  _effective_perm[_qp] = perm_intrinsic + _alpha_damagedvar[_qp] * perm_frac;
+
+  // Ensure effective permeability is not less than intrinsic permeability
+  for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
+  {
+      for (unsigned int j = 0; j < LIBMESH_DIM; ++j)
+      {
+          if (_effective_perm[_qp](i,j) < perm_intrinsic(i,j))
+          {
+            _effective_perm[_qp](i,j) = perm_intrinsic(i,j);
+          }
+      }
+  }
+
+}
+
+void
+ComputeDamageBreakageStress3DDynamicCDBM::HeavisideFunction(Real & x)
+{
+  if (x > 0.0)
+    x = 1.0;
+  else
+    x = 0.0;
 }

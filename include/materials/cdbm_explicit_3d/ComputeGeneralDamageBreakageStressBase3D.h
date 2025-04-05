@@ -89,6 +89,17 @@ protected:
   MaterialProperty<RankTwoTensor> & _sigma_d;
   /// eq strain rate
   MaterialProperty<Real> & _epsilon_eq;
+  /// effective elasticity tensor
+  MaterialProperty<RankFourTensor> & _Eeff;
+  /// crack rotation tensor
+  MaterialProperty<RankTwoTensor> & _crack_rotation;
+
+  /// @brief define the damaged solid bulk compliance
+  MaterialProperty<Real> & _solid_bulk_compliance_damaged;
+  
+  /// @brief define the effective permeability
+  MaterialProperty<RealTensorValue> & _effective_perm;
+
   /// take initial value 
   /// lambda (first lame const)
   Real _lambda_o;

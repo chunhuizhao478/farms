@@ -45,6 +45,10 @@ ComputeGeneralDamageBreakageStressBase3D::ComputeGeneralDamageBreakageStressBase
     _sts_total(declareProperty<RankTwoTensor>("sts_total")),
     _sigma_d(declareProperty<RankTwoTensor>("sigma_d")),
     _epsilon_eq(declareProperty<Real>("epsilon_eq")),
+    _Eeff(declareProperty<RankFourTensor>("Eeff")),
+    _crack_rotation(declareProperty<RankTwoTensor>("crack_rotation")),
+    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged")),
+    _effective_perm(declareProperty<RealTensorValue>("effective_perm")),
     _lambda_o(getParam<Real>("lambda_o")),
     _shear_modulus_o(getParam<Real>("shear_modulus_o"))
 {

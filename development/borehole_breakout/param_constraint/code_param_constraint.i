@@ -11,10 +11,10 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 19.9e9
+    lambda_o = 19.92e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 15.6e9
+    shear_modulus_o = 15.62e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.5

@@ -49,7 +49,29 @@ protected:
   Real alphacr_root2(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute elasticity tensor for small strain
-  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
+  //virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
+
+  /**
+   * Compute the crack strain in the crack coordinate system. Also
+   * computes the crack orientations, and stores in _crack_rotation.
+   * @param strain_in_crack_dir Computed strains in crack directions
+   */
+  void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
+  
+  /**
+   * Update the solid bulk compliance due to the effects of cracking
+   */
+  void updateSolidBulkCompliance();
+
+  /**
+   *  Update the effective permeability tensor to account for the effect of cracking
+   */
+  void updatePermeabilityForCracking();  
+
+  /**
+   *  Implement the Heaviside function
+   */
+  void HeavisideFunction(Real & x);  
 
   /// additional variables
   /// strain invariants ratio: onset of damage evolution
@@ -90,6 +112,7 @@ protected:
   const MaterialProperty<RankTwoTensor> & _eps_p_old;
   const MaterialProperty<RankTwoTensor> & _eps_e_old;
   const MaterialProperty<RankTwoTensor> & _sigma_d_old;
+  const MaterialProperty<RankTwoTensor> & _crack_rotation_old;
 
   //add grad term
   const VariableValue & _alpha_grad_x;
@@ -131,5 +154,24 @@ protected:
 
   /// dimension
   const unsigned int _dim;
+
+  /// @brief include porous flow coupling
+  /// @return true if porous flow coupling is included
+  bool _porous_flow_coupling;
+
+  /// @brief define the crack surface roughness correction factor
+  const Real _crack_surface_roughness_correction_factor;
+
+  /// @brief define the length scale
+  const Real _length_scale;
+
+  /// @brief define the intrisic permeability
+  const Real _intrinsic_permeability; 
+
+  //## DEBUG ##
+  /// Name of the elasticity tensor material property
+  const std::string _elasticity_tensor_name;
+  /// Elasticity tensor material property
+  const MaterialProperty<RankFourTensor> & _elasticity_tensor;
 
 };
