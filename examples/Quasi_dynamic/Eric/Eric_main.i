@@ -191,7 +191,6 @@
         slip = slip_y
         coupled_disp = disp_y
         boundary = 'Block0_Block1'
-
     []
     
     [x_slip]
@@ -201,7 +200,6 @@
         slip = slip_xx
         coupled_disp = disp_x
         boundary = 'Block0_Block1'
-
     []
   
     # Normal traction continuity with Lagrange multiplier
