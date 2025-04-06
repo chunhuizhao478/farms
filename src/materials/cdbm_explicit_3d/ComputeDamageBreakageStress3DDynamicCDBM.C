@@ -236,10 +236,10 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
   //   eps_e(1,0) += shear_strain_perturbation;
   // }  
 
-  //const Real epsilon = 1e-16;
-  Real I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
-  Real I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
-  Real xi = I1/std::sqrt(I2) + 1e-12; //catch the nan error in the initial solve
+  const Real epsilon = 1e-16;
+  Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
+  Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
+  Real xi = I1/std::sqrt(I2); //catch the nan error in the initial solve
 
   //Represent sigma (solid(s) + granular(b))
   RankTwoTensor sigma_s;
