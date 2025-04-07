@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the data
-data = np.loadtxt('code_drysample_smallstrain_csv.csv', delimiter=',', skiprows=1)
+data = np.loadtxt('code_drysample_smallstrain_cd50_csv.csv', delimiter=',', skiprows=1)
 
 # Compute strain (dimensionless) and stress (in MPa)
 # Note: The strain is computed as -displacement/initial height.
