@@ -527,7 +527,7 @@
 [Outputs] 
     exodus = true
     time_step_interval = 50
-    # show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z pp biot_modulus'
+    show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z pp biot_modulus'
     [./csv]
         type = CSV
         time_step_interval = 1
