@@ -8,16 +8,16 @@
 [GlobalParams]
 
     displacements = 'disp_x disp_y disp_z'
-    
+      
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 19.9e9
+    lambda_o = 15.62e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 15.6e9
+    shear_modulus_o = 19.92e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.5
+    xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 2e3
+    Cd_constant = 70
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd

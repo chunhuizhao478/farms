@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_wohole.msh'
+        file = '../../meshfile/mesh_wohole.msh'
     [] 
 []
 
@@ -96,6 +96,18 @@
         order = FIRST
         family = LAGRANGE
     []
+    [accel_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     [alpha_grad_x]
     []
     [alpha_grad_y]
@@ -105,22 +117,49 @@
 []
 
 [AuxKernels]
+    [accel_x]
+        type = NewmarkAccelAux
+        variable = accel_x
+        displacement = disp_x
+        velocity = vel_x
+        beta = 0.25
+        execute_on = 'TIMESTEP_END'
+    []
     [vel_x]
-        type = CompVarRate
+        type = NewmarkVelAux
         variable = vel_x
-        coupled = disp_x
+        acceleration = accel_x
+        gamma = 0.5
+        execute_on = 'TIMESTEP_END'
+    []
+    [accel_y]
+        type = NewmarkAccelAux
+        variable = accel_y
+        displacement = disp_y
+        velocity = vel_y
+        beta = 0.25
         execute_on = 'TIMESTEP_END'
     []
     [vel_y]
-        type = CompVarRate
+        type = NewmarkVelAux
         variable = vel_y
-        coupled = disp_y
+        acceleration = accel_y
+        gamma = 0.5
+        execute_on = 'TIMESTEP_END'
+    []
+    [accel_z]
+        type = NewmarkAccelAux
+        variable = accel_z
+        displacement = disp_z
+        velocity = vel_z
+        beta = 0.25
         execute_on = 'TIMESTEP_END'
     []
     [vel_z]
-        type = CompVarRate
+        type = NewmarkVelAux
         variable = vel_z
-        coupled = disp_z
+        acceleration = accel_z
+        gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
 []
@@ -144,6 +183,36 @@
         variable = disp_z
         component = 2
     []
+    # [./inertia_x]
+    #     type = InertialForce
+    #     use_displaced_mesh = false
+    #     variable = disp_x
+    #     acceleration = accel_x
+    #     velocity = vel_x
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # []
+    # [./inertia_y]
+    #     type = InertialForce
+    #     use_displaced_mesh = false
+    #     variable = disp_y
+    #     acceleration = accel_y
+    #     velocity = vel_y
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # [] 
+    # [./inertia_z]
+    #     type = InertialForce
+    #     use_displaced_mesh = false
+    #     variable = disp_z
+    #     acceleration = accel_z
+    #     velocity = vel_z
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # [] 
 []
 
 [Materials]
@@ -157,15 +226,15 @@
         prop_names = 'density'
         prop_values = '2640'
     []
-    [stress_medium]
-        type = ComputeDamageBreakageStress3DDynamicCDBM
-        alpha_grad_x = alpha_grad_x
-        alpha_grad_y = alpha_grad_y
-        alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi eps_p eps_e I1 I2 xi stress'
-        block = '3'
-        outputs = exodus
-    [] 
+    # [stress_medium]
+    #     type = ComputeDamageBreakageStress3DDynamicCDBM
+    #     alpha_grad_x = alpha_grad_x
+    #     alpha_grad_y = alpha_grad_y
+    #     alpha_grad_z = alpha_grad_z
+    #     output_properties = 'B alpha_damagedvar xi eps_p eps_e I1 I2 xi stress'
+    #     block = '3'
+    #     outputs = exodus
+    # [] 
     [stress_elastic]
         type = ComputeLinearElasticStress
         block = '1 2 3'
@@ -187,7 +256,7 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-5e-6 * t'
+        expression = '-1e-6 * t'
     []
 []
 
@@ -221,8 +290,6 @@
     dt = 1
     [./TimeIntegrator]
         type = ImplicitEuler
-        # type = BDF2
-        # type = CrankNicolson
     [../]
 []
 

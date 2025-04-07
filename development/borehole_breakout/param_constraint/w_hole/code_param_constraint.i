@@ -1,7 +1,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../../meshfile/mesh_adaptive.msh'
     [] 
 []
 
@@ -11,13 +11,13 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 19.9e9
+    lambda_o = 15.62e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 15.6e9
+    shear_modulus_o = 19.92e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9 #-0.5
+    xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
@@ -31,8 +31,8 @@
     #Xu_etal_P15-2D
     xi_min = -1.8
 
-    #if option 2, use Cd_constant #determined by param_constraint
-    Cd_constant = 4e1
+    #if option 2, use Cd_constant
+    Cd_constant = 70
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -96,18 +96,6 @@
         order = FIRST
         family = LAGRANGE
     []
-    [accel_x]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [accel_y]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [accel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
     [alpha_grad_x]
     []
     [alpha_grad_y]
@@ -117,49 +105,22 @@
 []
 
 [AuxKernels]
-    [accel_x]
-        type = NewmarkAccelAux
-        variable = accel_x
-        displacement = disp_x
-        velocity = vel_x
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
     [vel_x]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_x
-        acceleration = accel_x
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_y]
-        type = NewmarkAccelAux
-        variable = accel_y
-        displacement = disp_y
-        velocity = vel_y
-        beta = 0.25
+        coupled = disp_x
         execute_on = 'TIMESTEP_END'
     []
     [vel_y]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_y
-        acceleration = accel_y
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_z]
-        type = NewmarkAccelAux
-        variable = accel_z
-        displacement = disp_z
-        velocity = vel_z
-        beta = 0.25
+        coupled = disp_y
         execute_on = 'TIMESTEP_END'
     []
     [vel_z]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_z
-        acceleration = accel_z
-        gamma = 0.5
+        coupled = disp_z
         execute_on = 'TIMESTEP_END'
     []
 []
@@ -183,36 +144,6 @@
         variable = disp_z
         component = 2
     []
-    [./inertia_x]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_x
-        acceleration = accel_x
-        velocity = vel_x
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
-    [./inertia_y]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_y
-        acceleration = accel_y
-        velocity = vel_y
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    [] 
-    [./inertia_z]
-        type = InertialForce
-        use_displaced_mesh = false
-        variable = disp_z
-        acceleration = accel_z
-        velocity = vel_z
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    [] 
 []
 
 [Materials]
@@ -253,11 +184,10 @@
     []    
 []  
 
-#18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-2.6477e-5 - 3.3e-7 * t'
+        expression = '-3.3e-7 * t'
     []
 []
 
@@ -279,7 +209,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 5
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
@@ -288,65 +218,48 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1e-1
+    dt = 50
     [./TimeIntegrator]
         type = ImplicitEuler
-        # type = BDF2
-        # type = CrankNicolson
     [../]
-    # [TimeStepper]
-    #     type = FarmsIterationAdaptiveDT
-    #     dt = 0.1
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 8
-    #     growth_factor = 1.5
-    #     max_time_step_bound = 10
-    # []
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 50
-    show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z'
+    time_step_interval = 1
+    # show = 'stress_22 B alpha_damagedvar xi eps_e_22'
     [./csv]
         type = CSV
         time_step_interval = 1
         show = 'strain_z react_z'
     [../]
-    [out]
-        type = Checkpoint
-        time_step_interval = 50
-        num_files = 2
-    []
 []
 
 [BCs]
-    #fix bottom boundary
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
-        boundary = 7
+        boundary = 6
         value = 0
     []
     [fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        boundary = 7
+        boundary = 6
         value = 0
     []
     [fix_bottom_z]
         type = DirichletBC
         variable = disp_z
-        boundary = 7
+        boundary = 6
         value = 0
     []
-    #applied load on top boundary
-    [applied_top_z_dispload]
+    [applied_top_z]
         type = FunctionDirichletBC
         variable = disp_z
-        boundary = 6
+        boundary = 5
         function = applied_load_top
-    [] 
+    []
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]
@@ -354,7 +267,7 @@
           factor = 17.2e6
           displacements = 'disp_x disp_y'
         [../]
-    []
+    [] 
 []
 
 #compute the reaction force on the top boundary
@@ -363,7 +276,7 @@
       type = SidesetReaction
       direction = '0 0 1'
       stress_tensor = stress
-      boundary = 6
+      boundary = 5
     [../]
     [./strain_z]
         type = FunctionValuePostprocessor

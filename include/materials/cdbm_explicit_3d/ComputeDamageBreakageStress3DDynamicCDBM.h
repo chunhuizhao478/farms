@@ -49,7 +49,7 @@ protected:
   Real alphacr_root2(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute elasticity tensor for small strain
-  //virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
+  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
 
   /**
    * Compute the crack strain in the crack coordinate system. Also

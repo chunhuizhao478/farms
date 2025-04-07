@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the data
-data = np.loadtxt('code_param_constraint_csv.csv', delimiter=',', skiprows=1)
+data = np.loadtxt('code_drysample_smallstrain_csv.csv', delimiter=',', skiprows=1)
 
 # Compute strain (dimensionless) and stress (in MPa)
 # Note: The strain is computed as -displacement/initial height.
 strain = -data[:, 2] / 0.105  # dimensionless strain
-stress = data[:, 1] / (np.pi * 0.027**2) / 1e6  # stress in MPa
+stress = -data[:, 1] / (np.pi * 0.027**2) / 1e6  # stress in MPa
 
 # Plot settings: converting strain to percentage for plotting
 strain_percent = strain * 100
@@ -28,7 +28,7 @@ fitted_stress = np.polyval(coeff, strain)
 # Create the plot
 plt.figure(figsize=(10, 6))
 plt.plot(strain_percent, stress, label='Experimental Data', color='blue')
-plt.plot(strain_percent, fitted_stress, '--', label=f'Linear Fit (slope = {slope:.2f} MPa)', color='red')
+# plt.plot(strain_percent, fitted_stress, '--', label=f'Linear Fit (slope = {slope:.2f} MPa)', color='red')
 plt.xlabel('Axial Strain (%)', fontsize=14)
 plt.ylabel('Stress (MPa)', fontsize=14)
 plt.title('Stress vs Axial Strain of Uniaxial Compression Test', fontsize=16)
