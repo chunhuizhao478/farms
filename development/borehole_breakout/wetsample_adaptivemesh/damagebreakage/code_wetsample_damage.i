@@ -12,13 +12,13 @@
 
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
-    lambda_o = 19.9e9
+    lambda_o = 15.62e9
         
     #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 15.6e9
+    shear_modulus_o = 19.92e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9 #-0.5
+    xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
@@ -32,8 +32,8 @@
     #Xu_etal_P15-2D
     xi_min = -1.8
 
-    #if option 2, use Cd_constant #determined by param_constraint
-    Cd_constant = 2e2
+    #if option 2, use Cd_constant
+    Cd_constant = 60
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -73,17 +73,17 @@
     [disp_x]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E-5
+        scaling = 1E-6
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E-5
+        scaling = 1E-6
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E-5
+        scaling = 1E-6
     []
     #pore pressure
     [pp]
@@ -97,23 +97,11 @@
         order = FIRST
         family = LAGRANGE
     []
-    [accel_x]
-        order = FIRST
-        family = LAGRANGE
-    []
     [vel_y]
         order = FIRST
         family = LAGRANGE
     []
-    [accel_y]
-        order = FIRST
-        family = LAGRANGE
-    []
     [vel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [accel_z]
         order = FIRST
         family = LAGRANGE
     []
@@ -122,7 +110,7 @@
     [alpha_grad_y]
     []    
     [alpha_grad_z]
-    []  
+    [] 
     #
     [./biot_modulus_aux]
         order = CONSTANT
@@ -204,34 +192,6 @@
         component = 2
         use_displaced_mesh = false
     []
-    #inertia force terms
-    # [inertia_x]
-    #     type = InertialForce
-    #     variable = disp_x
-    #     velocity = vel_x
-    #     acceleration = accel_x
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     use_displaced_mesh = false
-    # []
-    # [inertia_y]
-    #     type = InertialForce
-    #     variable = disp_y
-    #     velocity = vel_y
-    #     acceleration = accel_y
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     use_displaced_mesh = false
-    # []
-    # [inertia_z]
-    #     type = InertialForce
-    #     variable = disp_z
-    #     velocity = vel_z
-    #     acceleration = accel_z
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     use_displaced_mesh = false
-    # []
     #pressure coupling on stress tensor
     [poro_x]
         type = PorousFlowEffectiveStressCoupling
@@ -269,50 +229,23 @@
 []
   
 [AuxKernels]
-    [accel_x]
-        type = NewmarkAccelAux
-        variable = accel_x
-        displacement = disp_x
-        velocity = vel_x
-        beta = 0.25
-        execute_on = timestep_end
-    []
     [vel_x]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_x
-        acceleration = accel_x
-        gamma = 0.5
-        execute_on = timestep_end
-    []
-    [accel_y]
-        type = NewmarkAccelAux
-        variable = accel_y
-        displacement = disp_y
-        velocity = vel_y
-        beta = 0.25
-        execute_on = timestep_end
+        coupled = disp_x
+        execute_on = 'TIMESTEP_END'
     []
     [vel_y]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_y
-        acceleration = accel_y
-        gamma = 0.5
-        execute_on = timestep_end
-    []
-    [accel_z]
-        type = NewmarkAccelAux
-        variable = accel_z
-        displacement = disp_z
-        velocity = vel_z
-        beta = 0.25
-        execute_on = timestep_end
+        coupled = disp_y
+        execute_on = 'TIMESTEP_END'
     []
     [vel_z]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_z
-        acceleration = accel_z
-        gamma = 0.5
-        execute_on = timestep_end
+        coupled = disp_z
+        execute_on = 'TIMESTEP_END'
     []
     #
     [biot_modulus]
@@ -321,30 +254,6 @@
         variable = biot_modulus_aux
         execute_on = 'TIMESTEP_END'
     []
-    # [effective_permeability_00]
-    #     type = MaterialRealTensorValueAux
-    #     property = effective_perm
-    #     row = 0
-    #     column = 0
-    #     variable = effective_perm00_aux
-    #     block = '3'
-    # []
-    # [effective_permeability_11]
-    #     type = MaterialRealTensorValueAux
-    #     property = effective_perm
-    #     row = 1
-    #     column = 1
-    #     variable = effective_perm11_aux
-    #     block = '3'
-    # []
-    # [effective_permeability_22]
-    #     type = MaterialRealTensorValueAux
-    #     property = effective_perm
-    #     row = 2
-    #     column = 2
-    #     variable = effective_perm22_aux
-    #     block = '3'
-    # []
 []
     
 [BCs]
@@ -399,7 +308,7 @@
 [Materials]
     #damage material
     [stress_medium]
-        type = ComputeDamageBreakageStress3DDynamicCDBM
+        type = ComputeDamageBreakageStress3DDynamicCDBMDebug
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
@@ -609,11 +518,9 @@
     l_tol = 1e-5
     start_time = 0
     end_time = 4000
-    dt = 1e-1
+    dt = 0.5
     [./TimeIntegrator]
-        type = NewmarkBeta
-        beta = 0.25
-        gamma = 0.5
+        type = ImplicitEuler
     [../]
 []
 
