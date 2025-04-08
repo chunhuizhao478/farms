@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 70
+    Cd_constant = 60
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -96,18 +96,6 @@
         order = FIRST
         family = LAGRANGE
     []
-    [accel_x]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [accel_y]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [accel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
     [alpha_grad_x]
     []
     [alpha_grad_y]
@@ -117,49 +105,22 @@
 []
 
 [AuxKernels]
-    [accel_x]
-        type = NewmarkAccelAux
-        variable = accel_x
-        displacement = disp_x
-        velocity = vel_x
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
     [vel_x]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_x
-        acceleration = accel_x
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_y]
-        type = NewmarkAccelAux
-        variable = accel_y
-        displacement = disp_y
-        velocity = vel_y
-        beta = 0.25
+        coupled = disp_x
         execute_on = 'TIMESTEP_END'
     []
     [vel_y]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_y
-        acceleration = accel_y
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_z]
-        type = NewmarkAccelAux
-        variable = accel_z
-        displacement = disp_z
-        velocity = vel_z
-        beta = 0.25
+        coupled = disp_y
         execute_on = 'TIMESTEP_END'
     []
     [vel_z]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_z
-        acceleration = accel_z
-        gamma = 0.5
+        coupled = disp_z
         execute_on = 'TIMESTEP_END'
     []
 []
@@ -183,36 +144,6 @@
         variable = disp_z
         component = 2
     []
-    # [./inertia_x]
-    #     type = InertialForce
-    #     use_displaced_mesh = false
-    #     variable = disp_x
-    #     acceleration = accel_x
-    #     velocity = vel_x
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
-    # [./inertia_y]
-    #     type = InertialForce
-    #     use_displaced_mesh = false
-    #     variable = disp_y
-    #     acceleration = accel_y
-    #     velocity = vel_y
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # [] 
-    # [./inertia_z]
-    #     type = InertialForce
-    #     use_displaced_mesh = false
-    #     variable = disp_z
-    #     acceleration = accel_z
-    #     velocity = vel_z
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # [] 
 []
 
 [Materials]
@@ -221,11 +152,6 @@
         displacements = 'disp_x disp_y disp_z'
         # outputs = exodus
     [] 
-    [density]
-        type = GenericConstantMaterial
-        prop_names = 'density'
-        prop_values = '2640'
-    []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBM
         alpha_grad_x = alpha_grad_x

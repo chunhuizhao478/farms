@@ -1,0 +1,128 @@
+//* This file is part of the MOOSE framework
+//* https://mooseframework.inl.gov
+//*
+//* All rights reserved, see COPYRIGHT for full restrictions
+//* https://github.com/idaholab/moose/blob/master/COPYRIGHT
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+
+// MOOSE includes
+#include "FarmsCentralDifference.h"
+#include "NonlinearSystem.h"
+#include "FEProblem.h"
+
+// libMesh includes
+#include "libmesh/nonlinear_solver.h"
+
+using namespace libMesh;
+
+registerMooseObject("MooseApp", FarmsCentralDifference);
+
+InputParameters
+FarmsCentralDifference::validParams()
+{
+  InputParameters params = FarmsActuallyExplicitEuler::validParams();
+
+  params.addClassDescription("Implementation of explicit, Central Difference integration without "
+                             "invoking any of the nonlinear solver");
+
+  return params;
+}
+
+FarmsCentralDifference::FarmsCentralDifference(const InputParameters & parameters)
+  : FarmsActuallyExplicitEuler(parameters),
+    _du_dotdot_du(_sys.duDotDotDu()),
+    _solution_older(_sys.solutionState(2))
+{
+  if (_solve_type == LUMPED)
+    _is_lumped = true;
+
+  _fe_problem.setUDotOldRequested(true);
+  _fe_problem.setUDotDotRequested(true);
+  _fe_problem.setUDotDotOldRequested(true);
+}
+
+void
+FarmsCentralDifference::computeADTimeDerivatives(ADReal & ad_u_dot,
+                                            const dof_id_type & dof,
+                                            ADReal & ad_u_dotdot) const
+{
+  // Seeds ad_u_dotdot with _ad_dof_values and associated derivatives provided via ad_u_dot from
+  // MooseVariableData
+  ad_u_dotdot = ad_u_dot;
+
+  computeTimeDerivativeHelper(ad_u_dot, ad_u_dotdot, _solution_old(dof), _solution_older(dof));
+}
+
+void
+FarmsCentralDifference::initialSetup()
+{
+  FarmsActuallyExplicitEuler::initialSetup();
+
+  // _nl here so that we don't create this vector in the aux system time integrator
+  _nl->disassociateVectorFromTag(*_nl->solutionUDot(), _u_dot_factor_tag);
+  _nl->addVector(_u_dot_factor_tag, true, GHOSTED);
+  _nl->disassociateVectorFromTag(*_nl->solutionUDotDot(), _u_dotdot_factor_tag);
+  _nl->addVector(_u_dotdot_factor_tag, true, GHOSTED);
+}
+
+void
+FarmsCentralDifference::computeTimeDerivatives()
+{
+  if (!_sys.solutionUDot())
+    mooseError("FarmsCentralDifference: Time derivative of solution (`u_dot`) is not stored. Please "
+               "set uDotRequested() to true in FEProblemBase before requesting `u_dot`.");
+
+  if (!_sys.solutionUDotDot())
+    mooseError("FarmsCentralDifference: Time derivative of solution (`u_dotdot`) is not stored. Please "
+               "set uDotDotRequested() to true in FEProblemBase before requesting `u_dot`.");
+
+  // Declaring u_dot and u_dotdot
+  auto & u_dot = *_sys.solutionUDot();
+  auto & u_dotdot = *_sys.solutionUDotDot();
+
+  u_dot = *_solution;
+  u_dotdot = *_solution;
+
+  // Computing derivatives
+  computeTimeDerivativeHelper(u_dot, u_dotdot, _solution_old, _solution_older);
+
+  // make sure _u_dotdot and _u_dot are in good state
+  u_dotdot.close();
+  u_dot.close();
+
+  // used for Jacobian calculations
+  computeDuDotDu();
+  _du_dotdot_du = 1.0 / (_dt * _dt);
+
+  // Computing udotdot "factor"
+  // u_dotdot_factor = u_dotdot - (u - u_old)/dt^2 = (u - 2* u_old + u_older - u + u_old) / dt^2
+  // u_dotdot_factor = (u_older - u_old)/dt^2
+  if (_sys.hasVector(_u_dotdot_factor_tag)) // so that we don't do this in the aux system
+  {
+    auto & u_dotdot_factor = _sys.getVector(_u_dotdot_factor_tag);
+    u_dotdot_factor = _sys.solutionOlder();
+    u_dotdot_factor -= _sys.solutionOld();
+    u_dotdot_factor *= 1.0 / (_dt * _dt);
+    u_dotdot_factor.close();
+  }
+
+  // Computing udot "factor"
+  // u_dot_factor = u_dot - (u - u_old)/2/dt = (u - u_older)/ 2/ dt - (u - u_old)/2/dt
+  // u_dot_factor = (u_old - u_older)/2/dt
+  if (_sys.hasVector(_u_dot_factor_tag)) // so that we don't do this in the aux system
+  {
+    auto & u_dot_factor = _sys.getVector(_u_dot_factor_tag);
+    u_dot_factor = _sys.solutionOld();
+    u_dot_factor -= _sys.solutionOlder();
+    u_dot_factor *= 1.0 / (2.0 * _dt);
+    u_dot_factor.close();
+  }
+}
+
+Real
+FarmsCentralDifference::duDotDuCoeff() const
+{
+  return Real(1) / Real(2);
+}
