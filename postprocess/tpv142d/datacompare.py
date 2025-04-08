@@ -3,13 +3,13 @@ import matplotlib.pyplot as plt
 import os
 
 #benchmark code
-benchmark_code = "TPV205"
+benchmark_code = "TPV24-2D"
 
 #read benchmark data
-benchmark_label = "benchmark-pylith-200m"
+benchmark_label = "benchmark-faultmod-100m"
 
 #read farms data
-farms_label = "farms-200m"
+farms_label = "farms-100m"
 
 #time farms 0.1s interval
 time = np.linspace(0,12.0,121)
@@ -81,13 +81,10 @@ def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, farms
 
 #strike,dip
 #multiple nodes
-given_coord_list = [[ 4500 , 0, -7500],
-                    [-7500 , 0, -7500],
-                    [-12000, 0, -7500],
-                    [   0  , 0, -7500],              
-                    [4500  , 0, -7500],
-                    [7500  , 0, -7500],
-                    [12000 , 0, -7500]]
+given_coord_list = [[-2000 , 0, -7500],
+                    [ 2000 , 0, -7500],
+                    [ 5000 , 0, -7500],
+                    [ 9000 , 0, -7500]]
 
 # given_coord_list = [[   0  , -7500, 0]]
 
