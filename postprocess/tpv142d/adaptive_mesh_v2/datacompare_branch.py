@@ -37,7 +37,7 @@ def find_and_read_file(filename, search_directory):
     return None
 
 #define plot function
-def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, farms_traction_data, benchmark_label, farms_label, strike_value, dip_value, benchmark_code):
+def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, farms_traction_data, farms_traction_y, benchmark_label, farms_label, strike_value, dip_value, benchmark_code):
 
     ## check if dir exists, create one if not
     saved_path = "./outputs/branch_strike"+str(strike_value)+"_dip"+str(dip_value)+"/"
@@ -72,12 +72,23 @@ def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, farms
     plt.figure()
     plt.plot(benchmark_data[:,0],benchmark_data[:,3],'b-',label=benchmark_label)
     plt.plot(time[:datalen],-1.0*farms_traction_data/1e6+benchmark_data[1,3],'r--',label=farms_label)
-    plt.title(benchmark_code+" traction time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ",fontsize=12)
+    plt.title(benchmark_code+" shear traction time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ",fontsize=12)
     plt.legend()
     plt.xlabel("time (s)", fontsize=12)
     plt.ylabel("traction (MPa)", fontsize=12)
-    plt.savefig(saved_path+"/traction.png")
+    plt.savefig(saved_path+"/shear_traction.png")
     plt.show()  
+
+    ## traction
+    plt.figure()
+    plt.plot(benchmark_data[:,0],benchmark_data[:,-1],'b-',label=benchmark_label)
+    plt.plot(time[:datalen],-1.0*farms_traction_y/1e6+benchmark_data[1,-1],'r--',label=farms_label)
+    plt.title(benchmark_code+" normal traction time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ",fontsize=12)
+    plt.legend()
+    plt.xlabel("time (s)", fontsize=12)
+    plt.ylabel("traction (MPa)", fontsize=12)
+    plt.savefig(saved_path+"/normal_traction.png")
+    plt.show() 
 
 #strike,dip
 #multiple nodes
@@ -103,13 +114,15 @@ for i in range(num_of_file):
     farms_slip_path = "./farms_data_elemental/shear_jump_aux_branch_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
     farms_sliprate_path = "./farms_data_elemental/shear_jump_rate_aux_branch_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
     farms_traction_path = "./farms_data_elemental/traction_x_branch_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_tractiony_path = "./farms_data_elemental/traction_y_branch_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
 
     benchmark = np.loadtxt(benchmark_path, comments='#')
     farms_slip = np.loadtxt(farms_slip_path)
     farms_sliprate = np.loadtxt(farms_sliprate_path)
     farms_traction = np.loadtxt(farms_traction_path)
+    farms_traction_y = np.loadtxt(farms_tractiony_path)
 
     print(farms_sliprate_path)
 
     ##plot
-    plotfigure(benchmark,time,farms_sliprate,farms_slip,farms_traction,benchmark_label,farms_label,xcoord_i,zcoord_i,benchmark_code)
+    plotfigure(benchmark,time,farms_sliprate,farms_slip,farms_traction,farms_traction_y,benchmark_label,farms_label,xcoord_i,zcoord_i,benchmark_code)

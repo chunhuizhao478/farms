@@ -9,7 +9,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'
 import postprocess.postfunc as postfunc
 
 #parameters
-plotvar = ["shear_jump_aux","shear_jump_rate_aux","traction_x"]
+# plotvar = ["shear_jump_aux","shear_jump_rate_aux","traction_x"]
+plotvar = ["traction_y"]
 save_file_path = "./results"
 dim = 2
 node_per_elem = 3 #hex8 #4 #tet4
