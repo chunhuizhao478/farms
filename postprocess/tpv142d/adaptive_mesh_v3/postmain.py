@@ -4,12 +4,12 @@ import numpy as np
 import netCDF4
 
 #this path needs to be changed everytime you put the main file in a different folder
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
 
 import postprocess.postfunc as postfunc
 
 #parameters
-plotvar = ["jump_x","jump_x_rate","traction_x"]
+plotvar = ["shear_jump_aux","shear_jump_rate_aux","traction_x"]
 save_file_path = "./results"
 dim = 2
 node_per_elem = 3 #hex8 #4 #tet4
@@ -31,10 +31,9 @@ ptr_coords = [[-2000 , 0, -7500],
 
 #multiple files
 decodeflags = ["name_elem_var"]
-# file_paths = ["/Users/chunhuizhao/Downloads/tpv2052d/tpv2052D_quad_out.e"]
-# file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv2052D/czm/tpv2052D_quad_out.e"]
-# file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv2052D/czm/tpv2052D_tria_out.e"]
-file_paths = ["/Users/chunhuizhao/Downloads/farms_benchmark/tpv142D_tria_out.e"]
+# file_paths = ["/Users/chunhuizhao/Downloads/farms_benchmark/tpv142D_tria_out.e"]
+# file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv142D/tpv142D_tria_out.e"]
+file_paths = ["/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv142D/adaptive_mesh3/tpv142D_tria_out.e"]
 
 if __name__ == '__main__':
 

@@ -6,7 +6,7 @@ import os
 benchmark_code = "TPV24-2D"
 
 #read benchmark data
-benchmark_label = "benchmark-faultmod-100m"
+benchmark_label = "benchmark-DG-200m"
 
 #read farms data
 farms_label = "farms-100m"
@@ -48,34 +48,34 @@ def plotfigure(benchmark_data, time, farms_sliprate_data, farms_slip_data, farms
 
     ## slip
     plt.figure()
-    plt.plot(time[:datalen],-1.0*farms_slip_data,'g-',label=farms_label)
-    plt.plot(benchmark_data[:,0],benchmark_data[:,1],'r-',label=benchmark_label)
-    plt.title(benchmark_code+" slip time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
+    plt.plot(benchmark_data[:,0],benchmark_data[:,1],'b-',label=benchmark_label)
+    plt.plot(time[:datalen],-1.0*farms_slip_data,'r--',label=farms_label)
+    plt.title(benchmark_code+" slip time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ", fontsize=12)
     plt.legend()
-    plt.xlabel("time (s)")
-    plt.ylabel("slip (m)")
+    plt.xlabel("time (s)", fontsize=12)
+    plt.ylabel("slip (m)", fontsize=12)
     plt.savefig(saved_path+"/slip.png")
     plt.show()
 
     ## slip rate
     plt.figure()
-    plt.plot(time[:datalen],-1.0*farms_sliprate_data,'g-',label=farms_label)
-    plt.plot(benchmark_data[:,0],benchmark_data[:,2],'r-',label=benchmark_label)
-    plt.title(benchmark_code+" slip rate time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
+    plt.plot(benchmark_data[:,0],benchmark_data[:,2],'b-',label=benchmark_label)
+    plt.plot(time[:datalen],-1.0*farms_sliprate_data,'r--',label=farms_label)
+    plt.title(benchmark_code+" slip rate time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ", fontsize=12)
     plt.legend()
-    plt.xlabel("time (s)")
-    plt.ylabel("slip rate (m/s)")
+    plt.xlabel("time (s)", fontsize=12)
+    plt.ylabel("slip rate (m/s)", fontsize=12)
     plt.savefig(saved_path+"/sliprate.png")
     plt.show()   
 
     ## traction
     plt.figure()
-    plt.plot(time[:datalen],-1.0*farms_traction_data/1e6+benchmark_data[1,3],'g-',label=farms_label)
-    plt.plot(benchmark_data[:,0],benchmark_data[:,3],'r-',label=benchmark_label)
-    plt.title(benchmark_code+" traction time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ")
+    plt.plot(benchmark_data[:,0],benchmark_data[:,3],'b-',label=benchmark_label)
+    plt.plot(time[:datalen],-1.0*farms_traction_data/1e6+benchmark_data[1,3],'r--',label=farms_label)
+    plt.title(benchmark_code+" traction time history at strike "+str(strike_value)+"km and at dip "+str(dip_value)+"km ",fontsize=12)
     plt.legend()
-    plt.xlabel("time (s)")
-    plt.ylabel("traction (MPa)")
+    plt.xlabel("time (s)", fontsize=12)
+    plt.ylabel("traction (MPa)", fontsize=12)
     plt.savefig(saved_path+"/traction.png")
     plt.show()  
 
@@ -100,12 +100,12 @@ for i in range(num_of_file):
     zcoord_i = given_coord_list[i][2] / 1000
 
     #file path
-    benchmark_path = "./benchmark_data/pylith_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
-    farms_slip_path = "./farms_data_elemental/jump_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
-    farms_sliprate_path = "./farms_data_elemental/jump_x_rate_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    benchmark_path = "./benchmark_data/benchmark_mainfault_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_slip_path = "./farms_data_elemental/shear_jump_aux_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
+    farms_sliprate_path = "./farms_data_elemental/shear_jump_rate_aux_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
     farms_traction_path = "./farms_data_elemental/traction_x_strike"+str(xcoord_i)+"_dip"+str(zcoord_i)+".txt"
 
-    benchmark = np.loadtxt(benchmark_path)
+    benchmark = np.loadtxt(benchmark_path, comments='#')
     farms_slip = np.loadtxt(farms_slip_path)
     farms_sliprate = np.loadtxt(farms_sliprate_path)
     farms_traction = np.loadtxt(farms_traction_path)
