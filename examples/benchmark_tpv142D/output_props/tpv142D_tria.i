@@ -1,4 +1,4 @@
-# Verification of Benchmark Problem TPV205-2D from the SCEC Dynamic Rupture Validation exercises #
+# Verification of Benchmark Problem TPV14-2D from the SCEC Dynamic Rupture Validation exercises #
 # Reference: #
 # Harris, R. M.-P.-A. (2009). The SCEC/USGS Dynamic Earthquake Rupture Code Verification Exercise. Seismological Research Letters, vol. 80, no. 1, pages 119-126. #
 # [Note]: This serves as a test file, to run the full problem, please extend the domain size by modifying nx, ny, xmin, xmax, ymin, ymax
@@ -90,31 +90,69 @@
         family = MONOMIAL
     []
     [./ini_shear_stress]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./shear_jump_rate_aux]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./shear_jump_aux]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [./normal_jump_rate_aux]
-      order = CONSTANT
+      order = FIRST
       family = MONOMIAL
     []
-    [./normal_jump_aux]
-      order = CONSTANT
+    [./ini_normal_stress]
+      order = FIRST
       family = MONOMIAL
     []
-    [./shear_traction_aux]
-        order = CONSTANT
+    #global quantities
+    [./global_jump_x]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./global_jump_y]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./global_traction_x]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./global_traction_y]
+      order = FIRST
+      family = MONOMIAL
+    []
+    #local quantities
+    [./local_shear_jump]
+        order = FIRST
         family = MONOMIAL
     []
-    [./normal_traction_aux]
-      order = CONSTANT
+    [./local_shear_jump_rate]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./local_normal_jump]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_normal_jump_rate]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./local_shear_traction]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./local_normal_traction]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./normal_x]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./normal_y]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./tangent_x]
+      order = FIRST
+      family = MONOMIAL
+    []
+    [./tangent_y]
+      order = FIRST
       family = MONOMIAL
     []
   []
@@ -158,6 +196,10 @@
       x = '-1000e3 -9.5e3  -6.5e3'
       y = ' 70.0e6 81.6e6 70.0e6'
     []
+    [func_initial_normal_stress]
+      type = ConstantFunction
+      value = -120e6
+    []
   []
 
   [AuxKernels]
@@ -183,18 +225,6 @@
       type = CompVarRate
       variable = vel_slipweakening_y
       coupled = disp_y
-      execute_on = 'TIMESTEP_END'
-    []
-    [jump_x_rate]
-      type = FDCompVarRate
-      variable = shear_jump_rate_aux
-      coupled = jump_x
-      execute_on = 'TIMESTEP_END'
-    []
-    [jump_y_rate]
-      type = FDCompVarRate
-      variable = normal_jump_rate_aux
-      coupled = jump_y
       execute_on = 'TIMESTEP_END'
     []
     [Residual_x]
@@ -229,30 +259,99 @@
       function = func_static_friction_coeff_mus
       execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
+    ##
     [StrikeShearStress]
       type = FunctionAux
       variable = ini_shear_stress
       function = func_initial_strike_shear_stress
       execute_on = 'LINEAR TIMESTEP_BEGIN'
     []
+    [NormalStress]
+      type = FunctionAux
+      variable = ini_normal_stress
+      function = func_initial_normal_stress
+      execute_on = 'LINEAR TIMESTEP_BEGIN'
+    []
     ##
-    [GetJumpX]
-      type = MaterialRealAux
-      property = jump_x
-      variable = shear_jump_aux
+    [GetShearJump]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_shear_jump'
+      variable = local_shear_jump
       boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
     []
-    [GetJumpY]
-      type = MaterialRealAux
-      property = jump_y
-      variable = normal_jump_aux
+    [GetNormalJump]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_normal_jump'
+      variable = local_normal_jump
       boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
     []
-    [GetTractionX]
-      type = MaterialRealAux
-      property = traction_x
-      variable = shear_traction_aux
+    [GetShearJumpRate]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_shear_jump_rate'
+      variable = local_shear_jump_rate
       boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalJumpRate]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_normal_jump_rate'
+      variable = local_normal_jump_rate
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetShearTraction]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_shear_traction'
+      variable = local_shear_traction
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalTraction]
+      type = FarmsMaterialRealAux
+      material_property_name = 'local_normal_traction'
+      variable = local_normal_traction
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalX]
+      type = FarmsMaterialRealAux
+      material_property_name = 'normal_x'
+      variable = normal_x
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetNormalY]
+      type = FarmsMaterialRealAux
+      material_property_name = 'normal_y'
+      variable = normal_y
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetTangentX]
+      type = FarmsMaterialRealAux
+      material_property_name = 'tangent_x'
+      variable = tangent_x
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
+    []
+    [GetTangentY]
+      type = FarmsMaterialRealAux
+      material_property_name = 'tangent_y'
+      variable = tangent_y
+      boundary = 'Block100_Block200 Block300_Block400'
+      ini_normal_sts = ini_normal_stress
+      ini_shear_sts = ini_shear_stress
     []
   []
 
@@ -304,35 +403,6 @@
         ini_shear_sts = ini_shear_stress
         boundary = 'Block100_Block200 Block300_Block400'
     [../]
-    ##
-    [./shear_jump_mat]
-      type = ParsedMaterial
-      property_name = shear_jump_mat
-      coupled_variables = 'shear_jump_aux'
-      expression = 'shear_jump_aux'
-      # outputs = exodus
-    []
-    [./normal_jump_mat]
-      type = ParsedMaterial
-      property_name = normal_jump_mat
-      coupled_variables = 'normal_jump_aux'
-      expression = 'normal_jump_aux'
-      # outputs = exodus
-    []
-    [./shear_traction_mat]
-      type = ParsedMaterial
-      property_name = shear_traction_mat
-      coupled_variables = 'shear_traction_aux'
-      expression = 'shear_traction_aux'
-      # outputs = exodus
-    []
-    [./shear_jump_rate_mat]
-      type = ParsedMaterial
-      property_name = shear_jump_rate_mat
-      coupled_variables = 'shear_jump_rate_aux'
-      expression = 'shear_jump_rate_aux'
-      # outputs = exodus
-    []
   []
 
   [UserObjects]
@@ -359,7 +429,7 @@
     exodus = false
     [csv]
       type = CSV
-      execute_on = 'initial timestep_end'
+      execute_on = 'timestep_end'
       time_step_interval = 10
     []
   []
@@ -450,13 +520,13 @@
   [VectorPostprocessors]
     [main_fault]
       type = SideValueSampler
-      variable = 'shear_jump_aux normal_jump_aux traction_x traction_y shear_jump_rate_aux normal_jump_rate_aux' 
+      variable = 'local_shear_jump local_normal_jump local_shear_jump_rate local_normal_jump_rate local_shear_traction local_normal_traction normal_x normal_y tangent_x tangent_y' 
       boundary = 'Block100_Block200'
       sort_by = x
     []
     [branch_fault]
       type = SideValueSampler
-      variable = 'shear_jump_aux normal_jump_aux traction_x traction_y shear_jump_rate_aux normal_jump_rate_aux' 
+      variable = 'local_shear_jump local_normal_jump local_shear_jump_rate local_normal_jump_rate local_shear_traction local_normal_traction normal_x normal_y tangent_x tangent_y'
       boundary = 'Block300_Block400'
       sort_by = x
     []

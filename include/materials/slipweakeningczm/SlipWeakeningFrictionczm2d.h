@@ -51,4 +51,6 @@ protected:
 
   const VariableValue & _mu_s;
   const VariableValue & _ini_shear_sts;
+
+  MaterialProperty<RealVectorValue> & _elem_normal;
 };

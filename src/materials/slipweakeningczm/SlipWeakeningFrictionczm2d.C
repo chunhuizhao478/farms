@@ -55,7 +55,8 @@ SlipWeakeningFrictionczm2d::SlipWeakeningFrictionczm2d(const InputParameters & p
     _disp_slipweakening_y_old(coupledValueOld("disp_slipweakening_y")),
     _disp_slipweakening_neighbor_y_old(coupledNeighborValueOld("disp_slipweakening_y")),
     _mu_s(coupledValue("mu_s")),
-    _ini_shear_sts(coupledValue("ini_shear_sts"))
+    _ini_shear_sts(coupledValue("ini_shear_sts")),
+    _elem_normal(declareProperty<RealVectorValue>("elem_normal"))
 {
 
   // only works for small strain
@@ -199,4 +200,7 @@ SlipWeakeningFrictionczm2d::computeInterfaceTractionAndDerivatives()
   RealVectorValue traction(T2 + T2_o, -T1 + T1_o, 0);
   _interface_traction[_qp] = traction;
   _dinterface_traction_djump[_qp] = 0;
+
+  // save normals
+  _elem_normal[_qp] = _normals[_qp];
 }

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import os
 
 #benchmark code
-benchmark_code = "TPV24-2D"
+benchmark_code = "TPV14-2D"
 
 #read benchmark data
 benchmark_label = "benchmark-DG-200m"
