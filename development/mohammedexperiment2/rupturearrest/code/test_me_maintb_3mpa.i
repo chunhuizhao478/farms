@@ -407,7 +407,7 @@
     type = Transient
     dt = 3.015e-8 
     end_time = 10.0
-    num_steps = 8000
+    num_steps = 16000
     [TimeIntegrator]
         type = FarmsCentralDifference
         solve_type = lumped
