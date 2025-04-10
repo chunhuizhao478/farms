@@ -416,7 +416,7 @@
 
   [Executioner]
     type = Transient
-    dt = 0.0025
+    dt = 0.005
     end_time = 12
     # num_steps = 10
     [TimeIntegrator]
@@ -430,7 +430,7 @@
     [csv]
       type = CSV
       execute_on = 'timestep_end'
-      time_step_interval = 10
+      time_step_interval = 20
     []
   []
 
