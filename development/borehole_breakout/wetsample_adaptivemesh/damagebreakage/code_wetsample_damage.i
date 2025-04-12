@@ -518,7 +518,7 @@
     l_tol = 1e-5
     start_time = 0
     end_time = 4000
-    dt = 0.5
+    dt = 50
     [./TimeIntegrator]
         type = ImplicitEuler
     [../]
@@ -526,7 +526,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 50
+    time_step_interval = 1
     show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z pp biot_modulus_aux'
     [./csv]
         type = CSV

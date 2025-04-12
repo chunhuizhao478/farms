@@ -17,10 +17,10 @@
     shear_modulus_o = 19.92e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9
+    xi_0 = -0.8073
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.8073
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 30
+    Cd_constant = 60
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -49,7 +49,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.05 #1e-3
+    beta_width = 1e-3 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-12 #
@@ -205,7 +205,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 10
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
@@ -214,7 +214,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 50
+    dt = 25
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
@@ -273,6 +273,18 @@
         boundary = 6
         function = applied_load_top
     [] 
+    [fix_top_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = 6
+        value = 0
+    []
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = 6
+        value = 0
+    []
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]

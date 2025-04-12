@@ -1,14 +1,14 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../meshfile/mesh_wohole_coarse.msh'
+        file = '../../meshfile/mesh_adaptive.msh'
     [] 
 []
 
 [GlobalParams]
 
     displacements = 'disp_x disp_y disp_z'
-    
+      
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
     lambda_o = 15.62e9
@@ -49,7 +49,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 1e-3 #1e-3
+    beta_width = 1e-1 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-12 #
@@ -179,11 +179,11 @@
     []    
 []  
 
+#18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-3.3e-7 * t'
-        # expression = '-6.9e-7 * t'
+        expression = '-2.6477e-5 - 3.3e-7 * t'
     []
 []
 
@@ -205,7 +205,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 5
+    nl_max_its = 10
     nl_abs_tol = 1e-8
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
@@ -214,48 +214,85 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 50
+    dt = 1e-1
     [./TimeIntegrator]
         type = ImplicitEuler
+        # type = BDF2
+        # type = CrankNicolson
     [../]
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 0.1
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 8
+    #     growth_factor = 1.5
+    #     max_time_step_bound = 10
+    # []
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1
-    # show = 'stress_22 B alpha_damagedvar xi eps_e_22'
+    time_step_interval = 50
+    show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z'
     [./csv]
         type = CSV
         time_step_interval = 1
         show = 'strain_z react_z'
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 50
+        num_files = 2
+    []
 []
 
 [BCs]
+    #fix bottom boundary
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
-        boundary = 6
+        boundary = 7
         value = 0
     []
     [fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        boundary = 6
+        boundary = 7
         value = 0
     []
     [fix_bottom_z]
         type = DirichletBC
         variable = disp_z
+        boundary = 7
+        value = 0
+    []
+    #applied load on top boundary
+    [applied_top_z_dispload]
+        type = FunctionDirichletBC
+        variable = disp_z
+        boundary = 6
+        function = applied_load_top
+    [] 
+    [fix_top_x]
+        type = DirichletBC
+        variable = disp_x
         boundary = 6
         value = 0
     []
-    [applied_top_z]
-        type = FunctionDirichletBC
-        variable = disp_z
-        boundary = 5
-        function = applied_load_top
-    [] 
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = 6
+        value = 0
+    []
+    #applied confining pressure on the outer boundary
+    [./Pressure]
+        [./outer_boundary]
+          boundary = 4
+          factor = 17.2e6
+          displacements = 'disp_x disp_y'
+        [../]
+    []
 []
 
 #compute the reaction force on the top boundary
@@ -264,7 +301,7 @@
       type = SidesetReaction
       direction = '0 0 1'
       stress_tensor = stress
-      boundary = 5
+      boundary = 6
     [../]
     [./strain_z]
         type = FunctionValuePostprocessor
