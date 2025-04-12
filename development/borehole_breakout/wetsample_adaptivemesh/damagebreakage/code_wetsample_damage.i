@@ -18,10 +18,10 @@
     shear_modulus_o = 19.92e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9
+    xi_0 = -0.8073
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.8073
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -33,7 +33,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 60
+    Cd_constant = 80
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -50,7 +50,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.05 #1e-3
+    beta_width = 1e-3 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-12 #
@@ -319,7 +319,7 @@
         porous_flow_coupling = true
         crack_surface_roughness_correction_factor = 1.0
         length_scale = 0.001
-        intrinsic_permeability = 1E-17
+        intrinsic_permeability = 1E-20
     []
     [dummy_matprop]
         type = GenericConstantMaterial
@@ -405,7 +405,7 @@
     #comopute permeability
     [permeability_constant]
         type = PorousFlowPermeabilityConst
-        permeability = '1E-17 0 0 0 1E-17 0 0 0 1E-17' #slide
+        permeability = '1E-20 0 0 0 1E-20 0 0 0 1E-20' #slide
         block = '1 2'
     []
     #compute biot modulus
@@ -518,7 +518,7 @@
     l_tol = 1e-5
     start_time = 0
     end_time = 4000
-    dt = 50
+    dt = 0.1
     [./TimeIntegrator]
         type = ImplicitEuler
     [../]
@@ -526,7 +526,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 1
+    time_step_interval = 50
     show = 'stress_22 B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z pp biot_modulus_aux'
     [./csv]
         type = CSV
