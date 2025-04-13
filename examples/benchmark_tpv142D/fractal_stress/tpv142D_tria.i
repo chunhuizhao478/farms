@@ -461,6 +461,7 @@
       type = CSV
       execute_on = 'timestep_end'
       time_step_interval = 20
+      file_base = '/Users/chunhuizhao/projects/farms_benchmark/examples/benchmark_tpv142D/fractal_stress/output_test/tpv142D_tria_1'
     []
   []
 

@@ -462,6 +462,7 @@ template = ("""
       type = CSV
       execute_on = 'timestep_end'
       time_step_interval = 20
+      file_base = '/scratch1/10024/zhaochun/projects/farms_benchmark/examples/benchmark_tpv142D/fractal_stress/output_{index}/tpv142D_tria_{index}'
     []
   []
 
