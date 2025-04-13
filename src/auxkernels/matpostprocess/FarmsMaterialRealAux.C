@@ -20,6 +20,7 @@ FarmsMaterialRealAux::validParams()
   params.addRequiredParam<std::string>("material_property_name", "The name of the material property to be retrieved: local_shear_jump, local_normal_jump, local_shear_traction, local_normal_traction, local_shear_jump_rate, local_normal_jump_rate, normal_x, normal_y, tangent_x, tangent_y");
   params.addRequiredCoupledVar("ini_shear_sts", "initial shear stress");
   params.addRequiredCoupledVar("ini_normal_sts", "initial normal stress");
+  params.addParam<bool>("use_fractal_shear_stress", false, "use fractal shear stress");
   return params;
 }
 
@@ -34,8 +35,12 @@ FarmsMaterialRealAux::FarmsMaterialRealAux(const InputParameters & parameters)
   _displacement_jump_global_y_old(getMaterialPropertyOldByName<Real>("jump_y")),
   _ini_shear_sts(coupledValue("ini_shear_sts")),
   _ini_normal_sts(coupledValue("ini_normal_sts")),
-  _normals(_assembly.normals())
+  _normals(_assembly.normals()),
+  _use_fractal_shear_stress(getParam<bool>("use_fractal_shear_stress"))
 {
+  // Only retrieve the fractal shear stress material property if requested
+  if (_use_fractal_shear_stress)
+    _fractal_shear_stress = &getMaterialPropertyByName<Real>("fractal_shear_stress");
 }
 
 Real
@@ -95,15 +100,20 @@ FarmsMaterialRealAux::computeValue()
   Real local_traction_x = traction_x * tangent_x + traction_y * tangent_y;
   Real local_traction_y = traction_x * normal_x  + traction_y * normal_y;
 
-  /*
-  * now add initial stress state becomes total quantity
-  */
-
-  local_traction_x += _ini_shear_sts[_qp] / 1e6;
   local_traction_y += _ini_normal_sts[_qp] / 1e6;
 
-  // 
+  Real fractal_shear_stress = 0.0;
+  if (_use_fractal_shear_stress)
+  {
+    local_traction_x += (*_fractal_shear_stress)[_qp] / 1e6;
+    fractal_shear_stress = (*_fractal_shear_stress)[_qp] / 1e6;
+  }
+  else
+  {
+    local_traction_x += _ini_shear_sts[_qp] / 1e6;
+  }
 
+  // Get the material property name and set the value accordingly
   if (_material_property_name == "local_shear_jump")
   {
     _value = local_jump_x;
@@ -143,6 +153,9 @@ FarmsMaterialRealAux::computeValue()
   else if (_material_property_name == "tangent_y")
   {
     _value = tangent_y;
+  }
+  else if (_material_property_name == "fractal_shear_stress"){
+    _value = fractal_shear_stress;
   }
   else
   {

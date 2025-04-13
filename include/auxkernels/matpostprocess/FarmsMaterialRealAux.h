@@ -35,11 +35,15 @@ protected:
   const MaterialProperty<Real> & _traction_global_y;
   const MaterialProperty<Real> & _displacement_jump_global_x_old;
   const MaterialProperty<Real> & _displacement_jump_global_y_old;
+  const MaterialProperty<Real> * _fractal_shear_stress;
  
   const VariableValue & _ini_shear_sts;
   const VariableValue & _ini_normal_sts;
 
   /// normals at quadrature points
   const MooseArray<Point> & _normals;
+
+  /// use fractal shear stress
+  bool _use_fractal_shear_stress;
 
 };

@@ -5,7 +5,7 @@ import pandas as pd
 # --- User settings ---
 # Time stepping parameters
 start = 10          # starting time step (e.g., "0000.csv")
-end = 4800      # ending time step
+end = 2400      # ending time step
 interval = 10      # time step interval
 faultname = "branch_fault" #"branch_fault" , "main_fault"  # name of the fault 
 
