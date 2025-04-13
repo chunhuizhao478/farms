@@ -159,13 +159,6 @@
         boundary = 7
         value = 0
     []
-    #applied pressure on top boundary
-    [neumann_top]
-        type = NeumannBC
-        variable = disp_z
-        boundary = 6
-        value = -21.6e6
-    []
     #applied load on inner boundary pore pressure
     [applied_pore_pressure]
         type = DirichletBC

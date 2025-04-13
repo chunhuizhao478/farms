@@ -396,7 +396,7 @@
         type = FarmsPorousFlowDamagedBiotModulus
         biot_coefficient = 0.5
         solid_bulk_compliance = 3.46e-11 #calculated
-        fluid_bulk_modulus = 2.0e+9
+        fluid_bulk_modulus = 2.2e+9
         block = '3'
     []
     ##########################################################
