@@ -506,7 +506,7 @@
 []
 
 [Outputs]
-  exodus = exodus
+  exodus = true
   [csv]
     type = CSV
     execute_on = 'timestep_end'
