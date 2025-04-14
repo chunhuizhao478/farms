@@ -132,8 +132,17 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
   Real R_minus_local_t = R_minus_local(1);
   Real R_minus_local_d = R_minus_local(2);
 
-  // Compute node mass
-  Real M = _density[_qp] * _len * _len * _len / 2.0;
+  // Compute node mass and area
+  Real M = 0;
+  Real A = 0;
+  if (_current_elem->type() == libMesh::ElemType::TET4){
+    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+  }
+  else if (_current_elem->type() == libMesh::ElemType::HEX8){
+    M = (_density[_qp] * _len * _len * _len / 8) * 4;
+    A = (_len * _len / 4) * 4;
+  }
 
   // Compute T1_o, T2_o, T3_o for current qp
   Real T1_o = _ini_shear_sts[_qp];
@@ -141,13 +150,13 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
   Real T3_o = _T3_o;
 
   // Compute sticking stress
-  Real T1 = (1 / _dt) * M * displacement_jump_rate_t / (2 * _len * _len) +
-            (R_plus_local_t - R_minus_local_t) / (2 * _len * _len) + T1_o;
-  Real T3 = (1 / _dt) * M * displacement_jump_rate_d / (2 * _len * _len) +
-            (R_plus_local_d - R_minus_local_d) / (2 * _len * _len) + T3_o;
+  Real T1 = (1 / _dt) * M * displacement_jump_rate_t / (2 * A) +
+            (R_plus_local_t - R_minus_local_t) / (2 * A) + T1_o;
+  Real T3 = (1 / _dt) * M * displacement_jump_rate_d / (2 * A) +
+            (R_plus_local_d - R_minus_local_d) / (2 * A) + T3_o;
   Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
-                (2 * _len * _len) +
-            ((R_minus_local_n - R_plus_local_n) / (2 * _len * _len)) - T2_o;
+                (2 * A) +
+            ((R_minus_local_n - R_plus_local_n) / (2 * A)) - T2_o;
 
   // Compute fault traction
   if (T2 < 0)
