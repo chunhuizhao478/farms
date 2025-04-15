@@ -112,10 +112,10 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::computeQpStress()
   _stress[_qp] = sigma_total;
 
   // compute effective stress
-  if (_compute_effective_stress){compute_effective_stress();}
+  compute_effective_stress();
 
   // Add cohesion
-  if (_add_cohesion){add_cohesion();}
+  add_cohesion();
 
   // Assign value for elastic strain, which is equal to the mechanical strain
   _elastic_strain[_qp] = _mechanical_strain[_qp];
@@ -204,18 +204,25 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::alphacr_root1(ADReal xi, ADR
 void
 ADComputeDamageStressStaticDistributionDynamicCDBM::compute_effective_stress()
 {
+
+  if (!_compute_effective_stress)
+    return;
+
   // Compute effective stress
   ADReal zcoord = _q_point[_qp](2);
   ADReal Pf = _fluid_density * _gravity * std::abs(zcoord);
-  _stress[_qp](0,0) += Pf;
-  _stress[_qp](1,1) += Pf;
-  _stress[_qp](2,2) += Pf;
+  _stress[_qp](0,0) -= Pf;
+  _stress[_qp](1,1) -= Pf;
+  _stress[_qp](2,2) -= Pf;
 }
 
 // Function for add cohesion
 void
 ADComputeDamageStressStaticDistributionDynamicCDBM::add_cohesion()
 {
+  if (!_add_cohesion)
+    return;
+
   // Add cohesion
   ADReal zcoord = _q_point[_qp](2);
   if (std::abs(zcoord) < _constant_cohesion_cutoff_distance){

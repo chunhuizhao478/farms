@@ -33,9 +33,7 @@ InitialDepthDependentStress::InitialDepthDependentStress(const InputParameters &
   _bxx(getParam<Real>("bxx")),
   _byy(getParam<Real>("byy")),
   _bxy(getParam<Real>("bxy")),
-  _linear_variation_cutoff_distance(getParam<Real>("linear_variation_cutoff_distance")),
-  _constant_cohesion(getParam<Real>("constant_cohesion")),
-  _constant_cohesion_cutoff_distance(getParam<Real>("constant_cohesion_cutoff_distance"))
+  _linear_variation_cutoff_distance(getParam<Real>("linear_variation_cutoff_distance"))
 {
 }
 

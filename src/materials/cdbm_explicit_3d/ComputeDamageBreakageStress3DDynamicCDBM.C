@@ -50,6 +50,11 @@ ComputeDamageBreakageStress3DDynamicCDBM::validParams()
   params.addParam<Real>("crack_surface_roughness_correction_factor", -1.0, "the factor to correct the crack opening based on crack surface roughness");
   params.addParam<Real>("length_scale", -1.0, "the length scale for nonlocal eqstrain");
   params.addParam<Real>("intrinsic_permeability", -1.0, "the intrisic permeability for the material, the intrisic permeability is used to take diagonal of the permeability tensor");
+  
+  //effective stress modification
+  params.addParam<bool>("effective_stress_modification", false, "Flag to indicate if this stress needs a effective stress modification, note it is different from fully-coupled porous flow option");
+  params.addParam<Real>("fluid_density", 0.0, "fluid density");
+  params.addParam<Real>("gravity", 0.0, "gravity");
   return params;
 }
 
@@ -91,16 +96,26 @@ ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCD
     _CdCb_multiplier(getParam<Real>("CdCb_multiplier")),
     _CBH_constant(getParam<Real>("CBH_constant")),
     _dim(_mesh.dimension()),
+    //## Porous flow coupling ##
     _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
     _crack_surface_roughness_correction_factor(getParam<Real>("crack_surface_roughness_correction_factor")),
     _length_scale(getParam<Real>("length_scale")),
     _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
+    //## Effective stress modification ##
+    _effective_stress_modification(getParam<bool>("effective_stress_modification")),
+    _fluid_density(getParam<Real>("fluid_density")),
+    _gravity(getParam<Real>("gravity")),
     //## DEBUG ##
     _elasticity_tensor_name(_base_name + "elasticity_tensor"),
     _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_elasticity_tensor_name))
 {
+  //add check on porous flow coupling parameters
   if (_porous_flow_coupling && ( _crack_surface_roughness_correction_factor < 0.0 || _length_scale < 0.0 || _intrinsic_permeability < 0.0) ){
     mooseError("The crack surface roughness correction factor, length scale and intrinsic permeability must be positive when using the porous flow coupling.");
+  }
+  //add check on effective stress modification parameters
+  if (_effective_stress_modification && (_fluid_density <= 0.0 || _gravity <= 0.0)){
+    mooseError("The fluid density and gravity must be positive when using the effective stress modification.");
   }
 }
 
@@ -290,6 +305,9 @@ ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
 
   // // Compute dstress_dstrain
   // _Jacobian_mult[_qp] = _Eeff[_qp];
+
+  // Effective stress modification with pore pressure 
+  computeEffectiveStressModification();
 
   // Rotate the stress state to the current configuration
   _stress[_qp] = sigma_total;
@@ -564,4 +582,21 @@ ComputeDamageBreakageStress3DDynamicCDBM::HeavisideFunction(Real & x)
     x = 1.0;
   else
     x = 0.0;
+}
+
+void 
+ComputeDamageBreakageStress3DDynamicCDBM::computeEffectiveStressModification()
+{
+  // If effective stress modification is not enabled, return
+  if (!_effective_stress_modification)
+    return;
+
+  // Get the z-coordinate of the current point
+  Real zcoord = _q_point[_qp](2);
+
+  // Compute the pore pressure
+  Real Pf = _fluid_density * _gravity * zcoord;
+
+  // Compute the effective stress modification
+  _stress[_qp] -= Pf * RankTwoTensor::Identity();
 }

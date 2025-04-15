@@ -73,6 +73,11 @@ protected:
    */
   void HeavisideFunction(Real & x);  
 
+  /**
+   *  Implement the effective stress modification
+   */
+  void computeEffectiveStressModification();
+
   /// additional variables
   /// strain invariants ratio: onset of damage evolution
   Real _xi_0;
@@ -167,6 +172,14 @@ protected:
 
   /// @brief define the intrisic permeability
   const Real _intrinsic_permeability; 
+
+  /// @brief effective stress modification
+  /// @return true if effective stress modification is included
+  bool _effective_stress_modification;
+  /// @brief fluid density
+  Real _fluid_density;
+  /// @brief gravity
+  Real _gravity;
 
   //## DEBUG ##
   /// Name of the elasticity tensor material property

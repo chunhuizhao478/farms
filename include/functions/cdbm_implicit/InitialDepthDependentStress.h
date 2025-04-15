@@ -27,7 +27,5 @@ public:
   Real _byy; //coefficient for sigma_yy
   Real _bxy; //coefficient for sigma_xy
   Real _linear_variation_cutoff_distance; //linear variation cutoff distance  
-  Real _constant_cohesion; //constant cohesion
-  Real _constant_cohesion_cutoff_distance; //cutoff distance for constant cohesion
 
 };
