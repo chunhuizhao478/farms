@@ -33,6 +33,7 @@ FarmsMaterialRealAux::FarmsMaterialRealAux(const InputParameters & parameters)
   _traction_global_y(getMaterialPropertyByName<Real>("traction_y")),
   _displacement_jump_global_x_old(getMaterialPropertyOldByName<Real>("jump_x")),
   _displacement_jump_global_y_old(getMaterialPropertyOldByName<Real>("jump_y")),
+  _total_shear_traction(getMaterialPropertyByName<Real>("total_shear_traction")),
   _ini_shear_sts(coupledValue("ini_shear_sts")),
   _ini_normal_sts(coupledValue("ini_normal_sts")),
   _normals(_assembly.normals()),
@@ -132,7 +133,7 @@ FarmsMaterialRealAux::computeValue()
   }
   else if (_material_property_name == "local_shear_traction")
   {
-    _value = local_traction_x;
+    _value = _total_shear_traction[_qp];
   }
   else if (_material_property_name == "local_normal_traction")
   {

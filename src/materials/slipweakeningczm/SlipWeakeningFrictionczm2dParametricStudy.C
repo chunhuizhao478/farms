@@ -62,6 +62,7 @@ SlipWeakeningFrictionczm2dParametricStudy::SlipWeakeningFrictionczm2dParametricS
     _mu_s(coupledValue("mu_s")),
     _ini_shear_sts(coupledValue("ini_shear_sts")),
     _elem_normal(declareProperty<RealVectorValue>("elem_normal")),
+    _total_shear_traction(declareProperty<Real>("total_shear_traction")),
     _use_fractal_shear_stress(getParam<bool>("use_fractal_shear_stress")),
     _peak_shear_stress(getParam<Real>("peak_shear_stress")),
     _nucl_center(getParam<std::vector<Real>>("nucl_center")),
@@ -142,7 +143,7 @@ SlipWeakeningFrictionczm2dParametricStudy::computeInterfaceTractionAndDerivative
   Real x_coord = _q_point[_qp](0);
   Real y_coord = _q_point[_qp](1);
   
-  if (_use_fractal_shear_stress)
+  if (_use_fractal_shear_stress){
     
     T1_o = (*_fractal_shear_stress)[_qp];
 
@@ -152,10 +153,12 @@ SlipWeakeningFrictionczm2dParametricStudy::computeInterfaceTractionAndDerivative
     {
       T1_o = _peak_shear_stress;
     }
-
-  else
+  
+  }
+  else{
     T1_o = _ini_shear_sts[_qp];
-
+  }
+  
   // Compute sticking stress
   Real T1 = (1 / _dt) * M * displacement_jump_rate_t / (2 * _len) +
             (R_plus_local_t - R_minus_local_t) / (2 * _len) + T1_o;
@@ -227,6 +230,8 @@ SlipWeakeningFrictionczm2dParametricStudy::computeInterfaceTractionAndDerivative
       T1 = -1 * tau_f*T1/std::abs(T1);
    }
  }
+
+  _total_shear_traction[_qp] = T1;
 
   // Assign back traction in CZM
   RealVectorValue traction(T2 + T2_o, -T1 + T1_o, 0);

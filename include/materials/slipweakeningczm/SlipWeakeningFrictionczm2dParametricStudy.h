@@ -53,6 +53,7 @@ protected:
   const VariableValue & _ini_shear_sts;
 
   MaterialProperty<RealVectorValue> & _elem_normal;
+  MaterialProperty<Real> & _total_shear_traction;
 
   // Parametric study
   /// use fractal shear stress

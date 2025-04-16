@@ -421,7 +421,7 @@ template = ("""
         use_fractal_shear_stress = true
         peak_shear_stress = 81.6e6
         nucl_center = '-8e3 0 0'
-        nucl_radius = 1.5e3
+        nucl_radius = 1.6e3
     [../]
     #fractal shear stress
     [./fractal_shear_stress_mainfault]
@@ -447,7 +447,7 @@ template = ("""
 
   [Executioner]
     type = Transient
-    dt = 0.005
+    dt = 0.0025
     end_time = 12
     # num_steps = 10
     [TimeIntegrator]
@@ -461,7 +461,7 @@ template = ("""
     [csv]
       type = CSV
       execute_on = 'timestep_end'
-      time_step_interval = 20
+      time_step_interval = 40
       file_base = '/scratch1/10024/zhaochun/projects/farms_benchmark/examples/benchmark_tpv142D/fractal_stress/output_{index}/tpv142D_tria_{index}'
     []
   []

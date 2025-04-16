@@ -36,6 +36,7 @@ protected:
   const MaterialProperty<Real> & _displacement_jump_global_x_old;
   const MaterialProperty<Real> & _displacement_jump_global_y_old;
   const MaterialProperty<Real> * _fractal_shear_stress;
+  const MaterialProperty<Real> & _total_shear_traction;
  
   const VariableValue & _ini_shear_sts;
   const VariableValue & _ini_normal_sts;
