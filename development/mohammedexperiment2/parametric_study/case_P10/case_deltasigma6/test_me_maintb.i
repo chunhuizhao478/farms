@@ -417,7 +417,7 @@
 [Outputs]
     exodus = true
     time_step_interval = 40
-    # show = 'vel_slipweakening_x vel_slipweakening_y'
+    show = 'vel_slipweakening_x vel_slipweakening_y'
     # #save
     # [Checkpoints]
     #     type = Checkpoint

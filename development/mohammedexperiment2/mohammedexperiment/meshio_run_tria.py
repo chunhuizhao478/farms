@@ -76,6 +76,12 @@ sigma_N, tau_S = stress_transformation(sigmaxx, sigmaxy, sigmayy, degree)
 #overstress 1%
 tau_S_nucleation = 1.05 * mu_s * sigma_N
 
+#print frictional length scale
+G = 2.17e9 #Pa
+
+L = G * Dc / ( ( mu_s - mu_d ) * abs(sigma_N) )
+print("frictional length scale (mm): ",L * 1e3)
+
 #group arr_data
 arr_data = [tau_S, sigma_N, mu_s, mu_d, Dc]
 

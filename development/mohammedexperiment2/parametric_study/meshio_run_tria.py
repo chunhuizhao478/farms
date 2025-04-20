@@ -85,6 +85,13 @@ def main_func(sigmayy, nu, added_normalsts, sigmayy_label, added_normalsts_label
     #overstress 1%
     tau_S_nucleation = 1.05 * mu_s * sigma_N
 
+    #print frictional length scale
+    G = 2.17e9 #Pa
+
+    L = G * Dc / ( ( mu_s - mu_d ) * abs(sigma_N) )
+    print("frictional length scale (mm): ",L * 1e3)
+    # exit(0)
+
     #group arr_data
     arr_data = [tau_S, sigma_N, mu_s, mu_d, Dc]
 
@@ -145,10 +152,10 @@ def main_func(sigmayy, nu, added_normalsts, sigmayy_label, added_normalsts_label
                 if np.count_nonzero(arr_elem_properties[elem_ind,:]) == 0:
                     arr_elem_properties[elem_ind,:] = arr_data
                     #apply nucleation shear stress
-                    x_max_lim = (61.223+6.0) * 1e-3
-                    x_min_lim = (61.223-6.0) * 1e-3
-                    y_max_lim = (71.413+3.5) * 1e-3
-                    y_min_lim = (71.413-3.5) * 1e-3
+                    x_max_lim = (61.223+10.0) * 1e-3
+                    x_min_lim = (61.223-10.0) * 1e-3
+                    y_max_lim = (71.413+5.5) * 1e-3
+                    y_min_lim = (71.413-5.5) * 1e-3
                     if ( np.sum(coord_data_x)/3 <= x_max_lim and np.sum(coord_data_x)/3 >= x_min_lim and np.sum(coord_data_y)/3 <= y_max_lim and np.sum(coord_data_y)/3 >= y_min_lim ):
                         arr_elem_properties[elem_ind,0] = tau_S_nucleation #Pa
             else:
