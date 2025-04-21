@@ -1,8 +1,8 @@
 SetFactory("OpenCASCADE");
 
 // Parameters
-lc = 0.0001;         // global mesh size
-// lc_refined = 0.0001; // refined mesh size
+lc = 0.001;         // global mesh size
+lc_refined = 0.0001; // refined mesh size
 
 // Define square corner points
 Point(1) = {      0,      0,   0, lc};
@@ -58,13 +58,13 @@ Plane Surface(2) = {2};
 // Subtract hole from square to create a single surface
 BooleanDifference { Surface{1}; Delete; } { Surface{2}; Delete; }
 
-// Field[1] = Box;
-// Field[1].VIn = lc_refined;  // Mesh size inside the fault zone
-// Field[1].VOut = lc;       // Mesh size outside the fault zone
-// Field[1].XMin = 0.01;
-// Field[1].XMax = 0.018;
-// Field[1].YMin = 0;
-// Field[1].YMax = 0.005;
-// Field[1].Thickness = 0.003;
+Field[1] = Box;
+Field[1].VIn = lc_refined;  // Mesh size inside the fault zone
+Field[1].VOut = lc;       // Mesh size outside the fault zone
+Field[1].XMin = 0.010;
+Field[1].XMax = 0.018;
+Field[1].YMin = 0;
+Field[1].YMax = 0.008;
+Field[1].Thickness = 0.003;
 
-// Background Field = 1;
+Background Field = 1;

@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../mesh/mesh.msh'
+    file =  '../mesh/meshwohole.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -24,17 +24,25 @@
     top_right = '0.015 0.008 1'
     block_id = 1
   []
+  [./extranodeset_0]
+    type = ExtraNodesetGenerator
+    coord = '0.004 0 0'
+    new_boundary = support1
+    input = elastic_region_3
+    use_closest_node=true
+  []
   [./extranodeset_1]
     type = ExtraNodesetGenerator
-    coord = '0.004 0 0;
-             0.024 0 0'
-    new_boundary = support
-    input = elastic_region_3
+    coord = '0.024 0 0'
+    new_boundary = support2
+    input = extranodeset_0
     use_closest_node=true
   []
   [./extranodeset_2]
     type = ExtraNodesetGenerator
-    coord = '0.014 0.008 0'
+    coord = '0.014 0.008 0;
+             0.0140986 0.008 0;
+             0.0139014 0.008 0'
     new_boundary = load
     input = extranodeset_1
     use_closest_node=true
@@ -86,26 +94,38 @@
   []
   
   [BCs]
-    # [fix_support_x]
-    #   type = ADDirichletBC
-    #   variable = disp_x
-    #   boundary = support
-    #   value = 0
-    # []
-    [fix_support_y]
-      type = ADDirichletBC
+    [fix_support1_x]
+      type = DirichletBC
+      variable = disp_x
+      boundary = support1
+      value = 0
+    []
+    [fix_support1_y]
+      type = DirichletBC
       variable = disp_y
-      boundary = support
+      boundary = support1
+      value = 0
+    []
+    [fix_support2_x]
+      type = DirichletBC
+      variable = disp_x
+      boundary = support2
+      value = 0
+    []
+    [fix_support2_y]
+      type = DirichletBC
+      variable = disp_y
+      boundary = support2
       value = 0
     []
     [fix_load]
-      type = ADFunctionDirichletBC
+      type = FunctionDirichletBC
       variable = disp_y
       boundary = load
       function = func_loading
     []
     [fix_load_x]
-      type = ADDirichletBC
+      type = DirichletBC
       variable = disp_x
       boundary = load
       value = 0
@@ -138,7 +158,7 @@
     [./damage_stress]
         type = FarmsCrackBandModel
         cracking_stress = strength
-        hb = 4.33e-5 #m hb = h sqrt(3) / 2
+        hb = 1.414e-4 #m hb = h sqrt(3) / 2
         Gf = 90 #J/m^2
         output_properties = 'crack_damage stress elastic_strain crack_initiation_strain'
         outputs = exodus
@@ -165,7 +185,7 @@
   
   [Executioner]
     type = Transient
-    solve_type = PJFNK
+    solve_type = NEWTON
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname  = '-ksp_type -pc_type -pc_hypre_type'
@@ -177,16 +197,16 @@
     line_search = 'none'
     # num_steps = 1
     l_max_its = 200
-    nl_max_its = 500
+    nl_max_its = 100
     nl_rel_tol = 1e-6
     nl_abs_tol = 1e-6
     l_tol = 1e-5
     start_time = 0.0
     end_time = 100
-    dt = 0.0005
+    dt = 0.0001
   []
   
   [Outputs]
     exodus = true
-    time_step_interval = 50
+    time_step_interval = 1
   []

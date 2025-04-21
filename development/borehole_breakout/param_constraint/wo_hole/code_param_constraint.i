@@ -214,7 +214,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 50
+    dt = 1
     [./TimeIntegrator]
         type = ImplicitEuler
     [../]

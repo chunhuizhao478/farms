@@ -50,7 +50,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 1e-3 #1e-3
+    beta_width = 0.05 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-12 #
@@ -386,19 +386,19 @@
     #########################################################
     ##### Compute Damaged Permeability and Biot Modulus #####
     #########################################################
-    #compute permeability
-    [permeability]
-        type = FarmsPorousFlowPermeabilityDamaged
-        block = '3'
-    []
-    #compute biot modulus #include damaged solid compliance
-    [biot_modulus]
-        type = FarmsPorousFlowDamagedBiotModulus
-        biot_coefficient = 0.5
-        solid_bulk_compliance = 3.46e-11 #calculated
-        fluid_bulk_modulus = 2.2e+9
-        block = '3'
-    []
+    # #compute permeability
+    # [permeability]
+    #     type = FarmsPorousFlowPermeabilityDamaged
+    #     block = '3'
+    # []
+    # #compute biot modulus #include damaged solid compliance
+    # [biot_modulus]
+    #     type = FarmsPorousFlowDamagedBiotModulus
+    #     biot_coefficient = 0.5
+    #     solid_bulk_compliance = 3.46e-11 #calculated
+    #     fluid_bulk_modulus = 2.2e+9
+    #     block = '3'
+    # []
     ##########################################################
     ##### Compute Constant Permeability and Biot Modulus #####
     ##########################################################
@@ -406,7 +406,7 @@
     [permeability_constant]
         type = PorousFlowPermeabilityConst
         permeability = '1E-20 0 0 0 1E-20 0 0 0 1E-20' #slide
-        block = '1 2'
+        block = '1 2 3'
     []
     #compute biot modulus
     [biot_modulus_constant]
@@ -414,7 +414,7 @@
         biot_coefficient = 0.5 #paper
         solid_bulk_compliance = 3.46e-11 #calculated
         fluid_bulk_modulus = 2.2e+9
-        block = '1 2'
+        block = '1 2 3'
     []    
     ##########################################################
     #Compute density and viscosity

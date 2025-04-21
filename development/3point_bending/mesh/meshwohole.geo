@@ -2,7 +2,7 @@ SetFactory("OpenCASCADE");
 
 // Parameters
 lc = 0.001;         // global mesh size
-lc_refined = 2e-5; // refined mesh size
+lc_refined = 0.0002; // refined mesh size
 
 // Define square corner points
 Point(1) = {      0,      0,   0, lc};
@@ -61,15 +61,30 @@ Plane Surface(1) = {1};
 Field[1] = Box;
 Field[1].VIn = lc_refined;  // Mesh size inside the fault zone
 Field[1].VOut = lc;       // Mesh size outside the fault zone
-Field[1].XMin = 0.013;
-Field[1].XMax = 0.015;
+Field[1].XMin = 0.0135;
+Field[1].XMax = 0.0145;
 Field[1].YMin = 0;
 Field[1].YMax = 0.008;
 Field[1].Thickness = 0.003;
 
 Background Field = 1;
 
-// Define the physical groups
-Physical Curve("left") = {11};
-Physical Curve("right") = {8};
-Physical Surface("domain") = {1};
+//Define the physical groups
+// Physical Curve("left") = {11};
+// Physical Curve("right") = {8};
+// Physical Surface("domain") = {1};
+
+// 1. Create a Distance field from points that define the refined region
+// Field[1] = Distance;
+// Field[1].NodesList = {2,3,4,5,6};
+
+// // 2. Create a Threshold field that smoothly transitions the mesh size
+// Field[2] = Threshold;
+// Field[2].IField = 1;
+// Field[2].LcMin = lc_refined;
+// Field[2].LcMax = lc;
+// Field[2].DistMin = 0.008;  // Adjust as needed
+// Field[2].DistMax = 0.015;  // Adjust as needed
+
+// Set the Threshold field as the background field
+// Background Field = 2;

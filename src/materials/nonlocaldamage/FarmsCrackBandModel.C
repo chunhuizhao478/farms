@@ -67,64 +67,87 @@ FarmsCrackBandModel::initQpStatefulProperties()
 void
 FarmsCrackBandModel::computeQpStress()
 {
-  bool force_elasticity_rotation = false;
-
-  //(0) get strain at onset of strength criterion
-  const Real youngs_modulus =
-  ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
-  Real cracking_strain = _cracking_stress[_qp] / youngs_modulus;
-
-  //(1) update strain tensor
+  // (0) Elastic strain update
   _elastic_strain[_qp] = _elastic_strain_old[_qp] + _strain_increment[_qp];
 
-  //(2) compute the equivalent strain
-  //type 1: Mazars
-  RealVectorValue strain_in_crack_dir;
-  computeCrackStrainAndOrientation(strain_in_crack_dir);
-  Real strain_dir0_positive = std::max(strain_in_crack_dir(0), 0.0);
-  Real strain_dir1_positive = std::max(strain_in_crack_dir(1), 0.0);
-  Real strain_dir2_positive = std::max(strain_in_crack_dir(2), 0.0);
-  Real eqstrain = std::sqrt(strain_dir0_positive*strain_dir0_positive+strain_dir1_positive*strain_dir1_positive+strain_dir2_positive*strain_dir2_positive);
+  // (1) Retrieve material parameters and compute cracking strain ε₀
+  const Real E    = ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
+  const Real eps0 = _cracking_stress[_qp] / E;
+
+  // (2) Compute Mazars‐type equivalent strain ε̃ and principal directions
+  RealVectorValue eps_dir;
+  computeCrackStrainAndOrientation(eps_dir);
+  Real eps_dir0 = std::max(eps_dir(0), 0.0);
+  Real eps_dir1 = std::max(eps_dir(1), 0.0);
+  Real eps_dir2 = std::max(eps_dir(2), 0.0);
+  Real eqstrain = std::sqrt(eps_dir0*eps_dir0 + eps_dir1*eps_dir1 + eps_dir2*eps_dir2);
   _eqstrain[_qp] = eqstrain;
 
-  //type 2: Rankine
-  // RealVectorValue stress_in_crack_dir;
-  // computeCrackStressAndOrientation(stress_in_crack_dir);
-  // Real stress_dir0_positive = std::max(stress_in_crack_dir(0), 0.0);
-  // Real stress_dir1_positive = std::max(stress_in_crack_dir(1), 0.0);
-  // Real stress_dir2_positive = std::max(stress_in_crack_dir(2), 0.0);
-  // Real stress_max = std::sqrt(stress_dir0_positive*stress_dir0_positive+stress_dir1_positive*stress_dir1_positive+stress_dir2_positive*stress_dir2_positive);
-  // Real eqstrain = stress_max / youngs_modulus;
-  // _eqstrain[_qp] = eqstrain;
+  // (3) Update history κ = max(κ_old, ε̃)
+  Real kappa = std::max(_kappa_old[_qp], eqstrain);
+  _kappa[_qp] = kappa;
 
-  //(3) update kappa
-  Real k = std::max(_kappa_old[_qp], eqstrain);
-  _kappa[_qp] = k;
+  // (4) Compute mesh‐scaled εf
+  const Real ft   = _cracking_stress[_qp];
+  const Real epsf = std::max( 0.5*eps0 + _Gf/( _hb*ft ), eps0 );
 
-  //(4) compute ft and mesh-scaled epsf
-  Real ft = _cracking_stress[_qp];
-  Real epsf = 0.5 * cracking_strain + _Gf/( _hb * ft ); 
-  // ensure epsf ≥ eps0 to avoid snap‐back
-  epsf = std::max(epsf, cracking_strain);
-
-  //(5) exponential damage law ω(κ) from Eq. (10)
+  // (5) Exponential damage law ω(κ)
   Real omega = 0.0;
-  if (k > cracking_strain)
+  if (kappa > eps0)
   {
-    Real arg = -(k - cracking_strain)/(epsf - cracking_strain);
-    omega = 1.0 - (cracking_strain/k) * std::exp(arg);
+    Real arg = -(kappa - eps0)/(epsf - eps0);
+    omega = 1.0 - (eps0/kappa) * std::exp(arg);
   }
   _crack_damage[_qp] = omega;
 
-  //(6) compute damage stress and jacobian
-  RankTwoTensor damage_stress = (1 - _crack_damage[_qp]) * _elasticity_tensor[_qp] * _elastic_strain[_qp];
-  _stress[_qp] = damage_stress;
-  _Jacobian_mult[_qp] = (1 - _crack_damage[_qp]) * _elasticity_tensor[_qp];
-  force_elasticity_rotation = true;
+  // (6) Build consistent tangent and stress
+  const RankFourTensor & De  = _elasticity_tensor[_qp];
+  const RankTwoTensor  & eps = _elastic_strain[_qp];
+  RankTwoTensor De_eps = De * eps;
 
+  // (6a) dω/dκ from exponential law
+  Real domega_dk = 0.0;
+  if (kappa > eps0 + 1e-12)    // tiny epsilon to avoid exact-zero division
+  {
+   Real expf_term = std::exp(-(kappa - eps0)/(epsf - eps0));
+   domega_dk = eps0 * expf_term
+   * ( 1.0/(kappa*kappa) + 1.0/((epsf - eps0)*kappa) );
+  }
+
+  // (6b) Loading flag: only active when ε̃ > κ_old
+  Real loading = (eqstrain > _kappa_old[_qp] ? 1.0 : 0.0);
+
+  // (6c) ∂ε̃/∂ε via Mazars
+  RankTwoTensor depsde; 
+  depsde.zero();
+  if (eqstrain > 0.0)
+  {
+    for (unsigned i = 0; i < 3; ++i)
+    {
+      Real eps_i_pos = std::max(eps_dir(i), 0.0);
+      if (eps_i_pos > 0.0)
+      {
+        const RealVectorValue ni = _crack_rotation[_qp].column(i);
+        depsde += (eps_i_pos/eqstrain) * RankTwoTensor::outerProduct(ni, ni);
+      }
+    }
+  }
+  RankTwoTensor domega_de = domega_dk * loading * depsde;
+
+  usingTensorIndices(i,j,k,l);  // bring i,j,k,l into scope
+  RankFourTensor soft = De_eps.template times<0,1,2,3>(domega_de);
+
+  // (6d) Consistent tangent: (1-ω)De  −  (De:ε) ⊗ (∂ω/∂ε)
+  RankFourTensor tangent = (1.0 - omega)*De - soft;
+
+  // (6e) Assign stress and Jacobian multiplier
+  _stress[_qp]        = (1.0 - omega)*De_eps;
+  _Jacobian_mult[_qp] = tangent;
+
+  // (7) Finite‐strain rotation if needed
   if (_perform_finite_strain_rotations)
   {
-    finiteStrainRotation(force_elasticity_rotation);
+    finiteStrainRotation(true);
     _crack_rotation[_qp] = _rotation_increment[_qp] * _crack_rotation[_qp];
   }
 }

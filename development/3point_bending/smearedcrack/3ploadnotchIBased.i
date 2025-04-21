@@ -1,8 +1,40 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../mesh/meshwohole.msh'
+    file =  'meshnotch.msh'
   []
+  [./elastic_region_1]
+    type = SubdomainBoundingBoxGenerator
+    input = msh
+    bottom_left = '0 0 0'
+    top_right = '0.15 0.1 0'
+    block_id = 2
+  []
+  [./elastic_region_2]
+    type = SubdomainBoundingBoxGenerator
+    input = elastic_region_1
+    bottom_left = '0.30 0 0'
+    top_right = '0.45 0.1 0'
+    block_id = 2
+  []
+  [./extranodeset_1]
+    type = ExtraNodesetGenerator
+    coord = '   0 0 0'
+    new_boundary = support1
+    input = elastic_region_2
+  []
+  [./extranodeset_2]
+    type = ExtraNodesetGenerator
+    coord =  '0.45 0 0'
+    new_boundary = support2
+    input = extranodeset_1
+  []
+  [./extranodeset_3]
+    type = ExtraNodesetGenerator
+    coord = '0.22 0.1 0'
+    new_boundary = load
+    input = extranodeset_2
+  [] 
   displacements = 'disp_x disp_y'
 []
 
@@ -21,7 +53,7 @@
     [./strength]
       order = CONSTANT
       family = MONOMIAL
-      initial_condition = 6.43e6
+      initial_condition = 2.4e6
     [../]
     [crack_damage_aux]
       order = FIRST
@@ -51,31 +83,37 @@
   [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 2e-5
+        length_scale = 5e-3
         prop_name = eqstrain_local
-        radius = 4e-5
+        radius = 2.5e-3
         weights = BAZANT
         execute_on = LINEAR
     []
   []
   
   [BCs]
-    [fix_support_x]
-      type = DirichletBC
-      variable = disp_x
-      boundary = right
-      value = 0
-    []
     [fix_support_y]
       type = DirichletBC
       variable = disp_y
-      boundary = right
+      boundary = support1
+      value = 0
+    []
+    [fix_support2_x]
+      type = DirichletBC
+      variable = disp_x
+      boundary = support2
+      value = 0
+    []
+    [fix_support2_y]
+      type = DirichletBC
+      variable = disp_y
+      boundary = support2
       value = 0
     []
     [apply_load]
       type = FunctionDirichletBC
-      variable = disp_x
-      boundary = left
+      variable = disp_y
+      boundary = load
       function = func_loading
     []
   []
@@ -83,42 +121,16 @@
   [Materials]
     [./elasticity_tensor]
       type = ComputeIsotropicElasticityTensor
-      youngs_modulus = 40e6
-      poissons_ratio = 0.25
+      youngs_modulus = 20e9
+      poissons_ratio = 0.2
     [../]
     [./elastic_stress]
-        type = ComputeSmearedCrackingStressDebugIBased
-        model = NONLOCAL
-        damage_evolution_law_span = 2.0
+        type = FarmsComputeSmearedCrackingStress
+        paramA = 0.99
+        paramB = 100
         cracking_stress = strength
-        softening_models = abrupt_softening
-        cracked_elasticity_type = FULL
-        max_cracks = 1
-        output_properties = 'crack_damage stress elastic_strain crack_initiation_strain'
+        output_properties = 'crack_damage stress'
         outputs = exodus
-    [../]
-    # [./elastic_stress]
-    #     type = ElkComputeSmearedCrackingStressModifiedMazars
-    #     cracking_stress = strength
-    #     paramA = 0.99
-    #     paramB = 10000
-    #     model = 'NONLOCAL'
-    #     output_properties = 'crack_damage stress eqstrain_local'
-    #     outputs = exodus
-    # [../]
-    # [./elastic_stress]
-    #     type = ComputeSmearedCrackingStress
-    #     cracking_stress = 6.43e6
-    #     softening_models = abrupt_softening
-    #     cracked_elasticity_type = FULL
-    #     max_cracks = 1
-    #     outputs = exodus
-    # [../]
-    [./abrupt_softening]
-      type = AbruptSoftening
-    [../]
-    [./exponential_softening]
-      type = ExponentialSoftening
     [../]
     [nonlocal_eqstrain]
       type = ElkNonlocalEqstrain
@@ -133,34 +145,23 @@
       type = SMP
       full = true
     []
- []
+  []
   
   [Executioner]
     type = Transient
-    solve_type = Newton
-    petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
-    petsc_options_value = '101                asm      lu'
+    solve_type = PJFNK #in smeared cracking w/o full jacobian, this is much more efficient than NEWTON
+    petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    petsc_options_value = 'lu       NONZERO'
     line_search = 'none'
     # num_steps = 1
     l_max_its = 200
-    nl_max_its = 10
+    nl_max_its = 100
     nl_rel_tol = 1e-6
-    nl_abs_tol = 1e-6
+    nl_abs_tol = 1e-8
     l_tol = 1e-5
     start_time = 0.0
     end_time = 100
-    # dt = 0.01
-    [./TimeIntegrator]
-      type = ImplicitEuler
-    [../]
-    [TimeStepper]
-      type = IterationAdaptiveDT
-      cutback_factor_at_failure = 0.5
-      growth_factor = 1.5
-      optimal_iterations = 5
-      linear_iteration_ratio = 200
-      dt = 0.01
-    []
+    dt = 0.01
   []
   
   [Outputs]
