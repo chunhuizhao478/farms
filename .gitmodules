@@ -1,3 +1,6 @@
 [submodule "moose"]
 	path = moose
 	url = https://github.com/idaholab/moose
+[submodule "raccoon"]
+	path = raccoon
+	url = https://github.com/hugary1995/raccoon

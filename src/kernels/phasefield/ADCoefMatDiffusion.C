@@ -1,0 +1,43 @@
+//* This file is part of the RACCOON application
+//* being developed at Dolbow lab at Duke University
+//* http://dolbow.pratt.duke.edu
+
+#include "ADCoefMatDiffusion.h"
+
+registerMooseObject("farmsApp", ADCoefMatDiffusion);
+
+InputParameters
+ADCoefMatDiffusion::validParams()
+{
+  InputParameters params = ADKernel::validParams();
+  params.addClassDescription(
+      "Diffsuion term optionally multiplied with a coefficient and material properties. The weak "
+      "form is $(\\grad w, c \\grad u)$, where $c$ is the product of all multipliers.");
+  params.addParam<Real>("coefficient", 1.0, "Coefficient of the term");
+  params.addParam<std::vector<MaterialPropertyName>>(
+      "prop_names", {}, "names of the material properties to provide the multiplier");
+  return params;
+}
+
+ADCoefMatDiffusion::ADCoefMatDiffusion(const InputParameters & parameters)
+  : ADKernel(parameters),
+    _coef(getParam<Real>("coefficient")),
+    _prop_names(getParam<std::vector<MaterialPropertyName>>("prop_names")),
+    _num_props(_prop_names.size())
+{
+  _props.resize(_num_props);
+  for (unsigned int i = 0; i < _num_props; i++)
+    _props[i] = &getADMaterialProperty<Real>(_prop_names[i]);
+}
+
+ADReal
+ADCoefMatDiffusion::computeQpResidual()
+{
+  ADReal factor = _coef;
+  for (auto prop : _props)
+    factor *= (*prop)[_qp];
+
+  ADReal value = _grad_test[_i][_qp] * _grad_u[_qp];
+
+  return factor * value;
+}

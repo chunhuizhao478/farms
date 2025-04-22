@@ -58,6 +58,19 @@ APPLICATION_DIR    := $(CURDIR)
 APPLICATION_NAME   := farms
 BUILD_EXEC         := yes
 GEN_REVISION       := no
+
+# ——— Add raccoon build & link flags *before* we pull in app.mk ———
+
+# # 1) API headers
+# ADDITIONAL_CPPFLAGS += -I$(CURDIR)/raccoon/include
+
+# # 2) Link against the libraccoon you just built
+# ADDITIONAL_LIBS     += -L$(CURDIR)/raccoon/lib -lraccoon-opt
+
+# # 3) Auto-build the raccoon lib before farms
+# PRE_BUILD_CMDS      += cd $(CURDIR)/raccoon && $(MAKE)
+
+
 include            $(FRAMEWORK_DIR)/app.mk
 
 ###############################################################################
