@@ -15,16 +15,18 @@ InputParameters
 DamageEvolutionConditionalForcing::validParams()
 {
   InputParameters params = Kernel::validParams();
-  params.addClassDescription("This kernel implements the damage evolution forcing term: $(1-B) psi f(alpha, xi)$");
+  params.addClassDescription("This kernel implements the breakage evolution forcing term: $(1-B) psi f(alpha, xi)$");
+  params.addRequiredCoupledVar("coupled", "The breakage variable");
   return params;
 }
 
 DamageEvolutionConditionalForcing::DamageEvolutionConditionalForcing(const InputParameters & parameters)
   : Kernel(parameters),
-    _B_breakagevar(getMaterialProperty<Real>("B_damagedvar")),
+    _B_var(coupled("coupled")),
+    _B(coupledValue("coupled")),
     _Cd(getMaterialProperty<Real>("Cd")),
-    _I2(getMaterialProperty<Real>("second_elastic_strain_invariant")),
-    _xi(getMaterialProperty<Real>("strain_invariant_ratio")),
+    _I2(getMaterialProperty<Real>("I2")),
+    _xi(getMaterialProperty<Real>("xi")),
     _xi_0(getMaterialProperty<Real>("xi_0")),
     _C1(getMaterialProperty<Real>("C_1")),
     _C2(getMaterialProperty<Real>("C_2"))
@@ -34,7 +36,7 @@ DamageEvolutionConditionalForcing::DamageEvolutionConditionalForcing(const Input
 Real
 DamageEvolutionConditionalForcing::computeQpResidual()
 {
-  return -1.0 * _test[_i][_qp] * (1 - _B_breakagevar[_qp]) * computedamageevolutionforcingterm();
+  return -1.0 * _test[_i][_qp] * (1 - _B[_qp]) * computedamageevolutionforcingterm();
 }
 
 Real
@@ -50,15 +52,27 @@ DamageEvolutionConditionalForcing::computeQpJacobian()
 }
 
 Real
+DamageEvolutionConditionalForcing::computeQpOffDiagJacobian(unsigned int jvar)
+{
+  // This function computes the derivative of the residual with respect to the coupled variable B.
+  // Recall that: R = -test * (1-B) * f(u, xi)
+  // So, dR/dB = -test * (-f(u, xi)) = test * f(u, xi)
+  if (jvar == _B_var)
+    return _test[_i][_qp] * computedamageevolutionforcingterm();
+  else
+    return 0.0;
+}
+
+Real
 DamageEvolutionConditionalForcing::computedamageevolutionforcingterm()
 {
   Real alpha_forcingterm;
   if (_xi[_qp] >= _xi_0[_qp]){
-    alpha_forcingterm = (1 - _B_breakagevar[_qp]) * ( _Cd[_qp] * _I2[_qp] * ( _xi[_qp] - _xi_0[_qp] ) );
+    alpha_forcingterm = ( _Cd[_qp] * _I2[_qp] * ( _xi[_qp] - _xi_0[_qp] ) );
   }
   else if (_xi[_qp] < _xi_0[_qp]){
     //_u[_qp] == alpha
-    alpha_forcingterm = (1 - _B_breakagevar[_qp]) * ( _C1[_qp] * std::exp(_u[_qp]/_C2[_qp]) * _I2[_qp] * ( _xi[_qp] - _xi_0[_qp] ) );
+    alpha_forcingterm = ( _C1[_qp] * std::exp(_u[_qp]/_C2[_qp]) * _I2[_qp] * ( _xi[_qp] - _xi_0[_qp] ) );
   }
   else{
     mooseError("xi is OUT-OF-RANGE!.");   
@@ -75,7 +89,7 @@ DamageEvolutionConditionalForcing::computedamageevolutionforcingterm_derivative(
 
   Real dforcing_dalpha = 0.0;
 
-  if (_xi[_qp] > _xi_0[_qp])
+  if (_xi[_qp] >= _xi_0[_qp])
   {
     // For xi >= xi_0, there's no direct dependence on alpha (u), so derivative = 0
     dforcing_dalpha = 0.0;
@@ -89,7 +103,7 @@ DamageEvolutionConditionalForcing::computedamageevolutionforcingterm_derivative(
     //    (1 - B) * [C1 / C2 * exp(u / C2) * I2 * (xi - xi_0)]
     //
     dforcing_dalpha =
-      (1.0 - _B_breakagevar[_qp]) *
+      (1.0 - _B[_qp]) *
       ( _C1[_qp] * std::exp(_u[_qp] / _C2[_qp]) * _I2[_qp] / _C2[_qp] * (_xi[_qp] - _xi_0[_qp]) );
   }
   else

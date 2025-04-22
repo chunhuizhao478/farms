@@ -15,6 +15,10 @@
         order = FIRST
         family = LAGRANGE
     []
+    [nonlocal_eqstrain]
+        order = FIRST
+        family = LAGRANGE
+    []
   []
 
   [AuxVariables]
@@ -24,10 +28,6 @@
       initial_condition = 2.4e6
     [../]
     [crack_damage_aux]
-      order = FIRST
-      family = MONOMIAL
-    []
-    [eqstrain_nonlocal_aux]
       order = FIRST
       family = MONOMIAL
     []
@@ -52,71 +52,77 @@
     displacements = 'disp_x disp_y'
   []
 
-  [Physics/SolidMechanics/QuasiStatic]
-    [./all]
-      strain = FINITE
-      add_variables = true
-      generate_output = 'stress_xx stress_yy stress_zz stress_xy stress_yz stress_zx'
-    [../]
-  []
-
-  [UserObjects]
-    [eqstrain_averaging]
-        type = ElkRadialAverage
-        length_scale = 2e-4
-        prop_name = eqstrain_local
-        radius = 5e-5
-        weights = BAZANT
-        execute_on = LINEAR
+  [Kernels]
+    [solid_x]
+      type = ADStressDivergenceTensors
+      variable = disp_x
+      component = 0
+    []
+    [solid_y]
+      type = ADStressDivergenceTensors
+      variable = disp_y
+      component = 1
     []
   []
 
   [AuxKernels]
     [get_damage]
-      type = MaterialRealAux
+      type = ADMaterialRealAux
       variable = crack_damage_aux
       property = crack_damage
     []
-    [get_eqstrain_nonlocal_aux]
-      type = MaterialRealAux  
-      variable = eqstrain_nonlocal_aux
-      property = eqstrain_nonlocal
-      execute_on = timestep_end
-    []
     [get_eqstrain_local_aux]
-      type = MaterialRealAux  
+      type = ADMaterialRealAux  
       variable = eqstrain_local_aux
       property = eqstrain_local
       execute_on = timestep_end
     []
     [get_elastic_energy]
-      type = ElasticEnergyAux
+      type = ADElasticEnergyAux
       variable = elastic_energy_aux
       execute_on = timestep_end
     []
   []
+
+  [Kernels]
+    # gradient based nonlocal averaging
+    [react_nonlocal]
+      type = ADReaction
+      variable = nonlocal_eqstrain
+      rate = 1.0
+    []
+    [diffusion_nonlocal]
+        type = ADCoefDiffusion
+        variable = nonlocal_eqstrain
+        coef = 1e-9 #1e-4
+    []
+    [reaction_local]
+        type = ADElkLocalEqstrainForce
+        variable = nonlocal_eqstrain
+    []    
+  []
   
   [BCs]
     [fix_right_x]
-      type = DirichletBC
+      type = ADDirichletBC
       variable = disp_x
       boundary = right
       value = 0
     []
     [fix_right_y]
-      type = DirichletBC
+      type = ADDirichletBC
       variable = disp_y
       boundary = right
       value = 0
     []
     [fix_load_x]
-      type = FunctionDirichletBC
+      type = ADFunctionDirichletBC
       variable = disp_x
       boundary = left
       function = func_loading
     []
     [fix_left_y]
-      type = DirichletBC
+      type = ADDirichletBC
       variable = disp_y
       boundary = left
       value = 0
@@ -125,24 +131,24 @@
   
   [Materials]
     [./elasticity_tensor]
-      type = ComputeIsotropicElasticityTensor
+      type = ADComputeIsotropicElasticityTensor
       youngs_modulus = 20e9
       poissons_ratio = 0.2
     [../]
     [./elastic_stress]
-        type = FarmsComputeSmearedCrackingStress
-        paramA = 0.99
-        paramB = 500
-        cracking_stress = strength
-        output_properties = 'crack_damage stress'
-        outputs = exodus
-    [../]
-    [nonlocal_eqstrain]
-      type = ElkNonlocalEqstrain
-      average_UO = eqstrain_averaging
-      output_properties = 'eqstrain_nonlocal'
+      type = ADFarmsComputeSmearedCrackingStressGrads
+      paramA = 0.99
+      paramB = 500
+      eqstrain_nonlocal = nonlocal_eqstrain
+      cracking_stress = strength
+      output_properties = 'crack_damage stress'
       outputs = exodus
-    []
+    [../]
+    [./strain]
+      type = ADComputeFiniteStrain
+      displacements = 'disp_x disp_y'
+      outputs = exodus
+    [../]
   []
 
   [Preconditioning]
@@ -169,13 +175,13 @@
         [./error_marker]
             type = ErrorFractionMarker
             indicator = error
-            refine = 0.75
+            refine = 0.9
         [../]
         # peak energy: 144
         [./elastic_energy_marker]
-          type = ValueThresholdMarker
-          variable = elastic_energy_aux
-          refine = 100
+            type = ValueThresholdMarker
+            variable = elastic_energy_aux
+            refine = 100
         []         
     []
   []
@@ -183,11 +189,14 @@
   [Executioner]
     type = Transient
     solve_type = PJFNK #in smeared cracking w/o full jacobian, this is much more efficient than NEWTON
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol' 
     petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9'
-    line_search = 'none'
+    automatic_scaling = true
+    line_search = 'basic'
     # num_steps = 1
-    l_max_its = 200
+    l_max_its = 50
     nl_max_its = 100
     nl_rel_tol = 1e-6
     nl_abs_tol = 1e-8
@@ -195,6 +204,7 @@
     start_time = 0.0
     end_time = 100
     dt = 0.0001
+    # verbose = true
   []
   
   [Outputs]

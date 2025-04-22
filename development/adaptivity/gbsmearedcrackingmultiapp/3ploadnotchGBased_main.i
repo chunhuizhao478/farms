@@ -3,6 +3,12 @@
     type = FileMeshGenerator
     file =  '../mesh/meshwohole.msh'
   []
+  [markall_sideset]
+    type = SideSetsAroundSubdomainGenerator
+    input = msh
+    block = 3
+    new_boundary = 'allsidesets'
+  []
   displacements = 'disp_x disp_y'
 []
 
@@ -27,16 +33,16 @@
       order = FIRST
       family = MONOMIAL
     []
-    [eqstrain_nonlocal_aux]
-      order = FIRST
-      family = MONOMIAL
-    []
     [eqstrain_local_aux]
       order = FIRST
       family = MONOMIAL
     []
     [elastic_energy_aux]
       order = CONSTANT
+      family = MONOMIAL
+    []
+    [nonlocal_eqstrain]
+      order = FIRST
       family = MONOMIAL
     []
   []
@@ -60,28 +66,11 @@
     [../]
   []
 
-  [UserObjects]
-    [eqstrain_averaging]
-        type = ElkRadialAverage
-        length_scale = 2e-4
-        prop_name = eqstrain_local
-        radius = 5e-5
-        weights = BAZANT
-        execute_on = LINEAR
-    []
-  []
-
   [AuxKernels]
     [get_damage]
       type = MaterialRealAux
       variable = crack_damage_aux
       property = crack_damage
-    []
-    [get_eqstrain_nonlocal_aux]
-      type = MaterialRealAux  
-      variable = eqstrain_nonlocal_aux
-      property = eqstrain_nonlocal
-      execute_on = timestep_end
     []
     [get_eqstrain_local_aux]
       type = MaterialRealAux  
@@ -130,19 +119,14 @@
       poissons_ratio = 0.2
     [../]
     [./elastic_stress]
-        type = FarmsComputeSmearedCrackingStress
+        type = FarmsComputeSmearedCrackingStressGrads
         paramA = 0.99
         paramB = 500
+        eqstrain_nonlocal = nonlocal_eqstrain
         cracking_stress = strength
         output_properties = 'crack_damage stress'
         outputs = exodus
     [../]
-    [nonlocal_eqstrain]
-      type = ElkNonlocalEqstrain
-      average_UO = eqstrain_averaging
-      output_properties = 'eqstrain_nonlocal'
-      outputs = exodus
-    []
   []
 
   [Preconditioning]
@@ -169,13 +153,13 @@
         [./error_marker]
             type = ErrorFractionMarker
             indicator = error
-            refine = 0.75
+            refine = 0.9
         [../]
         # peak energy: 144
         [./elastic_energy_marker]
-          type = ValueThresholdMarker
-          variable = elastic_energy_aux
-          refine = 100
+            type = ValueThresholdMarker
+            variable = elastic_energy_aux
+            refine = 100
         []         
     []
   []
@@ -183,11 +167,14 @@
   [Executioner]
     type = Transient
     solve_type = PJFNK #in smeared cracking w/o full jacobian, this is much more efficient than NEWTON
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol' 
     petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9'
-    line_search = 'none'
+    automatic_scaling = true
+    line_search = 'bt'
     # num_steps = 1
-    l_max_its = 200
+    l_max_its = 50
     nl_max_its = 100
     nl_rel_tol = 1e-6
     nl_abs_tol = 1e-8
@@ -195,9 +182,36 @@
     start_time = 0.0
     end_time = 100
     dt = 0.0001
+    # verbose = true
   []
   
   [Outputs]
     exodus = true
     time_step_interval = 1
+  []
+
+  [MultiApps]
+    [./sub_app]
+        type = TransientMultiApp
+        positions = '0 0 0'
+        input_files = '3ploadnotchGBased_sub.i'
+        execute_on = 'TIMESTEP_END'
+    [../]
+  []
+
+  [Transfers]
+      [pull_resid]
+          type = MultiAppCopyTransfer
+          from_multi_app = sub_app
+          source_variable = 'nonlocal_eqstrain_sub'
+          variable = 'nonlocal_eqstrain'
+          execute_on = 'TIMESTEP_END'
+      []
+      [push_disp]
+          type = MultiAppCopyTransfer
+          to_multi_app = sub_app
+          source_variable = 'crack_damage_aux eqstrain_local_aux elastic_energy_aux'
+          variable = 'crack_damage_aux_sub eqstrain_local_aux_sub elastic_energy_aux_sub'
+          execute_on = 'TIMESTEP_END'
+      []
   []
