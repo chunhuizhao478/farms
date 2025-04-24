@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 # from labellines import labelLines
-import gmsh
 import pandas as pd
 import meshio
 import csv
@@ -62,8 +61,8 @@ def main_func(sigmayy, nu, added_normalsts, sigmayy_label, added_normalsts_label
     # Physical Line "embeded1"  #
     #---------------------------#
 
-    ptr_i_x = 0.00942847 #leave 10 mm
-    ptr_i_y = 0.0427246  #leave 10 mm
+    ptr_i_x = 0
+    ptr_i_y = 0.037476
     ptr_j_x = 0.141427
     ptr_j_y = 0.115869
 
