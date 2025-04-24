@@ -90,16 +90,16 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.05 #1e-3
+    beta_width = 0.1 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-11 #
+    C_g = 1e-12 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1
+    m2 = 1.3
     
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
@@ -227,29 +227,39 @@
   
 [Executioner]
     type = Transient
-    # solve_type = 'NEWTON'
-    solve_type = 'PJFNK'
+    solve_type = 'NEWTON'
+    # solve_type = 'PJFNK'
     start_time = 0
     end_time = 400 #extend the time
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-6
+    nl_rel_tol = 1e-8
     nl_max_its = 5
-    nl_abs_tol = 1e-8
+    nl_abs_tol = 1e-10
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname = '-ksp_type -pc_type'
-    petsc_options_value = 'gmres     hypre'
+    petsc_options_value = 'gmres     hypre   '
+    # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '    
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 1
+    # dt = 1
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
         # type = CrankNicolson
     [../]
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-3
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.1
+        max_time_step_bound = 1e-1
+    []    
 []
 
 [Outputs] 

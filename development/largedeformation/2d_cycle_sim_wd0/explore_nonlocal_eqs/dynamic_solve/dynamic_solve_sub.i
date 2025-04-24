@@ -26,10 +26,10 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32e9
+    lambda_o = 32.04e9
         
     #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32e9
+    shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
@@ -47,7 +47,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 300
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -66,7 +66,7 @@
     beta_width = 0.05 #1e-3
 
     #diffusion parameter
-    D_diffusion = 1e-4
+    D_diffusion = 1
 
 []
 
@@ -100,11 +100,6 @@
         order = FIRST
         family = LAGRANGE
     []  
-    #
-    [alpha_damagedvar_sub_final]
-        order = FIRST
-        family = LAGRANGE
-    []
 []
 
 [Kernels]
@@ -123,6 +118,12 @@
         type = DamageEvolutionConditionalForcing
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
+        block = '1 3'
+    []
+    [perturb_source_alpha]
+        type = PerturbationSource
+        variable = alpha_damagedvar_sub
+        damage_source = 'damage_perturbation'
         block = '1 3'
     []
     #breakagevar
@@ -147,11 +148,11 @@
       bound_value = 1
     []
     [alpha_damagedvar_lower_bound]
-      type = ConstantBounds
+      type = VariableConstantBounds
       variable = bounds_dummy
       bounded_variable = alpha_damagedvar_sub
       bound_type = lower
-      bound_value = 0
+      bound_value = initial_damage_sub_aux
     []
     [B_damagedvar_upper_bound]
       type = ConstantBounds
@@ -186,6 +187,19 @@
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
+    []
+    #add shear perturbation to the system
+    [damage_perturbation]
+        type = PerturbationRadialSource
+        nucl_center = '0 0 0'
+        peak_value = 0.3
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'damage'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
     [] 
 [] 
 
@@ -207,9 +221,14 @@
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
-    [TimeIntegrator]
-        type = ImplicitEuler
-    []
+    dt = 1e-2
+    # [TimeStepper]
+    #     type = IterationAdaptiveDT
+    #     cutback_factor_at_failure = 0.5
+    #     growth_factor = 2.0
+    #     optimal_iterations = 100
+    #     dt = 1e-2
+    # []
 []
 
 [UserObjects]

@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh.msh'
+        file = '../mesh/mesh_100m.msh'
     []
     [./sidesets]
         input = msh
@@ -29,10 +29,10 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32.04e9
+    lambda_o = 30e9
         
     #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32.04e9
+    shear_modulus_o = 30e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
@@ -50,7 +50,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 1e5
+    Cd_constant = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -70,7 +70,7 @@
     beta_width = 0.03 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-12
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -79,7 +79,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.8
+    chi = 0.7
     
 []
 
@@ -95,44 +95,25 @@
 []
 
 [AuxVariables]
-    [xi_output]
+    [initial_damage_aux]
         order = FIRST
         family = MONOMIAL
     []
-    [I2_output]
+    [correlated_randalpha_o]
         order = FIRST
-        family = MONOMIAL
+        family = LAGRANGE
     []
-    [alpha_damagedvar_output]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [B_damagedvar_output]
+    [initial_cd_aux]
         order = FIRST
         family = MONOMIAL
     []
 []
 
 [AuxKernels]
-    [get_xi]
+    [get_initial_damage]
         type = MaterialRealAux
-        variable = xi_output
-        property = strain_invariant_ratio
-    []
-    [get_I2]
-        type = MaterialRealAux
-        variable = I2_output
-        property = second_elastic_strain_invariant
-    []
-    [get_alpha_damagedvar]
-        type = MaterialRealAux
-        variable = alpha_damagedvar_output
-        property = alpha_damagedvar
-    []
-    [get_B_damagedvar]
-        type = MaterialRealAux
-        variable = B_damagedvar_output
-        property = B_damagedvar
+        variable = initial_damage_aux
+        property = initial_damage
     []
 []
 
@@ -161,8 +142,8 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        # output_properties = 'alpha_damagedvar B_damagedvar shear_modulus_o_mat shear_modulus'
-        # outputs = exodus
+        output_properties = 'alpha_damagedvar B_damagedvar shear_modulus_o_mat shear_modulus'
+        outputs = exodus
         # use initial damage time dependent
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
@@ -172,8 +153,8 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
-        # output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio second_elastic_strain_invariant'
-        # outputs = exodus
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio'
+        outputs = exodus
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
@@ -218,7 +199,6 @@
 
 [Outputs]
     exodus = true       
-    show = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
 []
 
 [BCs]
@@ -227,7 +207,13 @@
         variable = disp_y
         value = 0
         boundary = bottom
-    [] 
+    []
+    # [bc_fix_bottom_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     value = 0
+    #     boundary = bottom
+    # []  
     # 
     [static_pressure_top]
         type = NeumannBC

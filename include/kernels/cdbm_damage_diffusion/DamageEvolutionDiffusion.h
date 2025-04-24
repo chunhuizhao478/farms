@@ -27,6 +27,9 @@ protected:
 
   virtual Real computeQpJacobian() override;
 
-  const MaterialProperty<Real> & _B_breakagevar; //breakage variable
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar) override;
+
+  unsigned int _B_var;
+  const VariableValue & _B; //breakage variable
   const MaterialProperty<Real> & _D_diffusion; //diffusion coefficient
 };

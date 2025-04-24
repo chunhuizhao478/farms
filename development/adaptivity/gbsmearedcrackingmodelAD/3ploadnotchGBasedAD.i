@@ -193,6 +193,8 @@
     # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol' 
     petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9'
+    # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+    # petsc_options_value = 'lu       superlu_dist                 '
     automatic_scaling = true
     line_search = 'basic'
     # num_steps = 1

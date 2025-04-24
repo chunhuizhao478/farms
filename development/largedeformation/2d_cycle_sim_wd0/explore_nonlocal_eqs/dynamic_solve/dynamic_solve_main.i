@@ -28,10 +28,10 @@
     
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32e9
+    lambda_o = 32.04e9
         
     #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32e9
+    shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
@@ -186,6 +186,21 @@
     []       
 []
 
+[Functions]
+    [func_top_bc]
+        type = ParsedFunction
+        expression = 'if (t>dt, 1e-8 * t, 0)'
+        symbol_names = 'dt'
+        symbol_values = '1e-3'
+    []
+    [func_bottom_bc]
+        type = ParsedFunction
+        expression = 'if (t>dt, -1e-8 * t, 0)'
+        symbol_names = 'dt'
+        symbol_values = '1e-3'
+    []
+[]
+
 [Materials]
     [density]
         type = GenericConstantMaterial
@@ -218,8 +233,8 @@
     #elastic material
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
-        lambda = 32e9
-        shear_modulus = 32e9
+        lambda = 32.04e9
+        shear_modulus = 32.04e9
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
@@ -236,19 +251,28 @@
       full = true
     []
 []
+
+[Controls] # turns off inertial terms for the SECOND time step
+  [./period0]
+    type = TimePeriod
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+    start_time = -1e-12
+    end_time = 1e-2 # dt used in the simulation
+  []
+[../]
   
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = 0
-    end_time = 1e10
+    start_time = -1e-12
+    end_time = 1e100
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-6
+    nl_rel_tol = 1e-8
     nl_max_its = 10
-    nl_abs_tol = 1e-8
+    nl_abs_tol = 1e-10
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -258,7 +282,7 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    # dt = 1e-2
+    dt = 1e-2
     verbose = true
     # [TimeStepper]
     #     type = FarmsIterationAdaptiveDT
@@ -268,13 +292,13 @@
     #     growth_factor = 1.5
     #     max_time_step_bound = 1e10
     # []
-    [TimeStepper]
-        type = IterationAdaptiveDT
-        cutback_factor_at_failure = 0.5
-        growth_factor = 2
-        optimal_iterations = 100
-        dt = 1e-2
-    []
+    # [TimeStepper]
+    #     type = IterationAdaptiveDT
+    #     cutback_factor_at_failure = 0.5
+    #     growth_factor = 2.0
+    #     optimal_iterations = 100
+    #     dt = 1e-2
+    # []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
@@ -295,13 +319,23 @@
         variable = disp_y
         value = 0
         boundary = bottom
+    []
+    [bc_load_top_x]
+        type = PresetDisplacement
+        boundary = top
+        variable = disp_x
+        beta = 0.25
+        velocity = vel_x
+        acceleration = accel_x
+        function = func_top_bc
     [] 
-    # [bc_fix_bottom_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     value = 0
-    #     boundary = bottom
-    # [] 
+    #add initial shear stress
+    [./initial_shear_stress]
+        type = NeumannBC
+        variable = disp_x
+        value = 12e6
+        boundary = top
+    []
     # 
     [static_pressure_top]
         type = NeumannBC
@@ -336,14 +370,64 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    []
-    #add initial shear stress
-    [./initial_shear_stress]
-        type = NeumannBC
+    [] 
+    #add dampers
+    [damp_left_x]
+        type = FarmsNonReflectDashpotBC
         variable = disp_x
-        value = 12e6
-        boundary = top
-    []    
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_left_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_right_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_right_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []  
 []
 
 [MultiApps]

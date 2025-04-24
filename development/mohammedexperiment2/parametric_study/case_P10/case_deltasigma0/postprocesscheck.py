@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-pd_data = pd.read_csv("test_me_maintb_csv_main_fault_1360.csv")
+pd_data = pd.read_csv("test_me_maintb_csv_main_fault_1440.csv")
 
 # material properties
 mu_s = 0.7  # static friction coefficient

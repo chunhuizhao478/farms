@@ -20,6 +20,7 @@ public:
 protected:
   virtual Real computeQpResidual();
   virtual Real computeQpJacobian();
+  virtual Real computeQpOffDiagJacobian(unsigned int jvar);
   
   //implement the conditional forcing term f(\alpha, xi)
   virtual Real computedamageevolutionforcingterm();
@@ -27,7 +28,8 @@ protected:
   virtual Real computedamageevolutionforcingterm_derivative();  
 
 private:
-  const MaterialProperty<Real> & _B_breakagevar; //breakage variable
+  unsigned int _B_var;
+  const VariableValue & _B; //breakage variable
   const MaterialProperty<Real> & _Cd; //damage rate coefficient
   const MaterialProperty<Real> & _I2; //second elastic strain invariant
   const MaterialProperty<Real> & _xi; //strain invariant ratio

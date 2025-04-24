@@ -1,22 +1,26 @@
-/*
-Check Alpha and B within the range
-*/
-
 #pragma once
 
 #include "AuxKernel.h"
 
+/**
+ * Copies one variable onto an auxiliary variable.
+ * Now stores coupled data as pointers to allow proper construction.
+ */
 class CheckAlpha : public AuxKernel
 {
-    public:
+public:
+  static InputParameters validParams();
 
-    static InputParameters validParams();
-    CheckAlpha(const InputParameters & parameters);
+  CheckAlpha(const InputParameters & parameters);
 
-    protected:
+protected:
+  virtual Real computeValue() override;
 
-    virtual Real computeValue() override;
+  // Instead of reference members, use pointers so that construction and assignment work.
+  const VariableValue * _v;
+  const MooseVariable * _source_variable;
+  const VariableValue * _initial_damage_aux;
 
-    const VariableValue & _coupled_val;
-
+  // We still store the state as before.
+  unsigned short _state;
 };
