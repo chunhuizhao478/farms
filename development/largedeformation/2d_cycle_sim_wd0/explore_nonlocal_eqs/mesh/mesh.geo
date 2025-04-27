@@ -2,7 +2,7 @@ SetFactory("OpenCASCADE");
 
 // Define mesh sizes
 lc_fault = 100;
-lc = 2000;
+lc = 1000;
 
 // Define the big square (2D)
 big_xmin = -30000;
@@ -11,10 +11,10 @@ big_ymin = -30000;
 big_ymax = 30000;
 
 // Define the small box (2D)
-small_xmin = -5000;
-small_xmax = 5000;
-small_ymin = -1000;
-small_ymax = 1000;
+small_xmin = -10000;
+small_xmax = 10000;
+small_ymin = -5000;
+small_ymax = 5000;
 
 // Define the initial damage box (2D)
 smalld_xmin = -4000;
@@ -95,7 +95,7 @@ Field[2].IField = 1;
 Field[2].LcMin = lc_fault;
 Field[2].LcMax = lc;
 Field[2].DistMin = 0;    // Adjust as needed
-Field[2].DistMax = 5000;  // Adjust as needed
+Field[2].DistMax = 2000;  // Adjust as needed
 
 // Set the Threshold field as the background field
 Background Field = 2;

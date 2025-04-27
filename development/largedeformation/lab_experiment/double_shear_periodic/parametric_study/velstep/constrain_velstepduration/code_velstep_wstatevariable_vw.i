@@ -99,7 +99,7 @@
     m1 = 10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1
+    m2 = 1.1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
@@ -259,20 +259,28 @@
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
-    dt = 0.1
+    # dt = 0.1
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
         # type = CrankNicolson
     [../]
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-3
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.1
+        max_time_step_bound = 0.1
+    [] 
 []
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1000
     [./csv]
         type = CSV
-        time_step_interval = 100
+        time_step_interval = 1
         show = 'strain_x react_x'
     [../]
 []

@@ -30,8 +30,13 @@ DiffusedDamageBreakageMaterialMainApp::validParams()
   params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
   params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");  
   //input coupled variables from main app
+  params.addRequiredCoupledVar("structural_stress_coefficient", "structral_stress_coefficient");
   params.addRequiredCoupledVar("alpha_damagedvar_aux", "second_elastic_strain_invariant");
   params.addRequiredCoupledVar("B_damagedvar_aux", "strain_invariant_ratio");
+  //build L matrix
+  params.addRequiredCoupledVar(           "vel_x", "velocity in x direction"); //to build L matrix
+  params.addRequiredCoupledVar(           "vel_y", "velocity in y direction"); //to build L matrix
+  params.addRequiredCoupledVar(           "vel_z", "velocity in z direction"); //to build L matrix  
   return params;
 }
 
@@ -52,6 +57,11 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   _C_g(declareProperty<Real>("C_g")),
   _m1(declareProperty<Real>("m1")),
   _m2(declareProperty<Real>("m2")), 
+  _structural_stress_coefficient(declareProperty<Real>("structural_stress_coefficient")),
+  _grad_alpha_damagedvar(declareProperty<RealGradient>("gradient_alpha_damagedvar")),
+  _grad_alpha_damagedvar_xdir(declareProperty<Real>("gradient_alpha_damagedvar_xdir")),
+  _grad_alpha_damagedvar_ydir(declareProperty<Real>("gradient_alpha_damagedvar_ydir")),
+  _velgrad_L(declareProperty<RankTwoTensor>("velgrad_L")),
   //--------------------------------------------------------------//
   //input values
   _lambda_o_value(getParam<Real>("lambda_o")),
@@ -63,8 +73,13 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   _m1_value(getParam<Real>("m1")),
   _m2_value(getParam<Real>("m2")),
   _alpha_damagedvar_aux(coupledValue("alpha_damagedvar_aux")),
-  _B_damagedvar_aux(coupledValue("B_damagedvar_aux"))
+  _B_damagedvar_aux(coupledValue("B_damagedvar_aux")),
+  _structural_stress_coefficient_aux(coupledValue("structural_stress_coefficient")),
+  _grad_alpha_damagedvar_value(coupledGradient("alpha_damagedvar_aux")),
   //--------------------------------------------------------------//
+  _grad_vel_x(coupledGradient("vel_x")),
+  _grad_vel_y(coupledGradient("vel_y")),
+  _grad_vel_z(coupledGradient("vel_z"))
 {
 }
 
@@ -89,6 +104,13 @@ DiffusedDamageBreakageMaterialMainApp::initQpStatefulProperties()
   /* compute coefficients: a0 a1 a2 a3 */
   computecoefficients();
 
+  /* compute L matrix */
+  buildLmatrix();
+
+  /* compute spatial gradient of damage variable */
+  _structural_stress_coefficient[_qp] = _structural_stress_coefficient_aux[_qp];
+  _grad_alpha_damagedvar[_qp] = _grad_alpha_damagedvar_value[_qp];
+
   /* compute constant material properties: Cg, m1, m2 */
   _C_g[_qp] = _C_g_value;
   _m1[_qp] = _m1_value;
@@ -109,6 +131,17 @@ DiffusedDamageBreakageMaterialMainApp::computeQpProperties()
 
   /* compute coefficients: a0 a1 a2 a3 */
   computecoefficients();
+
+  /* compute L matrix */
+  buildLmatrix();
+
+  /* compute spatial gradient of damage variable */
+  _structural_stress_coefficient[_qp] = _structural_stress_coefficient_aux[_qp];
+  _grad_alpha_damagedvar[_qp] = _grad_alpha_damagedvar_value[_qp];
+
+  //for debugging
+  _grad_alpha_damagedvar_xdir[_qp] = _grad_alpha_damagedvar_value[_qp](0);
+  _grad_alpha_damagedvar_ydir[_qp] = _grad_alpha_damagedvar_value[_qp](1);
 
   /* compute constant material properties: Cg, m1, m2 */
   _C_g[_qp] = _C_g_value;
@@ -213,4 +246,14 @@ DiffusedDamageBreakageMaterialMainApp::alphacr_root1(Real xi) {
                             + 48 * _shear_modulus_o_value * _shear_modulus_o_value);
   Real denominator = 2 * _gamma_damaged_r[_qp] * (3 * pow(xi, 2) - 6 * xi * _xi_0_value + 4 * _xi_0_value * _xi_0_value - 3);
   return (term1 - term2) / denominator;
+}
+
+//build the L matrix
+//L matrix is the gradient of velocity
+void
+DiffusedDamageBreakageMaterialMainApp::buildLmatrix()
+{
+  _velgrad_L[_qp](0,0) = (_grad_vel_x)[_qp](0); _velgrad_L[_qp](0,1) = (_grad_vel_x)[_qp](1); _velgrad_L[_qp](0,2) = (_grad_vel_x)[_qp](2);
+  _velgrad_L[_qp](1,0) = (_grad_vel_y)[_qp](0); _velgrad_L[_qp](1,1) = (_grad_vel_y)[_qp](1); _velgrad_L[_qp](1,2) = (_grad_vel_y)[_qp](2);
+  _velgrad_L[_qp](2,0) = (_grad_vel_z)[_qp](0); _velgrad_L[_qp](2,1) = (_grad_vel_z)[_qp](1); _velgrad_L[_qp](2,2) = (_grad_vel_z)[_qp](2);
 }

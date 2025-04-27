@@ -82,6 +82,14 @@
         order = FIRST
         family = LAGRANGE
     []
+    [vel_z]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     #
     [alpha_damagedvar_aux]
         order = FIRST
@@ -100,10 +108,22 @@
         order = FIRST
         family = MONOMIAL
     []
-    #
-    [test]
+    [deviatroic_strain_rate_aux]
         order = FIRST
-        family = LAGRANGE
+        family = MONOMIAL
+    []
+    [structural_stress_coefficient_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    #
+    [gradx_alpha_damagedvar]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [grady_alpha_damagedvar]
+        order = CONSTANT
+        family = MONOMIAL
     []
 []
 
@@ -151,6 +171,23 @@
         property = second_elastic_strain_invariant
         block = '1 3'
     [] 
+    [get_deviatroic_strain_rate]
+        type = MaterialRealAux
+        variable = deviatroic_strain_rate_aux
+        property = deviatroic_strain_rate
+        block = '1 3'
+    []
+    # #check the gradient of damage variable
+    # [get_gradx_alpha_damagedvar]
+    #     type = MaterialRealAux
+    #     property = gradient_alpha_damagedvar_xdir
+    #     variable = gradx_alpha_damagedvar
+    # []
+    # [get_grady_alpha_damagedvar]
+    #     type = MaterialRealAux
+    #     property = gradient_alpha_damagedvar_ydir
+    #     variable = grady_alpha_damagedvar
+    # []
 []
 
 [Kernels]
@@ -217,6 +254,11 @@
         type = DiffusedDamageBreakageMaterialMainApp
         alpha_damagedvar_aux = alpha_damagedvar_aux
         B_damagedvar_aux = B_damagedvar_aux
+        structural_stress_coefficient = structural_stress_coefficient_aux
+        #build L matrix using velocity
+        vel_x = vel_x
+        vel_y = vel_y
+        vel_z = vel_z
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
@@ -266,7 +308,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 1e100
+    end_time = 50
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -309,7 +351,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 10
     [../]
 []
 
@@ -443,15 +485,15 @@
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub'
-        variable = 'alpha_damagedvar_aux B_damagedvar_aux'
+        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub'
+        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux xi_aux'
-        variable = 'I2_sub_aux xi_sub_aux'
+        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
+        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []

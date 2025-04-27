@@ -38,6 +38,12 @@ DiffusedDamageBreakageMaterialSubApp::validParams()
   params.addRequiredCoupledVar("I2_aux", "second_elastic_strain_invariant");
   params.addRequiredCoupledVar("xi_aux", "strain_invariant_ratio");
   params.addRequiredCoupledVar("initial_damage_aux", "initial_damage");
+  //get strain rate dependent Cd options
+  params.addParam<bool>("use_cd_strain_dependent", false, "Use strain rate dependent Cd");
+  params.addParam<Real>("m_exponent", -1.0, "Exponent for strain rate dependent Cd");
+  params.addParam<Real>("strain_rate_hat", -1.0, "Strain rate hat for strain rate dependent Cd");
+  params.addParam<Real>("cd_hat", -1.0, "Cd hat for strain rate dependent Cd");
+  params.addCoupledVar("strain_rate", "strain_rate");
   return params;
 }
 
@@ -63,6 +69,7 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _initial_damage_mat(declareProperty<Real>("initial_damage")),
   _I2_mat(declareProperty<Real>("I2")),
   _xi_mat(declareProperty<Real>("xi")),
+  _structural_stress_coefficient_mat(declareProperty<Real>("structural_stress_coefficient")),
   //--------------------------------------------------------------//
   //input values
   _lambda_o_value(getParam<Real>("lambda_o")),
@@ -80,9 +87,23 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _D_diffusion_value(getParam<Real>("D_diffusion")),
   _I2_aux(coupledValue("I2_aux")),
   _xi_aux(coupledValue("xi_aux")),
-  _initial_damage_aux(coupledValue("initial_damage_aux"))
+  _initial_damage_aux(coupledValue("initial_damage_aux")),
+  //--------------------------------------------------------------//
+  //strain rate dependent Cd options
+  _use_cd_strain_dependent(getParam<bool>("use_cd_strain_dependent")),
+  _strain_rate_hat(getParam<Real>("strain_rate_hat")),
+  _cd_hat(getParam<Real>("cd_hat")),
+  _m_exponent(getParam<Real>("m_exponent")),
+  _strain_rate(coupledValue("strain_rate"))
   //--------------------------------------------------------------//
 {
+  //check strain rate dependent Cd options
+  if (_use_cd_strain_dependent && (_strain_rate_hat < 0 || _cd_hat < 0 || _m_exponent < 0)){
+    mooseError("Strain rate dependent Cd options are not set correctly");
+  }
+  if (!_use_cd_strain_dependent && (_Cd_constant_value < 0)){
+    mooseError("Cd_constant is not set correctly, the strain rate dependent is not on");
+  }
 }
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
@@ -125,6 +146,9 @@ DiffusedDamageBreakageMaterialSubApp::initQpStatefulProperties()
   _I2_mat[_qp] = _I2_aux[_qp];
   _xi_mat[_qp] = _xi_aux[_qp];
   _initial_damage_mat[_qp] = _initial_damage_aux[_qp];
+
+  /* compute structural stress coefficient */
+  _structural_stress_coefficient_mat[_qp] = _D_diffusion_value * _shear_modulus_o_value / _Cd_constant_value;
 }
 
 void
@@ -146,7 +170,13 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
   _xi_max_mat[_qp] = _xi_max_value;
 
   /* compute _Cd_mat, _CdCb_multiplier_mat, _CBH_constant_mat */
-  _Cd_mat[_qp] = _Cd_constant_value;
+  if (_use_cd_strain_dependent){ //option to use strain rate dependent
+    computeStrainRateCd();
+  }
+  else{
+    _Cd_mat[_qp] = _Cd_constant_value;
+  }
+  
   _CdCb_multiplier_mat[_qp] = _CdCb_multiplier_value;
   _CBH_constant_mat[_qp] = _CBH_constant_value;
 
@@ -162,7 +192,15 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
   _I2_mat[_qp] = _I2_aux[_qp];
   _xi_mat[_qp] = _xi_aux[_qp];
   _initial_damage_mat[_qp] = _initial_damage_aux[_qp];
-  
+
+  /* compute structural stress coefficient */
+  // if (_Cd_mat[_qp] == 0){
+  //   _structural_stress_coefficient_mat[_qp] = _D_diffusion_value * _shear_modulus_o_value / _cd_hat;
+  // }
+  // else{
+  //   _structural_stress_coefficient_mat[_qp] = _D_diffusion_value * _shear_modulus_o_value / _Cd_mat[_qp];
+  // }
+  _structural_stress_coefficient_mat[_qp] = 0.0;
 }
 
 void 
@@ -181,4 +219,14 @@ DiffusedDamageBreakageMaterialSubApp::computegammar()
   
   //save
   _gamma_damaged_r_mat[_qp] = gamma_r;
+}
+
+void 
+DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
+{
+  //_m_exponent: constant value - default value = 0.8
+  //_strain_rate_hat: constant value - default value = 1e-4
+  //_cd_hat: constant value - default value = 1
+  //_strain_rate: deviatoric strain rate, variable value passed from main app
+  _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate[_qp]/_strain_rate_hat)) * _cd_hat;
 }

@@ -93,13 +93,13 @@
     beta_width = 0.1 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-12 #
+    C_g = 1e-11 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1.3
+    m2 = 1.1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8

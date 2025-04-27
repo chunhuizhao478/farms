@@ -33,6 +33,7 @@ public:
   virtual void updatemodulus(); //update modulus
   virtual void computecoefficients(); //compute coefficients: a0 a1 a2 a3
   virtual Real alphacr_root1(Real xi); //compute alpha_cr
+  virtual void buildLmatrix(); //build L matrix
 
 protected:
   
@@ -50,6 +51,11 @@ protected:
   MaterialProperty<Real> & _C_g; //Cg
   MaterialProperty<Real> & _m1; //m1
   MaterialProperty<Real> & _m2; //m2
+  MaterialProperty<Real> & _structural_stress_coefficient; //structral_stress_coefficient
+  MaterialProperty<RealGradient> & _grad_alpha_damagedvar; //gradient_alpha_damagedvar
+  MaterialProperty<Real> & _grad_alpha_damagedvar_xdir; //gradient_alpha_damagedvar_xdir
+  MaterialProperty<Real> & _grad_alpha_damagedvar_ydir; //gradient_alpha_damagedvar_ydir
+  MaterialProperty<RankTwoTensor> & _velgrad_L; //L
 
   //input values
   Real _lambda_o_value; //lambda_o
@@ -64,5 +70,14 @@ protected:
   //input coupled variables from main app
   const VariableValue & _alpha_damagedvar_aux; //alpha_damagedvar
   const VariableValue & _B_damagedvar_aux; //B_damagedvar
+
+  //get structural stress coefficient and gradient of damage variable
+  const VariableValue & _structural_stress_coefficient_aux; //structral_stress_coefficient 
+  const VariableGradient & _grad_alpha_damagedvar_value; //gradient_alpha_damagedvar
+
+  //use velocity to build L matrix
+  const VariableGradient & _grad_vel_x;
+  const VariableGradient & _grad_vel_y;
+  const VariableGradient & _grad_vel_z;
 
 };

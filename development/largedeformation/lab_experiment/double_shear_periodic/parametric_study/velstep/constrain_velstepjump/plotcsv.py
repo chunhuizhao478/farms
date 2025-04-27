@@ -15,7 +15,7 @@ plt.plot(data_4[:, 2], data_4[:, 1]/0.05, label='x', color='green')
 plt.plot(data_5[:, 2], data_5[:, 1]/0.05, label='x', color='green')
 plt.plot(data_6[:, 2], data_6[:, 1]/0.05, label='x', color='purple')
 # plt.axhline(3.04e7, color='black', lw=1)
-plt.xlim([0, 0.0004])
+plt.xlim([0, 0.0008])
 plt.ylim([0, 4e7])
 plt.show()
 

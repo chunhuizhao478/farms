@@ -602,7 +602,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeTheta()
 
   //Compute theta using explicit time integration
   //_Theta[_qp] = ( _dt + _Theta_old[_qp] ) / ( 1.0 + Dp_eq * _dt );
-  _Theta[_qp] = _dt * ( 1 - 10 * Dp_eq * _Theta_old[_qp] ) + _Theta_old[_qp];
+  _Theta[_qp] = _dt * ( 1 - 1 * Dp_eq * _Theta_old[_qp] ) + _Theta_old[_qp];
 }
 
 void

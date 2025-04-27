@@ -424,12 +424,12 @@
 []
     
 [Outputs]
-    # [exodus]
-    #     type = Exodus
-    #     execute_on = 'timestep_end'
-    #     time_step_interval = 40
-    #     show = 'vel_slipweakening_x vel_slipweakening_y ini_shear_sts ini_normal_sts T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux'
-    # []
+    [exodus]
+        type = Exodus
+        execute_on = 'timestep_end'
+        time_step_interval = 40
+        show = 'vel_slipweakening_x vel_slipweakening_y ini_shear_sts ini_normal_sts T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux'
+    []
     [csv]
         type = CSV
         execute_on = 'timestep_end'

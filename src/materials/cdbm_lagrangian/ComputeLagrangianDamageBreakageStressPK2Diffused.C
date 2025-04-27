@@ -44,6 +44,8 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _dilatancy_function_beta(declareProperty<Real>(_base_name + "dilatancy_function_beta")),
   _shear_rate_nu(declareProperty<Real>(_base_name + "shear_rate_nu")),
   //---------------------------------------------------------------------------------------------//
+  _deviatroic_strain_rate(declareProperty<Real>("deviatroic_strain_rate")),
+  //---------------------------------------------------------------------------------------------//
   _lambda_const(getMaterialProperty<Real>("lambda_const")),
   _shear_modulus(getMaterialProperty<Real>("shear_modulus")),
   _damaged_modulus(getMaterialProperty<Real>("damaged_modulus")),
@@ -63,7 +65,13 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _a0(getMaterialProperty<Real>("a0")),
   _a1(getMaterialProperty<Real>("a1")),
   _a2(getMaterialProperty<Real>("a2")),
-  _a3(getMaterialProperty<Real>("a3"))
+  _a3(getMaterialProperty<Real>("a3")),
+  //---------------------------------------------------------------------------------------------//
+  _structural_stress_coefficient(getMaterialProperty<Real>("structural_stress_coefficient")),
+  _grad_alpha_damagedvar(getMaterialProperty<RealGradient>("gradient_alpha_damagedvar")),
+  //---------------------------------------------------------------------------------------------//
+  //For the strain rate Cd
+  _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L"))
   //add shear stress perturbation
   //_dim(_mesh.dimension())
 {
@@ -531,6 +539,13 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
 
+  // add structral stress
+  for (unsigned int i = 0; i < 3; ++i){
+    for (unsigned int j = 0; j < 3; ++j){
+      sigma_total(i,j) -= _structural_stress_coefficient[_qp] * _grad_alpha_damagedvar[_qp](i) * _grad_alpha_damagedvar[_qp](j);
+    }
+  }
+
   //save
   _Ep[_qp] = Ep;
   _S[_qp] = sigma_total;
@@ -556,6 +571,9 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   _I1[_qp] = I1;
   _I2[_qp] = I2;
   _xi[_qp] = xi;
+
+  //compute deviatoric strain rate
+  computeDeviatroicStrainRateTensor();
 
 }
 
@@ -771,6 +789,33 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
   // Combine and assign tangent
   tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
 
+}
+
+void 
+ComputeLagrangianDamageBreakageStressPK2Diffused::computeDmatrix()
+{
+  //Compute deformation rate D
+  _D[_qp] = 0.5 * ( _velgrad_L[_qp] + _velgrad_L[_qp].transpose() );
+}
+
+void
+ComputeLagrangianDamageBreakageStressPK2Diffused::computeDeviatroicStrainRateTensor()
+{
+  //Compute D matrix
+  computeDmatrix();
+  //Compute strain rate E_dot = F^T * D * F
+  RankTwoTensor E_dot = _F[_qp].transpose() * _D[_qp] * _F[_qp];
+  //Compute deviatoric strain rate tensor E_dev_dot 
+  RankTwoTensor E_dev_dot = E_dot - (1.0/3.0) * E_dot.trace() * RankTwoTensor::Identity();
+  //Compute J2_dot = 1/2 * E_dev_dot(i,j) * E_dev_dot(i,j)
+  Real J2_dot = 0.0;
+  for (unsigned int i = 0; i < 3; ++i){
+    for (unsigned int j = 0; j < 3; ++j){
+      J2_dot += 0.5 * E_dev_dot(i,j) * E_dev_dot(i,j);
+    }
+  }
+  //Compute equivalent strain rate
+  _deviatroic_strain_rate[_qp] = std::sqrt(2.0/3.0 * J2_dot);
 }
 
 // //Compute dilatancy function beta

@@ -40,7 +40,11 @@ protected:
   /// @brief Compute tangent modulus components vector
   /// @return tangent modulus components vector, we pass reference and modify in-place
   virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
-  
+  /// @brief Compute deviatroic strain rate tensor
+  virtual void computeDeviatroicStrainRateTensor();
+  /// @brief Compute D matrix
+  virtual void computeDmatrix();
+
   // /// @brief Compute dilatancy function beta
   // virtual void computedilatancyfunction();
   // /// @brief Compute plastic volume change
@@ -88,6 +92,8 @@ protected:
   MaterialProperty<Real> & _dilatancy_function_beta;
   // Shear-rate 
   MaterialProperty<Real> & _shear_rate_nu;
+  // Deviatroic Strain Rate
+  MaterialProperty<Real> & _deviatroic_strain_rate;
 
   /* Get Up-to-date Material Properties*/
   /// Lambda
@@ -128,4 +134,10 @@ protected:
   /// dimension of the problem
   //const unsigned int _dim;
 
+  /* Get Spatial Gradient of Damage Variable and coefficient */
+  const MaterialProperty<Real> & _structural_stress_coefficient;
+  const MaterialProperty<RealGradient> & _grad_alpha_damagedvar;
+
+  /// Get the velocity gradient tensor
+  const MaterialProperty<RankTwoTensor> & _velgrad_L;
 };

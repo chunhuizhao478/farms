@@ -47,7 +47,12 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 1e4
+    Cd_constant = -1.0
+
+    #strain rate dependent Cd options
+    m_exponent = 0.8
+    strain_rate_hat = 1e-8
+    cd_hat = 1.0
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -66,7 +71,7 @@
     beta_width = 0.05 #1e-3
 
     #diffusion parameter
-    D_diffusion = 1
+    D_diffusion = 10000
 
 []
 
@@ -95,11 +100,26 @@
         order = FIRST
         family = LAGRANGE
     []
+    #deviatroic_strain_rate
+    [deviatroic_strain_rate_sub_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
     #
     [bounds_dummy]
         order = FIRST
         family = LAGRANGE
-    []  
+    []
+    #
+    [structural_stress_coefficient_sub]
+        order = FIRST
+        family = MONOMIAL
+    []
+    #
+    [Cd_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
 []
 
 [Kernels]
@@ -178,6 +198,18 @@
         from_variable = alpha_damagedvar_output
         execute_on = 'TIMESTEP_BEGIN'
     []
+    #get structural stress coefficient
+    # [get_structural_stress_coefficient]
+    #     type = MaterialRealAux
+    #     variable = structural_stress_coefficient_sub
+    #     property = structural_stress_coefficient
+    # []
+    #
+    [get_Cd]
+        type = MaterialRealAux
+        variable = Cd_aux
+        property = Cd
+    []
 []
 
 [Materials]
@@ -187,6 +219,9 @@
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
+        #use strain rate dependent Cd
+        use_cd_strain_dependent = true
+        strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]
@@ -213,6 +248,7 @@
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
+    start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6

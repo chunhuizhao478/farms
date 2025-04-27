@@ -30,6 +30,8 @@ public:
 
   virtual void computegammar(); //compute gamma_r
 
+  virtual void computeStrainRateCd(); //compute strain rate Cd
+
 protected:
   
   //declare material properties:
@@ -51,6 +53,7 @@ protected:
   MaterialProperty<Real> & _initial_damage_mat; //initial damage value
   MaterialProperty<Real> & _I2_mat; //second elastic strain invariant
   MaterialProperty<Real> & _xi_mat; //strain invariants ratio
+  MaterialProperty<Real> & _structural_stress_coefficient_mat; //structral_stress_coefficient
 
   //get const values
   Real _lambda_o_value;
@@ -71,5 +74,12 @@ protected:
   const VariableValue & _I2_aux; //second elastic strain invariant
   const VariableValue & _xi_aux; //strain invariants ratio
   const VariableValue & _initial_damage_aux; //initial damage value
+
+  //strain rate dependent Cd options
+  bool _use_cd_strain_dependent; //option to use strain rate dependent
+  Real _strain_rate_hat; //strain rate for strain-dependent Cd
+  Real _cd_hat; //Cd value for strain-dependent Cd
+  Real _m_exponent; //exponent for strain-dependent Cd
+  const VariableValue & _strain_rate; //strain rate
 
 };
