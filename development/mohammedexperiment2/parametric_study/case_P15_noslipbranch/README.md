@@ -1,0 +1,1 @@
+Modify the property files to assign large enough mu_s to prevent the sliding of the branch, compare the results with case_P15
