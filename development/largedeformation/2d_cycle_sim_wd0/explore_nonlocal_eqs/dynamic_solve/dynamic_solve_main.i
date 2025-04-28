@@ -308,7 +308,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 50
+    end_time = 1e10
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -324,16 +324,22 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    dt = 1e-2
+    # dt = 1e-2
     verbose = true
-    # [TimeStepper]
-    #     type = FarmsIterationAdaptiveDT
-    #     dt = 1e-2
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 8
-    #     growth_factor = 1.5
-    #     max_time_step_bound = 1e10
-    # []
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-2
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.1
+        max_time_step_bound = 1e7
+        #constrain velocity during dynamic simulation
+        constrain_by_velocity = true
+        vel_threshold = 1e-3
+        constant_dt_on_overspeed = 1e-2
+        maxvelx = 'maxvelx'
+        maxvely = 'maxvely'
+    []
     # [TimeStepper]
     #     type = IterationAdaptiveDT
     #     cutback_factor_at_failure = 0.5
@@ -347,6 +353,20 @@
         gamma = 0.5
     [../]
 []
+
+[Postprocessors]
+    [./_dt]
+        type = TimestepSize
+    [../]
+    [./maxvelx]
+        type = NodalExtremeValue
+        variable = vel_x
+    [../]
+    [./maxvely]
+        type = NodalExtremeValue
+        variable = vel_y
+    [../]
+[../]
 
 [Outputs]
     [./exodus]
@@ -478,6 +498,7 @@
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
+        sub_cycling = true
     [../]
 []
 

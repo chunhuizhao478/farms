@@ -52,7 +52,7 @@
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-8
-    cd_hat = 1.0
+    cd_hat = 1e2
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -62,10 +62,10 @@
     CBH_constant = 10
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    C_1 = 3e-4
+    C_1 = 1e-4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 100.0
+    C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.05 #1e-3
@@ -257,14 +257,15 @@
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
-    dt = 1e-2
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     cutback_factor_at_failure = 0.5
-    #     growth_factor = 2.0
-    #     optimal_iterations = 100
-    #     dt = 1e-2
-    # []
+    # dt = 1e-2
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-2
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.1
+        max_time_step_bound = 1e7
+    []
 []
 
 [UserObjects]
@@ -294,5 +295,8 @@
 []
 
 [Outputs]
-    exodus = true
+    [./exodus]
+        type = Exodus
+        time_step_interval = 10
+    [../]
 []
