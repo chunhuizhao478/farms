@@ -1,0 +1,1 @@
+Find a way to define VS patch

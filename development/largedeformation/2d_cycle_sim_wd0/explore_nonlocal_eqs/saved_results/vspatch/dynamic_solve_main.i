@@ -391,7 +391,7 @@
         velocity = vel_x
         acceleration = accel_x
         function = func_top_bc
-    [] 
+    []
     [./initial_shear_stress]
         type = NeumannBC
         variable = disp_x

@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_local.msh'
+        file = '../mesh/mesh.msh'
     []
     [./sidesets]
         input = msh
@@ -218,7 +218,7 @@
 
 [Outputs]
     exodus = true       
-    show = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output disp_x disp_y'
+    show = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
 []
 
 [BCs]

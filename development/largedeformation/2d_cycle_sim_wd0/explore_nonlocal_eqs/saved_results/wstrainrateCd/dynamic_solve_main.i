@@ -372,7 +372,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 50
     [../]
 []
 
@@ -391,12 +391,6 @@
         velocity = vel_x
         acceleration = accel_x
         function = func_top_bc
-    [] 
-    [./initial_shear_stress]
-        type = NeumannBC
-        variable = disp_x
-        value = 12e6
-        boundary = top
     [] 
     # 
     [static_pressure_top]

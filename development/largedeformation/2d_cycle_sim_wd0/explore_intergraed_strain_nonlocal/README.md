@@ -1,0 +1,1 @@
+Intergrated-Based Nonlocal Equvialent Strain Model

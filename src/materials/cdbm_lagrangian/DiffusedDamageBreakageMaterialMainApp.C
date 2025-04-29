@@ -37,6 +37,9 @@ DiffusedDamageBreakageMaterialMainApp::validParams()
   params.addRequiredCoupledVar(           "vel_x", "velocity in x direction"); //to build L matrix
   params.addRequiredCoupledVar(           "vel_y", "velocity in y direction"); //to build L matrix
   params.addRequiredCoupledVar(           "vel_z", "velocity in z direction"); //to build L matrix  
+  //use spatial cg
+  params.addParam<bool>("use_spatial_cg", false, "use spatial cg");
+  params.addCoupledVar("cg_aux", "cg_aux");
   return params;
 }
 
@@ -79,7 +82,11 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   //--------------------------------------------------------------//
   _grad_vel_x(coupledGradient("vel_x")),
   _grad_vel_y(coupledGradient("vel_y")),
-  _grad_vel_z(coupledGradient("vel_z"))
+  _grad_vel_z(coupledGradient("vel_z")),
+  //---------------------------------------------------------------//
+  //use spatial cg
+  _use_spatial_cg(getParam<bool>("use_spatial_cg")),
+  _cg_aux(_use_spatial_cg ? coupledValue("cg_aux") : _zero)
 {
 }
 
@@ -112,7 +119,9 @@ DiffusedDamageBreakageMaterialMainApp::initQpStatefulProperties()
   _grad_alpha_damagedvar[_qp] = _grad_alpha_damagedvar_value[_qp];
 
   /* compute constant material properties: Cg, m1, m2 */
-  _C_g[_qp] = _C_g_value;
+  if (_use_spatial_cg){ acceptspatialCg();}
+  else{_C_g[_qp] = _C_g_value;}
+
   _m1[_qp] = _m1_value;
   _m2[_qp] = _m2_value;
 }
@@ -144,7 +153,9 @@ DiffusedDamageBreakageMaterialMainApp::computeQpProperties()
   _grad_alpha_damagedvar_ydir[_qp] = _grad_alpha_damagedvar_value[_qp](1);
 
   /* compute constant material properties: Cg, m1, m2 */
-  _C_g[_qp] = _C_g_value;
+  if (_use_spatial_cg){ acceptspatialCg();}
+  else{_C_g[_qp] = _C_g_value;}
+
   _m1[_qp] = _m1_value;
   _m2[_qp] = _m2_value;
 }
@@ -256,4 +267,10 @@ DiffusedDamageBreakageMaterialMainApp::buildLmatrix()
   _velgrad_L[_qp](0,0) = (_grad_vel_x)[_qp](0); _velgrad_L[_qp](0,1) = (_grad_vel_x)[_qp](1); _velgrad_L[_qp](0,2) = (_grad_vel_x)[_qp](2);
   _velgrad_L[_qp](1,0) = (_grad_vel_y)[_qp](0); _velgrad_L[_qp](1,1) = (_grad_vel_y)[_qp](1); _velgrad_L[_qp](1,2) = (_grad_vel_y)[_qp](2);
   _velgrad_L[_qp](2,0) = (_grad_vel_z)[_qp](0); _velgrad_L[_qp](2,1) = (_grad_vel_z)[_qp](1); _velgrad_L[_qp](2,2) = (_grad_vel_z)[_qp](2);
+}
+
+void 
+DiffusedDamageBreakageMaterialMainApp::acceptspatialCg()
+{
+  _C_g[_qp] = _cg_aux[_qp];
 }

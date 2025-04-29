@@ -126,6 +126,11 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    #spatial damage parameters
+    [cg_aux]
+        order = FIRST
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]
@@ -178,17 +183,12 @@
         property = deviatroic_strain_rate
         block = '1 3'
     []
-    # #check the gradient of damage variable
-    # [get_gradx_alpha_damagedvar]
-    #     type = MaterialRealAux
-    #     property = gradient_alpha_damagedvar_xdir
-    #     variable = gradx_alpha_damagedvar
-    # []
-    # [get_grady_alpha_damagedvar]
-    #     type = MaterialRealAux
-    #     property = gradient_alpha_damagedvar_ydir
-    #     variable = grady_alpha_damagedvar
-    # []
+    #get spatial damage parameters
+    [get_cg]
+        type = FunctionAux
+        variable = cg_aux
+        function = func_spatial_cg
+    []
 []
 
 [Kernels]
@@ -231,11 +231,16 @@
         symbol_names = 'dt'
         symbol_values = '1e-3'
     []
-    [func_bottom_bc]
+    [func_top_traction]
         type = ParsedFunction
-        expression = 'if (t>dt, -1e-8 * t, 0)'
-        symbol_names = 'dt'
-        symbol_values = '1e-3'
+        expression = '12e6 + 1e-8 * 32.04e9 * t'
+    []
+    [func_spatial_cg]
+        type = SpatialDamageBreakageParameters
+        W = 2e3 #half the total width
+        w = 0
+        max_val = 1e-11
+        min_val = 1e-11
     []
 []
 
@@ -260,6 +265,11 @@
         vel_x = vel_x
         vel_y = vel_y
         vel_z = vel_z
+        #use spatial cg
+        use_spatial_cg = true
+        cg_aux = cg_aux
+        output_properties = 'C_g'
+        outputs = exodus
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
@@ -298,7 +308,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */bc_load_top_x */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -332,11 +342,11 @@
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
-        growth_factor = 1.1
+        growth_factor = 1.5
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
-        vel_threshold = 1e-3
+        vel_threshold = 1e-2
         constant_dt_on_overspeed = 1e-2
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
@@ -383,19 +393,10 @@
         value = 0
         boundary = bottom
     []
-    [bc_load_top_x]
-        type = PresetDisplacement
-        boundary = top
+    [./continous_shear_stress]
+        type = FunctionNeumannBC
         variable = disp_x
-        beta = 0.25
-        velocity = vel_x
-        acceleration = accel_x
-        function = func_top_bc
-    [] 
-    [./initial_shear_stress]
-        type = NeumannBC
-        variable = disp_x
-        value = 12e6
+        function = func_top_traction
         boundary = top
     [] 
     # 

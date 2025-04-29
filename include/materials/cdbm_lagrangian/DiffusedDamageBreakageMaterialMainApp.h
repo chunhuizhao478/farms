@@ -34,6 +34,7 @@ public:
   virtual void computecoefficients(); //compute coefficients: a0 a1 a2 a3
   virtual Real alphacr_root1(Real xi); //compute alpha_cr
   virtual void buildLmatrix(); //build L matrix
+  virtual void acceptspatialCg(); //accept spatial cg
 
 protected:
   
@@ -79,5 +80,9 @@ protected:
   const VariableGradient & _grad_vel_x;
   const VariableGradient & _grad_vel_y;
   const VariableGradient & _grad_vel_z;
+
+  //use spatial cg
+  bool _use_spatial_cg; //use spatial cg
+  const VariableValue & _cg_aux; //cg_aux
 
 };
