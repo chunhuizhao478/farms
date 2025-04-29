@@ -407,7 +407,21 @@
         mu_s = mu_s
         ini_shear_sts = ini_shear_sts
         ini_normal_sts = ini_normal_sts
-        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        boundary = 'Block100_Block200 Block200_Block300'
+    [../]
+    [./czm_mat_noslip]
+        type = SlipWeakeningMultifaultsGeneralizedPropCSVnoslip
+        disp_slipweakening_x     = disp_slipweakening_x
+        disp_slipweakening_y     = disp_slipweakening_y
+        reaction_slipweakening_x = resid_slipweakening_x
+        reaction_slipweakening_y = resid_slipweakening_y
+        nodal_area = nodal_area
+        D_c = D_c
+        mu_d = mu_d
+        mu_s = mu_s
+        ini_shear_sts = ini_shear_sts
+        ini_normal_sts = ini_normal_sts
+        boundary = 'Block100_Block300'
     [../]
 []
     
