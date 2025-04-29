@@ -339,3 +339,5 @@ postprocess/tpv2053d/outputs
 meshgenerator/tpv2052d/tpv2052d_tria3.msh
 examples/benchmark_tpv2052D/czm/tpv2052D_tria_out_cp/0942-mesh.cpa.gz/1/header.gz
 examples/benchmark_tpv2052D/czm/tpv2052D_tria_out_cp/0942-mesh.cpa.gz/1/split-1-0.gz
+cdm_examples/pf_mesh_adaptivity_pure_shear/elasticity_out_cp/5482-mesh.cpa.gz/1/header.gz
+cdm_examples/pf_mesh_adaptivity_pure_shear/elasticity_out_cp/5482-mesh.cpa.gz/1/split-1-0.gz
