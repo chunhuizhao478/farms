@@ -344,6 +344,7 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 
 [Outputs]
   exodus = true
+  time_step_interval = 80
   print_linear_residuals = false
   csv = true
 []

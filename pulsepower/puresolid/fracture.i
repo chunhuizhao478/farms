@@ -136,6 +136,7 @@ Gc_const = 570
 
 [Outputs]
   exodus = true
+  time_step_interval = 80
   print_linear_residuals = false
 []
 
