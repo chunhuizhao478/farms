@@ -3,7 +3,7 @@ nu = 0.2
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
 
-Gc_const = 570
+Gc_const = 57
 l = 2e-4 # N * h, N: number of elements, h: element size
 
 [Adaptivity]
@@ -18,12 +18,12 @@ l = 2e-4 # N * h, N: number of elements, h: element size
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
-        refine = 0.1
+        refine = 0.5
       []
       [strain_energy_marker]
         type = ValueThresholdMarker
         variable = psie_active
-        refine = '${fparse 0.4*0.5*Gc_const/l}'
+        refine = '${fparse 1.0*0.5*Gc_const/l}'
       []      
   []
 []
@@ -32,7 +32,7 @@ l = 2e-4 # N * h, N: number of elements, h: element size
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'l=${l}'
+    cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -228,19 +228,24 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 []
 
 [Functions]
+  # [func_tri_pulse]
+  #   type = ElkPulseLoadExperiment
+  #   shape_param_alpha = 4e5
+  #   shape_param_beta = 4e6
+  #   rise_time = 6.396069702761238e-07
+  #   single_pulse_duration = 1e-5
+  #   EM = 0.03
+  #   gap = 0.001
+  #   convert_efficiency = 0.5
+  #   fitting_param_alpha = 0.35
+  #   discharge_center = '0 0 0.0005'
+  #   number_of_pulses = 1
+  #   peak_pressure = 50e6 #if peak pressure is specified, the depth variation is ignored
+  # []
   [func_tri_pulse]
-    type = ElkPulseLoadExperiment
-    shape_param_alpha = 4e5
-    shape_param_beta = 4e6
-    rise_time = 6.396069702761238e-07
-    single_pulse_duration = 1e-5
-    EM = 0.03
-    gap = 0.001
-    convert_efficiency = 0.5
-    fitting_param_alpha = 0.35
-    discharge_center = '0 0 0.0005'
-    number_of_pulses = 1
-    peak_pressure = 50e6 #if peak pressure is specified, the depth variation is ignored
+    type = ParsedFunction
+    # expression = 'if (t<8e-6, -10e12 * t + 80e6, 0)'
+    expression = 'if (t<8e-6, -10e12 * t + 120e6, 0)'
   []
 []
 
@@ -344,7 +349,7 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 
 [Outputs]
   exodus = true
-  time_step_interval = 80
+  time_step_interval = 40
   print_linear_residuals = false
   csv = true
 []

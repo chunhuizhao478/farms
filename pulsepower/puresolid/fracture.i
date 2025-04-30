@@ -1,5 +1,3 @@
-Gc_const = 570
-
 [Mesh]
   [./msh]
     type = FileMeshGenerator
@@ -26,12 +24,12 @@ Gc_const = 570
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
-        refine = 0.1
+        refine = 0.5
       []
       [strain_energy_marker]
         type = ValueThresholdMarker
         variable = psie_active
-        refine = '${fparse 0.4*0.5*Gc_const/l}'
+        refine = '${fparse 1.0*0.5*Gc_const/l}'
       []      
   []
 []
@@ -136,7 +134,7 @@ Gc_const = 570
 
 [Outputs]
   exodus = true
-  time_step_interval = 80
+  time_step_interval = 40
   print_linear_residuals = false
 []
 
@@ -147,7 +145,7 @@ Gc_const = 570
   [weibull]
     type = Weibull
     shape = 12.0 #k
-    scale = 9e6 #lambda
+    scale = ${Gc_const} #lambda
     location = 0 
   []
 [] 

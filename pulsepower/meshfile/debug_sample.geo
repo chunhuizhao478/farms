@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 // Characteristic length (mesh size)
-lc = 0.00025;  // Smaller values result in finer mesh
+lc = 0.0005;  // Smaller values result in finer mesh
 height = 0.001;
 radius_outer = 0.0125;
 radius_inner = 0.002;
