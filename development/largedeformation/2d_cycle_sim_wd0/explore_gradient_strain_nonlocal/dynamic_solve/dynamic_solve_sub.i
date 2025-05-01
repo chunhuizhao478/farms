@@ -4,8 +4,7 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_local_restrict.msh'
+        file = '../mesh/mesh_local.msh'
     []
     [./sidesets]
         input = msh
@@ -18,7 +17,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -20000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -72,8 +71,8 @@
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.05 #1e-3
 
-    #diffusion parameter
-    D_diffusion = 10000
+    #diffusion parameter #close the gradient
+    D_diffusion = 0
 
 []
 

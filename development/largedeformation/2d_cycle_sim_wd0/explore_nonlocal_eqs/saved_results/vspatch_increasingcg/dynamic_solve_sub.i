@@ -18,7 +18,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -20000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -299,6 +299,6 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 20
+        time_step_interval = 1
     [../]
 []

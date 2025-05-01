@@ -44,6 +44,12 @@ DiffusedDamageBreakageMaterialSubApp::validParams()
   params.addParam<Real>("strain_rate_hat", -1.0, "Strain rate hat for strain rate dependent Cd");
   params.addParam<Real>("cd_hat", -1.0, "Cd hat for strain rate dependent Cd");
   params.addCoupledVar("strain_rate", "strain_rate");
+  //use spatial xio
+  params.addParam<bool>("use_spatial_xio", false, "use spatial xio");
+  params.addCoupledVar("xio_aux", "xio_aux");
+  //use spatial xid
+  params.addParam<bool>("use_spatial_xid", false, "use spatial xid");
+  params.addCoupledVar("xid_aux", "xid_aux");
   return params;
 }
 
@@ -94,8 +100,14 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
   _m_exponent(getParam<Real>("m_exponent")),
-  _strain_rate(coupledValue("strain_rate"))
+  _strain_rate(coupledValue("strain_rate")),
   //--------------------------------------------------------------//
+  //use spatial xio
+  _use_spatial_xio(getParam<bool>("use_spatial_xio")),
+  _xio_aux(_use_spatial_xio ? coupledValue("xio_aux") : _zero),
+  //use spatial xid
+  _use_spatial_xid(getParam<bool>("use_spatial_xid")),
+  _xid_aux(_use_spatial_xid ? coupledValue("xid_aux") : _zero)
 {
   //check strain rate dependent Cd options
   if (_use_cd_strain_dependent && (_strain_rate_hat < 0 || _cd_hat < 0 || _m_exponent < 0)){
@@ -164,8 +176,15 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
 
   /* compute _xi_1_mat, xi_0_mat, _xi_d_mat, _xi_min_mat, _xi_max_mat */
   _xi_1_mat[_qp] = _xi_0_value + sqrt( pow(_xi_0_value , 2) + 2 * _shear_modulus_o_value / _lambda_o_value );
-  _xi_0_mat[_qp] = _xi_0_value;
-  _xi_d_mat[_qp] = _xi_d_value;
+  
+  /* compute _xi_0_mat */
+  if (_use_spatial_xio){acceptspatialxio();}
+  else{_xi_0_mat[_qp] = _xi_0_value;}
+  
+  /* compute _xi_d_mat */
+  if (_use_spatial_xid){acceptspatialxid();}
+  else{_xi_d_mat[_qp] = _xi_d_value;}
+
   _xi_min_mat[_qp] = _xi_min_value;
   _xi_max_mat[_qp] = _xi_max_value;
 
@@ -229,4 +248,16 @@ DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
   //_cd_hat: constant value - default value = 1
   //_strain_rate: deviatoric strain rate, variable value passed from main app
   _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate[_qp]/_strain_rate_hat)) * _cd_hat;
+}
+
+void 
+DiffusedDamageBreakageMaterialSubApp::acceptspatialxio()
+{
+  _xi_0_mat[_qp] = _xio_aux[_qp];
+}
+
+void 
+DiffusedDamageBreakageMaterialSubApp::acceptspatialxid()
+{
+  _xi_d_mat[_qp] = _xid_aux[_qp];
 }

@@ -71,9 +71,18 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _grad_alpha_damagedvar(getMaterialProperty<RealGradient>("gradient_alpha_damagedvar")),
   //---------------------------------------------------------------------------------------------//
   //For the strain rate Cd
-  _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L"))
+  _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L")),
   //add shear stress perturbation
   //_dim(_mesh.dimension())
+  //---------------------------------------------------------------------------------------------//
+  //use state dependent variables
+  _Theta(declareProperty<Real>("state_variable")),
+  _Theta_old(getMaterialPropertyOldByName<Real>("state_variable")),
+  _use_state_var_evolution_mat(getMaterialProperty<bool>("use_state_var_evolution_mat")),
+  _const_A_mat(getMaterialProperty<Real>("const_A_mat")),
+  _const_B_mat(getMaterialProperty<Real>("const_B_mat")),
+  _const_theta_o_mat(getMaterialProperty<Real>("const_theta_o_mat")),
+  _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat"))
 {
 }
 
@@ -100,6 +109,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::initQpStatefulProperties()
   _eta[_qp] = 0.0;
   _dilatancy_function_beta[_qp] = 0.0;
   _shear_rate_nu[_qp] = 0.0;
+  _Theta[_qp] = _initial_theta0_mat[_qp];
 }
 
 void
@@ -624,7 +634,12 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
   }
 
   //Define equvialent shear rate nu
-  _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]);
+  if (_use_state_var_evolution_mat[_qp]){
+    computestatedependentDp();
+  }
+  else{
+    _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]);
+  }
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp = _shear_rate_nu[_qp] * N; 
@@ -816,6 +831,59 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeDeviatroicStrainRateTen
   }
   //Compute equivalent strain rate
   _deviatroic_strain_rate[_qp] = std::sqrt(2.0/3.0 * J2_dot);
+}
+
+void 
+ComputeLagrangianDamageBreakageStressPK2Diffused::computestatedependentDp()
+{
+  //Compute equivalent plastic strain rate
+  //------------------------------------------------------------------------------//
+  Real Dp_eq = 0.0;
+  for (unsigned int i = 0; i < 3; i++){
+    for (unsigned int j = 0; j < 3; j++){
+      Dp_eq += _Dp[_qp](i,j) * _Dp[_qp](i,j);
+    }
+  }
+
+  Dp_eq = std::sqrt(2.0/3.0 * Dp_eq);
+  //------------------------------------------------------------------------------//
+
+  //NOT FINISHED
+  //------------------------------------------------------------------------------//
+  //Compute eigen-decomposition of Tau
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor diag;
+  RankTwoTensor Q;
+  RankTwoTensor PowTau;
+
+  _Tau_old[_qp].symmetricEigenvaluesEigenvectors(eigval, Q);
+
+  const Real eps = 1e-8;
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    Real eig = std::max(std::abs(eigval[i]), eps); // clamp
+    diag(i, i) = std::copysign(std::pow(eig, _m2[_qp]), eigval[i]); // preserve sign
+  }
+
+  PowTau = Q * diag * Q.transpose();
+
+  //Get old Tau
+  RankTwoTensor Tau_old = PowTau;
+
+  //Get equvialent deviatroic stress scalar
+  Real Tau_eq = 0.0;
+  for (unsigned int p = 0; p < 3; p++){
+    for (unsigned int q = 0; q < 3; q++){
+      Tau_eq += 2.0/3.0 * Tau_old(p,q) * Tau_old(p,q);
+    }
+  }
+
+  Tau_eq = std::sqrt(Tau_eq); 
+  //------------------------------------------------------------------------------//
+
+  //Compute shear rate nu
+  _Theta[_qp] = _dt * ( 1 - 4 * Dp_eq * _Theta_old[_qp] ) + _Theta_old[_qp];
+  _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
 }
 
 // //Compute dilatancy function beta

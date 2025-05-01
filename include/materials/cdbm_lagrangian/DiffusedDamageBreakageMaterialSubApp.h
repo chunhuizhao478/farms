@@ -32,6 +32,9 @@ public:
 
   virtual void computeStrainRateCd(); //compute strain rate Cd
 
+  virtual void acceptspatialxio();
+  virtual void acceptspatialxid();
+
 protected:
   
   //declare material properties:
@@ -81,5 +84,13 @@ protected:
   Real _cd_hat; //Cd value for strain-dependent Cd
   Real _m_exponent; //exponent for strain-dependent Cd
   const VariableValue & _strain_rate; //strain rate
+
+  //use spatial xio
+  bool _use_spatial_xio; //use spatial xio
+  const VariableValue & _xio_aux; //xio_aux
+
+  //use spatial xid
+  bool _use_spatial_xid; //use spatial xio
+  const VariableValue & _xid_aux; //xio_aux
 
 };

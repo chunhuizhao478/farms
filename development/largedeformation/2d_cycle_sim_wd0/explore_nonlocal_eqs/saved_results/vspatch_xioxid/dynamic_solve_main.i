@@ -184,12 +184,6 @@
         property = deviatroic_strain_rate
         block = '1 3'
     []
-    #get spatial damage parameters
-    [get_cg]
-        type = FunctionAux
-        variable = cg_aux
-        function = func_spatial_cg
-    []
 []
 
 [Kernels]
@@ -236,13 +230,6 @@
         type = ParsedFunction
         expression = '12e6 + 1e-8 * 32.04e9 * t'
     []
-    [func_spatial_cg]
-        type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
-        w = 3e3
-        max_val = 1e-11
-        min_val = 1e-14
-    []
 []
 
 [Materials]
@@ -267,8 +254,8 @@
         vel_y = vel_y
         vel_z = vel_z
         #use cg
-        use_spatial_cg = true
-        cg_aux = cg_aux
+        # use_spatial_cg = true
+        # cg_aux = cg_aux
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused

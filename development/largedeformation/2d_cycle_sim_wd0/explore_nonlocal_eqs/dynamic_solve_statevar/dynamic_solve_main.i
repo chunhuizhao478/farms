@@ -42,7 +42,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-9
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -127,10 +127,10 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    #spatial damage parameters
-    [cg_aux]
+    #theta
+    [theta_aux]
         order = FIRST
-        family = LAGRANGE
+        family = MONOMIAL
     []
 []
 
@@ -184,11 +184,12 @@
         property = deviatroic_strain_rate
         block = '1 3'
     []
-    #get spatial damage parameters
-    [get_cg]
-        type = FunctionAux
-        variable = cg_aux
-        function = func_spatial_cg
+    #get theta variable
+    [get_theta]
+        type = MaterialRealAux
+        variable = theta_aux
+        property = state_variable
+        block = '1 3'
     []
 []
 
@@ -236,13 +237,6 @@
         type = ParsedFunction
         expression = '12e6 + 1e-8 * 32.04e9 * t'
     []
-    [func_spatial_cg]
-        type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
-        w = 3e3
-        max_val = 1e-11
-        min_val = 1e-14
-    []
 []
 
 [Materials]
@@ -266,9 +260,12 @@
         vel_x = vel_x
         vel_y = vel_y
         vel_z = vel_z
-        #use cg
-        use_spatial_cg = true
-        cg_aux = cg_aux
+        #use state var
+        use_state_var_evolution = true
+        const_A = 0.02
+        const_B = 0.01
+        const_theta_o = 4000
+        initial_theta0 = 4000
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
@@ -307,7 +304,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -341,7 +338,7 @@
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
-        growth_factor = 1.1
+        growth_factor = 1.5
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
@@ -381,7 +378,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 1
     [../]
 []
 
@@ -434,34 +431,6 @@
         value = 0
     [] 
     #add dampers
-    [damp_top_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_top_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
     [damp_left_x]
         type = FarmsNonReflectDashpotBC
         variable = disp_x

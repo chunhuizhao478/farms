@@ -35,6 +35,7 @@ public:
   virtual Real alphacr_root1(Real xi); //compute alpha_cr
   virtual void buildLmatrix(); //build L matrix
   virtual void acceptspatialCg(); //accept spatial cg
+  virtual void usestatevar(); //use state variable evolution
 
 protected:
   
@@ -84,5 +85,17 @@ protected:
   //use spatial cg
   bool _use_spatial_cg; //use spatial cg
   const VariableValue & _cg_aux; //cg_aux
+
+  /// @brief add constant parameters for state variable evolution
+  const bool _use_state_var_evolution;
+  const Real _const_A;
+  const Real _const_B;
+  const Real _const_theta_o;
+  const Real _initial_theta0;
+  MaterialProperty<bool> & _use_state_var_evolution_mat;
+  MaterialProperty<Real> & _const_A_mat;
+  MaterialProperty<Real> & _const_B_mat;
+  MaterialProperty<Real> & _const_theta_o_mat;
+  MaterialProperty<Real> & _initial_theta0_mat;
 
 };

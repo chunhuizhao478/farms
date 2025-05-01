@@ -29,7 +29,7 @@
         block_id = 2
         bottom_left = '0 0.006 0'
         top_right = '0.05 0.01 0'
-    []  
+    []
     [internal_top]
         type = SideSetsBetweenSubdomainsGenerator
         new_boundary = 'internal_top'
@@ -43,7 +43,7 @@
         primary_block = 2
         paired_block = 0
         input = internal_top
-    [] 
+    []  
 []
 
 [GlobalParams]
@@ -81,10 +81,10 @@
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0
-    CBH_constant = 1e4
+    CBH_constant = 0
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 300
+    C_1 = 0
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -93,7 +93,7 @@
     beta_width = 0.05 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 2.5e-11 #
+    C_g = 1e-11 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -179,13 +179,7 @@
     # damage
     [damage_mat]
         type = DamageBreakageMaterial
-        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L shear_modulus a0 a1 a2 a3 state_variable' 
-        use_state_var_evolution = true
-        const_A = 0.015
-        const_B = 0.02
-        const_theta_o = 4000
-        initial_theta0 = 4000
-        xi_given = 0
+        output_properties = 'alpha_damagedvar B_damagedvar velgrad_L'
         outputs = exodus
         block = 0
     [] 
@@ -195,17 +189,17 @@
         prop_values = 0
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule
+        type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain plastic_deformation_gradient_det state_variable plastic_strain_rate'
+        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain plastic_deformation_gradient_det'
         outputs = exodus
         block = 0
     []
     # elastic
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
-        lambda = 32e9
-        shear_modulus = 32e9
+        lambda = 64e9
+        shear_modulus = 64e9
         block = '1 2'
     []
     [compute_stress]
@@ -218,20 +212,14 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = 'if(t < steady_state_duration, v_steady * t, v_steady * steady_state_duration + v_high * (t - steady_state_duration))'
-        symbol_names = 'steady_state_duration v_steady v_high'
-        symbol_values = '500 1e-6 3e-6'        
+        expression = '1e-6 * t'
     []
-    # [applied_load_top]
-    #     type = DoubleShearVelStep
-    #     T0 = 500
-    #     T1 = 1000
-    #     T2 = 1000
-    #     v1 = 1e-6
-    #     v2 = 3e-6
-    #     v3 = 10e-6
-    # []
+    [applied_strain_top]
+        type = ParsedFunction
+        expression = '1e-6 * t / 0.05'
+    []
 []
+
 
 [Preconditioning]
     [smp]
@@ -245,7 +233,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = 0
-    end_time = 20000 #3000#extend the time
+    end_time = 300 #extend the time
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -269,10 +257,10 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 100
+    time_step_interval = 1
     [./csv]
         type = CSV
-        time_step_interval = 100
+        time_step_interval = 1
         show = 'strain_x react_x'
     [../]
 []
@@ -358,7 +346,7 @@
     [../]
     [./strain_x]
         type = FunctionValuePostprocessor
-        function = applied_load_top
+        function = applied_strain_top
     []
 []
 

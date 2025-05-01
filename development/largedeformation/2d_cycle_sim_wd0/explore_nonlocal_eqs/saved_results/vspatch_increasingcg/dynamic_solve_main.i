@@ -17,7 +17,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -20000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -42,7 +42,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-11
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -241,7 +241,7 @@
         W = 1e3 #half the total width
         w = 3e3
         max_val = 1e-11
-        min_val = 1e-14
+        min_val = 1e-9
     []
 []
 
@@ -307,7 +307,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -341,7 +341,7 @@
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
-        growth_factor = 1.1
+        growth_factor = 1.5
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
@@ -381,7 +381,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 1
     [../]
 []
 
@@ -434,34 +434,6 @@
         value = 0
     [] 
     #add dampers
-    [damp_top_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_top_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
     [damp_left_x]
         type = FarmsNonReflectDashpotBC
         variable = disp_x

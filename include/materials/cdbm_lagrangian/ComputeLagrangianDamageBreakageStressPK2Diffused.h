@@ -44,6 +44,8 @@ protected:
   virtual void computeDeviatroicStrainRateTensor();
   /// @brief Compute D matrix
   virtual void computeDmatrix();
+  /// @brief Compute rate dependent Dp
+  virtual void computestatedependentDp();
 
   // /// @brief Compute dilatancy function beta
   // virtual void computedilatancyfunction();
@@ -140,4 +142,13 @@ protected:
 
   /// Get the velocity gradient tensor
   const MaterialProperty<RankTwoTensor> & _velgrad_L;
+
+  /* use state variable */
+  MaterialProperty<Real> & _Theta;
+  const MaterialProperty<Real> & _Theta_old;
+  const MaterialProperty<bool> & _use_state_var_evolution_mat;
+  const MaterialProperty<Real> & _const_A_mat;
+  const MaterialProperty<Real> & _const_B_mat;
+  const MaterialProperty<Real> & _const_theta_o_mat;
+  const MaterialProperty<Real> & _initial_theta0_mat;
 };

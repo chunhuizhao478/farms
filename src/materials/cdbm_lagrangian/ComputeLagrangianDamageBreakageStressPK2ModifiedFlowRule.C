@@ -602,7 +602,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeTheta()
 
   //Compute theta using explicit time integration
   //_Theta[_qp] = ( _dt + _Theta_old[_qp] ) / ( 1.0 + Dp_eq * _dt );
-  _Theta[_qp] = _dt * ( 1 - 1 * Dp_eq * _Theta_old[_qp] ) + _Theta_old[_qp];
+  _Theta[_qp] = _dt * ( 1 - 4 * Dp_eq * _Theta_old[_qp] ) + _Theta_old[_qp];
 }
 
 void
@@ -622,18 +622,23 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpFp()
   std::vector<Real> eigval(3, 0.0);
   RankTwoTensor diag;
   RankTwoTensor Q;
-  RankTwoTensor ExpTau;
+  RankTwoTensor PowTau;
 
   _Tau_old[_qp].symmetricEigenvaluesEigenvectors(eigval, Q);
 
-  diag(0,0) = std::exp(eigval[0]/_const_A_mat[_qp]);
-  diag(1,1) = std::exp(eigval[1]/_const_A_mat[_qp]);
-  diag(2,2) = std::exp(eigval[2]/_const_A_mat[_qp]);
+  const Real eps = 1e-8;
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    // Real eig = std::max(std::abs(eigval[i]), eps); // clamp
+    // diag(i, i) = std::copysign(std::pow(eig, _m2[_qp]), eigval[i]); // preserve sign
+    // std::cout<< "eigval[" << i << "] = " << eigval[i] << std::endl;
+    diag(i, i) = std::exp(eigval[i] / _const_A_mat[_qp]);
+  }
 
-  ExpTau = Q * diag * Q.transpose();
+  PowTau = Q * diag * Q.transpose();
 
   //Get old Tau
-  RankTwoTensor Tau_old = _Tau_old[_qp];
+  RankTwoTensor Tau_old = PowTau;
 
   //Get equvialent deviatroic stress scalar
   Real Tau_eq = 0.0;
@@ -666,11 +671,7 @@ ComputeLagrangianDamageBreakageStressPK2ModifiedFlowRule::computeQpFp()
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp;
   if (_use_state_var_evolution_mat[_qp]){
-    _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
-    //_Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar[_qp],_m1[_qp]) * ExpTau * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
-    //_Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N * std::tanh(std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp])));
-    // Real alpha = 0.5;
-    // _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N * ( 1.0 + alpha * std::tanh( alpha * (_const_B_mat[_qp]/_const_A_mat[_qp] - 1) * std::log((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp])) ) );
+    _Dp[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * (PowTau) * std::pow((1.0*_Theta[_qp])/(1.0*_const_theta_o_mat[_qp]),(-1.0*_const_B_mat[_qp])/(1.0*_const_A_mat[_qp]));
   }
   else{
     mooseError("Must select 'use_state_var_evolution_mat = true' option in DamageBreakageMaterial to use this material object");

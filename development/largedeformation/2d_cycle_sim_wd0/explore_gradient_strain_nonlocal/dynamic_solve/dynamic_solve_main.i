@@ -3,8 +3,7 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_local_restrict.msh'
+        file = '../mesh/mesh_local.msh'
     []
     [./sidesets]
         input = msh
@@ -17,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -20000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -64,6 +63,10 @@
     [disp_y]
         order = FIRST
         family = LAGRANGE    
+    []
+    [nonlocal_xi]
+        order = FIRST
+        family = MONOMIAL
     []
 []
 
@@ -222,6 +225,21 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
+    []
+    # gradient based nonlocal averaging
+    [react_nonlocal]
+        type = Reaction
+        variable = nonlocal_xi
+        rate = 1.0
+    []
+    [diffusion_nonlocal]
+        type = CoefDiffusion
+        variable = nonlocal_xi
+        coef = 4e4 #1e-4
+    []
+    [reaction_local]
+        type = FarmsLocalXiForce
+        variable = nonlocal_xi
     []       
 []
 
@@ -292,6 +310,13 @@
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
+        outputs = exodus
+        block = '2'
+    []
+    #strain invariant ratio
+    [comp_strain_invariant_ratio]
+        type = ComputeXi 
+        output_properties = 'strain_invariant_ratio'
         outputs = exodus
         block = '2'
     []
@@ -541,7 +566,7 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
@@ -573,7 +598,7 @@
     []
     [strain_invariant_ratio_ic]
       type = SolutionIC
-      variable = xi_aux
+      variable = nonlocal_xi
       solution_uo = init_sol_components
       from_variable = xi_output
     []

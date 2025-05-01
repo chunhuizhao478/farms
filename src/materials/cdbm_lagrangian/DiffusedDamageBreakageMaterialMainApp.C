@@ -40,6 +40,12 @@ DiffusedDamageBreakageMaterialMainApp::validParams()
   //use spatial cg
   params.addParam<bool>("use_spatial_cg", false, "use spatial cg");
   params.addCoupledVar("cg_aux", "cg_aux");
+  //use state dependent variables
+  params.addParam<bool>("use_state_var_evolution", false, "Flag to use state variable evolution");
+  params.addParam<Real>("const_A", -1.0,"Constant A value, A = a * sigma_N");
+  params.addParam<Real>("const_B", -1.0,"Constant B value, B = b * sigma_N");
+  params.addParam<Real>("const_theta_o", -1.0,"Constant theta_o value");
+  params.addParam<Real>("initial_theta0", -1.0,"Initial theta0 value");
   return params;
 }
 
@@ -86,7 +92,20 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   //---------------------------------------------------------------//
   //use spatial cg
   _use_spatial_cg(getParam<bool>("use_spatial_cg")),
-  _cg_aux(_use_spatial_cg ? coupledValue("cg_aux") : _zero)
+  _cg_aux(_use_spatial_cg ? coupledValue("cg_aux") : _zero),
+  //---------------------------------------------------------------//
+  //use state dependent variables
+  _use_state_var_evolution(getParam<bool>("use_state_var_evolution")),
+  _const_A(getParam<Real>("const_A")),
+  _const_B(getParam<Real>("const_B")),
+  _const_theta_o(getParam<Real>("const_theta_o")),
+  _initial_theta0(getParam<Real>("initial_theta0")),
+  _use_state_var_evolution_mat(declareProperty<bool>("use_state_var_evolution_mat")),
+  _const_A_mat(declareProperty<Real>("const_A_mat")),
+  _const_B_mat(declareProperty<Real>("const_B_mat")),
+  _const_theta_o_mat(declareProperty<Real>("const_theta_o_mat")),
+  _initial_theta0_mat(declareProperty<Real>("initial_theta0_mat"))
+  //---------------------------------------------------------------//
 {
 }
 
@@ -113,6 +132,9 @@ DiffusedDamageBreakageMaterialMainApp::initQpStatefulProperties()
 
   /* compute L matrix */
   buildLmatrix();
+
+  /* use state evolution */
+  if (_use_state_var_evolution){ usestatevar();}
 
   /* compute spatial gradient of damage variable */
   _structural_stress_coefficient[_qp] = _structural_stress_coefficient_aux[_qp];
@@ -143,6 +165,9 @@ DiffusedDamageBreakageMaterialMainApp::computeQpProperties()
 
   /* compute L matrix */
   buildLmatrix();
+
+  /* use state evolution */
+  if (_use_state_var_evolution){ usestatevar();}
 
   /* compute spatial gradient of damage variable */
   _structural_stress_coefficient[_qp] = _structural_stress_coefficient_aux[_qp];
@@ -273,4 +298,14 @@ void
 DiffusedDamageBreakageMaterialMainApp::acceptspatialCg()
 {
   _C_g[_qp] = _cg_aux[_qp];
+}
+
+void 
+DiffusedDamageBreakageMaterialMainApp::usestatevar()
+{
+  _use_state_var_evolution_mat[_qp] = _use_state_var_evolution;
+  _const_A_mat[_qp] = _const_A;
+  _const_B_mat[_qp] = _const_B;
+  _const_theta_o_mat[_qp] = _const_theta_o;
+  _initial_theta0_mat[_qp] = _initial_theta0;
 }

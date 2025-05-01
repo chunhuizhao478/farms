@@ -50,21 +50,26 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    # Cd_constant = 10
+    Cd_constant = -1.0
+
+    #strain rate dependent Cd options
+    m_exponent = 0.8
+    strain_rate_hat = 1e-8
+    cd_hat = 1e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
-    # CdCb_multiplier = 100
+    CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
     # CBCBH_multiplier = 0.0 #specify by auxiliary variable
-    # CBH_constant = 10
+    CBH_constant = 10
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    # C_1 = 3
+    C_1 = 1e-4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    # C_2 = 0.05
+    C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.03 #1e-3
@@ -79,7 +84,7 @@
     m2 = 1
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.7
+    chi = 0.8
 
     #add strain rate dependent Cd option
     # m_exponent = 0.85
@@ -189,81 +194,6 @@
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
-    #aux parameters for damage breakage model
-    [get_cd_block13]
-        type = ConstantAux
-        variable = Cd_constant_aux
-        value = 1e4
-        block = '1 3'
-        execute_on = 'INITIAL'
-    []
-    [get_cd_block23]
-        type = ConstantAux
-        variable = Cd_constant_aux
-        value = 0
-        block = '2'
-        execute_on = 'INITIAL'
-    []   
-    #cb multiplier
-    [get_cb_multiplier_block13]
-        type = ConstantAux
-        variable = Cb_multiplier_aux
-        value = 1000
-        block = '1 3'
-        execute_on = 'INITIAL'
-    []
-    [get_cb_multiplier_block2]
-        type = ConstantAux
-        variable = Cb_multiplier_aux
-        value = 0
-        block = '2'
-        execute_on = 'INITIAL'
-    []
-    #cbh constant 
-    [get_cbh_constant_block1]
-        type = ConstantAux
-        variable = Cbh_constant_aux
-        value = 1e4
-        block = '1 3'
-        execute_on = 'INITIAL'
-    []
-    [get_cbh_constant_block2]
-        type = ConstantAux
-        variable = Cbh_constant_aux
-        value = 0
-        block = 2
-        execute_on = 'INITIAL'
-    []
-    #C1
-    [get_c1_block13]
-        type = ConstantAux
-        variable = C1_aux
-        value = 300
-        block = '1 3'
-        execute_on = 'INITIAL'
-    []
-    [get_c1_block2]
-        type = ConstantAux
-        variable = C1_aux
-        value = 0
-        block = 2
-        execute_on = 'INITIAL'
-    []
-    #C2
-    [get_c2_block13]
-        type = ConstantAux
-        variable = C2_aux
-        value = 0.05
-        block = '1 3'
-        execute_on = 'INITIAL'
-    []
-    [get_c2_block2]
-        type = ConstantAux
-        variable = C2_aux
-        value = 0
-        block = '2'
-        execute_on = 'INITIAL'
-    []
     #
     [get_alpha]
         type = MaterialRealAux
@@ -319,7 +249,7 @@
     [diffusion_nonlocal]
         type = CoefDiffusion
         variable = nonlocal_xi
-        coef = 1e4 #1e-4
+        coef = 4e4 #1e-4
     []
     [reaction_local]
         type = FarmsLocalXiForce
@@ -343,20 +273,6 @@
         type = DamageBreakageMaterial
         output_properties = 'alpha_damagedvar B_damagedvar'
         outputs = exodus
-        #options to use auxiliary variables
-        use_cd_aux = true
-        Cd_constant_aux = Cd_constant_aux
-        use_cb_multiplier_aux = true
-        Cb_multiplier_aux = Cb_multiplier_aux
-        use_cbh_aux = true
-        CBH_aux = Cbh_constant_aux
-        use_c1_aux = true
-        C1_aux = C1_aux
-        use_c2_aux = true
-        C2_aux = C2_aux
-        # use_cd_strain_dependent = true
-        # use_total_strain_rate = true
-        # block_id_applied = 1
         # use initial damage time dependent
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
@@ -384,6 +300,19 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         prop_values = '0.0'
+    []
+    #elastic material
+    [elastic_tensor]
+        type = ComputeIsotropicElasticityTensor
+        lambda = 32.04e9
+        shear_modulus = 32.04e9
+    []
+    [compute_stress]
+        type = ComputeStVenantKirchhoffStress
+        large_kinematics = true
+        output_properties = 'green_lagrange_strain pk2_stress'
+        outputs = exodus
+        block = '2'
     []
 [] 
 
@@ -415,16 +344,22 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    dt = 1e-1
+    # dt = 1e-1
     verbose = true
-    # [TimeStepper]
-    #     type = FarmsIterationAdaptiveDT
-    #     dt = 1e-3
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 8
-    #     growth_factor = 1.5
-    #     max_time_step_bound = 1e10
-    # []
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-2
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 8
+        growth_factor = 1.1
+        max_time_step_bound = 1e7
+        #constrain velocity during dynamic simulation
+        constrain_by_velocity = true
+        vel_threshold = 1e-2
+        constant_dt_on_overspeed = 1e-2
+        maxvelx = 'maxvelx'
+        maxvely = 'maxvely'
+    []
     # [./TimeStepper]
     #     type = SolutionTimeAdaptiveDT
     #     dt = 0.01
@@ -443,12 +378,26 @@
     [../]
 []
 
-[Controls] # turns off inertial terms for the FIRST time step
+[Postprocessors]
+    [./_dt]
+        type = TimestepSize
+    [../]
+    [./maxvelx]
+        type = NodalExtremeValue
+        variable = vel_x
+    [../]
+    [./maxvely]
+        type = NodalExtremeValue
+        variable = vel_y
+    [../]
+[../]
+
+[Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y'
     start_time = -1e-12
-    end_time = 1e-3 # dt used in the simulation
+    end_time = 1e-2 # dt used in the simulation
   []
 [../]
 
@@ -487,15 +436,12 @@
         variable = disp_y
         value = 0
         boundary = bottom
-    [] 
-    [bc_load_top_x]
-        type = PresetDisplacement
-        boundary = top
+    []
+    [./continous_shear_stress]
+        type = FunctionNeumannBC
         variable = disp_x
-        beta = 0.25
-        velocity = vel_x
-        acceleration = accel_x
-        function = func_top_bc
+        function = func_top_traction
+        boundary = top
     [] 
     # 
     [static_pressure_top]
@@ -531,14 +477,92 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
+    [] 
+    #add dampers
+    [damp_top_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
     []
-    #add initial shear stress
-    # [./initial_shear_stress]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     value = 12e6
-    #     boundary = top
-    # []    
+    [damp_top_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_left_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_left_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_right_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_right_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []    
 []
 
 [UserObjects]
