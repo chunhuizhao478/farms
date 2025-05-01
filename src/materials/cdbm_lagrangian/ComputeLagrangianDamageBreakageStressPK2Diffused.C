@@ -526,6 +526,39 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
 
   /* Compute E */
   RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + Ep;
+  //RankTwoTensor E = 0.5 * (_F[_qp].transpose() * _F[_qp] - RankTwoTensor::Identity());
+
+  // //----------------------------------------------------------------------------//
+  // // Add check to ensure Ep is always not exceeding E
+  // Real Eij = 0.0;
+  // Real Epij = 0.0;
+  // for (unsigned int i = 0; i < 3; ++i){
+  //   for (unsigned int j = 0; j < 3; ++j){
+  //     Eij  = E(i,j);
+  //     Epij = Ep(i,j);
+  //     if (Eij > 0.0 && Epij > Eij){
+  //       Epij = Eij;
+  //     }
+  //     else if (Eij < 0.0 && Epij < Eij){
+  //       Epij = Eij;
+  //     }
+  //     else if (Eij == 0.0 && Epij != 0.0){
+  //       Epij = 0.0;
+  //     }
+  //     Ep(i,j) = Epij;
+  //   }
+  // }
+
+  // // Update Ee
+  // // 1) Precompute inverses of Fp
+  // RankTwoTensor Fp_inv  = Fp_updated.inverse();
+  // RankTwoTensor Fp_invT = Fp_inv.transpose();
+
+  // // 2) Compute Ee_corrected = Fp_invT * (E - Ep) * Fp_inv
+  // RankTwoTensor E_minus_Ep = E - Ep;
+  // Ee = Fp_invT * E_minus_Ep * Fp_inv;
+  // Ee = 0.5 * (Ee + Ee.transpose());
+  // //----------------------------------------------------------------------------//
 
   /* Compute I1 */
   Real I1 = Ee.trace();

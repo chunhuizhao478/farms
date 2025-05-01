@@ -41,7 +41,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -63,10 +63,6 @@
     [disp_y]
         order = FIRST
         family = LAGRANGE    
-    []
-    [nonlocal_xi]
-        order = FIRST
-        family = MONOMIAL
     []
 []
 
@@ -135,6 +131,12 @@
         order = FIRST
         family = LAGRANGE
     []
+    #
+    [nonlocal_xi]
+        order = FIRST
+        family = MONOMIAL
+    []
+    
 []
 
 [AuxKernels]
@@ -193,6 +195,13 @@
         variable = cg_aux
         function = func_spatial_cg
     []
+    #
+    [get_nonlocal_xi]
+        type = MaterialRealAux
+        variable = nonlocal_xi
+        property = eqstrain_nonlocal
+        block = '1 3'
+    []
 []
 
 [Kernels]
@@ -225,22 +234,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []
-    # gradient based nonlocal averaging
-    [react_nonlocal]
-        type = Reaction
-        variable = nonlocal_xi
-        rate = 1.0
-    []
-    [diffusion_nonlocal]
-        type = CoefDiffusion
-        variable = nonlocal_xi
-        coef = 4e4 #1e-4
-    []
-    [reaction_local]
-        type = FarmsLocalXiForce
-        variable = nonlocal_xi
-    []       
+    []      
 []
 
 [Functions]
@@ -319,7 +313,27 @@
         outputs = exodus
         block = '2'
     []
+    #nonlocal eqstrain
+    [nonlocal_eqstrain]
+        type = ElkNonlocalEqstrain
+        average_UO = eqstrain_averaging
+        output_properties = 'eqstrain_nonlocal'
+        outputs = exodus
+        block = '1 3'
+    []
 [] 
+
+[UserObjects]
+    [eqstrain_averaging]
+        type = ElkRadialAverage
+        length_scale = 100
+        prop_name = strain_invariant_ratio
+        radius = 200
+        weights = BAZANT
+        execute_on = LINEAR
+        block = '1 3'
+    []
+[]
 
 [Preconditioning]
     [smp]
@@ -346,9 +360,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-10
+    nl_rel_tol = 1e-8
     nl_max_its = 10
-    nl_abs_tol = 1e-12
+    nl_abs_tol = 1e-10
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -405,7 +419,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 20
     [../]
 []
 
