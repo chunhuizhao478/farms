@@ -4,7 +4,8 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        file = '../mesh/mesh_local.msh'
+        # file = '../mesh/mesh_local.msh'
+        file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -60,7 +61,7 @@
     CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    CBH_constant = 1e8
+    CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
     C_1 = 1e-4
@@ -260,10 +261,10 @@
         use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
         #
-        use_spatial_xio = true
-        xio_aux = xio_aux
-        use_spatial_xid = true
-        xid_aux = xid_aux
+        # use_spatial_xio = true
+        # xio_aux = xio_aux
+        # use_spatial_xid = true
+        # xid_aux = xid_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]

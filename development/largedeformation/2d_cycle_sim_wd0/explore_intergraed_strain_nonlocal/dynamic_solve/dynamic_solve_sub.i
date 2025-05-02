@@ -3,7 +3,8 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh.msh'
+        # file = '../mesh/mesh_local.msh'
+        file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +17,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -30000 0'
+        coord = '0 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -52,14 +53,14 @@
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-8
-    cd_hat = 1e3
+    cd_hat = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
     CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    CBH_constant = 1e8
+    CBH_constant = 10
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
     C_1 = 1e-4
@@ -259,10 +260,10 @@
         use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
         #
-        use_spatial_xio = true
-        xio_aux = xio_aux
-        use_spatial_xid = true
-        xid_aux = xid_aux
+        # use_spatial_xio = true
+        # xio_aux = xio_aux
+        # use_spatial_xid = true
+        # xid_aux = xid_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]

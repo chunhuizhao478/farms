@@ -3,7 +3,8 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        file = '../mesh/mesh_local.msh'
+        # file = '../mesh/mesh_local.msh'
+        file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -41,7 +42,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -346,9 +347,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-10
+    nl_rel_tol = 1e-8
     nl_max_its = 10
-    nl_abs_tol = 1e-12
+    nl_abs_tol = 1e-10
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -405,7 +406,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 20
     [../]
 []
 
