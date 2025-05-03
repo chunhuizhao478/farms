@@ -196,12 +196,12 @@
         function = func_spatial_cg
     []
     #
-    [get_nonlocal_xi]
-        type = MaterialRealAux
-        variable = nonlocal_xi
-        property = eqstrain_nonlocal
-        block = '1 3'
-    []
+    # [get_nonlocal_xi]
+    #     type = MaterialRealAux
+    #     variable = nonlocal_xi
+    #     property = eqstrain_nonlocal
+    #     block = '1 3'
+    # []
 []
 
 [Kernels]
