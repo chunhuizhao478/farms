@@ -3,8 +3,8 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_local.msh'
+        # file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -168,7 +168,7 @@
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 28000
+        build_param_len_of_fault = 8000
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
@@ -180,6 +180,19 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         prop_values = '0.0'
+    []
+    #shear stress perturbation
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 0
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
     []
 []  
 

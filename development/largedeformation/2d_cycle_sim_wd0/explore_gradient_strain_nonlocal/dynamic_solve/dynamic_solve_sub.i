@@ -4,8 +4,8 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_local.msh'
+        # file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -294,9 +294,9 @@
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-10
+    nl_rel_tol = 1e-8
     nl_max_its = 10
-    nl_abs_tol = 1e-12
+    nl_abs_tol = 1e-10
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true

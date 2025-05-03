@@ -82,7 +82,10 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _const_A_mat(getMaterialProperty<Real>("const_A_mat")),
   _const_B_mat(getMaterialProperty<Real>("const_B_mat")),
   _const_theta_o_mat(getMaterialProperty<Real>("const_theta_o_mat")),
-  _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat"))
+  _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat")),
+  //---------------------------------------------------------------------------------------------//
+  //add shear stress perturbation
+  _shear_stress_perturbation(getMaterialProperty<Real>("shear_stress_perturbation"))
 {
 }
 
@@ -559,6 +562,16 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   // Ee = Fp_invT * E_minus_Ep * Fp_inv;
   // Ee = 0.5 * (Ee + Ee.transpose());
   // //----------------------------------------------------------------------------//
+
+  //Compute shear perturbation
+  //----------------------------------------------------------------------------//
+  Real shear_strain_perturbation = 0.0;
+  if (_shear_stress_perturbation[_qp] != 0){
+    shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * _shear_modulus[_qp]);
+    Ee(0,1) += shear_strain_perturbation;
+    Ee(1,0) += shear_strain_perturbation;
+  }
+  //----------------------------------------------------------------------------//
 
   /* Compute I1 */
   Real I1 = Ee.trace();

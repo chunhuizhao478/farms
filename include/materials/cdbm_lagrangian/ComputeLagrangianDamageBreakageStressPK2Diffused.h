@@ -151,4 +151,7 @@ protected:
   const MaterialProperty<Real> & _const_B_mat;
   const MaterialProperty<Real> & _const_theta_o_mat;
   const MaterialProperty<Real> & _initial_theta0_mat;
+
+  /* add shear perturbation */
+  const MaterialProperty<Real> & _shear_stress_perturbation;
 };

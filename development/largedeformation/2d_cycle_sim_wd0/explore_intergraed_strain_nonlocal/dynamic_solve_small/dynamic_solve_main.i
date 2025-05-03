@@ -2,7 +2,8 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_small.msh'
+        # file = '../mesh/mesh_small.msh'
+        file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -15,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -10000 0'
+        coord = '0 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -34,7 +35,7 @@
     shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+    xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
@@ -332,14 +333,27 @@
         outputs = exodus
         block = '1 3'
     []
+    #shear stress perturbation
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 0
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
+    []
 [] 
 
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 100
+        length_scale = 200
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 100
         weights = BAZANT
         execute_on = LINEAR
         block = '1 3'
@@ -430,7 +444,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 20
     [../]
 []
 
@@ -600,7 +614,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_out.e'
+      mesh = '../static_solve_small/static_solve_out.e'
       system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true

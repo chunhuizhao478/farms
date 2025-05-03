@@ -3,8 +3,8 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_local.msh'
+        # file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -42,7 +42,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-8
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -320,6 +320,19 @@
         outputs = exodus
         block = '2'
     []
+    #shear stress perturbation
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 0
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
+    []
 [] 
 
 [Preconditioning]
@@ -406,7 +419,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 1
     [../]
 []
 

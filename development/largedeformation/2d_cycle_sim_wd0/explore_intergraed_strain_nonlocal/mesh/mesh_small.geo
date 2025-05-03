@@ -5,10 +5,10 @@ lc_fault = 100;
 lc = 200;
 
 // Define the big square (2D)
-big_xmin = -10000;
-big_xmax = 10000;
-big_ymin = -10000;
-big_ymax = 10000;
+big_xmin = -20000;
+big_xmax = 20000;
+big_ymin = -20000;
+big_ymax = 20000;
 
 // Define the small box (2D)
 small_xmin = -6000;
