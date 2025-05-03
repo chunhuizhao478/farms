@@ -196,12 +196,12 @@
         function = func_spatial_cg
     []
     #
-    # [get_nonlocal_xi]
-    #     type = MaterialRealAux
-    #     variable = nonlocal_xi
-    #     property = eqstrain_nonlocal
-    #     block = '1 3'
-    # []
+    [get_nonlocal_xi]
+        type = MaterialRealAux
+        variable = nonlocal_xi
+        property = eqstrain_nonlocal
+        block = '1 3'
+    []
 []
 
 [Kernels]
@@ -326,13 +326,13 @@
         block = '2'
     []
     #nonlocal eqstrain
-    # [nonlocal_eqstrain]
-    #     type = ElkNonlocalEqstrain
-    #     average_UO = eqstrain_averaging
-    #     output_properties = 'eqstrain_nonlocal'
-    #     outputs = exodus
-    #     block = '1 3'
-    # []
+    [nonlocal_eqstrain]
+        type = ElkNonlocalEqstrain
+        average_UO = eqstrain_averaging
+        output_properties = 'eqstrain_nonlocal'
+        outputs = exodus
+        block = '1 3'
+    []
     #shear stress perturbation
     [damage_perturbation]
         type = PerturbationRadial
@@ -348,17 +348,17 @@
     []
 [] 
 
-# [UserObjects]
-#     [eqstrain_averaging]
-#         type = ElkRadialAverage
-#         length_scale = 200
-#         prop_name = strain_invariant_ratio
-#         radius = 100
-#         weights = BAZANT
-#         execute_on = LINEAR
-#         block = '1 3'
-#     []
-# []
+[UserObjects]
+    [eqstrain_averaging]
+        type = ElkRadialAverage
+        length_scale = 200
+        prop_name = strain_invariant_ratio
+        radius = 100
+        weights = BAZANT
+        execute_on = TIMESTEP_END
+        block = '1 3'
+    []
+[]
 
 [Preconditioning]
     [smp]
@@ -605,8 +605,8 @@
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        # source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
-        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
+        #source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
