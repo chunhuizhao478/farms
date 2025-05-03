@@ -52,18 +52,18 @@ ElkNonlocalEqstrain::computeQpProperties()
   // Now update the nonlocal damage model
   //Only update iterator when we change to another element. This is for
   //computational costs related to map lookup.
-  if (_prev_elem != _current_elem)
-  {
-    _average_eqstrain_nonlocal = _average.find(_current_elem->id());
-    _prev_elem = _current_elem;
-  }
-  // Check that we found the new element
-  if (_average_eqstrain_nonlocal != _average.end())
-    _eqstrain_nonlocal[_qp] = _average_eqstrain_nonlocal->second[_qp];
-  else
-    // during startup the map is not made yet or
-    // if AMR is used then the new element will not be found but it should
-    // already have an old nonlocal damage value that needs to perserved
-    _eqstrain_nonlocal[_qp] = _eqstrain_nonlocal_old[_qp];
+  // if (_prev_elem != _current_elem)
+  // {
+  //   _average_eqstrain_nonlocal = _average.find(_current_elem->id());
+  //   _prev_elem = _current_elem;
+  // }
+  // // Check that we found the new element
+  // if (_average_eqstrain_nonlocal != _average.end())
+  //   _eqstrain_nonlocal[_qp] = _average_eqstrain_nonlocal->second[_qp];
+  // else
+  //   // during startup the map is not made yet or
+  //   // if AMR is used then the new element will not be found but it should
+  //   // already have an old nonlocal damage value that needs to perserved
+  //   _eqstrain_nonlocal[_qp] = _eqstrain_nonlocal_old[_qp];
 
 }
