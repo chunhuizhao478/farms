@@ -182,48 +182,61 @@ l = 2e-4 # N * h, N: number of elements, h: element size
   []
 []
 
-[Kernels]
-  [solid_x]
-    type = ADStressDivergenceTensors
-    variable = disp_x
-    component = 0
-  []
-  [solid_y]
-    type = ADStressDivergenceTensors
-    variable = disp_y
-    component = 1
-  []
-  [solid_z]
-    type = ADStressDivergenceTensors
-    variable = disp_z
-    component = 2
-  []
-  [inertia_x]
-    type = ADInertialForce
-    variable = disp_x
-    acceleration = accel_x
-    velocity = vel_x
-    beta = 0.25
-    gamma = 0.5
-    eta = 0
-  []
-  [inertia_y]
-    type = ADInertialForce
-    variable = disp_y
-    acceleration = accel_y
-    velocity = vel_y
-    beta = 0.25
-    gamma = 0.5
-    eta = 0
-  []
-  [inertia_z]
-    type = ADInertialForce
-    variable = disp_z
-    acceleration = accel_z
-    velocity = vel_z
-    beta = 0.25
-    gamma = 0.5
-    eta = 0
+# [Kernels]
+#   [solid_x]
+#     type = ADStressDivergenceTensors
+#     variable = disp_x
+#     component = 0
+#   []
+#   [solid_y]
+#     type = ADStressDivergenceTensors
+#     variable = disp_y
+#     component = 1
+#   []
+#   [solid_z]
+#     type = ADStressDivergenceTensors
+#     variable = disp_z
+#     component = 2
+#   []
+#   [inertia_x]
+#     type = ADInertialForce
+#     variable = disp_x
+#     acceleration = accel_x
+#     velocity = vel_x
+#     beta = 0.25
+#     gamma = 0.5
+#     eta = 0
+#   []
+#   [inertia_y]
+#     type = ADInertialForce
+#     variable = disp_y
+#     acceleration = accel_y
+#     velocity = vel_y
+#     beta = 0.25
+#     gamma = 0.5
+#     eta = 0
+#   []
+#   [inertia_z]
+#     type = ADInertialForce
+#     variable = disp_z
+#     acceleration = accel_z
+#     velocity = vel_z
+#     beta = 0.25
+#     gamma = 0.5
+#     eta = 0
+#   []
+# []
+
+[Physics/SolidMechanics/Dynamic]
+  [all]
+    add_variables = true
+    hht_alpha = 0.11
+    newmark_beta = 0.25
+    newmark_gamma = 0.5
+    use_automatic_differentiation = true
+    # mass_damping_coefficient = 0.1
+    # stiffness_damping_coefficient = 0.1
+    density = 2450
   []
 []
 
@@ -295,9 +308,9 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     parameter_names = 'p eta '
     parameter_values = '2 1e-6'
   []
-  [strain]
-    type = ADComputeSmallStrain
-  []
+  # [strain]
+  #   type = ADComputeSmallStrain
+  # []
   [elasticity]
     type = SmallDeformationIsotropicElasticity
     bulk_modulus = K
@@ -314,11 +327,11 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     output_properties = 'stress'
     outputs = exodus
   []
-  [density]
-    type = ADGenericConstantMaterial
-    prop_names = 'density'
-    prop_values = '2450'
-  []
+  # [density]
+  #   type = ADGenericConstantMaterial
+  #   prop_names = 'density'
+  #   prop_values = '2450'
+  # []
 []
 
 [Executioner]
