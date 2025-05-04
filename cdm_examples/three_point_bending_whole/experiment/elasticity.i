@@ -1,10 +1,13 @@
-E = 20e9
-nu = 0.2
+E = 40e6
+nu = 0.25
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
 
-Gc = 90
-l = 5e-5 # N * h, N: number of elements, h: element size
+l = 1e-5 # N * h, N: number of elements, h: element size
+
+sigmat = 6.43e6
+
+Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}' 
 
 [MultiApps]
   [fracture]
@@ -37,10 +40,7 @@ l = 5e-5 # N * h, N: number of elements, h: element size
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    # file =  '../meshfile/mesh_1.6up_0shrift.msh'
-    # file =  '../meshfile/mesh_1.6up_1shrift.msh'
-    # file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
-    file =  '../meshfile/mesh_1.6up_2.0shrift.msh'
+    file =  '../meshfile_refined/mesh_1.6up_1.5shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -79,7 +79,7 @@ l = 5e-5 # N * h, N: number of elements, h: element size
   []
   [./extranodeset_2]
     type = ExtraNodesetGenerator
-    coord = '0.0145 0.008 0'
+    coord = '0.0140 0.008 0'
     new_boundary = load
     input = extranodeset_1
     use_closest_node=true
@@ -219,7 +219,7 @@ l = 5e-5 # N * h, N: number of elements, h: element size
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.01
+  dt = 0.001
   end_time = 100
 
   fixed_point_max_its = 20
@@ -230,5 +230,6 @@ l = 5e-5 # N * h, N: number of elements, h: element size
 
 [Outputs]
   exodus = true
+  time_step_interval = 10
   print_linear_residuals = false
 []

@@ -9,28 +9,6 @@ sigmat = 6.43e6
 
 Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}' 
 
-[Adaptivity]
-  max_h_level = 3
-  marker = 'combo'
-  cycles_per_step = 2
-  [Markers]
-      [./combo]
-          type = ComboMarker
-          markers = 'damage_marker strain_energy_marker'
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.1
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*0.5*Gc/l}'
-      []      
-  []
-[]
-
 [MultiApps]
   [fracture]
     type = TransientMultiApp

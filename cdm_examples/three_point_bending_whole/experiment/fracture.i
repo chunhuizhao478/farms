@@ -1,10 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    # file =  '../meshfile/mesh_1.6up_0shrift.msh'
-    # file =  '../meshfile/mesh_1.6up_1shrift.msh'
-    # file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
-    file =  '../meshfile/mesh_1.6up_2.0shrift.msh'
+    file =  '../meshfile_refined/mesh_1.6up_1.5shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -43,7 +40,7 @@
   []
   [./extranodeset_2]
     type = ExtraNodesetGenerator
-    coord = '0.0145 0.008 0'
+    coord = '0.0140 0.008 0'
     new_boundary = load
     input = extranodeset_1
     use_closest_node=true
