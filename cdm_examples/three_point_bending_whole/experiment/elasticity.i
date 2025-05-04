@@ -1,35 +1,10 @@
-E = 40e6
-nu = 0.25
+E = 20e9
+nu = 0.2
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
 
+Gc = 90
 l = 5e-5 # N * h, N: number of elements, h: element size
-
-sigmat = 6.43e6
-
-Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}' 
-
-[Adaptivity]
-  max_h_level = 3
-  marker = 'combo'
-  cycles_per_step = 2
-  [Markers]
-      [./combo]
-          type = ComboMarker
-          markers = 'damage_marker strain_energy_marker'
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.1
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*0.5*Gc/l}'
-      []      
-  []
-[]
 
 [MultiApps]
   [fracture]
@@ -64,8 +39,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
     type = FileMeshGenerator
     # file =  '../meshfile/mesh_1.6up_0shrift.msh'
     # file =  '../meshfile/mesh_1.6up_1shrift.msh'
-    file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
-    # file =  '../meshfile/mesh_1.6up_2.0shrift.msh'
+    # file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
+    file =  '../meshfile/mesh_1.6up_2.0shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -104,7 +79,7 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   []
   [./extranodeset_2]
     type = ExtraNodesetGenerator
-    coord = '0.0140 0.008 0'
+    coord = '0.0145 0.008 0'
     new_boundary = load
     input = extranodeset_1
     use_closest_node=true

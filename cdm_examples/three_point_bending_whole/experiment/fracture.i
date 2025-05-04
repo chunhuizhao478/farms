@@ -3,8 +3,8 @@
     type = FileMeshGenerator
     # file =  '../meshfile/mesh_1.6up_0shrift.msh'
     # file =  '../meshfile/mesh_1.6up_1shrift.msh'
-    file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
-    # file =  '../meshfile/mesh_1.6up_2.0shrift.msh'
+    # file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
+    file =  '../meshfile/mesh_1.6up_2.0shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -43,32 +43,10 @@
   []
   [./extranodeset_2]
     type = ExtraNodesetGenerator
-    coord = '0.0140 0.008 0'
+    coord = '0.0145 0.008 0'
     new_boundary = load
     input = extranodeset_1
     use_closest_node=true
-  []
-[]
-
-[Adaptivity]
-  max_h_level = 3
-  marker = 'combo'
-  cycles_per_step = 2
-  [Markers]
-      [./combo]
-          type = ComboMarker
-          markers = 'damage_marker strain_energy_marker'
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.1
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*0.5*Gc/l}'
-      []      
   []
 []
 

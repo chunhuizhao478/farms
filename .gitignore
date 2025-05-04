@@ -341,3 +341,5 @@ examples/benchmark_tpv2052D/czm/tpv2052D_tria_out_cp/0942-mesh.cpa.gz/1/header.g
 examples/benchmark_tpv2052D/czm/tpv2052D_tria_out_cp/0942-mesh.cpa.gz/1/split-1-0.gz
 cdm_examples/pf_mesh_adaptivity_pure_shear/elasticity_out_cp/5482-mesh.cpa.gz/1/header.gz
 cdm_examples/pf_mesh_adaptivity_pure_shear/elasticity_out_cp/5482-mesh.cpa.gz/1/split-1-0.gz
+cdm_examples/three_point_bending_whole/phasefield/elasticity_out_cp/0802-mesh.cpa.gz/1/header.gz
+cdm_examples/three_point_bending_whole/phasefield/elasticity_out_cp/0802-mesh.cpa.gz/1/split-1-0.gz

@@ -228,25 +228,25 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 []
 
 [Functions]
-  # [func_tri_pulse]
-  #   type = ElkPulseLoadExperiment
-  #   shape_param_alpha = 4e5
-  #   shape_param_beta = 4e6
-  #   rise_time = 6.396069702761238e-07
-  #   single_pulse_duration = 1e-5
-  #   EM = 0.03
-  #   gap = 0.001
-  #   convert_efficiency = 0.5
-  #   fitting_param_alpha = 0.35
-  #   discharge_center = '0 0 0.0005'
-  #   number_of_pulses = 1
-  #   peak_pressure = 50e6 #if peak pressure is specified, the depth variation is ignored
-  # []
   [func_tri_pulse]
-    type = ParsedFunction
-    # expression = 'if (t<8e-6, -10e12 * t + 80e6, 0)'
-    expression = 'if (t<8e-6, -10e12 * t + 120e6, 0)'
+    type = ElkPulseLoadExperiment
+    shape_param_alpha = 4.658e5
+    shape_param_beta = 4.661e5
+    rise_time = 3e-6
+    single_pulse_duration = 4e-5
+    EM = 0.03
+    gap = 0.001
+    convert_efficiency = 1.0
+    fitting_param_alpha = 0.35
+    discharge_center = '0 0 0.0005'
+    number_of_pulses = 1
+    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
   []
+  # [func_tri_pulse]
+  #   type = ParsedFunction
+  #   expression = 'if (t<8e-6, -10e12 * t + 80e6, 0)'
+  #   # expression = 'if (t<8e-6, -10e12 * t + 120e6, 0)'
+  # []
 []
 
 [BCs]
