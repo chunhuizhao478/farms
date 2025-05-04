@@ -3,8 +3,8 @@
     [./msh]
         type = FileMeshGenerator
         # file = '../mesh/mesh.msh'
-        file = '../mesh/mesh_local.msh'
-        # file = '../mesh/mesh_longfault.msh'
+        # file = '../mesh/mesh_local.msh'
+        file = '../mesh/mesh_longfault.msh'
     []
     [./sidesets]
         input = msh
@@ -17,7 +17,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -30000 0'
+        coord = '0 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -36,7 +36,7 @@
     shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
+    xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9

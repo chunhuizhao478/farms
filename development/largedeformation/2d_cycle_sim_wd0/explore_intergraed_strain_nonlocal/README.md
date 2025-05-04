@@ -1,5 +1,7 @@
 Intergrated-Based Nonlocal Equvialent Strain Model
 
+Segfault!
+
 #!/bin/bash
 #PBS -N integrated
 #PBS -l select=4:ncpus=48:mpiprocs=30
