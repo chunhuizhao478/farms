@@ -62,12 +62,13 @@ DamageBreakageMaterial::validParams()
   params.addParam<bool>("use_const_xi_aux", false, "Whether to use xi_0 from aux variable");
   params.addCoupledVar("const_xi_aux", "AuxVariable for xi");
   params.addParam<int>("const_xi_block_id", -1, "Block ID to apply the constant xi, currently it has to be one block");
+  //-----------------------------------------------------------------------------------//
+  // Add option to use strain-dependent Cd
   params.addParam<bool>("use_cd_strain_dependent", false, "Whether to use strain-dependent Cd");
   params.addParam<Real>("m_exponent", -1, "Exponent for strain-dependent Cd");
   params.addParam<Real>("strain_rate_hat", -1, "Strain rate for strain-dependent Cd");
   params.addParam<Real>("cd_hat", -1, "Cd value for strain-dependent Cd");
-  params.addParam<int>("straindep_block_id_applied", -1, "Block ID to apply the rate-dependent Cd, currently it has to be one block");
-  params.addParam<bool>("use_total_strain_rate", false, "Whether to use total strain rate, default is to use elastic strain rate");
+  //-----------------------------------------------------------------------------------//
   // Add option to use pore pressure to decrease mean stress
   params.addParam<bool>("use_pore_pressure", false,
                         "Flag to use pore pressure to decrease mean stress");
@@ -191,8 +192,12 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _use_shear_modulus_o_aux(getParam<bool>("use_shear_modulus_o_aux")),
   _shear_modulus_o_value(getParam<Real>("shear_modulus_o")),
   _shear_modulus_o_aux(_use_shear_modulus_o_aux ? &coupledValue("shear_modulus_o_aux") : nullptr),
+  //-----------------------------------------------------------------------------------//
+  //options to use nonlocal xi
   _use_nonlocal_xi(getParam<bool>("use_nonlocal_xi")),
   _nonlocal_xi(_use_nonlocal_xi ? &coupledValueOld("nonlocal_xi") : nullptr),
+  //-----------------------------------------------------------------------------------//
+  //options to use block-restricted parameters
   _use_cd_aux(getParam<bool>("use_cd_aux")),
   _cd_aux(_use_cd_aux ? &coupledValue("Cd_constant_aux") : nullptr),
   _use_cb_multiplier_aux(getParam<bool>("use_cb_multiplier_aux")),
@@ -208,13 +213,17 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _use_const_xi_aux(getParam<bool>("use_const_xi_aux")),
   _const_xi_aux(_use_const_xi_aux ? &coupledValue("const_xi_aux") : nullptr),
   _const_xi_block_id(getParam<int>("const_xi_block_id")),
+  //-----------------------------------------------------------------------------------//
+  // Add option to use strain-dependent Cd
   _use_cd_strain_dependent(getParam<bool>("use_cd_strain_dependent")),
-  _block_id(0),  // Initialize block ID
+  // _block_id(0),  // Initialize block ID
   _m_exponent(getParam<Real>("m_exponent")),
   _strain_rate_hat(getParam<Real>("strain_rate_hat")),
   _cd_hat(getParam<Real>("cd_hat")),
-  _straindep_block_id_applied(getParam<int>("straindep_block_id_applied")),
-  _use_total_strain_rate(getParam<bool>("use_total_strain_rate")),
+  // _straindep_block_id_applied(getParam<int>("straindep_block_id_applied")),
+  // _use_total_strain_rate(getParam<bool>("use_total_strain_rate")),
+  _strain_rate_old(getMaterialPropertyOldByName<Real>("deviatroic_strain_rate")),
+  //------------------------------------------------------------------------------------//
   _use_pore_pressure(getParam<bool>("use_pore_pressure")),
   _pore_pressure(_use_pore_pressure ? &coupledValue("pore_pressure") : nullptr),
   _pore_pressure_mat(declareProperty<Real>("pore_pressure_mat")),
@@ -310,8 +319,8 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
     mooseError("strain_rate_hat must be set to a positive value when use_cd_strain_dependent is set to true");
   if ((_use_cd_strain_dependent) && (_cd_hat < 0))
     mooseError("cd_hat must be set to a positive value when use_cd_strain_dependent is set to true");
-  if ((_use_cd_strain_dependent) && (_straindep_block_id_applied < 0))
-    mooseError("block_id_applied must be set to a positive value when use_cd_strain_dependent is set to true");
+  // if ((_use_cd_strain_dependent) && (_straindep_block_id_applied < 0))
+    // mooseError("block_id_applied must be set to a positive value when use_cd_strain_dependent is set to true");
   if ((_use_const_xi_aux) && (_const_xi_block_id < 0))
     mooseError("const_xi_block_id must be set to a positive value when use_const_xi_aux is set to true");
   // If use_pore_pressure is true but no pore_pressure is provided, you may throw an error:
@@ -511,7 +520,7 @@ DamageBreakageMaterial::updatedamage()
 {
 
   // Get the block ID for the current element
-  _block_id = _current_elem->subdomain_id();
+  // _block_id = _current_elem->subdomain_id();
 
   // Get xi_0 value
   const Real _xi_0 = _use_xi0_aux ? (*_xi0_aux)[_qp] : _xi0_value;
@@ -519,13 +528,13 @@ DamageBreakageMaterial::updatedamage()
   // Get xi value based on option
   Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];
 
-  //---------------------------buffer zone-------------------------------//
-  // Get xi value based on whether using aux variable
-  // this is block-restricted operation, only apply to buffer-zone block
-  if ((_use_const_xi_aux) && (_block_id == _const_xi_block_id)){
-    xi = (*_const_xi_aux)[_qp];
-  }
-  //---------------------------buffer zone-------------------------------//
+  // //---------------------------buffer zone-------------------------------//
+  // // Get xi value based on whether using aux variable
+  // // this is block-restricted operation, only apply to buffer-zone block
+  // if ((_use_const_xi_aux) && (_block_id == _const_xi_block_id)){
+  //   xi = (*_const_xi_aux)[_qp];
+  // }
+  // //---------------------------buffer zone-------------------------------//
 
   // Get Cd value based on option
   Real Cd = _use_cd_aux ? (*_cd_aux)[_qp] : _Cd_constant;
@@ -534,23 +543,23 @@ DamageBreakageMaterial::updatedamage()
   RealVectorValue strain_in_crack_dir;
   const Real strain_dir0_positive_old = _strain_dir0_positive_old[_qp];
 
-  // std::cout << "Block ID: " << _block_id << std::endl;
-  if ((_use_cd_strain_dependent) && (_block_id == _straindep_block_id_applied )){ //avoid modifying outer block zero Cd
-    //compute principal strain
-    computePrincipalStrainAndOrientation(strain_in_crack_dir);
-    //compute maximum tensile strain
-    Real strain_dir0_positive = std::max(strain_in_crack_dir(0), 0.0); //maximum tensile strain
-    //compute strain rate
-    Real strain_rate = (strain_dir0_positive - strain_dir0_positive_old) / _dt; //strain rate
-    //save strain_dir0_positive
-    _strain_dir0_positive[_qp] = strain_dir0_positive;
-    //compute rate-dependent Cd
-    if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
-    Cd = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
-  } //note: {} is needed for statements, otherwise weird error will occur
+  // // std::cout << "Block ID: " << _block_id << std::endl;
+  // if ((_use_cd_strain_dependent) && (_block_id == _straindep_block_id_applied )){ //avoid modifying outer block zero Cd
+  //   //compute principal strain
+  //   computePrincipalStrainAndOrientation(strain_in_crack_dir);
+  //   //compute maximum tensile strain
+  //   Real strain_dir0_positive = std::max(strain_in_crack_dir(0), 0.0); //maximum tensile strain
+  //   //compute strain rate
+  //   Real strain_rate = (strain_dir0_positive - strain_dir0_positive_old) / _dt; //strain rate
+  //   //save strain_dir0_positive
+  //   _strain_dir0_positive[_qp] = strain_dir0_positive;
+  //   //compute rate-dependent Cd
+  //   if (strain_rate < _strain_rate_hat){ strain_rate = _strain_rate_hat; } //avoid zero strain rate
+  //   Cd = pow(10, 1 + _m_exponent * log(strain_rate/_strain_rate_hat)) * _cd_hat; //scale the Cd value //take constant Cd as minimum
+  // } //note: {} is needed for statements, otherwise weird error will occur
 
   // Save rate-denpendent Cd
-  _Cd_rate_dependent[_qp] = Cd;
+  computeStrainRateCd();
 
   // Get C1 value based on option
   const Real C1 = _use_c1_aux ? (*_c1_aux)[_qp] : _C1;
@@ -632,15 +641,15 @@ DamageBreakageMaterial::updatebreakage()
   // Get xi value based on option
   Real xi = _use_nonlocal_xi ? (*_nonlocal_xi)[_qp] : _xi_old[_qp];  
 
-  //----------------------------buffer zone-----------------------------//
-  // Get the block ID for the current element
-  _block_id = _current_elem->subdomain_id();
-  // Get xi value based on whether using aux variable
-  // this is block-restricted operation, only apply to buffer-zone block
-  if ((_use_const_xi_aux) && (_block_id == _const_xi_block_id)){
-    xi = (*_const_xi_aux)[_qp];  
-  }
-  //----------------------------buffer zone-----------------------------//
+  // //----------------------------buffer zone-----------------------------//
+  // // Get the block ID for the current element
+  // _block_id = _current_elem->subdomain_id();
+  // // Get xi value based on whether using aux variable
+  // // this is block-restricted operation, only apply to buffer-zone block
+  // if ((_use_const_xi_aux) && (_block_id == _const_xi_block_id)){
+  //   xi = (*_const_xi_aux)[_qp];  
+  // }
+  // //----------------------------buffer zone-----------------------------//
 
   //alphacr function
   Real alphacr;
@@ -1107,10 +1116,10 @@ DamageBreakageMaterial::computePrincipalStrainAndOrientation(
 
   //the option of using either plastic or elastic strain rate
   //default is to use elastic strain rate
-  if (_use_total_strain_rate)
+  // if (_use_total_strain_rate)
     _total_lagrange_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
-  else
-    _elastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  // else
+  //   _elastic_strain_old[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
 
   // If the elastic strain is beyond the cracking strain, save the eigen vectors as
   // the rotation tensor. Reverse their order so that the third principal strain
@@ -1132,4 +1141,15 @@ DamageBreakageMaterial::addDilatancyCompactionAnand()
   _anand_param_go_mat[_qp] = _anand_param_go;
   _anand_param_eta_cv_mat[_qp] = _anand_param_eta_cv;
   _anand_param_p_mat[_qp] = _anand_param_p;
+}
+
+// Function to compute the rate-dependent coefficient Cd
+void 
+DamageBreakageMaterial::computeStrainRateCd()
+{
+  //_m_exponent: constant value - default value = 0.8
+  //_strain_rate_hat: constant value - default value = 1e-4
+  //_cd_hat: constant value - default value = 1
+  //_strain_rate_old: deviatoric strain rate, material property defined in ComputeLagrangianDamageBreakageStressPK2
+  _Cd_rate_dependent[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate_old[_qp]/_strain_rate_hat)) * _cd_hat;
 }

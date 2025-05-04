@@ -38,6 +38,7 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _Fp_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_plastic_deformation_gradient_rate")),
   _F_dot(declareProperty<RankTwoTensor>(_base_name + "cdbm_deformation_gradient_rate")),
   _D(declareProperty<RankTwoTensor>(_base_name + "deformation_rate")),
+  _deviatroic_strain_rate(declareProperty<Real>("deviatroic_strain_rate")),
   //---------------------------------------------------------------------------------------------//
   // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
   _eta(declareProperty<Real>(_base_name + "plastic_volume_change")),
@@ -73,7 +74,6 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _anand_param_eta_cv_mat(getMaterialProperty<Real>("anand_param_eta_cv_mat")),
   _anand_param_p_mat(getMaterialProperty<Real>("anand_param_p_mat"))
   //---------------------------------------------------------------------------------------------//
-  //_dim(_mesh.dimension())
 {
 }
 
@@ -553,6 +553,9 @@ ComputeLagrangianDamageBreakageStressPK2Debug::computeQpPK2Stress()
   _I2[_qp] = I2;
   _xi[_qp] = xi;
 
+  //save deviatroic strain rate
+  computeDeviatroicStrainRateTensor();
+
 }
 
 RankTwoTensor
@@ -784,4 +787,25 @@ void
 ComputeLagrangianDamageBreakageStressPK2Debug::computeplasticvolumechange()
 {
   _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * _shear_rate_nu[_qp] * _dt;
+}
+
+//Compute deviatoric strain rate tensor
+void
+ComputeLagrangianDamageBreakageStressPK2Debug::computeDeviatroicStrainRateTensor()
+{
+  //Compute D matrix
+  _D[_qp] = 0.5 * ( _velgrad_L[_qp] + _velgrad_L[_qp].transpose() );
+  //Compute strain rate E_dot = F^T * D * F
+  RankTwoTensor E_dot = _F[_qp].transpose() * _D[_qp] * _F[_qp];
+  //Compute deviatoric strain rate tensor E_dev_dot 
+  RankTwoTensor E_dev_dot = E_dot - (1.0/3.0) * E_dot.trace() * RankTwoTensor::Identity();
+  //Compute J2_dot = 1/2 * E_dev_dot(i,j) * E_dev_dot(i,j)
+  Real J2_dot = 0.0;
+  for (unsigned int i = 0; i < 3; ++i){
+    for (unsigned int j = 0; j < 3; ++j){
+      J2_dot += 0.5 * E_dev_dot(i,j) * E_dev_dot(i,j);
+    }
+  }
+  //Compute equivalent strain rate
+  _deviatroic_strain_rate[_qp] = std::sqrt(2.0/3.0 * J2_dot);
 }

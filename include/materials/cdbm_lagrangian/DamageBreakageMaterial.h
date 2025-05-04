@@ -63,6 +63,8 @@ public:
   /* Additional Features */
   virtual void addDilatancyCompactionAnand(); //add dilatancy/compaction effect using anand model
 
+  virtual void computeStrainRateCd(); //compute strain rate dependent Cd
+
   /**
    * Compute the crack strain in the crack coordinate system. Also
    * computes the crack orientations, and stores in _crack_rotation.
@@ -211,16 +213,19 @@ protected:
   /// @brief add option to use strain-dependent cd
   const bool _use_cd_strain_dependent;
   // Add member variable for block ID (where the rate-dependent Cd applies)
-  unsigned int _block_id;
+  //unsigned int _block_id;
   const Real _m_exponent;
   const Real _strain_rate_hat;
   const Real _cd_hat;
-  const int _straindep_block_id_applied; 
+  //const int _straindep_block_id_applied; 
 
   /// @brief add option to use total strain rate
   // default is to use elastic strain rate
-  const bool _use_total_strain_rate;
+  //const bool _use_total_strain_rate;
 
+  /// @brief get old deviatoric strain rate
+  const MaterialProperty<Real> & _strain_rate_old;
+  
   /// @brief add option to use pore pressure to decrease mean stress
   // pore pressure is saved as material property and will be used 
   // in ComputeLagrangianDamageBreakageStressPK2.C

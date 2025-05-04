@@ -46,6 +46,9 @@ protected:
   /// @brief Compute plastic volume change
   virtual void computeplasticvolumechange();
 
+  /// @brief Compute deviatoric strain rate
+  virtual void computeDeviatroicStrainRateTensor();
+
 protected:
   /* Declare Material Properties */
   /// Plastic Deformation Gradient
@@ -82,6 +85,8 @@ protected:
   MaterialProperty<RankTwoTensor> & _F_dot;
   /// Total Strain (Total Strain Rate)
   MaterialProperty<RankTwoTensor> & _D;
+  /// Deviatoric Strain Rate
+  MaterialProperty<Real> & _deviatroic_strain_rate;
   // Plastic Volume Change
   MaterialProperty<Real> & _eta;
   // Dilatancy Function
