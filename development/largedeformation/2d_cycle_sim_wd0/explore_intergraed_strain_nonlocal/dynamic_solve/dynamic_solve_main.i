@@ -200,7 +200,6 @@
         type = MaterialRealAux
         variable = nonlocal_xi
         property = eqstrain_nonlocal
-        block = '1 3'
     []
 []
 
@@ -319,7 +318,19 @@
         average_UO = eqstrain_averaging
         output_properties = 'eqstrain_nonlocal'
         outputs = exodus
-        block = '1 3'
+    []
+    #shear stress perturbation
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 0
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
     []
 [] 
 
@@ -331,7 +342,6 @@
         radius = 200
         weights = BAZANT
         execute_on = LINEAR
-        block = '1 3'
     []
 []
 
