@@ -70,7 +70,7 @@
     beta_width = 0.03 #1e-3
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -249,7 +249,6 @@
         type = MaterialRealAux
         variable = nonlocal_xi
         property = eqstrain_nonlocal
-        block = '1 3'
     []
     #--------------------------------------------------------------#
     #aux parameters for damage breakage model
@@ -468,7 +467,7 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 100
+        length_scale = 200
         prop_name = strain_invariant_ratio
         radius = 200
         weights = BAZANT
