@@ -230,6 +230,6 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 250
   print_linear_residuals = false
 []
