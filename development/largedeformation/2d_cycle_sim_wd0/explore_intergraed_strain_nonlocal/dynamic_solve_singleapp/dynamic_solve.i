@@ -463,6 +463,7 @@
         average_UO = eqstrain_averaging
         output_properties = 'eqstrain_nonlocal'
         outputs = exodus
+        execute_on = TIMESTEP_END
     []
 [] 
 
@@ -473,7 +474,7 @@
         prop_name = strain_invariant_ratio
         radius = 200
         weights = BAZANT
-        execute_on = LINEAR
+        execute_on = TIMESTEP_END
     []
 []
 

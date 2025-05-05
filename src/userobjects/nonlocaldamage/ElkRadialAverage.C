@@ -80,7 +80,7 @@ ElkRadialAverage::validParams()
 ElkRadialAverage::ElkRadialAverage(const InputParameters & parameters)
   : ElementUserObject(parameters),
     _weights_type(getParam<MooseEnum>("weights").getEnum<WeightsType>()),
-    _prop(getMaterialProperty<Real>("prop_name")),
+    _prop(getMaterialPropertyOldByName<Real>("prop_name")),
     _radius(getParam<Real>("radius")),
     _l(getParam<Real>("length_scale")),
     _padding(getParam<Real>("padding")),
