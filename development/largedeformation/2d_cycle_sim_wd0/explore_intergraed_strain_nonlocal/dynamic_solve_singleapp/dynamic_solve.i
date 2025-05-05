@@ -463,7 +463,6 @@
         average_UO = eqstrain_averaging
         output_properties = 'eqstrain_nonlocal'
         outputs = exodus
-        execute_on = TIMESTEP_END
     []
 [] 
 
