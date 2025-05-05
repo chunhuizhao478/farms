@@ -3,8 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_local.msh'
     []
     [./sidesets]
         input = msh
@@ -17,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -555,7 +554,7 @@
     #save the solution to a exodus file every 0.1 seconds
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 5
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux strain_invariant_ratio_aux pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 deviatroic_strain_rate_aux Cd_rate_dependent_aux nonlocal_xi' 
     [../]
     # #save the solution to a csv file every 0.001 seconds
@@ -619,7 +618,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_out.e'
+      mesh = '../static_solve/static_solve_test_out.e'
       system_variables = 'disp_x disp_y'
       timestep = LATEST
       force_preaux = true
