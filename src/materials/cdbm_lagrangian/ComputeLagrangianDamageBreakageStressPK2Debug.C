@@ -65,8 +65,10 @@ ComputeLagrangianDamageBreakageStressPK2Debug::ComputeLagrangianDamageBreakageSt
   _a1(getMaterialProperty<Real>("a1")),
   _a2(getMaterialProperty<Real>("a2")),
   _a3(getMaterialProperty<Real>("a3")),
+  //---------------------------------------------------------------------------------------------//
+  // To build D matrix
   _use_vels_build_L_mat(getMaterialProperty<bool>("use_vels_build_L_mat")),
-  _velgrad_L(getMaterialProperty<RankTwoTensor>("velgrad_L")),
+  _velgrad_L(getMaterialPropertyOldByName<RankTwoTensor>("velgrad_L")),
   //---------------------------------------------------------------------------------------------//
   // Add option to add dilatancy/compaction effect //Follow paper Section 7.1
   _add_dilatancy_compaction_anand_mat(getMaterialProperty<bool>("add_dilatancy_compaction_anand_mat")),

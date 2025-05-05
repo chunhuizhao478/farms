@@ -33,6 +33,15 @@ ComputeXi::ComputeXi(const InputParameters & parameters)
 }
 
 void
+ComputeXi::initQpStatefulProperties()
+{
+  // Initialize the properties
+  _I1[_qp] = 0.0;
+  _I2[_qp] = 0.0;
+  _xi[_qp] = -std::sqrt(3);
+}
+
+void
 ComputeXi::computeQpProperties()
 {
     _I1[_qp] = (_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2));

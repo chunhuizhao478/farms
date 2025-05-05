@@ -20,10 +20,13 @@ DamageBreakageMaterial::validParams()
 {
   InputParameters params = Material::validParams();
   params.addClassDescription("Material used in three field poro dynamics simulations");
+  //-----------------------------------------------------------------------------------//
+  // Add option to build L matrix
   params.addParam<bool>("use_vels_build_L", false, "Whether to use velocity to build L matrix");
   params.addCoupledVar(           "vel_x", "velocity in x direction"); //to build L matrix
   params.addCoupledVar(           "vel_y", "velocity in y direction"); //to build L matrix
   params.addCoupledVar(           "vel_z", "velocity in z direction"); //to build L matrix
+  //-----------------------------------------------------------------------------------//
   params.addRequiredParam<Real>(        "lambda_o", "initial lambda constant value");
   params.addRequiredParam<Real>( "shear_modulus_o", "initial shear modulus value");
   params.addRequiredParam<Real>(            "xi_0", "strain invariants ratio: onset of damage evolution");
@@ -166,10 +169,13 @@ DamageBreakageMaterial::DamageBreakageMaterial(const InputParameters & parameter
   _a3_old(getMaterialPropertyOldByName<Real>("a3")),
   _elastic_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("green_lagrange_elastic_strain")),
   _total_lagrange_strain_old(getMaterialPropertyOldByName<RankTwoTensor>("total_lagrange_strain")),
+  //---------------------------------------------------------------------------------------------//
+  // Add option to build L matrix
   _use_vels_build_L(getParam<bool>("use_vels_build_L")),
   _grad_vel_x(_use_vels_build_L ? &coupledGradient("vel_x") : nullptr),
   _grad_vel_y(_use_vels_build_L ? &coupledGradient("vel_y") : nullptr),
   _grad_vel_z(_use_vels_build_L ? &coupledGradient("vel_z") : nullptr),
+  //---------------------------------------------------------------------------------------------//
   _lambda_o(getParam<Real>("lambda_o")),
   _shear_modulus_o(getParam<Real>("shear_modulus_o")),
   _xi_d(getParam<Real>("xi_d")),
@@ -559,7 +565,10 @@ DamageBreakageMaterial::updatedamage()
   // } //note: {} is needed for statements, otherwise weird error will occur
 
   // Save rate-denpendent Cd
-  computeStrainRateCd();
+  if (_use_cd_strain_dependent){
+    computeStrainRateCd();
+    Cd = _Cd_rate_dependent[_qp];
+  }
 
   // Get C1 value based on option
   const Real C1 = _use_c1_aux ? (*_c1_aux)[_qp] : _C1;

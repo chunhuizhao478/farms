@@ -22,6 +22,8 @@ public:
 
   ComputeXi(const InputParameters & parameters);
 
+  virtual void initQpStatefulProperties() override;
+
   virtual void computeQpProperties() override;
 
 protected:
