@@ -168,7 +168,7 @@
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 8000
+        build_param_len_of_fault = 28000
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
