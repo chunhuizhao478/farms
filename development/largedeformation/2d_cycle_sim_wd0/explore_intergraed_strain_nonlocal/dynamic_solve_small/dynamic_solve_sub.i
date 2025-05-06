@@ -3,8 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_small.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_local.msh'
     []
     [./sidesets]
         input = msh
@@ -17,7 +16,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -33,7 +32,7 @@
     shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9
+    xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
@@ -53,14 +52,14 @@
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-8
-    cd_hat = 1e3
+    cd_hat = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
     CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    CBH_constant = 1e4
+    CBH_constant = 10
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
     C_1 = 1e-4
@@ -235,14 +234,14 @@
 [Functions]
     [func_spatial_xio]
         type = SpatialDamageBreakageParameters
-        W = 2e3 #half the total width
+        W = 1e3 #half the total width
         w = 1e3
         max_val = -0.8
         min_val = 1.8
     []
     [func_spatial_xid]
         type = SpatialDamageBreakageParameters
-        W = 2e3 #half the total width
+        W = 1e3 #half the total width
         w = 1e3
         max_val = -0.9
         min_val = 1.8

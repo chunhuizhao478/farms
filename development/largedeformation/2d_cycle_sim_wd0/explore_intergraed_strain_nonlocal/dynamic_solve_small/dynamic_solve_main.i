@@ -2,8 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_small.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_local.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +15,7 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '0 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -35,13 +34,13 @@
     shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.9
+    xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-8
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -233,19 +232,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    [] 
-    [damping_x]
-        type = StiffPropDampingImplicit
-        variable = disp_x
-        component = 0
-        zeta = 0.5
-    []
-    [damping_y]
-        type = StiffPropDampingImplicit
-        variable = disp_y
-        component = 1
-        zeta = 0.5
-    []     
+    []      
 []
 
 [Functions]
@@ -253,7 +240,7 @@
         type = ParsedFunction
         expression = 'if (t>dt, 1e-8 * t, 0)'
         symbol_names = 'dt'
-        symbol_values = '1e-2'
+        symbol_values = '1e-3'
     []
     [func_top_traction]
         type = ParsedFunction
@@ -349,11 +336,11 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 200
+        length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 100
+        radius = 900
         weights = BAZANT
-        execute_on = TIMESTEP_END
+        execute_on = LINEAR
     []
 []
 
@@ -382,9 +369,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-6
     nl_max_its = 10
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -401,7 +388,7 @@
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
-        growth_factor = 1.5
+        growth_factor = 1.1
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
@@ -441,7 +428,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 5
     [../]
 []
 
@@ -452,11 +439,10 @@
         value = 0
         boundary = bottom
     []
-    #add initial shear stress
-    [./initial_shear_stress]
-        type = NeumannBC
+    [./continous_shear_stress]
+        type = FunctionNeumannBC
         variable = disp_x
-        value = 12e6
+        function = func_top_traction
         boundary = top
     [] 
     # 
@@ -603,7 +589,6 @@
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
         source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
-        #source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []

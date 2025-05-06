@@ -337,9 +337,9 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 100
+        length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 900
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -370,9 +370,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-6
     nl_max_its = 10
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -430,6 +430,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 20
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi'
     [../]
 []
 
