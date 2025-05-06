@@ -36,7 +36,7 @@
     xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.8
+    xi_d = -0.9
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -69,7 +69,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.05 #1e-3
+    beta_width = 0.03 #1e-3
 
     #diffusion parameter #close the gradient
     D_diffusion = 0
@@ -339,6 +339,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10
+        time_step_interval = 20
+        show = 'Cd_aux'
     [../]
 []

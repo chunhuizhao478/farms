@@ -2,6 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
+        # file = '../mesh/mesh.msh'
         # file = '../mesh/mesh_local.msh'
         file = '../mesh/mesh_longfault.msh'
     []
@@ -63,6 +64,10 @@
     [disp_y]
         order = FIRST
         family = LAGRANGE    
+    []
+    [nonlocal_xi]
+        order = FIRST
+        family = MONOMIAL
     []
 []
 
@@ -131,12 +136,6 @@
         order = FIRST
         family = LAGRANGE
     []
-    #
-    [nonlocal_xi]
-        order = FIRST
-        family = MONOMIAL
-    []
-    
 []
 
 [AuxKernels]
@@ -195,12 +194,6 @@
         variable = cg_aux
         function = func_spatial_cg
     []
-    #
-    [get_nonlocal_xi]
-        type = MaterialRealAux
-        variable = nonlocal_xi
-        property = eqstrain_nonlocal
-    []
 []
 
 [Kernels]
@@ -233,7 +226,22 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []      
+    []
+    # gradient based nonlocal averaging
+    [react_nonlocal]
+        type = Reaction
+        variable = nonlocal_xi
+        rate = 1.0
+    []
+    [diffusion_nonlocal]
+        type = CoefDiffusion
+        variable = nonlocal_xi
+        coef = 9e4 #1e-4
+    []
+    [reaction_local]
+        type = FarmsLocalXiForce
+        variable = nonlocal_xi
+    []       
 []
 
 [Functions]
@@ -312,13 +320,6 @@
         outputs = exodus
         block = '2'
     []
-    #nonlocal eqstrain
-    [nonlocal_eqstrain]
-        type = ElkNonlocalEqstrain
-        average_UO = eqstrain_averaging
-        output_properties = 'eqstrain_nonlocal'
-        outputs = exodus
-    []
     #shear stress perturbation
     [damage_perturbation]
         type = PerturbationRadial
@@ -333,17 +334,6 @@
         outputs = exodus
     []
 [] 
-
-[UserObjects]
-    [eqstrain_averaging]
-        type = ElkRadialAverage
-        length_scale = 100
-        prop_name = strain_invariant_ratio
-        radius = 200
-        weights = BAZANT
-        execute_on = LINEAR
-    []
-[]
 
 [Preconditioning]
     [smp]
@@ -370,9 +360,9 @@
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-6
     nl_max_its = 10
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-8
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -430,6 +420,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 20
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi'
     [../]
 []
 

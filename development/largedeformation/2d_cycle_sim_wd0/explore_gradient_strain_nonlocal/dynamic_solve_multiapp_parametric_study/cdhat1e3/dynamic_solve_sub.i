@@ -1,8 +1,8 @@
 #implicit continuum damage-breakage model dynamics
-
 [Mesh]
     [./msh]
         type = FileMeshGenerator
+        # file = '../mesh/mesh.msh'
         # file = '../mesh/mesh_local.msh'
         file = '../mesh/mesh_longfault.msh'
     []
@@ -60,7 +60,7 @@
     CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    CBH_constant = 10
+    CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
     C_1 = 1e-4
@@ -69,7 +69,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.05 #1e-3
+    beta_width = 0.03 #1e-3
 
     #diffusion parameter #close the gradient
     D_diffusion = 0
@@ -293,9 +293,9 @@
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-10
+    nl_rel_tol = 1e-8
     nl_max_its = 10
-    nl_abs_tol = 1e-12
+    nl_abs_tol = 1e-10
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
@@ -340,5 +340,6 @@
     [./exodus]
         type = Exodus
         time_step_interval = 20
+        show = 'Cd_aux'
     [../]
 []

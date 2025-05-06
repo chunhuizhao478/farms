@@ -39,10 +39,10 @@
     xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.8
+    xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-11
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -236,7 +236,7 @@
     [diffusion_nonlocal]
         type = CoefDiffusion
         variable = nonlocal_xi
-        coef = 4e4 #1e-4
+        coef = 9e4 #1e-4
     []
     [reaction_local]
         type = FarmsLocalXiForce
@@ -419,7 +419,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 10
+      time_step_interval = 20
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi'
     [../]
 []
 
