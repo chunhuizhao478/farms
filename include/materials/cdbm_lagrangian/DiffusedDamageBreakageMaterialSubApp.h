@@ -31,6 +31,7 @@ public:
   virtual void computegammar(); //compute gamma_r
 
   virtual void computeStrainRateCd(); //compute strain rate Cd
+  virtual void computeReverseStrainRateCd(); //compute reverse strain rate Cd
 
   virtual void acceptspatialxio();
   virtual void acceptspatialxid();
@@ -84,6 +85,12 @@ protected:
   Real _cd_hat; //Cd value for strain-dependent Cd
   Real _m_exponent; //exponent for strain-dependent Cd
   const VariableValue & _strain_rate; //strain rate
+
+  //add block-restricted parameters
+  bool _use_block_restricted_parameters; //option to use block-restricted parameters
+  unsigned int _block_id; //initialize block id
+  const int _straindep_increase_block_id_applied; //block id for increasing strain rate Cd
+  const int _straindep_decrease_block_id_applied; //block id for decreasing strain rate Cd
 
   //use spatial xio
   bool _use_spatial_xio; //use spatial xio

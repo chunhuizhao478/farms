@@ -44,6 +44,10 @@ DiffusedDamageBreakageMaterialSubApp::validParams()
   params.addParam<Real>("strain_rate_hat", -1.0, "Strain rate hat for strain rate dependent Cd");
   params.addParam<Real>("cd_hat", -1.0, "Cd hat for strain rate dependent Cd");
   params.addCoupledVar("strain_rate", "strain_rate");
+  //detemine the block id for strain rate dependent Cd
+  params.addParam<bool>("use_block_restricted_parameters", false, "Use block restricted parameters");
+  params.addParam<int>("straindep_increase_block_id_applied", -1, "Block id for strain rate dependent Cd");
+  params.addParam<int>("straindep_decrease_block_id_applied", -1, "Block id for strain rate dependent Cd");
   //use spatial xio
   params.addParam<bool>("use_spatial_xio", false, "use spatial xio");
   params.addCoupledVar("xio_aux", "xio_aux");
@@ -101,6 +105,11 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _cd_hat(getParam<Real>("cd_hat")),
   _m_exponent(getParam<Real>("m_exponent")),
   _strain_rate(coupledValue("strain_rate")),
+  //detemine the block id for strain rate dependent Cd
+  _use_block_restricted_parameters(getParam<bool>("use_block_restricted_parameters")),
+  _block_id(0),
+  _straindep_increase_block_id_applied(getParam<int>("straindep_increase_block_id_applied")),
+  _straindep_decrease_block_id_applied(getParam<int>("straindep_decrease_block_id_applied")),
   //--------------------------------------------------------------//
   //use spatial xio
   _use_spatial_xio(getParam<bool>("use_spatial_xio")),
@@ -115,6 +124,9 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   }
   if (!_use_cd_strain_dependent && (_Cd_constant_value < 0)){
     mooseError("Cd_constant is not set correctly, the strain rate dependent is not on");
+  }
+  if (_use_block_restricted_parameters && (_straindep_increase_block_id_applied < 0 || _straindep_decrease_block_id_applied < 0)){
+    mooseError("Block id for strain rate dependent Cd is not set correctly");
   }
 }
 
@@ -189,8 +201,28 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
   _xi_max_mat[_qp] = _xi_max_value;
 
   /* compute _Cd_mat, _CdCb_multiplier_mat, _CBH_constant_mat */
+  // here we define different block id to identify strain rate increasing Cd or decreasing Cd
   if (_use_cd_strain_dependent){ //option to use strain rate dependent
-    computeStrainRateCd();
+    
+    //if block id is used
+    if (_use_block_restricted_parameters){
+      //Get the block ID to adopte strain rate increasing Cd
+      if (_block_id == _straindep_increase_block_id_applied){
+        computeStrainRateCd();
+      }
+      //Get the block ID to adopte strain rate decreasing Cd
+      else if (_block_id == _straindep_decrease_block_id_applied){
+        computeReverseStrainRateCd();
+      }
+      //The block ID passed inside must be one of the two, or _use_block_restricted_parameters needs to be false
+      else{
+        mooseError("Not all block id is passed into DiffusedDamageBreakageMaterialSubApp for determining strain rate dependent Cd");
+      }
+    }
+    else{ //else use increasing cd
+      computeStrainRateCd();
+    }
+    
   }
   else{
     _Cd_mat[_qp] = _Cd_constant_value;
@@ -248,6 +280,16 @@ DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
   //_cd_hat: constant value - default value = 1
   //_strain_rate: deviatoric strain rate, variable value passed from main app
   _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate[_qp]/_strain_rate_hat)) * _cd_hat;
+}
+
+void 
+DiffusedDamageBreakageMaterialSubApp::computeReverseStrainRateCd()
+{
+  //_m_exponent: constant value - default value = 0.8
+  //_strain_rate_hat: constant value - default value = 1e-4
+  //_cd_hat: constant value - default value = 1
+  //_strain_rate: deviatoric strain rate, variable value passed from main app
+  _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate_hat/_strain_rate[_qp])) * _cd_hat;
 }
 
 void 
