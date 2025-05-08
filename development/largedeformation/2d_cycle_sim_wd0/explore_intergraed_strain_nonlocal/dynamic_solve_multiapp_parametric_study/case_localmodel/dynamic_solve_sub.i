@@ -317,7 +317,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_meshsize50m_out.e'
+      mesh = '../static_solve/static_solve_meshsize100m_out.e'
       system_variables = 'alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true
