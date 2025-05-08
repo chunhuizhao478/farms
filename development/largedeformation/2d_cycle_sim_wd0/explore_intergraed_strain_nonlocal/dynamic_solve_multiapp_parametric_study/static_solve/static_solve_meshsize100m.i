@@ -3,8 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
-        file = '../mesh/mesh_longfault.msh'
+        file = '../mesh/mesh_large_100m.msh'
     []
     [./sidesets]
         input = msh
@@ -17,9 +16,15 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -60000 0'
+        coord = '-600000 -600000 0'
         new_boundary = corner_ptr
         input = sidesets
+    []
+    [./extranodeset2]
+        type = ExtraNodesetGenerator
+        coord = '600000 -600000 0'
+        new_boundary = corner_ptr
+        input = extranodeset1
     []
     displacements = 'disp_x disp_y'
 []
@@ -236,19 +241,31 @@
 []
 
 [BCs]
-    [bc_fix_bottom_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = bottom
-    []
     #add initial shear stress
-    [initial_shear_stress]
+    [initial_shear_stress_top]
         type = NeumannBC
         variable = disp_x
-        value = 12e6
+        value = 13e6
         boundary = top
     [] 
+    [initial_shear_stress_bottom]
+        type = NeumannBC
+        variable = disp_x
+        value = -13e6
+        boundary = bottom
+    []
+    # [initial_shear_stress_left]
+    #     type = NeumannBC
+    #     variable = disp_y
+    #     value = -12e6
+    #     boundary = top
+    # [] 
+    # [initial_shear_stress_right]
+    #     type = NeumannBC
+    #     variable = disp_y
+    #     value = 12e6
+    #     boundary = bottom
+    # []
     # 
     [static_pressure_top]
         type = NeumannBC
@@ -256,7 +273,14 @@
         boundary = top
         value = -50e6
         displacements = 'disp_x disp_y'
-    []    
+    []   
+    [static_pressure_bottom]
+        type = NeumannBC
+        variable = disp_y
+        boundary = bottom
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []  
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
@@ -271,7 +295,7 @@
         value = -50e6
         displacements = 'disp_x disp_y'
     []       
-    # fix ptr
+    # fix left ptr
     [./fix_cptr1_x]
         type = DirichletBC
         variable = disp_x
@@ -284,4 +308,11 @@
         boundary = corner_ptr
         value = 0
     []   
+    # fix right ptr
+    [./fix_cptr4_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
 []
