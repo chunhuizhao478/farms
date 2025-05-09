@@ -14,7 +14,7 @@ gravity_neg = -9.81
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_large.msh'
+        file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
         input = msh
