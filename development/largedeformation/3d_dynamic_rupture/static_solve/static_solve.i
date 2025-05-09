@@ -1,11 +1,11 @@
 #implicit continuum damage-breakage model dynamics
 
 #material properties
-lambda_o = 32.04e9
-shear_modulus_o = 32.04e9
-xi_o = -0.8
-xi_d = -0.9
-chi = 0.8
+# lambda_o = 32.04e9
+# shear_modulus_o = 32.04e9
+# xi_o = -0.8
+# xi_d = -0.9
+# chi = 0.8
 fluid_density = 1000   
 solid_density = 2700
 gravity_pos = 9.81
@@ -174,6 +174,11 @@ gravity_neg = -9.81
         variable = disp_z
         component = 2
         large_kinematics = true
+    []
+    [gravity]
+        type = Gravity
+        variable = disp_z
+        value = ${gravity_neg}
     []
 []
 
