@@ -381,13 +381,13 @@ linear_variation_cutoff_distance = 15600
     []
 []
 
-# [BCs]
-#     [fix_bottom_z]
-#         type = DirichletBC
-#         variable = disp_z
-#         boundary = bottom
-#         value = 0
-#     []
+[BCs]
+    [fix_bottom_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = bottom
+        value = 0
+    []
 #     #Note: use neuamnnBC gives minimum waves than pressureBC  
 #     [static_pressure_left]
 #         type = FunctionNeumannBC
@@ -447,23 +447,23 @@ linear_variation_cutoff_distance = 15600
 #         function = func_pos_xy_stress
 #         displacements = 'disp_x disp_y disp_z'
 #     []   
-#     # fix ptr
-#     [./fix_cptr1_x]
-#         type = DirichletBC
-#         variable = disp_x
-#         boundary = corner_ptr
-#         value = 0
-#     []
-#     [./fix_cptr1_y]
-#         type = DirichletBC
-#         variable = disp_y
-#         boundary = corner_ptr
-#         value = 0
-#     []
-#     [./fix_cptr1_z]
-#         type = DirichletBC
-#         variable = disp_z
-#         boundary = corner_ptr
-#         value = 0
-#     []     
-# []
+    # fix ptr
+    [./fix_cptr1_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr1_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = corner_ptr
+        value = 0
+    []
+    [./fix_cptr1_z]
+        type = DirichletBC
+        variable = disp_z
+        boundary = corner_ptr
+        value = 0
+    []     
+[]
