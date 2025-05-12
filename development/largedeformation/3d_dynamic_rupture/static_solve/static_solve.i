@@ -1,11 +1,6 @@
 #implicit continuum damage-breakage model dynamics
 
 #material properties
-# lambda_o = 32.04e9
-# shear_modulus_o = 32.04e9
-# xi_o = -0.8
-# xi_d = -0.9
-# chi = 0.8
 fluid_density = 1000   
 solid_density = 2700
 gravity_pos = 9.81
@@ -14,7 +9,8 @@ gravity_neg = -9.81
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        # file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -131,6 +127,23 @@ gravity_neg = -9.81
         order = FIRST
         family = MONOMIAL
     []
+    #
+    [applied_stress_xx]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [applied_stress_xy]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [applied_stress_yy]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [applied_stress_zz]
+        order = FIRST
+        family = LAGRANGE
+    []
 []
 
 [AuxKernels]
@@ -153,6 +166,27 @@ gravity_neg = -9.81
         type = MaterialRealAux
         variable = B_damagedvar_output
         property = B_damagedvar
+    []
+    #
+    [get_applied_stress_xx]
+        type = FunctionAux
+        variable = applied_stress_xx
+        function = func_pos_xx_stress
+    []
+    [get_applied_stress_xy]
+        type = FunctionAux
+        variable = applied_stress_xy
+        function = func_pos_xy_stress
+    []
+    [get_applied_stress_yy]
+        type = FunctionAux
+        variable = applied_stress_yy
+        function = func_pos_yy_stress
+    []
+    [get_applied_stress_zz]
+        type = FunctionAux
+        variable = applied_stress_zz
+        function = func_pos_zz_stress
     []
 []
 
@@ -198,7 +232,7 @@ gravity_neg = -9.81
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 18000
+        build_param_len_of_fault = 8000
         build_param_use_initial_damage_3D = true
         build_param_len_of_fault_dip = 15000
         build_param_center_point = '0 0 -7500'
@@ -212,7 +246,7 @@ gravity_neg = -9.81
     [dummy_initial_damage]
         type = GenericConstantMaterial
         prop_names = 'initial_damage density'
-        prop_values = '0.0 2700'
+        prop_values = '0.0 ${solid_density}'
     []
     #shear stress perturbation
     [damage_perturbation]
@@ -356,89 +390,89 @@ linear_variation_cutoff_distance = 15600
     []
 []
 
-[BCs]
-    [fix_bottom_z]
-        type = ADDirichletBC
-        variable = disp_z
-        boundary = bottom
-        value = 0
-    []
-    #Note: use neuamnnBC gives minimum waves than pressureBC  
-    [static_pressure_left]
-        type = ADFunctionNeumannBC
-        variable = disp_x
-        boundary = left
-        function = func_pos_xx_stress
-        displacements = 'disp_x disp_y disp_z'
-    []  
-    [static_pressure_right]
-        type = ADFunctionNeumannBC
-        variable = disp_x
-        boundary = right
-        function = func_neg_xx_stress
-        displacements = 'disp_x disp_y disp_z'
-    [] 
-    #
-    [static_pressure_front]
-        type = ADFunctionNeumannBC
-        variable = disp_y
-        boundary = front
-        function = func_pos_yy_stress
-        displacements = 'disp_x disp_y disp_z'
-    []  
-    [static_pressure_back]
-        type = ADFunctionNeumannBC
-        variable = disp_y
-        boundary = back
-        function = func_neg_yy_stress
-        displacements = 'disp_x disp_y disp_z'
-    []
-    #
-    [static_pressure_front_shear]
-        type = ADFunctionNeumannBC
-        variable = disp_x
-        boundary = front
-        function = func_neg_xy_stress
-        displacements = 'disp_x disp_y disp_z'
-    []  
-    [static_pressure_back_shear]
-        type = ADFunctionNeumannBC
-        variable = disp_x
-        boundary = back
-        function = func_pos_xy_stress
-        displacements = 'disp_x disp_y disp_z'
-    [] 
-    [static_pressure_left_shear]
-        type = ADFunctionNeumannBC
-        variable = disp_y
-        boundary = left
-        function = func_neg_xy_stress
-        displacements = 'disp_x disp_y disp_z'
-    []  
-    [static_pressure_right_shear]
-        type = ADFunctionNeumannBC
-        variable = disp_y
-        boundary = right
-        function = func_pos_xy_stress
-        displacements = 'disp_x disp_y disp_z'
-    []   
-    # fix ptr
-    [./fix_cptr1_x]
-        type = ADDirichletBC
-        variable = disp_x
-        boundary = corner_ptr
-        value = 0
-    []
-    [./fix_cptr1_y]
-        type = ADDirichletBC
-        variable = disp_y
-        boundary = corner_ptr
-        value = 0
-    []
-    [./fix_cptr1_z]
-        type = ADDirichletBC
-        variable = disp_z
-        boundary = corner_ptr
-        value = 0
-    []     
-[]
+# [BCs]
+#     [fix_bottom_z]
+#         type = DirichletBC
+#         variable = disp_z
+#         boundary = bottom
+#         value = 0
+#     []
+#     #Note: use neuamnnBC gives minimum waves than pressureBC  
+#     [static_pressure_left]
+#         type = FunctionNeumannBC
+#         variable = disp_x
+#         boundary = left
+#         function = func_pos_xx_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     []  
+#     [static_pressure_right]
+#         type = FunctionNeumannBC
+#         variable = disp_x
+#         boundary = right
+#         function = func_neg_xx_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     [] 
+#     #
+#     [static_pressure_front]
+#         type = FunctionNeumannBC
+#         variable = disp_y
+#         boundary = front
+#         function = func_pos_yy_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     []  
+#     [static_pressure_back]
+#         type = FunctionNeumannBC
+#         variable = disp_y
+#         boundary = back
+#         function = func_neg_yy_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     []
+#     #
+#     [static_pressure_front_shear]
+#         type = FunctionNeumannBC
+#         variable = disp_x
+#         boundary = front
+#         function = func_neg_xy_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     []  
+#     [static_pressure_back_shear]
+#         type = FunctionNeumannBC
+#         variable = disp_x
+#         boundary = back
+#         function = func_pos_xy_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     [] 
+#     [static_pressure_left_shear]
+#         type = FunctionNeumannBC
+#         variable = disp_y
+#         boundary = left
+#         function = func_neg_xy_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     []  
+#     [static_pressure_right_shear]
+#         type = FunctionNeumannBC
+#         variable = disp_y
+#         boundary = right
+#         function = func_pos_xy_stress
+#         displacements = 'disp_x disp_y disp_z'
+#     []   
+#     # fix ptr
+#     [./fix_cptr1_x]
+#         type = DirichletBC
+#         variable = disp_x
+#         boundary = corner_ptr
+#         value = 0
+#     []
+#     [./fix_cptr1_y]
+#         type = DirichletBC
+#         variable = disp_y
+#         boundary = corner_ptr
+#         value = 0
+#     []
+#     [./fix_cptr1_z]
+#         type = DirichletBC
+#         variable = disp_z
+#         boundary = corner_ptr
+#         value = 0
+#     []     
+# []
