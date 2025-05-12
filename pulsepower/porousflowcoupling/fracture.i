@@ -1,49 +1,36 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
+    file =  '../meshfile/debug_sample.msh'
   []
-  [./elastic_region_1]
-    type = SubdomainBoundingBoxGenerator
+  [./extranodeset1]
+    type = ExtraNodesetGenerator
+    coord = '-0.00570169 -0.00612895 0'
+    new_boundary = corner_ptr
     input = msh
-    bottom_left = '0.003 0 0'
-    top_right = '0.005 0.001 1'
-    block_id = 1
-  []
-  [./elastic_region_2]
-    type = SubdomainBoundingBoxGenerator
-    input = elastic_region_1
-    bottom_left = '0.023 0 0'
-    top_right = '0.025 0.001 0'
-    block_id = 1
-  []
-  [./elastic_region_3]
-    type = SubdomainBoundingBoxGenerator
-    input = elastic_region_2
-    bottom_left = '0.013 0.007 0'
-    top_right = '0.015 0.008 1'
-    block_id = 1
-  []
-  [./extranodeset_0]
-    type = ExtraNodesetGenerator
-    coord = '0.004 0 0'
-    new_boundary = support1
-    input = elastic_region_3
     use_closest_node=true
   []
-  [./extranodeset_1]
-    type = ExtraNodesetGenerator
-    coord = '0.024 0 0'
-    new_boundary = support2
-    input = extranodeset_0
-    use_closest_node=true
-  []
-  [./extranodeset_2]
-    type = ExtraNodesetGenerator
-    coord = '0.0140 0.008 0'
-    new_boundary = load
-    input = extranodeset_1
-    use_closest_node=true
+[]
+
+[Adaptivity]
+  max_h_level = 3
+  marker = 'combo'
+  cycles_per_step = 2
+  [Markers]
+      [./combo]
+          type = ComboMarker
+          markers = 'damage_marker strain_energy_marker'
+      [../]
+      [damage_marker]
+        type = ValueThresholdMarker
+        variable = d
+        refine = 0.5
+      []
+      [strain_energy_marker]
+        type = ValueThresholdMarker
+        variable = psie_active
+        refine = '${fparse 1.0*0.5*Gc_const/l}'
+      []      
   []
 []
 
@@ -56,6 +43,10 @@
   [bounds_dummy]
   []
   [psie_active]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [Gc_var]
     order = CONSTANT
     family = MONOMIAL
   []
@@ -79,14 +70,14 @@
 
 [Kernels]
   [diff]
-    type = ADPFFDiffusion
+    type = PFFDiffusion #
     variable = d
     fracture_toughness = Gc
     regularization_length = l
     normalization_constant = c0
   []
   [source]
-    type = ADPFFSource
+    type = PFFSource
     variable = d
     free_energy = psi
   []
@@ -94,9 +85,16 @@
 
 [Materials]
   [fracture_properties]
-    type = ADGenericConstantMaterial
-    prop_names = 'Gc l'
-    prop_values = '${Gc} ${l}'
+    type = GenericConstantMaterial
+    prop_names = 'l'
+    prop_values = '${l}'
+  []
+  [Gc_var]
+    type = ParsedMaterial
+    property_name = Gc
+    coupled_variables = 'Gc_var'
+    expression = 'Gc_var'
+    outputs = exodus
   []
   [degradation]
     type = PowerDegradationFunction
@@ -113,12 +111,12 @@
     phase_field = d
   []
   [psi]
-    type = ADDerivativeParsedMaterial
+    type = DerivativeParsedMaterial
     property_name = psi
     expression = 'alpha*Gc/c0/l+g*psie_active'
     coupled_variables = 'd psie_active'
     material_property_names = 'alpha(d) g(d) Gc c0 l'
-    derivative_order = 1
+    derivative_order = 2
   []
 []
 
@@ -135,5 +133,27 @@
 []
 
 [Outputs]
+  exodus = true
+  time_step_interval = 40
   print_linear_residuals = false
+[]
+
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 12.0 #k
+    scale = ${Gc_const} #lambda
+    location = 0 
+  []
+[] 
+
+[ICs]
+  [./gc_var]
+    type =  RandomIC
+    variable = Gc_var
+    distribution = weibull
+  []
 []

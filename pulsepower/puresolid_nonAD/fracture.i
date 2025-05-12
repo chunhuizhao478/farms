@@ -1,0 +1,184 @@
+[Mesh]
+  [./msh]
+    type = FileMeshGenerator
+    file =  '../meshfile/debug_sample.msh'
+  []
+  [./extranodeset1]
+    type = ExtraNodesetGenerator
+    coord = '-0.00570169 -0.00612895 0'
+    new_boundary = corner_ptr
+    input = msh
+    use_closest_node=true
+  []
+[]
+
+[Adaptivity]
+  max_h_level = 3
+  marker = 'combo'
+  cycles_per_step = 2
+  [Markers]
+      [./combo]
+          type = ComboMarker
+          markers = 'damage_marker strain_energy_marker'
+      [../]
+      [damage_marker]
+        type = ValueThresholdMarker
+        variable = d
+        refine = 0.5
+      []
+      [strain_energy_marker]
+        type = ValueThresholdMarker
+        variable = psie_active
+        refine = '${fparse 1.0*0.5*Gc_const/l}'
+      []      
+  []
+[]
+
+[Variables]
+  [d]
+  []
+[]
+
+[AuxVariables]
+  [bounds_dummy]
+  []
+  [psie_active]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [Gc_var]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+
+[Bounds]
+  [irreversibility]
+    type = VariableOldValueBounds
+    variable = bounds_dummy
+    bounded_variable = d
+    bound_type = lower
+  []
+  [upper]
+    type = ConstantBounds
+    variable = bounds_dummy
+    bounded_variable = d
+    bound_type = upper
+    bound_value = 1
+  []
+[]
+
+[Kernels]
+  [diff]
+    type = PFFDiffusion
+    variable = d
+    fracture_toughness = Gc
+    regularization_length = l
+    normalization_constant = c0
+  []
+  [source]
+    type = PFFSource
+    variable = d
+    free_energy_first_derivative = dpsi_dd
+    free_energy_second_derivative = d2psi_dd2
+  []
+[]
+
+[Materials]
+  [fracture_properties]
+    type = GenericConstantMaterial
+    prop_names = 'l'
+    prop_values = '${l}'
+  []
+  [Gc_var]
+    type = ParsedMaterial
+    property_name = Gc
+    coupled_variables = 'Gc_var'
+    expression = 'Gc_var'
+    outputs = exodus
+  []
+  # [degradation]
+  #   type = PowerDegradationFunction
+  #   property_name = g
+  #   expression = (1-d)^p*(1-eta)+eta
+  #   phase_field = d
+  #   parameter_names = 'p eta '
+  #   parameter_values = '2 1e-6'
+  # []
+  # [crack_geometric]
+  #   type = NDCrackGeometricFunction
+  #   property_name = alpha
+  #   expression = 'd^2'
+  #   phase_field = d
+  # []
+  # [psi]
+  #   type = DerivativeParsedMaterial
+  #   property_name = psi
+  #   expression = 'alpha*Gc/c0/l+g*psie_active'
+  #   coupled_variables = 'd psie_active'
+  #   material_property_names = 'g(d) Gc c0 l'
+  #   derivative_order = 1
+  # []
+  # need to add phase field psi non-AD calculation
+  [psi_and_derivatives]
+    type = NDPhaseFieldPsiDerivatives
+    #coupled variables
+    phase_field = d
+    psie_active = psie_active
+    #model type
+    model_type = AT2
+    #material property names (to be defined)
+    normalization_constant = c0
+    alpha = alpha
+    dalpha_dd = dalpha_dd
+    d2alpha_dd2 = d2alpha_dd2
+    g = g
+    dg_dd = dg_dd
+    psi = psi
+    dpsi_dd = dpsi_dd
+    d2psi_dd2 = d2psi_dd2
+    #material property names (get)
+    Gc = Gc
+    l = l
+    #constants
+    eta = 1e-6
+  []
+[]
+
+[Executioner]
+  type = Transient
+
+  solve_type = NEWTON
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
+  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  automatic_scaling = true
+
+  nl_rel_tol = 1e-8
+  nl_abs_tol = 1e-10
+[]
+
+[Outputs]
+  exodus = true
+  time_step_interval = 40
+  print_linear_residuals = false
+[]
+
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 12.0 #k
+    scale = ${Gc_const} #lambda
+    location = 0 
+  []
+[] 
+
+[ICs]
+  [./gc_var]
+    type =  RandomIC
+    variable = Gc_var
+    distribution = weibull
+  []
+[]

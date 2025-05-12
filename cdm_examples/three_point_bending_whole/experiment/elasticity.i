@@ -40,7 +40,7 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../meshfile_refined/mesh_1.6up_1.5shrift.msh'
+    file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
