@@ -140,10 +140,6 @@ gravity_neg = -9.81
         order = FIRST
         family = LAGRANGE
     []
-    [applied_stress_zz]
-        order = FIRST
-        family = LAGRANGE
-    []
 []
 
 [AuxKernels]
@@ -182,11 +178,6 @@ gravity_neg = -9.81
         type = FunctionAux
         variable = applied_stress_yy
         function = func_pos_yy_stress
-    []
-    [get_applied_stress_zz]
-        type = FunctionAux
-        variable = applied_stress_zz
-        function = func_pos_zz_stress
     []
 []
 
