@@ -206,17 +206,24 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
     
     //if block id is used
     if (_use_block_restricted_parameters){
+      
+      // Get the block ID for the current element
+      _block_id = _current_elem->subdomain_id();
+
       //Get the block ID to adopte strain rate increasing Cd
       if (_block_id == _straindep_increase_block_id_applied){
+        //std::cout<<"increase block id: "<<_block_id<<std::endl;
         computeStrainRateCd();
       }
       //Get the block ID to adopte strain rate decreasing Cd
       else if (_block_id == _straindep_decrease_block_id_applied){
+        //std::cout<<"decrease block id: "<<_block_id<<std::endl;
         computeReverseStrainRateCd();
       }
-      //The block ID passed inside must be one of the two, or _use_block_restricted_parameters needs to be false
+      //This is elastic block, set Cd t
       else{
-        mooseError("Not all block id is passed into DiffusedDamageBreakageMaterialSubApp for determining strain rate dependent Cd");
+        //std::cout<<"block id: "<<_block_id<<std::endl;
+        _Cd_mat[_qp] = 0.0;
       }
     }
     else{ //else use increasing cd
