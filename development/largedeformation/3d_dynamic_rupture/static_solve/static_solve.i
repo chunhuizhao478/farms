@@ -4,7 +4,7 @@
 fluid_density = 1000   
 solid_density = 2700
 gravity_pos = 9.81
-gravity_neg = -9.81
+# gravity_neg = -9.81
 
 [Mesh]
     [./msh]
