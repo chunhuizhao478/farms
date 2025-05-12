@@ -198,7 +198,7 @@ gravity_neg = -9.81
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 28000
+        build_param_len_of_fault = 18000
         build_param_use_initial_damage_3D = true
         build_param_len_of_fault_dip = 15000
         build_param_center_point = '0 0 -7500'
@@ -211,8 +211,8 @@ gravity_neg = -9.81
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
+        prop_names = 'initial_damage density'
+        prop_values = '0.0 2700'
     []
     #shear stress perturbation
     [damage_perturbation]
