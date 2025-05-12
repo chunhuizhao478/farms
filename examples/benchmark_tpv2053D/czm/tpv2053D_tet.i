@@ -6,7 +6,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../../meshgenerator/tpv205/tpv2053d_200m.msh'
+    file = '../../../meshgenerator/tpv205/tpv2053d_100m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -53,7 +53,7 @@
   #dynamic friction coefficient
   mu_d = 0.525
   #element edge length (m)
-  len = 200
+  len = 100
 []
 
 [AuxVariables]
