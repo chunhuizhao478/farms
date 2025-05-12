@@ -791,3 +791,5 @@ development/largedeformation/2d_cycle_sim_wd0/explore_nonlocal_eqs/dynamic_solve
 development/largedeformation/2d_cycle_sim_wd0/explore_nonlocal_eqs/dynamic_solve_vspatch/dynamic_solve_main_out_cp/0923-mesh.cpa.gz/1/split-1-0.gz
 development/largedeformation/2d_cycle_sim_wd0/explore_nonlocal_eqs/dynamic_solve_vspatch/dynamic_solve_main_out_cp/0924-mesh.cpa.gz/1/header.gz
 development/largedeformation/2d_cycle_sim_wd0/explore_nonlocal_eqs/dynamic_solve_vspatch/dynamic_solve_main_out_cp/0924-mesh.cpa.gz/1/split-1-0.gz
+development/largedeformation/3d_dynamic_rupture/static_solve/static_solve.i
+development/largedeformation/3d_dynamic_rupture/mesh/mesh_large.msh

@@ -238,8 +238,8 @@ gravity_neg = -9.81
   
 [Executioner]
     type = Steady
-    solve_type = 'NEWTON'
-    # solve_type = 'PJFNK'
+    # solve_type = 'NEWTON'
+    solve_type = 'PJFNK'
     # start_time = -1e-12
     # end_time = 1e100
     # num_steps = 1
@@ -248,10 +248,10 @@ gravity_neg = -9.81
     nl_rel_tol = 1e-10
     nl_max_its = 20
     nl_abs_tol = 1e-12
-    # petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
-    # petsc_options_value = 'gmres     hypre  True'
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  True'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
     # petsc_options_value = '101                asm      lu'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
