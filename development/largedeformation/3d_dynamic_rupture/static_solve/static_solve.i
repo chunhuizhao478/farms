@@ -200,11 +200,11 @@ gravity_neg = -9.81
         component = 2
         large_kinematics = true
     []
-    [gravity]
-        type = Gravity
-        variable = disp_z
-        value = ${gravity_neg}
-    []
+    # [gravity]
+    #     type = Gravity
+    #     variable = disp_z
+    #     value = ${gravity_neg}
+    # []
 []
 
 [Materials]
