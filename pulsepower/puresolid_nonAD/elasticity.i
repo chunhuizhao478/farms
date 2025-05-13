@@ -249,6 +249,55 @@ l = 2e-4 # N * h, N: number of elements, h: element size
   []
 []
 
+[BCs]
+  #add dampers
+  [damp_outer_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 0
+    boundary = 3
+    beta = 0.25
+    gamma = 0.5
+    alpha = 0.11
+    shear_wave_speed = 2220
+    p_wave_speed = 3630
+    density = 2450
+  []
+  [damp_outer_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 1
+    boundary = 3
+    beta = 0.25
+    gamma = 0.5
+    alpha = 0.11
+    shear_wave_speed = 2220
+    p_wave_speed = 3630
+    density = 2450
+  []
+  [damp_outer_z]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_z
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 2
+    boundary = 3
+    beta = 0.25
+    gamma = 0.5
+    alpha = 0.11
+    shear_wave_speed = 2220
+    p_wave_speed = 3630
+    density = 2450
+  []
+[]
+
 [Materials]
   [bulk]
     type = GenericConstantMaterial
