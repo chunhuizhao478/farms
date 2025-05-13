@@ -209,7 +209,7 @@ gravity_neg = -9.81
     [initial_damage_surround]
         type = ADInitialDamageCycleSim3DPlane
         sigma = 5e2
-        peak_val = 0
+        peak_val = 0.7
         len_of_fault_strike = 18000
         len_of_fault_dip = 15000
         nucl_center = '0 0 -7500'
