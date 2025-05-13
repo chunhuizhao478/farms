@@ -1,16 +1,26 @@
-#implicit continuum damage-breakage model dynamics
+#continuum damage-breakage model dynamics
 
 #material properties
+lambda_o = 32.04e9
+shear_modulus_o = 32.04e9
+xi_o = -0.8
+xi_d = -0.9
+chi = 0.8
 fluid_density = 1000   
 solid_density = 2700
 gravity_pos = 9.81
-# gravity_neg = -9.81
+gravity_neg = -9.81
 
+##########################################################################################################################################
+#Mesh section
+#FileMeshGenerator: read mesh file
+#SideSetsFromNormalsGenerator: generate side sets from normals
+#ExtraNodesetGenerator: generate extra nodeset - here we use it to define corner points associated with the bottom boundary
+##########################################################################################################################################
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_large.msh'
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -35,66 +45,10 @@ gravity_pos = 9.81
     displacements = 'disp_x disp_y disp_z'
 []
 
-[GlobalParams]
-
-    displacements = 'disp_x disp_y disp_z'
-    
-    ##----continuum damage breakage model----##
-    #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32.04e9
-        
-    #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32.04e9
-    
-    #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.8
-    
-    #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
-    
-    #<strain invariants ratio: maximum allowable value>: set boundary
-    #Xu_etal_P15-2D
-    #may need a bit space, use 1.5 as boundary
-    xi_max = 1.8
-    
-    #<strain invariants ratio: minimum allowable value>: set boundary
-    #Xu_etal_P15-2D
-    xi_min = -1.8
-
-    #if option 2, use Cd_constant
-    Cd_constant = 1e5
-
-    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 1000
-
-    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    # CBCBH_multiplier = 0.0
-    CBH_constant = 1e4
-
-    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 1e-4
-
-    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 0.05
-
-    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.03 #1e-3
-    
-    #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
-    
-    #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    m1 = 10
-    
-    #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1
-    
-    #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.8
-    
-[]
-
+##############################################
+#Variables section
+#disp_x, disp_y, disp_z: displacement field
+##############################################
 [Variables]
     [disp_x]
         order = FIRST
@@ -110,169 +64,217 @@ gravity_pos = 9.81
     []
 []
 
+##############################################
+#AuxVariables section
+#gradient of damage variable (not used): alpha_grad_x, alpha_grad_y, alpha_grad_z
+#initial_shear_stress_aux: initial shear stress
+##############################################
 [AuxVariables]
-    [xi_output]
+    [initial_damage_aux]
         order = FIRST
         family = MONOMIAL
     []
-    [I2_output]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [alpha_damagedvar_output]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [B_damagedvar_output]
-        order = FIRST
-        family = MONOMIAL
-    []
-    #
-    [applied_stress_xx]
+    [correlated_randalpha_o]
         order = FIRST
         family = LAGRANGE
     []
-    [applied_stress_xy]
+    [initial_cd_aux]
         order = FIRST
-        family = LAGRANGE
-    []
-    [applied_stress_yy]
-        order = FIRST
-        family = LAGRANGE
+        family = MONOMIAL
     []
 []
 
+#######################################################################
+#AuxKernels section
+#get initial damage material property and save as an auxiliary variable
+#######################################################################
 [AuxKernels]
-    [get_xi]
-        type = MaterialRealAux
-        variable = xi_output
-        property = strain_invariant_ratio
-    []
-    [get_I2]
-        type = MaterialRealAux
-        variable = I2_output
-        property = second_elastic_strain_invariant
-    []
-    [get_alpha_damagedvar]
-        type = MaterialRealAux
-        variable = alpha_damagedvar_output
-        property = alpha_damagedvar
-    []
-    [get_B_damagedvar]
-        type = MaterialRealAux
-        variable = B_damagedvar_output
-        property = B_damagedvar
-    []
-    #
-    [get_applied_stress_xx]
-        type = FunctionAux
-        variable = applied_stress_xx
-        function = func_pos_xx_stress
-    []
-    [get_applied_stress_xy]
-        type = FunctionAux
-        variable = applied_stress_xy
-        function = func_pos_xy_stress
-    []
-    [get_applied_stress_yy]
-        type = FunctionAux
-        variable = applied_stress_yy
-        function = func_pos_yy_stress
+    [get_initial_damage]
+        type = ADMaterialRealAux
+        variable = initial_damage_aux
+        property = initial_damage
     []
 []
 
+###############################################################################################
+#Kernels section
+#ADStressDivergenceTensors: compute the divergence of stress tensor, in all three directions
+###############################################################################################
 [Kernels]
     [dispkernel_x]
-        type = TotalLagrangianStressDivergence
+        type = ADStressDivergenceTensors
+        displacements = 'disp_x disp_y disp_z'
         variable = disp_x
         component = 0
-        large_kinematics = true
     []
     [dispkernel_y]
-        type = TotalLagrangianStressDivergence
+        type = ADStressDivergenceTensors
+        displacements = 'disp_x disp_y disp_z'
         variable = disp_y
         component = 1
-        large_kinematics = true
     []
     [dispkernel_z]
-        type = TotalLagrangianStressDivergence
+        type = ADStressDivergenceTensors
+        displacements = 'disp_x disp_y disp_z'
         variable = disp_z
         component = 2
-        large_kinematics = true
     []
-    # [gravity]
-    #     type = Gravity
-    #     variable = disp_z
-    #     value = ${gravity_neg}
-    # []
+    [gravity]
+        type = ADGravity
+        variable = disp_z
+        value = ${gravity_neg}
+    []
 []
 
+###############################################################################################
+#Materials section
+#ADComputeSmallStrain: compute the small strain
+#ADComputeDamageStressStaticDistribution: compute the stress field
+#ADComputeLinearElasticStress: compute the elastic stress field
+#ADComputeIsotropicElasticityTensor: compute the elasticity tensor
+#ADComputeXi: compute the strain invariants ratio
+#ADInitialDamageCycleSim3DPlane: define the initial damage field
+#ADInitialBreakageCycleSim3DPlane: define the initial breakage field
+###############################################################################################
+#Block 1, 3: use continuum damage breakage model
+#Block 2: use linear elastic model
+###############################################################################################
 [Materials]
+    [density]
+        type = ADGenericConstantMaterial
+        prop_names = 'density'
+        prop_values = ${solid_density}
+    []
     [strain]
-        type = ComputeLagrangianStrain
-        large_kinematics = true
-        output_properties = 'deformation_gradient'
+        type = ADComputeSmallStrain
+        displacements = 'disp_x disp_y disp_z'
+        outputs = exodus
+    [] 
+    ###################################################################
+    #lambda_o = 30e9: lambda value
+    #shear_modulus_o = 30e9: shear modulus value
+    #xi_o = -0.8: strain invariants ratio: onset of damage evolution
+    #chi = 0.7: ratio of solid energy and granular energy
+    #xi_d = -0.9: strain invariants ratio: onset of breakage healing
+    #this only applies to block 1, 3
+    ###################################################################
+    [stress]
+        type = ADComputeDamageStressStaticDistributionDynamicCDBM
+        lambda_o = ${lambda_o}
+        shear_modulus_o = ${shear_modulus_o}
+        xi_o = ${xi_o}
+        chi = ${chi}
+        xi_d = ${xi_d}
+        outputs = exodus
+        block = '1 3'
+        ###compute effective stress###
+        compute_effective_stress = true
+        fluid_density = ${fluid_density}
+        gravity = ${gravity_pos}
+    [] 
+    ###################################################################
+    #lambda = 30e9: lambda value
+    #shear_modulus = 30e9: shear modulus value
+    #this only applies to block 2
+    ###################################################################
+    [stress_elastic]
+        type = ADComputeLinearElasticStress
+        outputs = exodus
+        block = '2'
+    []
+    [elasticity_tensor]
+        type = ADComputeIsotropicElasticityTensor
+        lambda = ${lambda_o}
+        shear_modulus = ${shear_modulus_o}
+    []
+    ###################################################################
+    [getxi]
+        type = ADComputeXi
         outputs = exodus
     []
-    # damage
-    [damage_mat]
-        type = DamageBreakageMaterial
-        # output_properties = 'alpha_damagedvar B_damagedvar shear_modulus_o_mat shear_modulus'
-        # outputs = exodus
-        # use initial damage time dependent
-        build_param_use_initial_damage_time_dependent_mat = true
-        build_param_peak_value = 0.7
-        build_param_sigma = 5e2
-        build_param_len_of_fault = 8000
-        build_param_use_initial_damage_3D = true
-        build_param_len_of_fault_dip = 15000
-        build_param_center_point = '0 0 -7500'
-    [] 
-    [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2Debug
-        large_kinematics = true
-        # output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain deviatroic_stress strain_invariant_ratio second_elastic_strain_invariant'
-        # outputs = exodus
+    ################################################################################
+    #initial damage field
+    #sigma = 5e2: sigma value
+    #peak_val = 0.7: peak value of the initial damage
+    #len_of_fault_strike = 8000: length of the fault in the x-direction
+    #len_of_fault_dip = 3000: length of the fault in the z-direction
+    #nucl_center = '0 0 -7500': nucleation center
+    ################################################################################
+    #within the damage zone plane: len_of_fault_strike by len_of_fault_dip
+    #the initial damage value = 0.7
+    #outside the damage zone plane: initial damage experience exponential decay
+    #Real alpha_o = _peak_val * std::exp(-1.0 * (r * r) / (_sigma * _sigma));
+    #r = std::sqrt(dx * dx + dy * dy + dz * dz);
+    ################################################################################
+    [initial_damage_surround]
+        type = ADInitialDamageCycleSim3DPlane
+        sigma = 5e2
+        peak_val = 0
+        len_of_fault_strike = 18000
+        len_of_fault_dip = 15000
+        nucl_center = '0 0 -7500'
+        output_properties = 'initial_damage'      
+        outputs = exodus
     []
-    [dummy_initial_damage]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage density'
-        prop_values = '0.0 ${solid_density}'
-    []
-    #shear stress perturbation
-    [damage_perturbation]
-        type = PerturbationRadial
-        nucl_center = '0 0 0'
-        peak_value = 0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
+    ################################################################################
+    #initial breakage field
+    #sigma = 5e2: sigma value
+    #peak_val = 0.1: peak value of the initial breakage
+    #len_of_fault_strike = 8000: length of the fault in the x-direction
+    #len_of_fault_dip = 3000: length of the fault in the z-direction
+    #nucl_center = '0 0 -7500': nucleation center
+    ################################################################################
+    #within the breakage zone plane: len_of_fault_strike by len_of_fault_dip
+    #the initial breakaege value = 0.7
+    #outside the breakage zone plane: initial damage experience exponential decay
+    #Real alpha_o = _peak_val * std::exp(-1.0 * (r * r) / (_sigma * _sigma));
+    #r = std::sqrt(dx * dx + dy * dy + dz * dz);
+    ################################################################################
+    [initial_breakage_surround]
+        type = ADInitialBreakageCycleSim3DPlane
+        sigma = 5e2
+        peak_val = 0
+        len_of_fault_strike = 18000
+        len_of_fault_dip = 15000
+        nucl_center = '0 0 -7500'
+        output_properties = 'initial_breakage'      
         outputs = exodus
     []
 []  
 
+###############################
+#Preconditioning section
+#SMP: use SMP preconditioner
+###############################
 [Preconditioning]
     [smp]
       type = SMP
       full = true
     []
 []
-  
+
+################################################################################################
+#Executioner section
+#type = Steady: specify the type of executioner, in this case, a steady-state simulation
+#solve_type = 'NEWTON': specify the solve type, in this case, a Newton solve
+#l_max_its = 100: specify the maximum number of linear iterations
+#l_tol = 1e-7: specify the linear tolerance
+#nl_rel_tol = 1e-10: specify the nonlinear relative tolerance
+#nl_max_its = 20: specify the maximum number of nonlinear iterations
+#nl_abs_tol = 1e-12: specify the nonlinear absolute tolerance
+#petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero': specify the PETSc options
+#petsc_options_value = 'gmres     hypre  True': specify the PETSc options values
+#automatic_scaling = true: specify to use automatic scaling
+################################################################################################
 [Executioner]
     type = Steady
-    # solve_type = 'NEWTON'
-    solve_type = 'PJFNK'
-    # start_time = -1e-12
-    # end_time = 1e100
-    # num_steps = 1
+    solve_type = 'NEWTON'
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-10
     nl_max_its = 20
     nl_abs_tol = 1e-12
+    # this is very robust, use as default
     petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -282,15 +284,14 @@ gravity_pos = 9.81
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
-    # nl_forced_its = 3
-    # line_search = 'bt'
-    # dt = 1e-8
-    # steady_state_detection = true
 []  
 
+################################################
+#Outputs section
+#exodus: save the solution to a exodus file
+################################################
 [Outputs]
-    exodus = true       
-    show = 'disp_x disp_y disp_z xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
+    exodus = true    
 []
 
 #parameters for the initial stress field
@@ -381,87 +382,98 @@ linear_variation_cutoff_distance = 15600
     []
 []
 
+#We assume the simulation is loaded with compressive pressure and shear stress
+#############################################################################################################################################################
+#BCs Section
+#Note: use neuamnnBC gives minimum waves than pressureBC
+#Coordinate system: x: strike, y: normal , z: dip
+#The following BCs are applied to the top, bottom, left, right, front, and back boundaries
+#Note depends on the coordinate system, the normal direction is different
+#Confinement pressure: static_pressure_top, static_pressure_bottom, static_pressure_left, static_pressure_right, static_pressure_front, static_pressure_back
+#Shear stress: static_pressure_front_shear, static_pressure_back_shear
+#Constraints on corner_ptr: fix_cptr1_x, fix_cptr1_y, fix_cptr1_z
+#############################################################################################################################################################
 [BCs]
     [fix_bottom_z]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_z
         boundary = bottom
         value = 0
     []
-#     #Note: use neuamnnBC gives minimum waves than pressureBC  
-#     [static_pressure_left]
-#         type = FunctionNeumannBC
-#         variable = disp_x
-#         boundary = left
-#         function = func_pos_xx_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_right]
-#         type = FunctionNeumannBC
-#         variable = disp_x
-#         boundary = right
-#         function = func_neg_xx_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     [] 
-#     #
-#     [static_pressure_front]
-#         type = FunctionNeumannBC
-#         variable = disp_y
-#         boundary = front
-#         function = func_pos_yy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_back]
-#         type = FunctionNeumannBC
-#         variable = disp_y
-#         boundary = back
-#         function = func_neg_yy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []
-#     #
-#     [static_pressure_front_shear]
-#         type = FunctionNeumannBC
-#         variable = disp_x
-#         boundary = front
-#         function = func_neg_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_back_shear]
-#         type = FunctionNeumannBC
-#         variable = disp_x
-#         boundary = back
-#         function = func_pos_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     [] 
-#     [static_pressure_left_shear]
-#         type = FunctionNeumannBC
-#         variable = disp_y
-#         boundary = left
-#         function = func_neg_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_right_shear]
-#         type = FunctionNeumannBC
-#         variable = disp_y
-#         boundary = right
-#         function = func_pos_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []   
+    #Note: use neuamnnBC gives minimum waves than pressureBC  
+    [static_pressure_left]
+        type = ADFunctionNeumannBC
+        variable = disp_x
+        boundary = left
+        function = func_pos_xx_stress
+        displacements = 'disp_x disp_y disp_z'
+    []  
+    [static_pressure_right]
+        type = ADFunctionNeumannBC
+        variable = disp_x
+        boundary = right
+        function = func_neg_xx_stress
+        displacements = 'disp_x disp_y disp_z'
+    [] 
+    #
+    [static_pressure_front]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = front
+        function = func_pos_yy_stress
+        displacements = 'disp_x disp_y disp_z'
+    []  
+    [static_pressure_back]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = back
+        function = func_neg_yy_stress
+        displacements = 'disp_x disp_y disp_z'
+    []
+    #
+    [static_pressure_front_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_x
+        boundary = front
+        function = func_neg_xy_stress
+        displacements = 'disp_x disp_y disp_z'
+    []  
+    [static_pressure_back_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_x
+        boundary = back
+        function = func_pos_xy_stress
+        displacements = 'disp_x disp_y disp_z'
+    [] 
+    [static_pressure_left_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = left
+        function = func_neg_xy_stress
+        displacements = 'disp_x disp_y disp_z'
+    []  
+    [static_pressure_right_shear]
+        type = ADFunctionNeumannBC
+        variable = disp_y
+        boundary = right
+        function = func_pos_xy_stress
+        displacements = 'disp_x disp_y disp_z'
+    []   
     # fix ptr
     [./fix_cptr1_x]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_x
         boundary = corner_ptr
         value = 0
     []
     [./fix_cptr1_y]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_y
         boundary = corner_ptr
         value = 0
     []
     [./fix_cptr1_z]
-        type = DirichletBC
+        type = ADDirichletBC
         variable = disp_z
         boundary = corner_ptr
         value = 0
