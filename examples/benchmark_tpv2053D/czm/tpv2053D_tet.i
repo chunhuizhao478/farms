@@ -497,7 +497,7 @@
 [Executioner]
   type = Transient
   dt = 0.005
-  end_time = 3.0
+  end_time = 12.0
   # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
@@ -508,10 +508,16 @@
 [Outputs]
   exodus = true
   show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
+  time_step_interval = 40
   [csv]
     type = CSV
     execute_on = 'timestep_end'
     time_step_interval = 20
+  []
+  [out]
+    type = Checkpoint
+    time_step_interval = 160
+    num_files = 2
   []
 []
 

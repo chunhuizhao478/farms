@@ -92,11 +92,16 @@ SlipWeakeningFrictionczm3d::computeInterfaceTractionAndDerivatives()
       _disp_slipweakening_x[_qp] - _disp_slipweakening_neighbor_x[_qp],
       _disp_slipweakening_y[_qp] - _disp_slipweakening_neighbor_y[_qp],
       _disp_slipweakening_z[_qp] - _disp_slipweakening_neighbor_z[_qp]);
+  
+  // Global Displacement Jump Old
+  RealVectorValue displacement_jump_old_global(
+    _disp_slipweakening_x_old[_qp] - _disp_slipweakening_neighbor_x_old[_qp],
+    _disp_slipweakening_y_old[_qp] - _disp_slipweakening_neighbor_y_old[_qp],
+    _disp_slipweakening_z_old[_qp] - _disp_slipweakening_neighbor_z_old[_qp]);
 
   // Global Displacement Jump Rate
-  RealVectorValue displacement_jump_rate_global(_vel_slipweakening_x[_qp]-_vel_slipweakening_neighbor_x[_qp],
-                                                _vel_slipweakening_y[_qp]-_vel_slipweakening_neighbor_y[_qp],
-                                                _vel_slipweakening_z[_qp]-_vel_slipweakening_neighbor_z[_qp]);
+  RealVectorValue displacement_jump_rate_global =
+      (displacement_jump_global - displacement_jump_old_global) * (1 / _dt);
 
   // Local Displacement Jump / Displacement Jump Rate
   RealVectorValue displacement_jump = _rot[_qp].transpose() * displacement_jump_global;
