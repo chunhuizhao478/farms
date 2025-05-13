@@ -4,7 +4,7 @@ SetFactory("OpenCASCADE");
 
 // Define mesh sizes
 lc_fault = 100; // Finer mesh size inside the fault zone
-lc = 5000;     // Coarser mesh size outside
+lc = 10000;     // Coarser mesh size outside
 
 // Define the big box (outer domain)
 // Later the region will be block 2, and use linear elastic material
@@ -17,20 +17,20 @@ big_zmax = 0;
 
 // Define the small fault zone box
 // The region will be block 3, and use continuum damage breakage material
-small_xmin = -5000;
-small_xmax = 5000;
-small_ymin = -2000;
-small_ymax = 2000;
-small_zmin = -16000;
+small_xmin = -2000;
+small_xmax = 2000;
+small_ymin = -1000;
+small_ymax = 1000;
+small_zmin = -2000;
 small_zmax = -0;
 
 // Define the inner damage zone box
 // The region will be block 1, and use continuum damage breakage material   
-damage_xmin = -4000;
-damage_xmax = 4000;
+damage_xmin = -1000;
+damage_xmax = 1000;
 damage_ymin = -100;
 damage_ymax = 100;
-damage_zmin = -15000;
+damage_zmin = -1000;
 damage_zmax = -0;
 
 // Create the big outer box

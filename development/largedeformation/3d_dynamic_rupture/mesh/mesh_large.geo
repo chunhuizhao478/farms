@@ -57,11 +57,20 @@ Field[2] = Threshold;
 Field[2].IField = 1;
 Field[2].LcMin = lc_fault;
 Field[2].LcMax = lc;
-Field[2].DistMin = 1400;    // Adjust as needed
-Field[2].DistMax = 60000;  // Adjust as needed
+Field[2].DistMin = 2*lc_fault;
+Field[2].DistMax = 2*lc_fault+0.001;
 
-// Set the Threshold field as the background field
-Background Field = 2;
+// Matheval field returns "distance squared + lc/20"
+Field[3] = MathEval;
+//Field[2].F = Sprintf("0.02*F1 + 0.00001*F1^2 + %g", lc_fault);
+//Field[2].F = Sprintf("0.02*F1 +(F1/2e3)^2 + %g", lc_fault);
+Field[3].F = Sprintf("0.05*F1 +(F1/2.5e3)^2 + %g", lc_fault);
+
+// 3. Create a new field that combines the two fields
+Field[4] = Min;
+Field[4].FieldsList = {2,3};
+
+Background Field = 4;
 
 // Assign Physical Volumes
 volumes[] = Volume{:};

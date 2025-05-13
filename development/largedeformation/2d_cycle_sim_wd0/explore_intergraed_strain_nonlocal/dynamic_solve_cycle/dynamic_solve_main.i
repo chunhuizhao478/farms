@@ -270,11 +270,11 @@
     []
     [func_top_traction]
         type = ParsedFunction
-        expression = '12e6 + 1e-8 * 32.04e9 * t'
+        expression = '13e6 + 1e-8 * 32.04e9 * t'
     []
     [func_bottom_traction]
         type = ParsedFunction
-        expression = '-12e6 - 1e-8 * 32.04e9 * t'
+        expression = '-13e6 - 1e-8 * 32.04e9 * t'
     []
     [func_spatial_cg]
         type = SpatialDamageBreakageParameters
@@ -466,15 +466,15 @@
 [BCs]
     #add initial shear stress
     [initial_shear_stress_top]
-        type = NeumannBC
+        type = FunctionNeumannBC
         variable = disp_x
-        value = 13e6
+        function = func_top_traction
         boundary = top
     [] 
     [initial_shear_stress_bottom]
-        type = NeumannBC
+        type = FunctionNeumannBC
         variable = disp_x
-        value = -13e6
+        function = func_bottom_traction
         boundary = bottom
     []
     # 
