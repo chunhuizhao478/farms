@@ -31,7 +31,7 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture_AD.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
   []

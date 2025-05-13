@@ -106,7 +106,7 @@
   #   parameter_values = '2 1e-6'
   # []
   # [crack_geometric]
-  #   type = NDCrackGeometricFunction
+  #   type = CrackGeometricFunction
   #   property_name = alpha
   #   expression = 'd^2'
   #   phase_field = d
@@ -142,6 +142,7 @@
     l = l
     #constants
     eta = 1e-6
+    outputs = exodus
   []
 []
 
@@ -149,10 +150,13 @@
   type = Transient
 
   solve_type = NEWTON
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
+  # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero -snes_type'
+  petsc_options_value = 'gmres     hypre  True vinewtonrsls'
   automatic_scaling = true
-
+  line_search = 'bt'
+  nl_max_its = 100
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 []
