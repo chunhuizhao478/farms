@@ -21,12 +21,6 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::validParams()
   params.addRequiredParam<Real>("xi_o","xi_o value");
   params.addRequiredParam<Real>("xi_d","xi_d value");
   params.addRequiredParam<Real>("chi","chi value");
-  //Compute effective stress
-  //------------------------------------------------------------------------------------------------------//
-  params.addParam<bool>("compute_effective_stress", false, "Whether or not to compute effective stress");
-  params.addParam<Real>("fluid_density", 0, "Fluid density");
-  params.addParam<Real>("gravity", 0, "Gravity");
-  //------------------------------------------------------------------------------------------------------//
   //Add Cohesion
   //------------------------------------------------------------------------------------------------------//
   params.addParam<bool>("add_cohesion", false, "Whether or not to add cohesion");
@@ -45,12 +39,6 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::ADComputeDamageStressStaticD
   _chi(getParam<Real>("chi")),
   _initial_damage_val(getADMaterialPropertyByName<Real>("initial_damage")),
   _initial_breakage_val(getADMaterialPropertyByName<Real>("initial_breakage")),
-  //Compute effective stress
-  //------------------------------------------------------------------------------------------------------//
-  _compute_effective_stress(getParam<bool>("compute_effective_stress")),
-  _fluid_density(getParam<Real>("fluid_density")),
-  _gravity(getParam<Real>("gravity")),
-  //------------------------------------------------------------------------------------------------------//
   //Add Cohesion
   //------------------------------------------------------------------------------------------------------//
   _add_cohesion(getParam<bool>("add_cohesion")),
@@ -58,9 +46,6 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::ADComputeDamageStressStaticD
   _constant_cohesion_cutoff_distance(getParam<Real>("constant_cohesion_cutoff_distance"))
   //------------------------------------------------------------------------------------------------------//
 {
-  // Check if the parameters are valid
-  if (_compute_effective_stress && (_fluid_density == 0 || _gravity == 0))
-    mooseError("Fluid density and gravity must be specified when computing effective stress");
   if (_add_cohesion && (_constant_cohesion == 0 || _constant_cohesion_cutoff_distance == 0))
     mooseError("Constant cohesion and its cutoff distance must be specified when adding cohesion");
 }
@@ -110,9 +95,6 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::computeQpStress()
 
   // stress
   _stress[_qp] = sigma_total;
-
-  // compute effective stress
-  compute_effective_stress();
 
   // Add cohesion
   add_cohesion();
@@ -198,22 +180,6 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::alphacr_root1(ADReal xi, ADR
                              + 48 * _shear_modulus_o * _shear_modulus_o);
     ADReal denominator = 2 * gamma_damaged_r * (3 * std::pow(xi, 2) - 6 * xi * _xi_o + 4 * _xi_o * _xi_o - 3);
     return (term1 - term2) / denominator;
-}
-
-// Function for compute effective stress
-void
-ADComputeDamageStressStaticDistributionDynamicCDBM::compute_effective_stress()
-{
-
-  if (!_compute_effective_stress)
-    return;
-
-  // Compute effective stress
-  ADReal zcoord = _q_point[_qp](2);
-  ADReal Pf = _fluid_density * _gravity * std::abs(zcoord);
-  _stress[_qp](0,0) -= Pf;
-  _stress[_qp](1,1) -= Pf;
-  _stress[_qp](2,2) -= Pf;
 }
 
 // Function for add cohesion

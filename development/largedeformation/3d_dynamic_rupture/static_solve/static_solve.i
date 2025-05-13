@@ -167,10 +167,6 @@ gravity_neg = -9.81
         xi_d = ${xi_d}
         outputs = exodus
         block = '1 3'
-        ###compute effective stress###
-        compute_effective_stress = true
-        fluid_density = ${fluid_density}
-        gravity = ${gravity_pos}
     [] 
     ###################################################################
     #lambda = 30e9: lambda value
