@@ -172,6 +172,19 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    #add additional output of stress
+    [./stress_xx]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./stress_yy]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./stress_xy]
+        order = FIRST
+        family = MONOMIAL
+    []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -201,7 +214,7 @@
     [plane_stress]
       planar_formulation = WEAK_PLANE_STRESS
       strain = SMALL
-      generate_output = 'stress_xx stress_yy stress_xy'
+    #   generate_output = 'stress_xx stress_yy stress_xy'
     []
 []
 
@@ -344,6 +357,34 @@
         boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
+    #output stress
+    [get_stress_xx]
+        type = MaterialRankTwoTensorAux
+        i = 0
+        j = 0
+        property = stress
+        variable = stress_xx
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_stress_yy]
+        type = MaterialRankTwoTensorAux
+        i = 1
+        j = 1
+        property = stress
+        variable = stress_yy
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [get_stress_xy]
+        type = MaterialRankTwoTensorAux
+        i = 0
+        j = 1
+        property = stress
+        variable = stress_xy
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
 []
 
 [Kernels]
@@ -433,6 +474,11 @@
     #     time_step_interval = 2000
     #     overwrite = true
     # []
+    [csv]
+        type = CSV
+        execute_on = 'timestep_end'
+        time_step_interval = 10
+    []
 []
 
 [MultiApps]
@@ -502,3 +548,24 @@
         nprop = 5
     []
 []
+
+[VectorPostprocessors]
+    [fault1]
+        type = SideValueSampler
+        variable = 'stress_xx stress_yy stress_xy' 
+        boundary = 'Block100_Block200'
+        sort_by = x
+    []
+    [fault2]
+        type = SideValueSampler
+        variable = 'stress_xx stress_yy stress_xy'
+        boundary = 'Block200_Block300'
+        sort_by = x
+    []
+    [fault3]
+        type = SideValueSampler
+        variable = 'stress_xx stress_yy stress_xy'
+        boundary = 'Block100_Block300'
+        sort_by = x
+    []
+  []
