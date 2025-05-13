@@ -199,5 +199,15 @@ NDPhaseFieldPsiDerivatives::computeNormalizationConstant()
 Real
 NDPhaseFieldPsiDerivatives::normalizationIntegrand(const Real & d)
 {
-  return 4.0 * std::sqrt(d);
+  Real alpha_d;
+  if (_model_type == "AT2")
+    alpha_d = d * d;
+  else if (_model_type == "AT1") 
+    alpha_d = d;
+  else if (_model_type == "PF_CZM")
+    alpha_d = 2 * d - d * d;
+  else
+    mooseError("Unknown model type: " + _model_type);
+    
+  return 4.0 * std::sqrt(alpha_d);
 }
