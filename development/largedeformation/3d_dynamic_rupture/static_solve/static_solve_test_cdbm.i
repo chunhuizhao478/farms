@@ -35,10 +35,12 @@ gravity_neg = -9.81
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
+        # coord = ' -120000 -120000 -120000;
+        #            120000 -120000 -120000;
+        #            120000 120000  -120000;
+        #           -120000 120000  -120000'
         coord = ' -120000 -120000 -120000;
-                   120000 -120000 -120000;
-                   120000 120000  -120000;
-                  -120000 120000  -120000'
+        120000 120000  -120000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -82,6 +84,23 @@ gravity_neg = -9.81
         order = FIRST
         family = MONOMIAL
     []
+    #stress function checks
+    [stress_xx_initial]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [stress_yy_initial]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [stress_xy_initial]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [stress_zz_initial]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 #######################################################################
@@ -89,10 +108,25 @@ gravity_neg = -9.81
 #get initial damage material property and save as an auxiliary variable
 #######################################################################
 [AuxKernels]
-    [get_initial_damage]
-        type = ADMaterialRealAux
-        variable = initial_damage_aux
-        property = initial_damage
+    [get_initial_stress_xx]
+        type = FunctionAux 
+        variable = stress_xx_initial
+        function = func_neg_xx_stress
+    []
+    [get_initial_stress_yy]
+        type = FunctionAux 
+        variable = stress_yy_initial
+        function = func_neg_yy_stress
+    []
+    [get_initial_stress_xy]
+        type = FunctionAux 
+        variable = stress_xy_initial
+        function = func_pos_xy_stress
+    []
+    [get_initial_stress_zz]
+        type = FunctionAux 
+        variable = stress_zz_initial
+        function = func_neg_zz_stress
     []
 []
 
@@ -148,6 +182,7 @@ gravity_neg = -9.81
     [strain]
         type = ADComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
+        eigenstrain_names = ini_stress_to_strain
         outputs = exodus
     [] 
     ###################################################################
@@ -175,6 +210,7 @@ gravity_neg = -9.81
     ###################################################################
     [stress_elastic]
         type = ADComputeLinearElasticStress
+        output_properties = 'stress'
         outputs = exodus
         block = '2'
     []
@@ -208,7 +244,7 @@ gravity_neg = -9.81
         peak_val = 0.7
         len_of_fault_strike = 18000
         len_of_fault_dip = 15000
-        nucl_center = '0 0 -7500'
+        nucl_center = '0 0 -500'
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -232,16 +268,22 @@ gravity_neg = -9.81
         peak_val = 0
         len_of_fault_strike = 18000
         len_of_fault_dip = 15000
-        nucl_center = '0 0 -7500'
+        nucl_center = '0 0 -500'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
+    [./strain_from_initial_stress]
+        type = ADComputeDamageBreakageEigenstrainFromInitialStress
+        initial_stress = 'func_neg_xx_stress func_pos_xy_stress 0  
+                          func_pos_xy_stress func_neg_yy_stress 0  
+                          0 0 func_neg_zz_stress'
+        eigenstrain_name = ini_stress_to_strain
+        lambda_o = ${lambda_o}
+        shear_modulus_o = ${shear_modulus_o}
+        xi_o = ${xi_o}
+    [../]
 []  
 
-###############################
-#Preconditioning section
-#SMP: use SMP preconditioner
-###############################
 [Preconditioning]
     [smp]
       type = SMP
@@ -249,19 +291,6 @@ gravity_neg = -9.81
     []
 []
 
-################################################################################################
-#Executioner section
-#type = Steady: specify the type of executioner, in this case, a steady-state simulation
-#solve_type = 'NEWTON': specify the solve type, in this case, a Newton solve
-#l_max_its = 100: specify the maximum number of linear iterations
-#l_tol = 1e-7: specify the linear tolerance
-#nl_rel_tol = 1e-10: specify the nonlinear relative tolerance
-#nl_max_its = 20: specify the maximum number of nonlinear iterations
-#nl_abs_tol = 1e-12: specify the nonlinear absolute tolerance
-#petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero': specify the PETSc options
-#petsc_options_value = 'gmres     hypre  True': specify the PETSc options values
-#automatic_scaling = true: specify to use automatic scaling
-################################################################################################
 [Executioner]
     type = Steady
     solve_type = 'NEWTON'
@@ -282,10 +311,6 @@ gravity_neg = -9.81
     automatic_scaling = true
 []  
 
-################################################
-#Outputs section
-#exodus: save the solution to a exodus file
-################################################
 [Outputs]
     exodus = true    
 []
@@ -294,7 +319,7 @@ gravity_neg = -9.81
 ################################################
 bxx = 0.926793
 byy = 1.073206
-bxy = -0.169029
+bxy = 0
 linear_variation_cutoff_distance = 15600
 ################################################
 [Functions]
@@ -376,19 +401,35 @@ linear_variation_cutoff_distance = 15600
         bxy = ${bxy}
         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
     []
+    #
+    [func_pos_zz_stress]
+        type = InitialDepthDependentStress
+        i = 3
+        j = 3
+        pos_sign = true
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_neg_zz_stress]
+        type = InitialDepthDependentStress
+        i = 3
+        j = 3
+        pos_sign = false
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
 []
 
-#We assume the simulation is loaded with compressive pressure and shear stress
-#############################################################################################################################################################
-#BCs Section
-#Note: use neuamnnBC gives minimum waves than pressureBC
-#Coordinate system: x: strike, y: normal , z: dip
-#The following BCs are applied to the top, bottom, left, right, front, and back boundaries
-#Note depends on the coordinate system, the normal direction is different
-#Confinement pressure: static_pressure_top, static_pressure_bottom, static_pressure_left, static_pressure_right, static_pressure_front, static_pressure_back
-#Shear stress: static_pressure_front_shear, static_pressure_back_shear
-#Constraints on corner_ptr: fix_cptr1_x, fix_cptr1_y, fix_cptr1_z
-#############################################################################################################################################################
 [BCs]
     [fix_bottom_z]
         type = ADDirichletBC
@@ -428,28 +469,28 @@ linear_variation_cutoff_distance = 15600
     []
     #
     [static_pressure_front_shear]
-        type = ADFunctionNeumannBC
+        type = FunctionNeumannBC
         variable = disp_x
         boundary = front
         function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
-        type = ADFunctionNeumannBC
+        type = FunctionNeumannBC
         variable = disp_x
         boundary = back
         function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
-        type = ADFunctionNeumannBC
+        type = FunctionNeumannBC
         variable = disp_y
         boundary = left
         function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
-        type = ADFunctionNeumannBC
+        type = FunctionNeumannBC
         variable = disp_y
         boundary = right
         function = func_neg_xy_stress

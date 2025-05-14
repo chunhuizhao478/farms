@@ -81,6 +81,7 @@ ADComputeDamageStressStaticDistributionDynamicCDBM::computeQpStress()
   // Evaluate shear modulus
   ADReal shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val[_qp] * gamma_r;
   ADReal gamma_damaged_out = _initial_damage_val[_qp] * gamma_r;
+  //ADReal gamma_damaged_out = 0.0;
 
   //
   const ADReal epsilon = 1e-12;

@@ -82,42 +82,102 @@ ADComputeDamageBreakageEigenstrainFromInitialStress::ADComputeDamageBreakageEige
 void
 ADComputeDamageBreakageEigenstrainFromInitialStress::computeQpEigenstrain()
 {
-  if (_t_step == 1) //load the solution from initial
+  // only initialise at the first time step – afterwards carry old value
+  if (_t_step != 1)
   {
-    ADRankTwoTensor initial_stress;
-    for (unsigned i = 0; i < LIBMESH_DIM; ++i)
-      for (unsigned j = 0; j < LIBMESH_DIM; ++j)
-      {
-        initial_stress(i, j) = _initial_stress_fcn[i * LIBMESH_DIM + j]->value(_t, _q_point[_qp]);
-        if (_ini_aux_provided)
-          initial_stress(i, j) *= (*_ini_aux[i * LIBMESH_DIM + j])[_qp];
-      }
-
-    // Compute gammar
-    ADReal gamma_r = computegammar();
-
-    // Evaluate shear modulus
-    ADReal shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val[_qp] * gamma_r;
-    ADReal gamma_damaged_out = _initial_damage_val[_qp] * gamma_r;
-
-    // Compute strain components
-    ADReal epsxx = 1.0/(2.0*shear_modulus) * initial_stress(0,0) - _lambda_o / ((2.0 * shear_modulus)*(3*_lambda_o + 2*shear_modulus)) * (initial_stress(0,0) + initial_stress(1,1) + initial_stress(2,2));
-    ADReal epsyy = 1.0/(2.0*shear_modulus) * initial_stress(1,1) - _lambda_o / ((2.0 * shear_modulus)*(3*_lambda_o + 2*shear_modulus)) * (initial_stress(0,0) + initial_stress(1,1) + initial_stress(2,2));
-    ADReal epszz = 1.0/(2.0*shear_modulus) * initial_stress(2,2) - _lambda_o / ((2.0 * shear_modulus)*(3*_lambda_o + 2*shear_modulus)) * (initial_stress(0,0) + initial_stress(1,1) + initial_stress(2,2));
-    ADReal epsxy = 1.0/(2.0*shear_modulus) * initial_stress(0,1);
-    ADReal epsxz = 1.0/(2.0*shear_modulus) * initial_stress(0,2);
-    ADReal epsyz = 1.0/(2.0*shear_modulus) * initial_stress(1,2);
-    
-    //invSymm only works for non-AD
-    _eigenstrain[_qp](0,0) = epsxx;
-    _eigenstrain[_qp](1,1) = epsyy;
-    _eigenstrain[_qp](2,2) = epszz;
-    _eigenstrain[_qp](0,1) = epsxy; _eigenstrain[_qp](1,0) = epsxy;
-    _eigenstrain[_qp](0,2) = epsxz; _eigenstrain[_qp](2,0) = epsxz;
-    _eigenstrain[_qp](1,2) = epsyz; _eigenstrain[_qp](2,1) = epsyz;
-  }
-  else
     _eigenstrain[_qp] = _eigenstrain_old[_qp];
+    return;
+  }
+
+  //-----------------------------------------------------------
+  // 1. Read initial stress σ⁰
+  //-----------------------------------------------------------
+  ADRankTwoTensor sigma; // σ_ij
+  for (unsigned i = 0; i < LIBMESH_DIM; ++i)
+    for (unsigned j = 0; j < LIBMESH_DIM; ++j)
+    {
+      sigma(i, j) = _initial_stress_fcn[i * LIBMESH_DIM + j]->value(_t, _q_point[_qp]);
+      if (_ini_aux_provided)
+        sigma(i, j) *= (*_ini_aux[i * LIBMESH_DIM + j])[_qp];
+    }
+
+  //-----------------------------------------------------------
+  // 2. Damage‑dependent parameters
+  //-----------------------------------------------------------
+  ADReal gamma_r = computegammar();                                    // γ_r
+  ADReal damage  = _initial_damage_val[_qp];                           // d
+  ADReal gamma   = damage * gamma_r;                                   // γ = d γ_r
+  ADReal mu      = _shear_modulus_o + _xi_o * damage * gamma_r;        // μ(ξ₀,d)
+  ADReal lambda  = _lambda_o;                                          // λ (kept constant here)
+
+  //-----------------------------------------------------------
+  // 3. Newton iteration for ξ
+  //-----------------------------------------------------------
+  const ADReal S1 = sigma.trace();                 // σ_kk
+  const ADReal S2 = (sigma * sigma).trace();       // σ_ij σ_ij
+
+  // initial guess: use reference value or ratio of invariants if possible
+  ADReal xi = (std::abs(S1) > 1e-16 && std::abs(S2) > 1e-16) ? S1 / std::sqrt(S2) : _xi_o;
+
+  for (unsigned it = 0; it < 10; ++it)
+  {
+    // a = λ - γ/ξ,  b = 2μ - γ ξ
+    ADReal a = lambda - gamma / xi;
+    ADReal b = 2.0 * mu - gamma * xi;
+    ADReal denom = 3.0 * a + b; // D
+
+    // Invariants I1, I2 as functions of ξ
+    ADReal I1 = S1 / denom;
+
+    // coefficient C(ξ) used in I2 expression
+    ADReal C = (2.0 * a) / (b * b * denom) + (3.0 * a * a) / (b * b * denom * denom);
+    ADReal I2 = S2 / (b * b) + C * S1 * S1;
+
+    ADReal sqrtI2 = std::sqrt(I2 + 1e-32);
+
+    // Residual F(ξ)
+    ADReal F = xi - I1 / sqrtI2;
+
+    if (std::abs(MetaPhysicL::raw_value(F)) < 1e-12) // converged (raw_value for ADReal tolerance)
+      break;
+
+    //-------------------------------------------------------
+    // Derivative F'(ξ)
+    //-------------------------------------------------------
+    ADReal da =  gamma / (xi * xi);   // a'
+    ADReal db = -gamma;               // b'
+    ADReal dDenom = 3.0 * da + db;    // D'
+    ADReal dI1 = -S1 * dDenom / (denom * denom);
+
+    // derivative of C(ξ)
+    ADReal dC = (2.0 * da) / (b * b * denom)
+               - (4.0 * a * db) / (b * b * b * denom)
+               - (2.0 * a * dDenom) / (b * b * denom * denom)
+               + (6.0 * a * da) / (b * b * denom * denom)
+               - (6.0 * a * a * db) / (b * b * b * denom * denom)
+               - (6.0 * a * a * dDenom) / (b * b * denom * denom * denom);
+
+    ADReal dI2 = -2.0 * S2 * db / (b * b * b) + dC * S1 * S1;
+
+    ADReal dF = 1.0 - dI1 / sqrtI2 + 0.5 * I1 * dI2 / (I2 * sqrtI2);
+
+    xi -= F / dF; // Newton update
+  }
+
+  //-----------------------------------------------------------
+  // 4. Compute compliance constants A,B and eigenstrain ε^e
+  //-----------------------------------------------------------
+  ADReal a = lambda - gamma / xi;
+  ADReal b = 2.0 * mu - gamma * xi;
+  ADReal A = 1.0 / b;
+  ADReal B = -a / (b * (3.0 * a + b));
+
+  ADRankTwoTensor eps = sigma;     // start with σ_ij
+  eps *= A;                        // A σ_ij
+  eps += B * S1 * RankTwoTensor::Identity(); // + B tr(σ) δ_ij
+
+  // Store as negative eigen‑strain (initial strain we want to cancel)
+  _eigenstrain[_qp] = -eps;
 }
 
 ADReal

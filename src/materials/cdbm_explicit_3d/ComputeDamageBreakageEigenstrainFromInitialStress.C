@@ -99,7 +99,7 @@ ComputeDamageBreakageEigenstrainFromInitialStress::computeQpEigenstrain()
     // Evaluate shear modulus
     Real shear_modulus = _shear_modulus_o + _xi_o * _initial_damage_val[_qp] * gamma_r;
     Real gamma_damaged_out = _initial_damage_val[_qp] * gamma_r;
-
+ 
     // Compute strain components
     Real epsxx = 1.0/(2.0*shear_modulus) * initial_stress(0,0) - _lambda_o / ((2.0 * shear_modulus)*(3*_lambda_o + 2*shear_modulus)) * (initial_stress(0,0) + initial_stress(1,1) + initial_stress(2,2));
     Real epsyy = 1.0/(2.0*shear_modulus) * initial_stress(1,1) - _lambda_o / ((2.0 * shear_modulus)*(3*_lambda_o + 2*shear_modulus)) * (initial_stress(0,0) + initial_stress(1,1) + initial_stress(2,2));
@@ -109,12 +109,12 @@ ComputeDamageBreakageEigenstrainFromInitialStress::computeQpEigenstrain()
     Real epsyz = 1.0/(2.0*shear_modulus) * initial_stress(1,2);
     
     //invSymm only works for non-AD
-    _eigenstrain[_qp](0,0) = epsxx;
-    _eigenstrain[_qp](1,1) = epsyy;
-    _eigenstrain[_qp](2,2) = epszz;
-    _eigenstrain[_qp](0,1) = epsxy; _eigenstrain[_qp](1,0) = epsxy;
-    _eigenstrain[_qp](0,2) = epsxz; _eigenstrain[_qp](2,0) = epsxz;
-    _eigenstrain[_qp](1,2) = epsyz; _eigenstrain[_qp](2,1) = epsyz;
+    _eigenstrain[_qp](0,0) = -epsxx;
+    _eigenstrain[_qp](1,1) = -epsyy;
+    _eigenstrain[_qp](2,2) = -epszz;
+    _eigenstrain[_qp](0,1) = -epsxy; _eigenstrain[_qp](1,0) = -epsxy;
+    _eigenstrain[_qp](0,2) = -epsxz; _eigenstrain[_qp](2,0) = -epsxz;
+    _eigenstrain[_qp](1,2) = -epsyz; _eigenstrain[_qp](2,1) = -epsyz;
   }
   else
     _eigenstrain[_qp] = _eigenstrain_old[_qp];
