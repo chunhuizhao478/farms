@@ -1,3 +1,7 @@
+fluid_density = 1000   
+solid_density = 2700
+gravity_pos = 9.81
+
 #implicit continuum damage-breakage model dynamics
 [Mesh]
     [./msh]
