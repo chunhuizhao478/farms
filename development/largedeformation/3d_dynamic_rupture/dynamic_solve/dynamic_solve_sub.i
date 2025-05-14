@@ -287,7 +287,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = '../static_solve/static_solve_test_cdbm_out.e'
-      system_variables = 'alpha_damagedvar_output B_damagedvar_output'
+      system_variables = 'initial_damage initial_breakage'
       timestep = LATEST
       force_preaux = true
       execute_on = 'INITIAL'
@@ -297,15 +297,15 @@
 [ICs]
     [alpha_damagedvar_sub_ic]
         type = SolutionIC
-        variable = alpha_damagedvar_sub
+        variable = alpha_damagedvar_aux
         solution_uo = init_sol_components
-        from_variable = alpha_damagedvar_output
+        from_variable = initial_damage
     []  
     [B_damagedvar_sub_ic]
         type = SolutionIC
-        variable = B_damagedvar_sub
+        variable = B_damagedvar_aux
         solution_uo = init_sol_components
-        from_variable = B_damagedvar_output
+        from_variable = initial_breakage
     []
 []
 
