@@ -244,7 +244,7 @@ gravity_neg = -9.81
         peak_val = 0.7
         len_of_fault_strike = 18000
         len_of_fault_dip = 15000
-        nucl_center = '0 0 -500'
+        nucl_center = '0 0 -7500'
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -268,7 +268,7 @@ gravity_neg = -9.81
         peak_val = 0
         len_of_fault_strike = 18000
         len_of_fault_dip = 15000
-        nucl_center = '0 0 -500'
+        nucl_center = '0 0 -7500'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
@@ -319,7 +319,7 @@ gravity_neg = -9.81
 ################################################
 bxx = 0.926793
 byy = 1.073206
-bxy = 0
+bxy = -0.169029
 linear_variation_cutoff_distance = 15600
 ################################################
 [Functions]
