@@ -258,7 +258,19 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []      
+    [] 
+    [damping_x]
+        type = StiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.2
+    []
+    [damping_y]
+        type = StiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.2
+    []          
 []
 
 [Functions]
@@ -458,9 +470,13 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 40
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
+    [./csv]
+       type = CSV
+       time_step_interval = 1
+    []
 []
 
 [BCs]

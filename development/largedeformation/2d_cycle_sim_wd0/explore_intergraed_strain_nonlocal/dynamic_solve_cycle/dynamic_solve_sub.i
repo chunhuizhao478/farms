@@ -354,7 +354,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 20
+        time_step_interval = 40
         show = 'Cd_aux'
     [../]
 []
