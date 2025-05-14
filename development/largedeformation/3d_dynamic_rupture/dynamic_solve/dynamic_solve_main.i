@@ -275,23 +275,6 @@ gravity_pos = 9.81
     []  
 []
 
-[Functions]
-    [func_top_bc]
-        type = ParsedFunction
-        expression = 'if (t>dt, 1e-8 * t, 0)'
-        symbol_names = 'dt'
-        symbol_values = '1e-3'
-    []
-    [func_top_traction]
-        type = ParsedFunction
-        expression = '12e6 + 1e-8 * 32.04e9 * t'
-    []
-    [func_bottom_traction]
-        type = ParsedFunction
-        expression = '-12e6 - 1e-8 * 32.04e9 * t'
-    []
-[]
-
 #parameters for the initial stress field
 ################################################
 bxx = 0.926793
@@ -428,8 +411,6 @@ linear_variation_cutoff_distance = 15600
         vel_x = vel_x
         vel_y = vel_y
         vel_z = vel_z
-        #use cg
-        # use_spatial_cg = true
     [] 
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
@@ -580,7 +561,7 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 10
         show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
@@ -926,7 +907,7 @@ linear_variation_cutoff_distance = 15600
     [./init_sol_components]
       type = SolutionUserObject
       mesh = '../static_solve/static_solve_test_cdbm_out.e'
-      system_variables = 'disp_x disp_y disp_z xi_initial I2_initial initial_damage initial_breakage'
+      system_variables = 'disp_x disp_y disp_z initial_xi_aux initial_I2_aux initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true
       execute_on = 'INITIAL'
@@ -956,24 +937,24 @@ linear_variation_cutoff_distance = 15600
       type = SolutionIC
       variable = nonlocal_xi
       solution_uo = init_sol_components
-      from_variable = xi_initial
+      from_variable = initial_xi_aux
     []
     [I2_aux_ic]
       type = SolutionIC
       variable = I2_aux
       solution_uo = init_sol_components
-      from_variable = I2_initial
+      from_variable = initial_I2_aux
     []
     [alpha_damagedvar_sub_ic]
         type = SolutionIC
         variable = alpha_damagedvar_aux
         solution_uo = init_sol_components
-        from_variable = initial_damage
+        from_variable = initial_damage_aux
     []  
     [B_damagedvar_sub_ic]
         type = SolutionIC
         variable = B_damagedvar_aux
         solution_uo = init_sol_components
-        from_variable = initial_breakage
+        from_variable = initial_breakage_aux
     []    
 []

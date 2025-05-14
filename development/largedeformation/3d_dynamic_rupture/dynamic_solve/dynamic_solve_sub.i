@@ -209,7 +209,7 @@
         type = SolutionAux
         variable = initial_damage_sub_aux
         solution = init_sol_components
-        from_variable = alpha_damagedvar_output
+        from_variable = initial_damage_aux
         execute_on = 'TIMESTEP_BEGIN'
     []
     #get structural stress coefficient
@@ -287,7 +287,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = '../static_solve/static_solve_test_cdbm_out.e'
-      system_variables = 'initial_damage initial_breakage'
+      system_variables = 'initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true
       execute_on = 'INITIAL'
@@ -299,20 +299,20 @@
         type = SolutionIC
         variable = alpha_damagedvar_sub
         solution_uo = init_sol_components
-        from_variable = initial_damage
+        from_variable = initial_damage_aux
     []  
     [B_damagedvar_sub_ic]
         type = SolutionIC
         variable = B_damagedvar_sub
         solution_uo = init_sol_components
-        from_variable = initial_breakage
+        from_variable = initial_breakage_aux
     []
 []
 
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 10
         show = 'Cd_aux'
     [../]
 []

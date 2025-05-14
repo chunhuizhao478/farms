@@ -76,11 +76,19 @@ gravity_neg = -9.81
         order = FIRST
         family = MONOMIAL
     []
-    [correlated_randalpha_o]
+    [initial_breakage_aux]
         order = FIRST
-        family = LAGRANGE
+        family = MONOMIAL
+    []
+    [initial_I2_aux]
+        order = FIRST
+        family = MONOMIAL
     []
     [initial_cd_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [initial_xi_aux]
         order = FIRST
         family = MONOMIAL
     []
@@ -127,6 +135,26 @@ gravity_neg = -9.81
         type = FunctionAux 
         variable = stress_zz_initial
         function = func_neg_zz_stress
+    []
+    [get_initial_damage]
+        type = ADMaterialRealAux
+        variable = initial_damage_aux
+        property = initial_damage
+    []
+    [get_initial_breakage]
+        type = ADMaterialRealAux
+        variable = initial_breakage_aux
+        property = initial_breakage
+    []
+    [get_initial_I2]
+        type = ADMaterialRealAux
+        variable = initial_I2_aux
+        property = I2_initial
+    []
+    [get_initial_xi]
+        type = ADMaterialRealAux
+        variable = initial_xi_aux
+        property = xi_initial
     []
 []
 
