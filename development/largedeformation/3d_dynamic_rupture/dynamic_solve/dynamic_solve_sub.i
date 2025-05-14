@@ -225,16 +225,6 @@
         property = Cd
     []
     #
-    [get_xio]
-        type = FunctionAux
-        variable = xio_aux
-        function = func_spatial_xio
-    []
-    [get_cg]
-        type = FunctionAux
-        variable = xid_aux
-        function = func_spatial_xid
-    []
 []
 
 [Materials]
@@ -247,11 +237,6 @@
         #use strain rate dependent Cd
         use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
-        #
-        # use_spatial_xio = true
-        # xio_aux = xio_aux
-        # use_spatial_xid = true
-        # xid_aux = xid_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]

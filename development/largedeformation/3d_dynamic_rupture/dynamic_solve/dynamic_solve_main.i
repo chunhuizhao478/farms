@@ -218,12 +218,6 @@ gravity_pos = 9.81
         property = deviatroic_strain_rate
         block = '1 3'
     []
-    #get spatial damage parameters
-    [get_cg]
-        type = FunctionAux
-        variable = cg_aux
-        function = func_spatial_cg
-    []
     #
     [get_nonlocal_xi]
         type = MaterialRealAux
