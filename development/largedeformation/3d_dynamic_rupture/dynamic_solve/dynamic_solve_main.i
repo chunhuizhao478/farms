@@ -495,8 +495,8 @@ linear_variation_cutoff_distance = 15600
   
 [Executioner]
     type = Transient
-    solve_type = 'NEWTON'
-    # solve_type = 'PJFNK'
+    # solve_type = 'NEWTON'
+    solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
     num_steps = 50
