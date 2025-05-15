@@ -493,7 +493,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
   nl_abs_tol = 1e-10
 
   dt = 0.5e-6
-  end_time = 2e-3
+  end_time = 2e-5
 
   fixed_point_max_its = 5
   accept_on_max_fixed_point_iteration = true
