@@ -61,6 +61,13 @@ l = 4e-2 # N * h, N: number of elements, h: element size
     type = FileMeshGenerator
     file =  '../../meshfile/fieldscale.msh'
   []
+  [./extranodeset1]
+    type = ExtraNodesetGenerator
+    coord = '1 1 0'
+    new_boundary = corner_ptr
+    input = msh
+    use_closest_node=true
+  []
   displacements = 'disp_x disp_y disp_z'
 []
 
@@ -216,18 +223,6 @@ l = 4e-2 # N * h, N: number of elements, h: element size
     []             
   []    
   # fix all displacements in top
-  [./fix_top_x]
-    type = DirichletBC
-    variable = disp_x
-    boundary = Top
-    value = 0
-  []
-  [./fix_top_y]
-    type = DirichletBC
-    variable = disp_y
-    boundary = Top
-    value = 0
-  []
   [./fix_top_z]
     type = DirichletBC
     variable = disp_z
@@ -235,22 +230,29 @@ l = 4e-2 # N * h, N: number of elements, h: element size
     value = 0
   []
   #fix all displacements in bottom
-  [./fix_bottom_x]
-    type = DirichletBC
-    variable = disp_x
-    boundary = Bottom
-    value = 0
-  []
-  [./fix_bottom_y]
-    type = DirichletBC
-    variable = disp_y
-    boundary = Bottom
-    value = 0
-  []
   [./fix_bottom_z]
     type = DirichletBC
     variable = disp_z
     boundary = Bottom
+    value = 0
+  []
+  # fix ptr
+  [./fix_cptr1_x]
+    type = DirichletBC
+    variable = disp_x
+    boundary = corner_ptr
+    value = 0
+  []
+  [./fix_cptr2_y]
+    type = DirichletBC
+    variable = disp_y
+    boundary = corner_ptr
+    value = 0
+  []
+  [./fix_cptr3_z]
+    type = DirichletBC
+    variable = disp_z
+    boundary = corner_ptr
     value = 0
   []
 []
@@ -490,7 +492,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.5e-8
+  dt = 0.5e-6
   end_time = 2e-5
 
   fixed_point_max_its = 5
@@ -507,7 +509,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 40
   print_linear_residuals = false
   csv = true
 []

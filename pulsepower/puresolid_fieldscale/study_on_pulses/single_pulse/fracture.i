@@ -3,6 +3,13 @@
     type = FileMeshGenerator
     file =  '../../meshfile/fieldscale.msh'
   []
+  [./extranodeset1]
+    type = ExtraNodesetGenerator
+    coord = '1 1 0'
+    new_boundary = corner_ptr
+    input = msh
+    use_closest_node=true
+  []
 []
 
 [Adaptivity]
