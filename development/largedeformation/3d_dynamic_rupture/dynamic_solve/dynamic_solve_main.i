@@ -883,6 +883,7 @@ linear_variation_cutoff_distance = 15600
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
         sub_cycling = true
+        clone_master_mesh = true
     [../]
 []
 
