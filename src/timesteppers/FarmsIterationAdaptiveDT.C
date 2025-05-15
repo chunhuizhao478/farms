@@ -106,6 +106,8 @@ FarmsIterationAdaptiveDT::validParams()
                                      "Postprocessor for maximum nodal velocity in x direction");
   params.addParam<PostprocessorName>("maxvely",
                                      "Postprocessor for maximum nodal velocity in y direction");
+  params.addParam<PostprocessorName>("maxvelz",
+                                     "Postprocessor for maximum nodal velocity in y direction");
   return params;
 }
 
@@ -153,6 +155,7 @@ FarmsIterationAdaptiveDT::FarmsIterationAdaptiveDT(const InputParameters & param
     // New postprocessor pointers for maxvelx and maxvely:
     _max_vel_x(isParamValid("maxvelx") ? &getPostprocessorValue("maxvelx") : nullptr),
     _max_vel_y(isParamValid("maxvely") ? &getPostprocessorValue("maxvely") : nullptr),
+    _max_vel_z(isParamValid("maxvelz") ? &getPostprocessorValue("maxvelz") : nullptr),
     // END New velocity-based timestep modifiers
     _max_vel(isParamValid("max_vel") ? &getPostprocessorValue("max_vel") : nullptr),
     _max_vel_old(isParamValid("max_vel") ? &getPostprocessorValueOld("max_vel") : nullptr),
@@ -277,11 +280,12 @@ FarmsIterationAdaptiveDT::computeDT()
   if (_constrain_by_velocity)
   {
     // Ensure that both velocity postprocessors are provided.
-    if (_max_vel_x && _max_vel_y)
+    if (_max_vel_x && _max_vel_y && _max_vel_z)
     {
       Real vel_x = *_max_vel_x;
       Real vel_y = *_max_vel_y;
-      Real vel = std::sqrt(vel_x*vel_x + vel_y*vel_y);
+      Real vel_z = *_max_vel_z;
+      Real vel = std::sqrt(vel_x*vel_x + vel_y*vel_y + vel_z*vel_z);
 
       if (_verbose)
         _console << "Computed velocity = " << vel << ", threshold = " << _vel_threshold << std::endl;

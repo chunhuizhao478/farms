@@ -6,7 +6,7 @@ gravity_pos = 9.81
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -529,6 +529,7 @@ linear_variation_cutoff_distance = 15600
         constant_dt_on_overspeed = 1e-2
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
+        maxvelz = 'maxvelz'
     []
     # [TimeStepper]
     #     type = IterationAdaptiveDT
@@ -556,13 +557,17 @@ linear_variation_cutoff_distance = 15600
         type = NodalExtremeValue
         variable = vel_y
     [../]
+    [./maxvelz]
+        type = NodalExtremeValue
+        variable = vel_z
+    [../]
 [../]
 
 [Outputs]
     [./exodus]
         type = Exodus
         time_step_interval = 10
-        show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
         type = CSV

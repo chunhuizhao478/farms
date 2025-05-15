@@ -130,6 +130,8 @@ protected:
   const PostprocessorValue * _max_vel_x;
   /// Postprocessor for maximum nodal velocity in the y direction.
   const PostprocessorValue * _max_vel_y;
+  /// Postprocessor for maximum nodal velocity in the z direction.
+  const PostprocessorValue * _max_vel_z;
 
   const PostprocessorValue * _max_vel;
   const PostprocessorValue * _max_vel_old;
