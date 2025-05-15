@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large2.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -241,7 +241,7 @@
     #add shear perturbation to the system
     [damage_perturbation]
         type = PerturbationRadialSource
-        nucl_center = '0 0 -7500'
+        nucl_center = '0 0 -500'
         peak_value = 0.3
         thickness = 200
         length = 2000

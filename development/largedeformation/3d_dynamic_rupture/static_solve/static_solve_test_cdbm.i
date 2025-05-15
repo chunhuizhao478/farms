@@ -20,7 +20,7 @@ gravity_neg = -9.81
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large2.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -294,9 +294,9 @@ gravity_neg = -9.81
         type = ADInitialBreakageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0
-        len_of_fault_strike = 14000
-        len_of_fault_dip = 15000
-        nucl_center = '0 0 -7500'
+        len_of_fault_strike = 2000
+        len_of_fault_dip = 1000
+        nucl_center = '0 0 -500'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
