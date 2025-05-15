@@ -473,7 +473,7 @@ linear_variation_cutoff_distance = 15600
         prop_name = strain_invariant_ratio
         radius = 200
         weights = BAZANT
-        execute_on = LINEAR
+        execute_on = TIMESTEP_END
     []
 []
 
@@ -888,7 +888,7 @@ linear_variation_cutoff_distance = 15600
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
         sub_cycling = true
-        clone_master_mesh = true
+        clone_parent_mesh = true
     [../]
 []
 
