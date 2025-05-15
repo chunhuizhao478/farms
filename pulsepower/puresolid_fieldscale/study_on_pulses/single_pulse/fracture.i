@@ -94,7 +94,7 @@
     property_name = Gc
     coupled_variables = 'Gc_var'
     expression = 'Gc_var'
-    outputs = exodus
+    # outputs = exodus
   []
   [degradation]
     type = PowerDegradationFunction
@@ -133,8 +133,8 @@
 []
 
 [Outputs]
-  exodus = true
-  time_step_interval = 40
+  exodus = false
+  # time_step_interval = 40
   print_linear_residuals = false
 []
 

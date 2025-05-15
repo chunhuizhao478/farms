@@ -202,7 +202,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
     shape_param_beta = 6.677e5
     rise_time = 2e-6
     single_pulse_duration = 2e-5
-    EM = 3
+    EM = 3000
     gap = 0.05
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -493,7 +493,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
   nl_abs_tol = 1e-10
 
   dt = 0.5e-6
-  end_time = 2e-5
+  end_time = 2e-3
 
   fixed_point_max_its = 5
   accept_on_max_fixed_point_iteration = true
@@ -509,7 +509,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
 
 [Outputs]
   exodus = true
-  time_step_interval = 40
+  time_step_interval = 10
   print_linear_residuals = false
   csv = true
 []
