@@ -341,7 +341,8 @@
         prop_name = strain_invariant_ratio
         radius = 200
         weights = BAZANT
-        execute_on = LINEAR
+        # execute_on = LINEAR
+        execute_on = TIMESTEP_END
     []
 []
 
