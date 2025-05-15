@@ -270,9 +270,9 @@ gravity_neg = -9.81
         type = ADInitialDamageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0.7
-        len_of_fault_strike = 14000
-        len_of_fault_dip = 15000
-        nucl_center = '0 0 -7500'
+        len_of_fault_strike = 2000
+        len_of_fault_dip = 1000
+        nucl_center = '0 0 -500'
         output_properties = 'initial_damage'      
         outputs = exodus
     []
