@@ -4,7 +4,7 @@ K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
 
 Gc_const = 57
-l = 4e-2 # N * h, N: number of elements, h: element size
+l = 4e-3 # N * h, N: number of elements, h: element size
 
 [Adaptivity]
   max_h_level = 3
