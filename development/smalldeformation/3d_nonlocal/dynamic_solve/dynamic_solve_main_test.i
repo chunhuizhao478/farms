@@ -7,7 +7,7 @@ gravity_neg = -9.81
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large_freesurface.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -22,10 +22,10 @@ gravity_neg = -9.81
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -12000 -10000 -20000;
-                   12000 -10000 -20000;
-                   12000 10000  -20000;
-                  -12000 10000  -20000'
+        coord = ' -120000 -120000 -120000;
+                   120000 -120000 -120000;
+                   120000 120000  -120000;
+                  -120000 120000  -120000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -409,11 +409,6 @@ linear_variation_cutoff_distance = 15600
         outputs = exodus
         block = '1 3'
     []
-    [dummy_initial_damage]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
-    []
     #elastic material
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
@@ -462,6 +457,13 @@ linear_variation_cutoff_distance = 15600
         shear_modulus_o = 32.04e9
         xi_o = -0.8
     [../]
+    [initial_damage_mat] #ComputeDamageBreakageEigenstrainFromInitialStress call it
+        type = ParsedMaterial
+        property_name = 'initial_damage'
+        coupled_variables = 'alpha_damagedvar_aux'
+        expression = 'alpha_damagedvar_aux'
+        outputs = exodus
+    []
 [] 
 
 [UserObjects]
@@ -497,14 +499,14 @@ linear_variation_cutoff_distance = 15600
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
-    num_steps = 50
+    num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres     hypre  True'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
@@ -616,28 +618,28 @@ linear_variation_cutoff_distance = 15600
         type = FunctionNeumannBC
         variable = disp_x
         boundary = front
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = FunctionNeumannBC
         variable = disp_x
         boundary = back
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = left
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = right
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []   
     # fix ptr
@@ -658,7 +660,7 @@ linear_variation_cutoff_distance = 15600
         variable = disp_z
         boundary = corner_ptr
         value = 0
-    []     
+    []       
 []
 
 [BCs]
@@ -883,7 +885,7 @@ linear_variation_cutoff_distance = 15600
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_freesurface.i'
+        input_files = 'dynamic_solve_sub_test.i'
         execute_on = 'TIMESTEP_BEGIN'
         sub_cycling = true
         clone_parent_mesh = true
@@ -910,7 +912,7 @@ linear_variation_cutoff_distance = 15600
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_freesurface_out.e'
+      mesh = '../static_solve/static_solve_test_out.e'
       system_variables = 'disp_x disp_y disp_z initial_xi_aux initial_I2_aux initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true

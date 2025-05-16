@@ -3,8 +3,8 @@
 #material properties
 lambda_o = 32.04e9
 shear_modulus_o = 32.04e9
-xi_o = -0.8
-xi_d = -0.9
+xi_o = -0.7
+xi_d = -0.8
 chi = 0.8
 fluid_density = 1000   
 solid_density = 2700
@@ -13,9 +13,9 @@ gravity_neg = -9.81
 
 sigma = 5e2
 peak_val = 0.7
-len_of_fault_strike = 14000
-len_of_fault_dip = 15000
-nucl_center = '0 0 -7500'
+len_of_fault_strike = 2000
+len_of_fault_dip = 1000
+nucl_center = '0 0 -500'
 
 ##########################################################################################################################################
 #Mesh section
@@ -26,7 +26,7 @@ nucl_center = '0 0 -7500'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large_freesurface.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -41,10 +41,10 @@ nucl_center = '0 0 -7500'
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -12000 -10000 -20000;
-                   12000 -10000 -20000;
-                   12000 10000  -20000;
-                  -12000 10000  -20000'
+        coord = ' -120000 -120000 -120000;
+                   120000 -120000 -120000;
+                   120000 120000  -120000;
+                  -120000 120000  -120000'
         new_boundary = corner_ptr
         input = sidesets
     []

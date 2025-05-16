@@ -409,11 +409,6 @@ linear_variation_cutoff_distance = 15600
         outputs = exodus
         block = '1 3'
     []
-    [dummy_initial_damage]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
-    []
     #elastic material
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
@@ -462,6 +457,13 @@ linear_variation_cutoff_distance = 15600
         shear_modulus_o = 32.04e9
         xi_o = -0.8
     [../]
+    [initial_damage_mat] #ComputeDamageBreakageEigenstrainFromInitialStress call it
+        type = ParsedMaterial
+        property_name = 'initial_damage'
+        coupled_variables = 'alpha_damagedvar_aux'
+        expression = 'alpha_damagedvar_aux'
+        outputs = exodus
+    []
 [] 
 
 [UserObjects]
