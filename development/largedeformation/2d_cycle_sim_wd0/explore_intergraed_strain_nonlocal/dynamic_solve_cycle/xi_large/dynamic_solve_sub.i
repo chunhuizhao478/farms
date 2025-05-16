@@ -240,14 +240,14 @@
 [Functions]
     [func_spatial_xio]
         type = SpatialDamageBreakageParameters
-        W = 12e3 #half the total width
+        W = 8e3 #half the total width
         w = 4e3
         max_val = -0.8
         min_val = 1.8
     []
     [func_spatial_xid]
         type = SpatialDamageBreakageParameters
-        W = 12e3 #half the total width
+        W = 8e3 #half the total width
         w = 4e3
         max_val = -0.9
         min_val = 1.8
@@ -344,7 +344,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 20
-        show = 'Cd_aux'
+        time_step_interval = 1
+        show = 'Cd_aux xio_aux xid_aux'
     [../]
 []
