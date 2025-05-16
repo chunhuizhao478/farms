@@ -395,8 +395,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
-    #   show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi'
+      time_step_interval = 40
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi'
     [../]
 []
 
