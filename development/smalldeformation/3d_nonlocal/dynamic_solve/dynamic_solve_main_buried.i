@@ -489,7 +489,7 @@ linear_variation_cutoff_distance = 15600
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
     start_time = -1e-12
-    end_time = 1e-2 # dt used in the simulation
+    end_time = 1e-3 # dt used in the simulation
   []
 [../]
   
@@ -518,7 +518,7 @@ linear_variation_cutoff_distance = 15600
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-2
+        dt = 1e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
         growth_factor = 1.1
