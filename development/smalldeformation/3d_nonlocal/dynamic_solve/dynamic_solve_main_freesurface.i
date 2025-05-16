@@ -22,10 +22,10 @@ gravity_neg = -9.81
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -120000 -120000 -120000;
-                   120000 -120000 -120000;
-                   120000 120000  -120000;
-                  -120000 120000  -120000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []

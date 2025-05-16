@@ -48,19 +48,29 @@ Box(damage_box) = {damage_xmin, damage_ymin, damage_zmin, (damage_xmax-damage_xm
 // Boolean fragment to properly embed both fault zone and damage zone inside the big box
 BooleanFragments{ Volume{big_box,small_box,damage_box}; Delete; }{}
 
-// Field 1: Mesh size inside the fault zone
-Field[1] = Box;
-Field[1].VIn = lc_fault;  // Finer mesh inside the fault zone
-Field[1].VOut = lc;       // Coarser mesh outside
-Field[1].XMin = small_xmin;
-Field[1].XMax = small_xmax;
-Field[1].YMin = small_ymin;
-Field[1].YMax = small_ymax;
-Field[1].ZMin = small_zmin;
-Field[1].ZMax = small_zmax;
+// 1. Create a Distance field from points that define the refined region
+Field[1] = Distance;
+Field[1].SurfacesList = {13,14,15,16,17,18};
 
-// Set the background mesh size
-Background Field = 1;
+// 2. Create a Threshold field that smoothly transitions the mesh size
+Field[2] = Threshold;
+Field[2].IField = 1;
+Field[2].LcMin = lc_fault;
+Field[2].LcMax = lc;
+Field[2].DistMin = 2*lc_fault;
+Field[2].DistMax = 2*lc_fault+0.001;
+
+// Matheval field returns "distance squared + lc/20"
+Field[3] = MathEval;
+//Field[2].F = Sprintf("0.02*F1 + 0.00001*F1^2 + %g", lc_fault);
+//Field[2].F = Sprintf("0.02*F1 +(F1/2e3)^2 + %g", lc_fault);
+Field[3].F = Sprintf("0.05*F1 +(F1/2.5e3)^2 + %g", lc_fault);
+
+// 3. Create a new field that combines the two fields
+Field[4] = Min;
+Field[4].FieldsList = {2,3};
+
+Background Field = 4;
 
 // Assign Physical Volumes
 volumes[] = Volume{:};
