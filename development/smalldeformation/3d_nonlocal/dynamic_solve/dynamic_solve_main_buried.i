@@ -616,28 +616,28 @@ linear_variation_cutoff_distance = 15600
         type = FunctionNeumannBC
         variable = disp_x
         boundary = front
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = FunctionNeumannBC
         variable = disp_x
         boundary = back
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = left
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = right
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []   
     # fix ptr
@@ -658,7 +658,7 @@ linear_variation_cutoff_distance = 15600
         variable = disp_z
         boundary = corner_ptr
         value = 0
-    []     
+    []       
 []
 
 [BCs]
