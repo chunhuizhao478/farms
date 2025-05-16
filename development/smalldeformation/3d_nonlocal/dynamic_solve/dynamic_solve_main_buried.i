@@ -497,7 +497,7 @@ linear_variation_cutoff_distance = 15600
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
-    num_steps = 50
+    num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -564,7 +564,7 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10
+        time_step_interval = 1
         # show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
