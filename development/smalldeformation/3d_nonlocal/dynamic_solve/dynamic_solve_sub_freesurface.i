@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_large_freesurface.msh'
     []
     [./sidesets]
         input = msh
