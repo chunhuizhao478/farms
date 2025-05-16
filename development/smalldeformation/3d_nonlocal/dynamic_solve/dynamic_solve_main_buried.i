@@ -3,6 +3,14 @@ fluid_density = 1000
 solid_density = 2700
 gravity_pos = 9.81
 gravity_neg = -9.81
+lambda_o = 32.04e9
+shear_modulus_o = 32.04e9
+xi_0 = -0.7
+xi_d = -0.8
+C_g = 1e-10
+m1 = 10
+m2 = 1
+chi = 0.8
 
 [Mesh]
     [./msh]
@@ -38,28 +46,28 @@ gravity_neg = -9.81
     
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32.04e9
+    lambda_o = ${lambda_o}
         
     #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32.04e9
+    shear_modulus_o = ${shear_modulus_o}
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.7
+    xi_0 = ${xi_0}
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.8
+    xi_d = ${xi_d}
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = ${C_g}
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    m1 = 10
+    m1 = ${m1}
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1
+    m2 = ${m2}
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.8
+    chi = ${chi}
     
 []
 
@@ -453,9 +461,9 @@ linear_variation_cutoff_distance = 15600
                           func_pos_xy_stress func_neg_yy_stress 0  
                           0 0 func_neg_zz_stress'
         eigenstrain_name = ini_stress_to_strain
-        lambda_o = 32.04e9
-        shear_modulus_o = 32.04e9
-        xi_o = -0.8
+        lambda_o = ${lambda_o}
+        shear_modulus_o = ${shear_modulus_o}
+        xi_o = ${xi_0}
     [../]
     [initial_damage_mat] #ComputeDamageBreakageEigenstrainFromInitialStress call it
         type = ParsedMaterial
@@ -489,7 +497,7 @@ linear_variation_cutoff_distance = 15600
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
     start_time = -1e-12
-    end_time = 1e-3 # dt used in the simulation
+    end_time = 1e-2 # dt used in the simulation
   []
 [../]
   
@@ -518,7 +526,7 @@ linear_variation_cutoff_distance = 15600
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-3
+        dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
         growth_factor = 1.1
