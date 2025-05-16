@@ -277,7 +277,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_out.e'
+      mesh = '../static_solve/static_solve_buried_out.e'
       system_variables = 'initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true

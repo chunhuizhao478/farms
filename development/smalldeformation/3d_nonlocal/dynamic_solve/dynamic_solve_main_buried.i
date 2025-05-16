@@ -910,7 +910,7 @@ linear_variation_cutoff_distance = 15600
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_buried/static_solve_out.e'
+      mesh = '../static_solve/static_solve_buried_out.e'
       system_variables = 'disp_x disp_y disp_z initial_xi_aux initial_I2_aux initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true
