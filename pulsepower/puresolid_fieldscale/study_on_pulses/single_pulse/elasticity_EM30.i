@@ -59,11 +59,11 @@ l = 4e-2 # N * h, N: number of elements, h: element size
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/fieldscale.msh'
+    file =  '../../meshfile/fieldscale_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '1 1 0'
+    coord = '0.1 0.1 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -206,7 +206,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
     gap = 0.05
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '5 5 0.025'
+    discharge_center = '0.5 0.5 0.025'
     number_of_pulses = 1
   []
 []
@@ -492,7 +492,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.5e-6
+  dt = 0.5e-8
   end_time = 2e-5
 
   fixed_point_max_its = 5
@@ -509,7 +509,7 @@ l = 4e-2 # N * h, N: number of elements, h: element size
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
 []

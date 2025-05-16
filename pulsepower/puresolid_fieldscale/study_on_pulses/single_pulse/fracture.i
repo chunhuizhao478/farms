@@ -1,11 +1,11 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/fieldscale.msh'
+    file =  '../../meshfile/fieldscale_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '1 1 0'
+    coord = '0.1 0.1 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
