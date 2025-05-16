@@ -1,0 +1,1 @@
+Small Deformation Integral Nonlocal Model

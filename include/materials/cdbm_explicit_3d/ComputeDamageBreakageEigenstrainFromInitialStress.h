@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "ADComputeEigenstrainBase.h"
+#include "ComputeEigenstrainBase.h"
 #include "RankFourTensor.h"
 
 /**
@@ -59,3 +59,4 @@ protected:
   const MaterialProperty<Real> & _initial_damage_val;
 
 };
+
