@@ -934,50 +934,50 @@ linear_variation_cutoff_distance = 15600
     [../]
 []
 
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-    [disp_z_ic]
-        type = SolutionIC
-        variable = disp_z
-        solution_uo = init_sol_components
-        from_variable = disp_z
-    []
-    [strain_invariant_ratio_ic]
-      type = SolutionIC
-      variable = nonlocal_xi
-      solution_uo = init_sol_components
-      from_variable = initial_xi_aux
-    []
-    [I2_aux_ic]
-      type = SolutionIC
-      variable = I2_aux
-      solution_uo = init_sol_components
-      from_variable = initial_I2_aux
-    []
-    [alpha_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = alpha_damagedvar_aux
-        solution_uo = init_sol_components
-        from_variable = initial_damage_aux
-    []  
-    [B_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = B_damagedvar_aux
-        solution_uo = init_sol_components
-        from_variable = initial_breakage_aux
-    []    
-[]
+# [ICs]
+#     [disp_x_ic]
+#       type = SolutionIC
+#       variable = disp_x
+#       solution_uo = init_sol_components
+#       from_variable = disp_x
+#     []
+#     [disp_y_ic]
+#       type = SolutionIC
+#       variable = disp_y
+#       solution_uo = init_sol_components
+#       from_variable = disp_y
+#     []
+#     [disp_z_ic]
+#         type = SolutionIC
+#         variable = disp_z
+#         solution_uo = init_sol_components
+#         from_variable = disp_z
+#     []
+#     [strain_invariant_ratio_ic]
+#       type = SolutionIC
+#       variable = nonlocal_xi
+#       solution_uo = init_sol_components
+#       from_variable = initial_xi_aux
+#     []
+#     [I2_aux_ic]
+#       type = SolutionIC
+#       variable = I2_aux
+#       solution_uo = init_sol_components
+#       from_variable = initial_I2_aux
+#     []
+#     [alpha_damagedvar_sub_ic]
+#         type = SolutionIC
+#         variable = alpha_damagedvar_aux
+#         solution_uo = init_sol_components
+#         from_variable = initial_damage_aux
+#     []  
+#     [B_damagedvar_sub_ic]
+#         type = SolutionIC
+#         variable = B_damagedvar_aux
+#         solution_uo = init_sol_components
+#         from_variable = initial_breakage_aux
+#     []    
+# []
 
 [Problem]
   restart_file_base = dynamic_solve_main_buried_checkpoint_cp/LATEST  # You may also use a specific number here

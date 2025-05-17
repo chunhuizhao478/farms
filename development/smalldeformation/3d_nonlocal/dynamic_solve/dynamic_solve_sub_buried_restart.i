@@ -285,20 +285,20 @@
     [../]
 []
 
-[ICs]
-    [alpha_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = alpha_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = initial_damage_aux
-    []  
-    [B_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = B_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = initial_breakage_aux
-    []
-[]
+# [ICs]
+#     [alpha_damagedvar_sub_ic]
+#         type = SolutionIC
+#         variable = alpha_damagedvar_sub
+#         solution_uo = init_sol_components
+#         from_variable = initial_damage_aux
+#     []  
+#     [B_damagedvar_sub_ic]
+#         type = SolutionIC
+#         variable = B_damagedvar_sub
+#         solution_uo = init_sol_components
+#         from_variable = initial_breakage_aux
+#     []
+# []
 
 [Outputs]
     [./exodus]
