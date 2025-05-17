@@ -254,7 +254,7 @@
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
-    start_time = -1e-12
+    start_time = 0.628093
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-8
