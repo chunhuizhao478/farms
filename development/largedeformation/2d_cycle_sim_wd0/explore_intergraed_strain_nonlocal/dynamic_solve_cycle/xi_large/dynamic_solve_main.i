@@ -238,8 +238,20 @@
         velocity = vel_y
         beta = 0.25
         gamma = 0.5
-        eta = 0
-    []      
+        eta = 0   
+    []
+        [damping_x]
+        type = StiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.2
+    []
+    [damping_y]
+        type = StiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.2
+    []   
 []
 
 [Functions]
@@ -251,11 +263,11 @@
     []
     [func_top_traction]
         type = ParsedFunction
-        expression = '13e6 + 1e-9 * 32.04e9 * t'
+        expression = '13e6 + 1e-11 * 32.04e9 * t'
     []
     [func_bottom_traction]
         type = ParsedFunction
-        expression = '-13e6 - 1e-9 * 32.04e9 * t'
+        expression = '-13e6 - 1e-11 * 32.04e9 * t'
     []
     [func_spatial_cg]
         type = SpatialDamageBreakageParameters
@@ -383,10 +395,10 @@
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    # petsc_options_iname = '-ksp_type -pc_type'
-    # petsc_options_value = 'gmres     hypre'
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  boomeramg True'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
@@ -444,7 +456,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 20
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
 []
@@ -452,15 +464,15 @@
 [BCs]
     #add initial shear stress
     [initial_shear_stress_top]
-        type = NeumannBC
+        type = FunctionNeumannBC
         variable = disp_x
-        value = 13e6
+        function = func_top_traction
         boundary = top
     [] 
     [initial_shear_stress_bottom]
-        type = NeumannBC
+        type = FunctionNeumannBC
         variable = disp_x
-        value = -13e6
+        function = func_bottom_traction
         boundary = bottom
     []
     # 
