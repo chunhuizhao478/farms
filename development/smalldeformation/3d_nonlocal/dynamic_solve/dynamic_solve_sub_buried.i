@@ -235,7 +235,7 @@
         nucl_center = '0 0 -7500'
         peak_value = 0.3
         thickness = 200
-        length = 200
+        length = 2000
         duration = 1.0
         perturbation_type = 'damage'
         sigma_divisor = 2.0
