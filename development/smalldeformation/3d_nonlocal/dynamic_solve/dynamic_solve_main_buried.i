@@ -528,7 +528,7 @@ linear_variation_cutoff_distance = 15600
         type = FarmsIterationAdaptiveDT
         dt = 1e-2
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
+        optimal_iterations = 10
         growth_factor = 1.1
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
@@ -576,7 +576,7 @@ linear_variation_cutoff_distance = 15600
     [./exodus]
         type = Exodus
         time_step_interval = 1
-        # show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
         type = CSV
