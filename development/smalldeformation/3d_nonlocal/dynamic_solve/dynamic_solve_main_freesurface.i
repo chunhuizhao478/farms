@@ -413,14 +413,9 @@ linear_variation_cutoff_distance = 15600
         type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
         alpha_damagedvar_aux = alpha_damagedvar_aux
         B_damagedvar_aux = B_damagedvar_aux
-        output_properties = 'stress elastic_strain plastic_strain total_strain_tensor strain_invariant_ratio'
+        output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
         outputs = exodus
         block = '1 3'
-    []
-    [dummy_initial_damage]
-        type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
     []
     #elastic material
     [elastic_tensor]
@@ -470,6 +465,13 @@ linear_variation_cutoff_distance = 15600
         shear_modulus_o = ${shear_modulus_o}
         xi_o = ${xi_0}
     [../]
+    [initial_damage_mat] #ComputeDamageBreakageEigenstrainFromInitialStress call it
+        type = ParsedMaterial
+        property_name = 'initial_damage'
+        coupled_variables = 'alpha_damagedvar_aux'
+        expression = 'alpha_damagedvar_aux'
+        outputs = exodus
+    []
 [] 
 
 [UserObjects]
@@ -509,24 +511,24 @@ linear_variation_cutoff_distance = 15600
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 10
+    nl_max_its = 20
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres     hypre  True'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
     # nl_forced_its = 3
-    # line_search = 'bt'
+    line_search = 'bt'
     # dt = 1e-2
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
         dt = 1e-2
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
+        optimal_iterations = 10
         growth_factor = 1.1
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
@@ -548,6 +550,7 @@ linear_variation_cutoff_distance = 15600
         type = NewmarkBeta
         beta = 0.25
         gamma = 0.5
+        inactive_tsteps = 1
     [../]
 []
 
@@ -573,7 +576,7 @@ linear_variation_cutoff_distance = 15600
     [./exodus]
         type = Exodus
         time_step_interval = 1
-        # show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
         type = CSV
@@ -624,28 +627,28 @@ linear_variation_cutoff_distance = 15600
         type = FunctionNeumannBC
         variable = disp_x
         boundary = front
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = FunctionNeumannBC
         variable = disp_x
         boundary = back
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = left
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = right
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []   
     # fix ptr
@@ -666,7 +669,7 @@ linear_variation_cutoff_distance = 15600
         variable = disp_z
         boundary = corner_ptr
         value = 0
-    []     
+    []       
 []
 
 [BCs]
