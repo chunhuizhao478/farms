@@ -529,12 +529,12 @@ linear_variation_cutoff_distance = 15600
         dt = 1.25e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
-        growth_factor = 1.1
+        growth_factor = 1.25
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
-        constant_dt_on_overspeed = 1.25e-3
+        constant_dt_on_overspeed = 5e-3
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
         maxvelz = 'maxvelz'
@@ -575,7 +575,7 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10
+        time_step_interval = 50
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
