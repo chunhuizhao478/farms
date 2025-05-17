@@ -492,20 +492,20 @@ linear_variation_cutoff_distance = 15600
     []
 []
 
-[Controls] # turns off inertial terms for the SECOND time step
-  [./period0]
-    type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
-    start_time = -1e-12
-    end_time = 1.25e-3 # dt used in the simulation
-  []
-[../]
+# [Controls] # turns off inertial terms for the SECOND time step
+#   [./period0]
+#     type = TimePeriod
+#     disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
+#     start_time = -1e-12
+#     end_time = 1.25e-3 # dt used in the simulation
+#   []
+# [../]
   
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = -1e-12
+    start_time = 0.628093
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
