@@ -575,13 +575,18 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 50
+        time_step_interval = 10
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
         type = CSV
         time_step_interval = 1
     [../]
+    [checkpoint]
+        type = Checkpoint
+        time_step_interval = 10
+        num_files = 2
+    []
 []
 
 #apply boundary conditions
