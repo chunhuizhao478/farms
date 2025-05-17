@@ -1,0 +1,527 @@
+# G (GPa): 2.170 
+# rho (kg/m^3): 1180.000 
+# nu (-): 0.370 
+# mus (-): 0.700 
+# mud (-): 0.100 
+# Dc (mu m): 32.000 
+# sigmaxx (MPa): -5.550 
+# sigmayy (MPa): -15.000 
+# sigmaxy (MPa): 0.000 
+# use dx (mm): 0.900 
+# dx (mm): 1.132 
+# use dx < dx_max (mm): true 
+# -------------------------main fault--------------------------
+# tau_S_main (MPa): -4.007 
+# sigma_N_main (MPa): -12.779 
+# tau_S_strength_main (MPa): 8.945 
+# Lfric_main (mm): 9.057 
+# ------------------------branch fault-------------------------
+# tau_S_branch (MPa): 4.007 
+# sigma_N_branch (MPa): -7.771 
+# tau_S_strength_branch (MPa): 5.440 
+# Lfric_branch (mm): 9.057 
+# -------------------------------------------------------------
+# numofelem (-): 11.000 use 15 elems
+
+[Mesh]
+    [./msh]
+        type = FileMeshGenerator
+        file =  '../../mesh/me.msh'
+    []
+    #element_ids = ids - 1
+    [./subdomain_id] 
+        input = msh
+        type = SubdomainPerElementGenerator 
+        element_ids = '
+        851 1129 1407 3059 4956 5244 6053 6367 7376 8529 9718 10014 10022 10788 11350 11492 13227 13659 15722 17563 17862 18018 19031 19063 19270 19742 19959 20077 20179 20600 20753 20802 21187 21441 22412 23227 23375 25272 26125 26414 27352 28511 28649 29521 29724 30212 30370 30573 31331 31758 32605 32898 33180 33717 33846 34254 34520 35233 35312 37659 37782 39250 39846 40537 41290 41401 41493 41755 42618 42760 42849 43943 44137 44455 44699 44795 45300 45567 46222 46762 46858 47564 47630 47916 48347 49004 49205 49214 51093 51118 51346 53155 53293 53790 54211 54766 54944 55572 55955 56118 56552 56928 57726 58450 59098 59184 59378 59417 59747 59921 59948 59956 60645 61028 61062 62349 62455 62636 63146 63797 65343 66107 66886 69593 69660 69731 69769 69867 70392 70597 70803 70888 71331 72092 72313 72694 72740 72991 73052 73441 73442 74150 74277 74383 75309 75356 75551 75718 76776 76937 77075 77124 77131 77146 77566 77638 78125 78160 78257 78394 78433 78585 78621 78984 79076 79107 79498 79510 79921 80248 80883 81336 82408 82953 84398 84757 85508 85646 85768 86382 86430 86728 86819 86991 87663 87741 87925 88573 88732 89735 89900 90391 91237 92291 92558 93718 94106 94229 94442 94487 94665 94988 95138 96166 96218 96446 96670 96851 97353 97578 97762 97965 98048 98164 98586 98720 98743 98935 98957 98988 99005 99169 99198 99532 99840 99847 100413 100795 100822 101233 103114 103124 103128 103364 103458 103484 103496 104027 104094 104297 104531 104575 104624 104684 104975 105352 105365 105506 105757 105762 105824 105856 105908 105911 105938 106636 106682 107045 107098 107383 107391 107503 107793 108751 108835 109074 109109 109657 109990 110273 110298 110392 110521 110770 111881 112773 113238 113321 113383 114002 114125 114144 114688 114780 115050 115175 115411 115675 116730 116788 116894 118286 118485 118606 118749 119063 119129 119147 119744 120654 121225 121227 121823 121824 121866 122370 122427 122828 124346 124674 125518 125861 126127 126607 127022 127271 127339 127983 128359 128477 128709 130101 130181 130202 131000 131011 131810 131925 132073 132141 132673 132942 132987 133072 133201 133319 133372 133449 133537 133561 133898 134152 134334 134618 135130 135442 135545 135758 137026 137163 137649 137703 137894 137977 138001 138043 138101 138103 138184 138245 138270 138286 138375 138382 138413 138414 141737 142280 144082 144119 144683 145932 148140 149413 150725 154056 157375 162679 163305 163655 163941 165905 166832 166868 1033 1139 1156 2915 3071 3078 4331 4540 4815 5222 5370 6125 7425 8066 8481 8736 9447 9696 9748 10753 11700 11734 11806 11880 12190 12304 12739 13418 14116 15709 15743 15994 16265 16623 16693 16753 17536 18681 18936 19629 19645 20476 20796 20977 21228 21872 22065 22603 22688 22847 23168 25144 25971 26017 26065 26071 26508 26712 27066 28157 28492 28635 29277 29438 29591 29842 30827 30984 31944 32139 32839 32935 33725 33779 34207 34924 35972 36596 37019 37170 37532 38703 38993 39399 39660 40045 40331 40436 40766 42779 43800 43910 43981 44082 44281 44673 45905 46311 46882 47323 47343 47626 48043 48972 49403 49616 49787 50470 50689 50716 51023 51481 51541 52116 52676 53432 53545 54334 54592 54615 54618 55638 56789 56852 57082 57148 57530 57706 58267 58838 58953 59172 59216 59686 60060 60093 60184 60375 60489 61138 61736 62492 64173 64184 64984 65204 65345 65745 65864 65932 65966 66289 67785 68415 69900 70324 70673 70784 70997 71909 72899 73723 74238 74519 74648 74800 74905 75270 75955 76691 76971 77078 77097 77446 77720 78599 79540 79644 80028 80089 80402 80682 80797 80868 81922 83663 83820 83861 83879 84401 84487 84787 85072 85109 85221 85257 86051 86227 86550 86714 86838 87351 87500 87610 88072 88082 88209 89370 90004 90035 90216 90416 90598 91411 91784 91886 92039 92183 92329 92384 92611 93032 93035 93122 93715 94021 94161 94727 94927 95354 95483 96115 97039 97205 97491 97916 97996 98180 99799 100100 100297 100305 100629 100653 101511 101805 101812 102013 102231 102660 102986 103103 103189 103225 103748 103759 103954 104080 104368 104435 104791 104869 105415 105517 105682 106052 106210 106225 106235 106907 107341 107674 107811 108592 108762 108773 108782 108831 109263 109488 109645 110076 110122 110167 110269 110517 111177 111308 111538 112959 113189 113807 113814 113911 114407 114653 115312 115599 115717 116170 116368 116472 117369 117571 117768 118002 118283 118314 118944 119438 119884 120606 121262 121678 121871 122026 122143 123085 123145 124015 124118 124762 124923 125447 125644 125926 126348 126435 126903 126967 128318 128345 129213 129653 130165 130373 130564 130823 130876 131033 131503 131581 131692 131698 131992 132005 133213 133646 133939 134206 134251 134256 134438 134816 134819 135162 135673 135786 135814 136000 136191 136398 136654 136952 137084 137475 137843 138318 138331 138403 138979 139304 139495 143048 144913 147164 149439 155045 156780 157222 157620 159386 160602 164989 1015 1589 3120 3501 4094 4201 4209 8745 9618 9701 9934 10469 10644 10824 12958 14683 15654 18373 21215 24348 24842 25817 26180 28542 28833 29744 32799 33251 33252 34119 34753 34822 36963 37052 37814 39263 39619 40716 41963 46005 46983 48998 49406 49531 50683 50781 51585 52068 52926 55631 56242 57276 57372 62465 62690 64865 66283 67314 69828 70209 73872 75853 76179 76381 76453 76638 78139 78762 79994 80069 80450 80609 80902 81065 81219 81567 81854 83515 83857 83929 84242 84617 84658 85045 85124 85231 85785 87314 87835 88265 88449 89381 89409 89620 89880 90334 90387 91243 91496 91853 92417 93218 93414 94739 95550 95558 96017 96245 96749 98803 99375 99495 99842 100994 102050 102846 103314 103928 104154 104683 105957 105968 106547 106962 107468 108241 110435 110794 110811 112097 112413 113064 113356 113435 114585 116734 116938 117043 119259 119632 120841 121445 121828 122980 126453 130754 132201 132442 132897 133165 134583 135019 136028 136338 137191 137300 138104 138213 138334 140388 143978 144175 146826 157135 158063 161065 166252 4717 5254 5273 5698 7914 7933 13190 14081 16079 17411 17506 17546 18188 18928 20376 20994 21885 22110 23788 23829 23938 24289 24507 26379 26915 27549 28125 28580 30755 32141 32516 33205 34345 35208 35227 36171 37913 38233 38258 38816 41187 41834 43612 44992 46317 48690 50933 52843 52911 53615 55344 57393 57838 59730 60143 60231 60547 60887 61306 61901 62949 65240 65295 66809 67095 67627 68131 68168 68817 69083 69822 70436 71221 72114 73083 73835 73998 74127 74313 76148 76340 77072 77766 78263 78852 78880 79199 80215 80349 82526 83852 83891 84122 87647 90152 92549 92956 93299 93488 93600 95392 96301 96513 98129 99041 99363 100718 100921 100929 101709 102028 102065 104183 104216 104223 105153 105898 107611 107816 108023 111009 111066 111631 113378 113451 115182 116886 117569 117640 117902 118089 118373 120077 120429 121993 122100 126052 126942 127105 127772 129608 130600 131026 131878 133182 133774 134331 134987 136380 136825 137095 137239 137386 137871 137954 138195 144969 145968 148177 150973 156019 158206 162750 164505 164584 2655 3319 5183 5727 8353 11207 38012 40339 41655 45968 47109 49394 50452 53390 56818 57951 70963 81531 81546 85789 87947 88365 89315 92575 94137 100092 104477 109881 110681 111360 113186 122310 123904 133861 136930 140659 146215 1847 15298 16808 19372 20600 21721 22296 22473 24213 25494 32542 34682 39779 52431 54152 56000 58549 61643 68014 72800 75101 76026 83492 84435 85027 86964 87888 89310 94233 95358 97296 105152 106828 112678 114625 115417 133123 134424 166073
+        '
+        subdomain_ids = '
+        100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 200 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 100 
+        '
+    []
+    [./split]
+        input = subdomain_id
+        type = BreakMeshByBlockGenerator
+        block_pairs = '100 200; 300 200; 300 100'
+        split_interface = true
+    []
+    [./sidesets]
+        input = split
+        type = SideSetsFromNormalsGenerator
+        normals = '-1 0 0
+                    1 0 0
+                    0 -1 0
+                    0 1 0'
+        new_boundary = 'left right bottom top'
+    []
+[]
+
+[GlobalParams]
+    displacements = 'disp_x disp_y'
+    q = 0.2
+    # Dc = 2.4e-5 #mm -> m
+    # area = 8e-4
+    out_of_plane_strain = strain_zz
+[]
+
+[Variables]
+    [./disp_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./disp_y]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./strain_zz]
+    []
+[]
+
+[AuxVariables]
+    [./resid_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./nodal_area]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_slipweakening_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./disp_slipweakening_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./disp_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./vel_slipweakening_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [./vel_slipweakening_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    #import from csv
+    [./ini_shear_sts]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./ini_normal_sts]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./mu_s]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./mu_d]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./D_c]
+        order = CONSTANT
+        family = MONOMIAL
+    []   
+    #output special case parameters
+    [./flag_track_opening]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./flag_track_activecase]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./jump_track_opening]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./jump_track_reversal]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [./jump_effective]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #output csv files
+    [./jump_x_rate_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./jump_y_rate_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./jump_x_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./jump_y_aux]
+        order = FIRST
+        family = MONOMIAL
+    [] 
+    [./T1_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [./T2_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+[]
+
+[Physics/SolidMechanics/CohesiveZone]
+    [./czm_ik]
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        strain = SMALL
+        generate_output='traction_x traction_y jump_x jump_y'
+    [../]
+[]
+
+[Physics/SolidMechanics/QuasiStatic]
+    [plane_stress]
+      planar_formulation = WEAK_PLANE_STRESS
+      strain = SMALL
+      generate_output = 'stress_xx stress_yy stress_xy'
+    []
+[]
+
+[AuxKernels]
+    [Vel_x]
+        type = CompVarRate
+        variable = vel_slipweakening_x
+        coupled = disp_x
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Vel_y]
+        type = CompVarRate
+        variable = vel_slipweakening_y
+        coupled = disp_y
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #jump rate (element)
+    [TJump_rate]
+        type = FDCompVarRate
+        variable = jump_x_rate_aux
+        coupled = jump_x_aux
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [NJump_rate]
+        type = FDCompVarRate
+        variable = jump_y_rate_aux
+        coupled = jump_y_aux
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #
+    [Displacment_x]
+        type = CompVar
+        variable = disp_slipweakening_x
+        coupled = disp_x
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Displacement_y]
+        type = CompVar
+        variable = disp_slipweakening_y
+        coupled = disp_y
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Residual_x]
+        type = CompVar
+        variable = resid_slipweakening_x
+        coupled = resid_x
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [Residual_y]
+        type = CompVar
+        variable = resid_slipweakening_y
+        coupled = resid_y
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    #func->aux
+    [ShearStress]
+        type = FunctionAux
+        variable = ini_shear_sts
+        function = func_ini_shear_sts
+        execute_on = 'initial TIMESTEP_BEGIN'
+    []
+    [NormalStress]
+        type = FunctionAux
+        variable = ini_normal_sts
+        function = func_ini_normal_sts
+        execute_on = 'initial TIMESTEP_BEGIN'
+    []
+    [StaticFricCoeff]
+        type = FunctionAux
+        variable = mu_s
+        function = func_mus
+        execute_on = 'initial TIMESTEP_BEGIN'
+    []
+    [DynamicFricCoeff]
+        type = FunctionAux
+        variable = mu_d
+        function = func_mud
+        execute_on = 'initial TIMESTEP_BEGIN'
+    []
+    [CharacteristicLength]
+        type = FunctionAux
+        variable = D_c
+        function = func_dc
+        execute_on = 'initial TIMESTEP_BEGIN'
+    []
+    #fault length
+    [fault_len]
+        type = ConstantAux
+        variable = nodal_area
+        value = 9e-4
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #output material properties
+    [flag_track_opening]
+        type = MaterialRealAux
+        property = flag_track_opening
+        variable = flag_track_opening
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [flag_track_activecase]
+        type = MaterialRealAux
+        property = flag_track_activecase
+        variable = flag_track_activecase
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [jump_track_opening]
+        type = MaterialRealAux
+        property = jump_track_opening
+        variable = jump_track_opening
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [jump_track_reversal]
+        type = MaterialRealAux
+        property = jump_track_reversal
+        variable = jump_track_reversal
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [jump_effective]
+        type = MaterialRealAux
+        property = jump_effective
+        variable = jump_effective
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    #output properties in csv files
+    [jump_x]
+        type = MaterialRealAux
+        property = jump_x
+        variable = jump_x_aux
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [jump_y]
+        type = MaterialRealAux
+        property = jump_y
+        variable = jump_y_aux
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [T1]
+        type = MaterialRealAux
+        property = T1
+        variable = T1_aux
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+    [T2]
+        type = MaterialRealAux
+        property = T2
+        variable = T2_aux
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+        execute_on = 'INITIAL TIMESTEP_BEGIN'
+    []
+[]
+
+[Kernels]
+    [./inertia_x]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_x
+    []
+    [./inertia_y]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_y
+    []
+    [./Reactionx]
+        type = StiffPropDamping
+        variable = 'disp_x'
+        component = '0'
+    []
+    [./Reactiony]
+        type = StiffPropDamping
+        variable = 'disp_y'
+        component = '1'
+    []
+[]
+
+[Materials]
+    #take PMMA: poisson's ratio 0.37, shear modulus 2.17GPa
+    [elasticity]
+        type = ComputeIsotropicElasticityTensor
+        lambda = 6.176e9
+        shear_modulus = 2.17e9
+        use_displaced_mesh = false
+    []
+    [stress]
+        type = ComputeLinearElasticStress
+    []
+    [density]
+        type = GenericConstantMaterial
+        prop_names = density
+        prop_values = 1180 #kg/m^3
+    []
+    #SlipWeakeningMultifaults ONLY supports TRIA currently!
+    [./czm_mat]
+        type = SlipWeakeningMultifaultsGeneralizedPropCSV
+        disp_slipweakening_x     = disp_slipweakening_x
+        disp_slipweakening_y     = disp_slipweakening_y
+        reaction_slipweakening_x = resid_slipweakening_x
+        reaction_slipweakening_y = resid_slipweakening_y
+        nodal_area = nodal_area
+        D_c = D_c
+        mu_d = mu_d
+        mu_s = mu_s
+        ini_shear_sts = ini_shear_sts
+        ini_normal_sts = ini_normal_sts
+        boundary = 'Block100_Block200 Block200_Block300 Block100_Block300'
+    [../]
+[]
+    
+[Executioner]
+    #dt = prefactor * dx / pressure wave speed = 0.0009 / 2985
+    type = Transient
+    dt = 3.015e-8 
+    end_time = 10.0
+    num_steps = 16000
+    [TimeIntegrator]
+        type = FarmsCentralDifference
+        solve_type = lumped
+    []
+[]
+    
+[Outputs]
+    [exodus]
+        type = Exodus
+        execute_on = 'timestep_end'
+        time_step_interval = 40
+        show = 'vel_slipweakening_x vel_slipweakening_y ini_shear_sts ini_normal_sts T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux'
+    []
+    [csv]
+        type = CSV
+        execute_on = 'timestep_end'
+        time_step_interval = 40
+    []
+[]
+
+[MultiApps]
+    [./sub_app]
+        type = TransientMultiApp
+        positions = '0 0 0'
+        input_files = 'test_me_subtb.i'
+        execute_on = 'TIMESTEP_BEGIN'
+    [../]
+[]
+
+[Transfers]
+    [pull_resid]
+        type = MultiAppCopyTransfer
+        from_multi_app = sub_app
+        source_variable = 'resid_sub_x resid_sub_y'
+        variable = 'resid_x resid_y'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [push_disp]
+        type = MultiAppCopyTransfer
+        to_multi_app = sub_app
+        source_variable = 'disp_x disp_y'
+        variable = 'disp_sub_x disp_sub_y'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+[]
+
+[Functions]
+    [func_ini_shear_sts]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'properties'
+        read_type = 'element'
+        column_number = '0'
+    []
+    [func_ini_normal_sts]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'properties'
+        read_type = 'element'
+        column_number = '1'
+    []
+    [func_mus]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'properties'
+        read_type = 'element'
+        column_number = '2'
+    []
+    [func_mud]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'properties'
+        read_type = 'element'
+        column_number = '3'
+    []
+    [func_dc]
+        type = PiecewiseConstantFromCSV
+        read_prop_user_object = 'properties'
+        read_type = 'element'
+        column_number = '4'
+    []
+[]
+
+[UserObjects]
+    [./properties]
+        type = PropertyReadFile
+        prop_file_name = 'faults_elem_properties.csv'
+        read_type = 'element'
+        nprop = 5
+    []
+[]
+
+[VectorPostprocessors]
+    [main_fault]
+        type = SideValueSampler
+        variable = 'T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux' 
+        boundary = 'Block100_Block200 Block200_Block300'
+        sort_by = x
+    []
+    # [main_fault_2]
+    #     type = SideValueSampler
+    #     variable = 'T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux' 
+    #     boundary = 'Block200_Block300'
+    #     sort_by = x
+    # []
+    [branch_fault]
+        type = SideValueSampler
+        variable = 'T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux' 
+        boundary = 'Block100_Block300'
+        sort_by = x
+    []    
+[]
