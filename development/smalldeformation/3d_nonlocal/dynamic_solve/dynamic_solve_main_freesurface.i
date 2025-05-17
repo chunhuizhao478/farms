@@ -3,6 +3,14 @@ fluid_density = 1000
 solid_density = 2700
 gravity_pos = 9.81
 gravity_neg = -9.81
+lambda_o = 32.04e9
+shear_modulus_o = 32.04e9
+xi_0 = -0.8
+xi_d = -0.8
+C_g = 1e-10
+m1 = 10
+m2 = 1
+chi = 0.8
 
 [Mesh]
     [./msh]
@@ -38,28 +46,28 @@ gravity_neg = -9.81
     
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32.04e9
+    lambda_o = ${lambda_o}
         
     #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32.04e9
+    shear_modulus_o = ${shear_modulus_o}
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.7
+    xi_0 = ${xi_0}
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.8
+    xi_d = ${xi_d}
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = ${C_g}
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    m1 = 10
+    m1 = ${m1}
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1
+    m2 = ${m2}
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.8
+    chi = ${chi}
     
 []
 
@@ -458,9 +466,9 @@ linear_variation_cutoff_distance = 15600
                           func_pos_xy_stress func_neg_yy_stress 0  
                           0 0 func_neg_zz_stress'
         eigenstrain_name = ini_stress_to_strain
-        lambda_o = 32.04e9
-        shear_modulus_o = 32.04e9
-        xi_o = -0.8
+        lambda_o = ${lambda_o}
+        shear_modulus_o = ${shear_modulus_o}
+        xi_o = ${xi_0}
     [../]
 [] 
 
@@ -497,7 +505,7 @@ linear_variation_cutoff_distance = 15600
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
-    num_steps = 50
+    num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
