@@ -24,7 +24,7 @@
     [./extranodeset2]
         type = ExtraNodesetGenerator
         coord = '600000 -600000 0'
-        new_boundary = corner_ptr
+        new_boundary = corner_ptr2
         input = extranodeset1
     []
     displacements = 'disp_x disp_y'
@@ -246,13 +246,13 @@
     [initial_shear_stress_top]
         type = NeumannBC
         variable = disp_x
-        value = 13e6
+        value = 14e6
         boundary = top
     [] 
     [initial_shear_stress_bottom]
         type = NeumannBC
         variable = disp_x
-        value = -13e6
+        value = -14e6
         boundary = bottom
     []
     # [initial_shear_stress_left]
@@ -313,7 +313,7 @@
     [./fix_cptr4_y]
         type = DirichletBC
         variable = disp_y
-        boundary = corner_ptr
+        boundary = corner_ptr2
         value = 0
     []
 []

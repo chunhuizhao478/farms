@@ -23,7 +23,7 @@
     [./extranodeset2]
         type = ExtraNodesetGenerator
         coord = '600000 -600000 0'
-        new_boundary = corner_ptr
+        new_boundary = corner_ptr2
         input = extranodeset1
     []
     displacements = 'disp_x disp_y'
@@ -263,11 +263,11 @@
     []
     [func_top_traction]
         type = ParsedFunction
-        expression = '13e6 + 1e-11 * 32.04e9 * t'
+        expression = '14e6 + 1e-11 * 32.04e9 * t'
     []
     [func_bottom_traction]
         type = ParsedFunction
-        expression = '-13e6 - 1e-11 * 32.04e9 * t'
+        expression = '-14e6 - 1e-11 * 32.04e9 * t'
     []
     [func_spatial_cg]
         type = SpatialDamageBreakageParameters
@@ -470,9 +470,9 @@
         boundary = top
     [] 
     [initial_shear_stress_bottom]
-        type = FunctionNeumannBC
+        type = NeumannBC
         variable = disp_x
-        function = func_bottom_traction
+        value = -14e6
         boundary = bottom
     []
     # 
@@ -521,7 +521,7 @@
     [./fix_cptr4_y]
         type = DirichletBC
         variable = disp_y
-        boundary = corner_ptr
+        boundary = corner_ptr2
         value = 0
     [] 
     #add dampers
