@@ -5,7 +5,7 @@ gravity_pos = 9.81
 gravity_neg = -9.81
 lambda_o = 32.04e9
 shear_modulus_o = 32.04e9
-xi_0 = -0.7
+xi_0 = -0.8
 xi_d = -0.8
 C_g = 1e-10
 m1 = 10
@@ -575,7 +575,7 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 50
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
