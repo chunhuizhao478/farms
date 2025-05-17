@@ -413,7 +413,7 @@ linear_variation_cutoff_distance = 15600
         type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
         alpha_damagedvar_aux = alpha_damagedvar_aux
         B_damagedvar_aux = B_damagedvar_aux
-        output_properties = 'stress elastic_strain plastic_strain total_strain_tensor strain_invariant_ratio'
+        output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
         outputs = exodus
         block = '1 3'
     []
@@ -576,7 +576,7 @@ linear_variation_cutoff_distance = 15600
     [./exodus]
         type = Exodus
         time_step_interval = 1
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
         type = CSV
