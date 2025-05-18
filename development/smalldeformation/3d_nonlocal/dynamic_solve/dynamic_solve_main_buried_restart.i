@@ -522,23 +522,23 @@ linear_variation_cutoff_distance = 15600
     automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
-    # dt = 1e-2
+    dt = 5e-3
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1.25e-3
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
-        growth_factor = 1.25
-        max_time_step_bound = 1e7
-        #constrain velocity during dynamic simulation
-        constrain_by_velocity = true
-        vel_threshold = 1e-2
-        constant_dt_on_overspeed = 5e-3
-        maxvelx = 'maxvelx'
-        maxvely = 'maxvely'
-        maxvelz = 'maxvelz'
-    []
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 1.25e-3
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 10
+    #     growth_factor = 1.25
+    #     max_time_step_bound = 1e7
+    #     #constrain velocity during dynamic simulation
+    #     constrain_by_velocity = true
+    #     vel_threshold = 1e-2
+    #     constant_dt_on_overspeed = 5e-3
+    #     maxvelx = 'maxvelx'
+    #     maxvely = 'maxvely'
+    #     maxvelz = 'maxvelz'
+    # []
     # [TimeStepper]
     #     type = IterationAdaptiveDT
     #     cutback_factor_at_failure = 0.5

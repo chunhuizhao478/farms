@@ -263,15 +263,15 @@
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
-    # dt = 1e-2
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1.25e-3
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
-        growth_factor = 1.1
-        max_time_step_bound = 1e7
-    []
+    dt = 5e-3
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 1.25e-3
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 8
+    #     growth_factor = 1.1
+    #     max_time_step_bound = 1e7
+    # []
 []
 
 [UserObjects]
