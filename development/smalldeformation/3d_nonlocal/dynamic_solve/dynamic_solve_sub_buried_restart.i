@@ -264,6 +264,7 @@
     petsc_options_value = 'vinewtonrsls'
     verbose = true
     dt = 5e-3
+    automatic_scaling = true
     # [TimeStepper]
     #     type = FarmsIterationAdaptiveDT
     #     dt = 1.25e-3
