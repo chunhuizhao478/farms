@@ -3,14 +3,14 @@ SetFactory("OpenCASCADE");
 // Define the rectangular box dimensions
 length = 1; // Length in meters
 width = 1;  // Width in meters
-height = 0.05; // Height in meters
+height = 0.02; // Height in meters
 
 // Define the cylindrical hole dimensions
 holeRadius = 0.1; // Radius in meters (diameter is 0.2m)
 holeHeight = height; // The hole goes through the entire thickness of the box
 
 // Mesh size
-meshSize = 0.01;
+meshSize = 0.001;
 meshSize_bc = 0.01;
 
 // Create the box
@@ -34,7 +34,7 @@ Field[2].IField = 1;
 Field[2].LcMin = meshSize;
 Field[2].LcMax = meshSize_bc;
 Field[2].DistMin = holeRadius; // Start increasing mesh size at the hole radius
-Field[2].DistMax = 8; // Maximum distance to apply the gradient
+Field[2].DistMax = 0.5; // Maximum distance to apply the gradient
 
 Background Field = 2;
 

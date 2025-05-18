@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/fieldscale_small.msh'
+    file =  '../../../meshfile/fieldscale_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -104,10 +104,10 @@
     parameter_names = 'p eta '
     parameter_values = '2 1e-6'
   []
-  [crack_geometric]
+  [crack_geometric] #AT1 model
     type = CrackGeometricFunction
     property_name = alpha
-    expression = 'd^2'
+    expression = 'd'
     phase_field = d
   []
   [psi]

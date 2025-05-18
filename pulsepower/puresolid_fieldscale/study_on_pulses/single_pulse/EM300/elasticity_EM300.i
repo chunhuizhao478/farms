@@ -1,10 +1,14 @@
-E = 3.2e10
-nu = 0.2
+E = 50e9
+nu = 0.373
+ft = 25.5e6
+Gc_const = 57
+density = 2600
+
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
-
-Gc_const = 57
-l = 4e-3 # N * h, N: number of elements, h: element size
+l = '${fparse 3/8 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size
+Cs = '${fparse sqrt(G/density)}'
+Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Adaptivity]
   max_h_level = 3
@@ -59,7 +63,7 @@ l = 4e-3 # N * h, N: number of elements, h: element size
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/fieldscale_small.msh'
+    file =  '../../../meshfile/fieldscale_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -191,7 +195,7 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     use_automatic_differentiation = true
     # mass_damping_coefficient = 0.1
     # stiffness_damping_coefficient = 0.1
-    density = 2450
+    density = ${density}
   []
 []
 
@@ -203,10 +207,10 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     rise_time = 2e-6
     single_pulse_duration = 2e-5
     EM = 300
-    gap = 0.05
+    gap = 0.02
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '0.5 0.5 0.025'
+    discharge_center = '0.5 0.5 0.01'
     number_of_pulses = 1
   []
 []
@@ -270,9 +274,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_left_y]
     type = FarmsNonReflectDashpotBC
@@ -285,9 +289,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_left_z]
     type = FarmsNonReflectDashpotBC
@@ -300,9 +304,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   #
   [damp_right_x]
@@ -316,9 +320,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_right_y]
     type = FarmsNonReflectDashpotBC
@@ -331,9 +335,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_right_z]
     type = FarmsNonReflectDashpotBC
@@ -346,9 +350,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   #
   [damp_front_x]
@@ -362,9 +366,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_front_y]
     type = FarmsNonReflectDashpotBC
@@ -377,9 +381,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_front_z]
     type = FarmsNonReflectDashpotBC
@@ -392,9 +396,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   [] 
   # 
   [damp_back_x]
@@ -408,9 +412,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_back_y]
     type = FarmsNonReflectDashpotBC
@@ -423,9 +427,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   []
   [damp_back_z]
     type = FarmsNonReflectDashpotBC
@@ -438,9 +442,9 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${density}
   [] 
 []
 
@@ -474,11 +478,6 @@ l = 4e-3 # N * h, N: number of elements, h: element size
     output_properties = 'stress'
     outputs = exodus
   []
-  # [density]
-  #   type = ADGenericConstantMaterial
-  #   prop_names = 'density'
-  #   prop_values = '2450'
-  # []
 []
 
 [Executioner]
