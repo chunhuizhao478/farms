@@ -185,11 +185,11 @@ nucl_center = '0 0 -10000'
         variable = disp_z
         component = 2
     []
-    [gravity]
-        type = ADGravity
-        variable = disp_z
-        value = ${gravity_neg}
-    []
+    # [gravity]
+    #     type = ADGravity
+    #     variable = disp_z
+    #     value = ${gravity_neg}
+    # []
 []
 
 ###############################################################################################
