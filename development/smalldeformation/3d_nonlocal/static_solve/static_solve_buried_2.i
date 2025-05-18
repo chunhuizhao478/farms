@@ -9,7 +9,7 @@ chi = 0.8
 # fluid_density = 1000   
 solid_density = 2700
 # gravity_pos = 9.81
-gravity_neg = -9.81
+# gravity_neg = -9.81
 
 sigma = 5e2
 peak_val = 0.7
