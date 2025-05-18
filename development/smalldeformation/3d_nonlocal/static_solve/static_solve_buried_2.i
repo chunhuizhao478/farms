@@ -11,7 +11,7 @@ solid_density = 2700
 gravity_pos = 9.81
 gravity_neg = -9.81
 
-sigma = 5e2
+sigma = 2e2
 peak_val = 0.7
 len_of_fault_strike = 14000
 len_of_fault_dip = 10000
@@ -26,7 +26,7 @@ nucl_center = '0 0 -10000'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large_buried_2.msh'
+        file = '../mesh/mesh_large_buried.msh'
     []
     [./sidesets]
         input = msh
@@ -41,10 +41,10 @@ nucl_center = '0 0 -10000'
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -60000 -60000 -60000;
-                   60000 -60000 -60000;
-                   60000 60000  -60000;
-                  -60000 60000  -60000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []
