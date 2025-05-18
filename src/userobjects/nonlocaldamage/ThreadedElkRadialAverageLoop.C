@@ -94,6 +94,10 @@ ThreadedElkRadialAverageLoop::operator()(const QPDataRange & qpdata_range)
           weight = std::exp(-4.0 * std::pow(std::abs(radius - std::sqrt(ret_matches[j].second)), 2) / std::pow(length_scale,2.0));        
           break;
        /*--------------------------------------------------------------------------------------------------*/
+        case ElkRadialAverage::WeightsType::BAZANT3D:
+          weight = std::exp(-std::pow(6.0*std::sqrt(3.1415926),2.0/3.0) * std::pow(std::abs(radius - std::sqrt(ret_matches[j].second)), 2) / std::pow(length_scale,2.0));        
+          break;
+       /*--------------------------------------------------------------------------------------------------*/
       }
 
       sum += other_qp._value * other_qp._volume * weight;

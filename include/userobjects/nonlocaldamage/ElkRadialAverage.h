@@ -79,7 +79,8 @@ protected:
     CONSTANT,
     LINEAR,
     COSINE,
-    BAZANT /// add BAZANT here
+    BAZANT,
+    BAZANT3D /// add BAZANT here
   } _weights_type;
   /*------------------------------*/
 

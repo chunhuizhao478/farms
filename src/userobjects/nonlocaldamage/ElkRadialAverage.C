@@ -53,7 +53,7 @@ ElkRadialAverage::validParams()
   params.addClassDescription("Perform a radial average of a material property");
   params.addRequiredParam<MaterialPropertyName>("prop_name",
                                                 "Name of the material property to average");
-  MooseEnum weights_type("constant linear cosine bazant", "bazant");
+  MooseEnum weights_type("constant linear cosine bazant bazant3d", "bazant");
   params.addRequiredParam<MooseEnum>("weights", weights_type, "Distance based weight function");
   params.addRequiredParam<Real>("radius", "Cut-off radius for the averaging");
   /*--------------------------------------------------------------------------------------------*/

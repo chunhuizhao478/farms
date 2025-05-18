@@ -480,7 +480,7 @@ linear_variation_cutoff_distance = 15600
         length_scale = 300
         prop_name = strain_invariant_ratio
         radius = 200
-        weights = BAZANT
+        weights = BAZANT3D
         execute_on = LINEAR
     []
 []
@@ -507,7 +507,7 @@ linear_variation_cutoff_distance = 15600
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
-    # num_steps = 10
+    num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
