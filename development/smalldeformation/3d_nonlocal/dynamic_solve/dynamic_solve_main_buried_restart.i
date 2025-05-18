@@ -917,8 +917,8 @@ linear_variation_cutoff_distance = 15600
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
-        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux alpha_damagedvar_aux B_damagedvar_aux'
+        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux alpha_damagedvar_sub B_damagedvar_sub'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
@@ -980,5 +980,5 @@ linear_variation_cutoff_distance = 15600
 # []
 
 [Problem]
-  restart_file_base = dynamic_solve_main_buried_checkpoint_cp/LATEST  # You may also use a specific number here
+  restart_file_base = dynamic_solve_main_buried_checkpoint_cp/LATEST
 []
