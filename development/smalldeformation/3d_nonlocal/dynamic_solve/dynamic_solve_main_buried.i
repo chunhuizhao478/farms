@@ -479,7 +479,7 @@ linear_variation_cutoff_distance = 15600
         type = ElkRadialAverage
         length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 100
+        radius = 200
         weights = BAZANT3D
         execute_on = LINEAR
     []
@@ -507,7 +507,7 @@ linear_variation_cutoff_distance = 15600
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
-    num_steps = 10
+    # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -575,7 +575,7 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 50
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
