@@ -550,7 +550,6 @@ linear_variation_cutoff_distance = 15600
         type = NewmarkBeta
         beta = 0.25
         gamma = 0.5
-        inactive_tsteps = 1
     [../]
 []
 
@@ -917,8 +916,8 @@ linear_variation_cutoff_distance = 15600
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux alpha_damagedvar_aux B_damagedvar_aux'
-        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux alpha_damagedvar_sub B_damagedvar_sub'
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
+        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
