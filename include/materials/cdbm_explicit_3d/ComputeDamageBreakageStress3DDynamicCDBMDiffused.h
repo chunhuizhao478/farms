@@ -120,4 +120,7 @@ protected:
 
   /// damaged_modulus
   MaterialProperty<Real> & _gamma_damaged;
+
+  /// shear stress perturbation
+  const MaterialProperty<Real> & _shear_stress_perturbation;
 };

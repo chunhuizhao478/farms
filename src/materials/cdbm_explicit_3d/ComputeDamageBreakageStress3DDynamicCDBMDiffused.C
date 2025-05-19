@@ -63,7 +63,8 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::ComputeDamageBreakageStress3DD
     _xi(declareProperty<Real>("strain_invariant_ratio")),
     _lambda(declareProperty<Real>("lambda_const")),
     _shear_modulus(declareProperty<Real>("shear_modulus")),
-    _gamma_damaged(declareProperty<Real>("damaged_modulus"))
+    _gamma_damaged(declareProperty<Real>("damaged_modulus")),
+    _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation"))
 {
 }
 
@@ -115,6 +116,14 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpStress()
   /* compute strain */
   RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_damagedvar_aux[_qp],_m1) * _sigma_d_old[_qp];
   RankTwoTensor eps_e = _mechanical_strain[_qp] - eps_p;
+
+  /* convert stress perturbation to strain perturbation */
+  Real shear_strain_perturbation = 0.0;
+  if (_shear_stress_perturbation[_qp] != 0){
+    shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
+    eps_e(0,1) += shear_strain_perturbation;
+    eps_e(1,0) += shear_strain_perturbation;
+  }
 
   const Real epsilon = 1e-12;
   Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);

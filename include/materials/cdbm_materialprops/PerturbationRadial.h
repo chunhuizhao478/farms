@@ -34,12 +34,6 @@ protected:
   /// Material property old initial damage profile
   const MaterialProperty<Real> & _damage_perturbation_old;
 
-  /// Material property breakage perturbation
-  MaterialProperty<Real> & _breakage_perturbation;
-
-  /// Material property old breakage perturbation
-  const MaterialProperty<Real> & _breakage_perturbation_old;
-
   /// Material property shear stress perturbation
   MaterialProperty<Real> & _shear_stress_perturbation;
 

@@ -472,6 +472,18 @@ linear_variation_cutoff_distance = 15600
         expression = 'alpha_damagedvar_aux'
         outputs = exodus
     []
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 -7500'
+        peak_value = 20e6
+        thickness = 200
+        length = 1000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 1.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
+    []
 [] 
 
 [UserObjects]

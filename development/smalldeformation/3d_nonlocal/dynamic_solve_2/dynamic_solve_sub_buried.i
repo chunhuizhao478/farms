@@ -230,18 +230,18 @@
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
-    [damage_perturbation]
-        type = PerturbationRadialSource
-        nucl_center = '0 0 -7500'
-        peak_value = 0.3
-        thickness = 200
-        length = 1000
-        duration = 2.0
-        perturbation_type = 'damage'
-        sigma_divisor = 1.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
-    [] 
+    # [damage_perturbation]
+    #     type = PerturbationRadialSource
+    #     nucl_center = '0 0 -7500'
+    #     peak_value = 0.3
+    #     thickness = 200
+    #     length = 1000
+    #     duration = 2.0
+    #     perturbation_type = 'damage'
+    #     sigma_divisor = 1.0
+    #     output_properties = 'shear_stress_perturbation damage_perturbation'
+    #     outputs = exodus
+    # [] 
 [] 
 
 [Preconditioning]

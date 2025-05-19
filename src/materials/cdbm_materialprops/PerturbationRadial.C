@@ -34,8 +34,6 @@ PerturbationRadial::PerturbationRadial(const InputParameters & parameters)
   : Material(parameters),
   _damage_perturbation(declareProperty<Real>("damage_perturbation")),
   _damage_perturbation_old(getMaterialPropertyOldByName<Real>("damage_perturbation")),
-  _breakage_perturbation(declareProperty<Real>("breakage_perturbation")),
-  _breakage_perturbation_old(getMaterialPropertyOldByName<Real>("breakage_perturbation")),
   _shear_stress_perturbation(declareProperty<Real>("shear_stress_perturbation")),
   _shear_stress_perturbation_old(getMaterialPropertyOldByName<Real>("shear_stress_perturbation")),
   _nucl_center_mat(declareProperty<std::vector<Real>>("nucl_center_mat")),
@@ -59,7 +57,6 @@ void
 PerturbationRadial::initQpStatefulProperties()
 {
   _damage_perturbation[_qp] = 0.0;
-  _breakage_perturbation[_qp] = 0.0;
   _shear_stress_perturbation[_qp] = 0.0;
   _nucl_center_mat[_qp] = _nucl_center;
   _thickness_mat[_qp] = _thickness;
@@ -69,28 +66,30 @@ PerturbationRadial::initQpStatefulProperties()
 void
 PerturbationRadial::computeQpProperties()
 {
+
   // Get the current point coordinates in the mesh
   const Real xcoord = _q_point[_qp](0); // strike direction
   const Real ycoord = _q_point[_qp](1); // normal direction
   const Real zcoord = _q_point[_qp](2); // dip direction
 
-  // Compute the 2D Gaussian in the XZ plane (ignoring y in the exponent)
-  // Characteristic sigma is defined as (length / sigma_divisor)
+  // We define a 2D Gaussian in the XZ plane, ignoring y in the exponent
+  // The characteristic "sigma" is length / sigma_divisor
   const Real sigma_x = _length / _sigma_divisor;
   const Real sigma_z = _length / _sigma_divisor;
-  const Real gaussian_factor = _peak_value; // maximum amplitude
+  const Real gaussian_factor = _peak_value; // maximum amplitude of the Gaussian
 
-  // Compute distances in X and Z from the nucleation center
+  // Distance in XZ from the nucleation center
+  // If your center is (0, 0, -7500), then _nucl_center might be [0, 0, -7500].
   const Real dx = xcoord - _nucl_center[0];
   const Real dz = zcoord - _nucl_center[2];
 
   // 2D Gaussian distribution in the XZ plane:
-  //   G(x,z) = gaussian_factor * exp( - [dx^2/(2*sigma_x^2) + dz^2/(2*sigma_z^2)] )
+  //    G(x,z) = peak_value * exp( - [dx^2 / (2*sigma_x^2) + dz^2 / (2*sigma_z^2)] )
   const Real gaussian_value = gaussian_factor *
-                              std::exp(-((dx * dx) / (2.0 * sigma_x * sigma_x) +
-                                         (dz * dz) / (2.0 * sigma_z * sigma_z)));
+                             std::exp(-((dx * dx) / (2.0 * sigma_x * sigma_x) +
+                                        (dz * dz) / (2.0 * sigma_z * sigma_z)));
 
-  // Scale Gaussian value over time: ramp from 0 to gaussian_value over _duration
+  // Scale Gaussian value over time
   Real scaled_gaussian_value = 0.0;
   if (_t <= _duration)
   {
@@ -101,43 +100,38 @@ PerturbationRadial::computeQpProperties()
     scaled_gaussian_value = gaussian_value;
   }
 
-  // Apply the perturbation only if the current y-coordinate is within the specified thickness
+  // Check Z direction constraint and apply perturbation
+  Real dalpha_damage = 0.0;
+  Real dalpha_stress = 0.0;
   if (ycoord >= _nucl_center[1] - _thickness / 2.0 && ycoord <= _nucl_center[1] + _thickness / 2.0)
   {
-    if (_perturbation_type == "damage")
-    {
-      // Directly set the damage perturbation to follow the ramping function
-      _damage_perturbation[_qp] = scaled_gaussian_value;
-      _breakage_perturbation[_qp] = 0.0;
-      _shear_stress_perturbation[_qp] = 0.0;
-    }
-    else if (_perturbation_type == "shear_stress")
-    {
-      _damage_perturbation[_qp] = 0.0;
-      _breakage_perturbation[_qp] = 0.0;
-      _shear_stress_perturbation[_qp] = scaled_gaussian_value;
-    }
-    else if (_perturbation_type == "breakage")
-    {
-      _damage_perturbation[_qp] = 0.0;
-      _breakage_perturbation[_qp] = scaled_gaussian_value;
-      _shear_stress_perturbation[_qp] = 0.0;
-    }
-    else
-    {
-      mooseError("Invalid perturbation type: " + _perturbation_type);
-    }
+    dalpha_damage = scaled_gaussian_value;
+    dalpha_stress = scaled_gaussian_value;
   }
   else
   {
-    // Outside the perturbation zone, leave the old values unchanged
-    _damage_perturbation[_qp] = _damage_perturbation_old[_qp];
-    _breakage_perturbation[_qp] = _breakage_perturbation_old[_qp];
-    _shear_stress_perturbation[_qp] = _shear_stress_perturbation_old[_qp];
+    dalpha_damage = _damage_perturbation_old[_qp];
+    dalpha_stress = _shear_stress_perturbation_old[_qp];
   }
 
-  // Update nucleation center, thickness, and length for output
+  if (_perturbation_type == "damage")
+  {
+    _damage_perturbation[_qp] = dalpha_damage;
+    _shear_stress_perturbation[_qp] = 0.0;
+  }
+  else if (_perturbation_type == "shear_stress")
+  {
+    _damage_perturbation[_qp] = 0.0;
+    _shear_stress_perturbation[_qp] = dalpha_stress;
+  }
+  else
+  {
+    mooseError("Invalid perturbation type: " + _perturbation_type);
+  }
+
+  // Update nucleation center, thickness, and length
   _nucl_center_mat[_qp] = _nucl_center;
   _thickness_mat[_qp] = _thickness;
   _length_mat[_qp] = _length;
+
 }
