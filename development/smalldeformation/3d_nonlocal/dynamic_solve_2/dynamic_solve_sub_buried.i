@@ -236,7 +236,7 @@
         peak_value = 0.3
         thickness = 200
         length = 1000
-        duration = 0.1
+        duration = 0.5
         perturbation_type = 'damage'
         sigma_divisor = 1.0
         output_properties = 'shear_stress_perturbation damage_perturbation'
