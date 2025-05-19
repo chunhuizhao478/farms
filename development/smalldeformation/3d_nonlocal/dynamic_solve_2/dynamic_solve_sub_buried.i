@@ -39,7 +39,7 @@
     xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -1.2
+    xi_d = -0.93
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
