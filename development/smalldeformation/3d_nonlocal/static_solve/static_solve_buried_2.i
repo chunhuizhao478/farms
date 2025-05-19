@@ -3,8 +3,8 @@
 #material properties
 lambda_o = 32.04e9
 shear_modulus_o = 32.04e9
-xi_o = -0.8
-xi_d = -0.85
+xi_o = -0.9
+xi_d = -0.9
 chi = 0.8
 fluid_density = 1000   
 solid_density = 2700
