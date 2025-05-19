@@ -39,7 +39,7 @@
     xi_0 = -0.9
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.9
+    xi_d = -0.93
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -236,7 +236,7 @@
         peak_value = 0.3
         thickness = 200
         length = 1000
-        duration = 1.0
+        duration = 2.0
         perturbation_type = 'damage'
         sigma_divisor = 1.0
         output_properties = 'shear_stress_perturbation damage_perturbation'
