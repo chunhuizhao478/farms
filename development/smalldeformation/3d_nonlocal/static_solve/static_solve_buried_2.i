@@ -214,7 +214,7 @@ nucl_center = '0 0 -10000'
     [strain]
         type = ADComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        # eigenstrain_names = ini_stress_to_strain
+        eigenstrain_names = ini_stress_to_strain
         outputs = exodus
     [] 
     ###################################################################
