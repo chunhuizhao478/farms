@@ -162,12 +162,13 @@ ADComputeDamageBreakageEigenstrainFromInitialStress::computeQpEigenstrain()
     ADReal dF = 1.0 - dI1 / sqrtI2 + 0.5 * I1 * dI2 / (I2 * sqrtI2);
 
     xi -= F / dF; // Newton update
-  }
-
-  if (it == 10)
+  
+    if (it == 10)
     mooseError("ADComputeDamageBreakageEigenstrainFromInitialStress: "
                "Newton iteration for xi did not converge.  "
                "xi = " + Moose::stringify(xi) + "\n");
+  
+  }
 
   //-----------------------------------------------------------
   // 4. Compute compliance constants A,B and eigenstrain ε^e
