@@ -98,7 +98,7 @@ PerturbationRadialSource::computeQpProperties()
   }
   else
   {
-    source = 0;
+    source = gaussian_value;
   }
 
   // Apply the perturbation only if the current y-coordinate is within the specified thickness

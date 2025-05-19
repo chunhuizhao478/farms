@@ -152,12 +152,12 @@
         coupled = B_damagedvar_sub
         block = '1 3'
     []
-    # [perturb_source_alpha]
-    #     type = PerturbationSource
-    #     variable = alpha_damagedvar_sub
-    #     damage_source = 'damage_perturbation'
-    #     block = '1 3'
-    # []
+    [perturb_source_alpha]
+        type = PerturbationSource
+        variable = alpha_damagedvar_sub
+        damage_source = 'damage_perturbation'
+        block = '1 3'
+    []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
@@ -230,18 +230,18 @@
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
-    # [damage_perturbation]
-    #     type = PerturbationRadialSource
-    #     nucl_center = '0 0 -7500'
-    #     peak_value = 0.3
-    #     thickness = 200
-    #     length = 1000
-    #     duration = 2.0
-    #     perturbation_type = 'damage'
-    #     sigma_divisor = 1.0
-    #     output_properties = 'shear_stress_perturbation damage_perturbation'
-    #     outputs = exodus
-    # [] 
+    [damage_perturbation]
+        type = PerturbationRadialSource
+        nucl_center = '0 0 -7500'
+        peak_value = 0.3
+        thickness = 200
+        length = 1000
+        duration = 0.1
+        perturbation_type = 'damage'
+        sigma_divisor = 1.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
+    [] 
 [] 
 
 [Preconditioning]
