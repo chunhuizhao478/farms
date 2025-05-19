@@ -6,10 +6,10 @@ shear_modulus_o = 32.04e9
 xi_o = -0.8
 xi_d = -0.85
 chi = 0.8
-# fluid_density = 1000   
+fluid_density = 1000   
 solid_density = 2700
-# gravity_pos = 9.81
-# gravity_neg = -9.81
+gravity_pos = 9.81
+gravity_neg = -9.81
 
 sigma = 5e2
 peak_val = 0.7
@@ -120,26 +120,26 @@ nucl_center = '0 0 -10000'
 #get initial damage material property and save as an auxiliary variable
 #######################################################################
 [AuxKernels]
-    # [get_initial_stress_xx]
-    #     type = FunctionAux 
-    #     variable = stress_xx_initial
-    #     function = func_neg_xx_stress
-    # []
-    # [get_initial_stress_yy]
-    #     type = FunctionAux 
-    #     variable = stress_yy_initial
-    #     function = func_neg_yy_stress
-    # []
-    # [get_initial_stress_xy]
-    #     type = FunctionAux 
-    #     variable = stress_xy_initial
-    #     function = func_pos_xy_stress
-    # []
-    # [get_initial_stress_zz]
-    #     type = FunctionAux 
-    #     variable = stress_zz_initial
-    #     function = func_neg_zz_stress
-    # []
+    [get_initial_stress_xx]
+        type = FunctionAux 
+        variable = stress_xx_initial
+        function = func_neg_xx_stress
+    []
+    [get_initial_stress_yy]
+        type = FunctionAux 
+        variable = stress_yy_initial
+        function = func_neg_yy_stress
+    []
+    [get_initial_stress_xy]
+        type = FunctionAux 
+        variable = stress_xy_initial
+        function = func_pos_xy_stress
+    []
+    [get_initial_stress_zz]
+        type = FunctionAux 
+        variable = stress_zz_initial
+        function = func_neg_zz_stress
+    []
     [get_initial_damage]
         type = ADMaterialRealAux
         variable = initial_damage_aux
@@ -185,11 +185,11 @@ nucl_center = '0 0 -10000'
         variable = disp_z
         component = 2
     []
-    # [gravity]
-    #     type = ADGravity
-    #     variable = disp_z
-    #     value = ${gravity_neg}
-    # []
+    [gravity]
+        type = ADGravity
+        variable = disp_z
+        value = ${gravity_neg}
+    []
 []
 
 ###############################################################################################
@@ -214,7 +214,7 @@ nucl_center = '0 0 -10000'
     [strain]
         type = ADComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        eigenstrain_names = ini_stress_to_strain
+        # eigenstrain_names = ini_stress_to_strain
         outputs = exodus
     [] 
     ###################################################################
@@ -304,16 +304,16 @@ nucl_center = '0 0 -10000'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
-    [./strain_from_initial_stress]
-        type = ADComputeDamageBreakageEigenstrainFromInitialStress
-        initial_stress = '-50e6 -20e6 0  
-                          -20e6 -50e6 0  
-                          0 0 -50e6'
-        eigenstrain_name = ini_stress_to_strain
-        lambda_o = ${lambda_o}
-        shear_modulus_o = ${shear_modulus_o}
-        xi_o = ${xi_o}
-    [../]
+    # [./strain_from_initial_stress]
+    #     type = ADComputeDamageBreakageEigenstrainFromInitialStress
+    #     initial_stress = 'func_neg_xx_stress func_pos_xy_stress 0  
+    #                       func_pos_xy_stress func_neg_yy_stress 0  
+    #                       0 0 func_neg_zz_stress'
+    #     eigenstrain_name = ini_stress_to_strain
+    #     lambda_o = ${lambda_o}
+    #     shear_modulus_o = ${shear_modulus_o}
+    #     xi_o = ${xi_o}
+    # [../]
 []  
 
 [Preconditioning]
@@ -347,70 +347,185 @@ nucl_center = '0 0 -10000'
     exodus = true    
 []
 
+#parameters for the initial stress field
+################################################
+bxx = 0.926793
+byy = 1.073206
+bxy = -0.169029
+linear_variation_cutoff_distance = 15600
+################################################
+[Functions]
+    [func_pos_yy_stress]
+        type = InitialDepthDependentStress
+        i = 2
+        j = 2
+        pos_sign = true
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_neg_yy_stress]
+        type = InitialDepthDependentStress
+        i = 2
+        j = 2
+        pos_sign = false
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_pos_xx_stress]
+        type = InitialDepthDependentStress
+        i = 1
+        j = 1
+        pos_sign = true
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_neg_xx_stress]
+        type = InitialDepthDependentStress
+        i = 1
+        j = 1
+        pos_sign = false
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_pos_xy_stress]
+        type = InitialDepthDependentStress
+        i = 1
+        j = 2
+        pos_sign = true
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_neg_xy_stress]
+        type = InitialDepthDependentStress
+        i = 1
+        j = 2
+        pos_sign = false
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    #
+    [func_pos_zz_stress]
+        type = InitialDepthDependentStress
+        i = 3
+        j = 3
+        pos_sign = true
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+    [func_neg_zz_stress]
+        type = InitialDepthDependentStress
+        i = 3
+        j = 3
+        pos_sign = false
+        fluid_density = ${fluid_density}
+        rock_density = ${solid_density}
+        gravity = ${gravity_pos}
+        bxx = ${bxx}
+        byy = ${byy}
+        bxy = ${bxy}
+        linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
+    []
+[]
+
 [BCs]
-    # [fix_bottom_z]
-    #     type = ADDirichletBC
-    #     variable = disp_z
-    #     boundary = bottom
-    #     value = 0
-    # []
+    [fix_bottom_z]
+        type = ADDirichletBC
+        variable = disp_z
+        boundary = bottom
+        value = 0
+    []
     #Note: use neuamnnBC gives minimum waves than pressureBC  
     [static_pressure_left]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = left
-        value = -50e6
+        function = func_pos_xx_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = right
-        value = -50e6
+        function = func_neg_xx_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     #
     [static_pressure_front]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = front
-        value = -50e6
+        function = func_pos_yy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = back
-        value = -50e6
+        function = func_neg_yy_stress
         displacements = 'disp_x disp_y disp_z'
     []
     #
     [static_pressure_front_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = front
-        value = 20e6
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = back
-        value = -20e6
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = left
-        value = 20e6
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
-        type = ADNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = right
-        value = -20e6
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []   
     # fix ptr
@@ -433,205 +548,3 @@ nucl_center = '0 0 -10000'
         value = 0
     []     
 []
-
-# #parameters for the initial stress field
-# ################################################
-# bxx = 0.926793
-# byy = 1.073206
-# bxy = -0.169029
-# linear_variation_cutoff_distance = 15600
-# ################################################
-# [Functions]
-#     [func_pos_yy_stress]
-#         type = InitialDepthDependentStress
-#         i = 2
-#         j = 2
-#         pos_sign = true
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     [func_neg_yy_stress]
-#         type = InitialDepthDependentStress
-#         i = 2
-#         j = 2
-#         pos_sign = false
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     [func_pos_xx_stress]
-#         type = InitialDepthDependentStress
-#         i = 1
-#         j = 1
-#         pos_sign = true
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     [func_neg_xx_stress]
-#         type = InitialDepthDependentStress
-#         i = 1
-#         j = 1
-#         pos_sign = false
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     [func_pos_xy_stress]
-#         type = InitialDepthDependentStress
-#         i = 1
-#         j = 2
-#         pos_sign = true
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     [func_neg_xy_stress]
-#         type = InitialDepthDependentStress
-#         i = 1
-#         j = 2
-#         pos_sign = false
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     #
-#     [func_pos_zz_stress]
-#         type = InitialDepthDependentStress
-#         i = 3
-#         j = 3
-#         pos_sign = true
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-#     [func_neg_zz_stress]
-#         type = InitialDepthDependentStress
-#         i = 3
-#         j = 3
-#         pos_sign = false
-#         fluid_density = ${fluid_density}
-#         rock_density = ${solid_density}
-#         gravity = ${gravity_pos}
-#         bxx = ${bxx}
-#         byy = ${byy}
-#         bxy = ${bxy}
-#         linear_variation_cutoff_distance = ${linear_variation_cutoff_distance}
-#     []
-# []
-
-# [BCs]
-#     [fix_bottom_z]
-#         type = ADDirichletBC
-#         variable = disp_z
-#         boundary = bottom
-#         value = 0
-#     []
-#     #Note: use neuamnnBC gives minimum waves than pressureBC  
-#     [static_pressure_left]
-#         type = ADFunctionNeumannBC
-#         variable = disp_x
-#         boundary = left
-#         function = func_pos_xx_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_right]
-#         type = ADFunctionNeumannBC
-#         variable = disp_x
-#         boundary = right
-#         function = func_neg_xx_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     [] 
-#     #
-#     [static_pressure_front]
-#         type = ADFunctionNeumannBC
-#         variable = disp_y
-#         boundary = front
-#         function = func_pos_yy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_back]
-#         type = ADFunctionNeumannBC
-#         variable = disp_y
-#         boundary = back
-#         function = func_neg_yy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []
-#     #
-#     [static_pressure_front_shear]
-#         type = ADFunctionNeumannBC
-#         variable = disp_x
-#         boundary = front
-#         function = func_pos_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_back_shear]
-#         type = ADFunctionNeumannBC
-#         variable = disp_x
-#         boundary = back
-#         function = func_neg_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     [] 
-#     [static_pressure_left_shear]
-#         type = ADFunctionNeumannBC
-#         variable = disp_y
-#         boundary = left
-#         function = func_pos_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []  
-#     [static_pressure_right_shear]
-#         type = ADFunctionNeumannBC
-#         variable = disp_y
-#         boundary = right
-#         function = func_neg_xy_stress
-#         displacements = 'disp_x disp_y disp_z'
-#     []   
-#     # fix ptr
-#     [./fix_cptr1_x]
-#         type = ADDirichletBC
-#         variable = disp_x
-#         boundary = corner_ptr
-#         value = 0
-#     []
-#     [./fix_cptr1_y]
-#         type = ADDirichletBC
-#         variable = disp_y
-#         boundary = corner_ptr
-#         value = 0
-#     []
-#     [./fix_cptr1_z]
-#         type = ADDirichletBC
-#         variable = disp_z
-#         boundary = corner_ptr
-#         value = 0
-#     []     
-# []
