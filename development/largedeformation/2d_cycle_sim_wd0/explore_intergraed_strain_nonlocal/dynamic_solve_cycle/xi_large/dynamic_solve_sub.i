@@ -274,7 +274,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 0'
-        peak_value = 0.3
+        peak_value = 0.0
         thickness = 200
         length = 2000
         duration = 1.0
@@ -344,7 +344,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 50
         show = 'Cd_aux xio_aux xid_aux'
     [../]
 []

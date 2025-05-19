@@ -259,7 +259,7 @@
         type = ParsedFunction
         expression = 'if (t>dt, 1e-8 * t, 0)'
         symbol_names = 'dt'
-        symbol_values = '1e-3'
+        symbol_values = '1e-2'
     []
     [func_top_traction]
         type = ParsedFunction
@@ -377,7 +377,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_bottom_x */damp_bottom_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -411,7 +411,7 @@
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
-        growth_factor = 1.1
+        growth_factor = 1.5
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
@@ -456,24 +456,33 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 50
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
 []
 
 [BCs]
     #add initial shear stress
-    [initial_shear_stress_top]
-        type = FunctionNeumannBC
+    # [initial_shear_stress_top]
+    #     type = FunctionNeumannBC
+    #     variable = disp_x
+    #     function = func_top_traction
+    #     boundary = top
+    # [] 
+    # [initial_shear_stress_bottom]
+    #     type = NeumannBC
+    #     variable = disp_x
+    #     value = -14e6
+    #     boundary = bottom
+    # []
+    [preset]
+        type = PresetDisplacement
         variable = disp_x
-        function = func_top_traction
+        acceleration = accel_x
+        velocity = vel_x
         boundary = top
-    [] 
-    [initial_shear_stress_bottom]
-        type = NeumannBC
-        variable = disp_x
-        value = -14e6
-        boundary = bottom
+        function = func_top_bc
+        beta = 0.25
     []
     # 
     [static_pressure_top]
@@ -525,34 +534,34 @@
         value = 0
     [] 
     #add dampers
-    [damp_top_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_top_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
+    # [damp_top_x]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_x
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 0
+    #     boundary = top
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 3464
+    #     p_wave_speed = 6000
+    #     density = 2700
+    # []
+    # [damp_top_y]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_y
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 1
+    #     boundary = top
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 3464
+    #     p_wave_speed = 6000
+    #     density = 2700
+    # []
     #
     [damp_bottom_x]
         type = FarmsNonReflectDashpotBC

@@ -243,18 +243,18 @@
 
 [BCs]
     #add initial shear stress
-    [initial_shear_stress_top]
-        type = NeumannBC
-        variable = disp_x
-        value = 14e6
-        boundary = top
-    [] 
-    [initial_shear_stress_bottom]
-        type = NeumannBC
-        variable = disp_x
-        value = -14e6
-        boundary = bottom
-    []
+    # [initial_shear_stress_top]
+    #     type = NeumannBC
+    #     variable = disp_x
+    #     value = 14e6
+    #     boundary = top
+    # [] 
+    # [initial_shear_stress_bottom]
+    #     type = NeumannBC
+    #     variable = disp_x
+    #     value = -14e6
+    #     boundary = bottom
+    # []
     # [initial_shear_stress_left]
     #     type = NeumannBC
     #     variable = disp_y
