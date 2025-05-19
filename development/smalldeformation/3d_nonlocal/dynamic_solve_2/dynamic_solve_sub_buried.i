@@ -152,12 +152,12 @@
         coupled = B_damagedvar_sub
         block = '1 3'
     []
-    [perturb_source_alpha]
-        type = PerturbationSource
-        variable = alpha_damagedvar_sub
-        damage_source = 'damage_perturbation'
-        block = '1 3'
-    []
+    # [perturb_source_alpha]
+    #     type = PerturbationSource
+    #     variable = alpha_damagedvar_sub
+    #     damage_source = 'damage_perturbation'
+    #     block = '1 3'
+    # []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
