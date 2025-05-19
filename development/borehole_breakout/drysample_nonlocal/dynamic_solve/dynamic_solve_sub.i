@@ -224,8 +224,15 @@
     nl_abs_tol = 1e-10
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
-    dt = 1e-1
     verbose = true
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 10
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 10
+        growth_factor = 1.25
+        max_time_step_bound = 100
+    []
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
