@@ -63,7 +63,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../meshfile/fieldscale_small.msh'
+    file =  '../../meshfile/fieldscale_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -202,16 +202,17 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 [Functions]
   [func_tri_pulse]
     type = ElkPulseLoadExperiment
-    shape_param_alpha = 3.630e5
-    shape_param_beta = 6.677e5
-    rise_time = 2e-6
-    single_pulse_duration = 2e-5
-    EM = 3000
+    shape_param_alpha = 4.658e5
+    shape_param_beta = 4.661e5
+    rise_time = 3e-6
+    single_pulse_duration = 4e-5
+    EM = 30
     gap = 0.02
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0.5 0.5 0.01'
     number_of_pulses = 1
+    peak_pressure = 100e6
   []
 []
 

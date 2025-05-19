@@ -107,7 +107,7 @@
   [crack_geometric]
     type = CrackGeometricFunction
     property_name = alpha
-    expression = 'd^2'
+    expression = 'd' #AT1 model
     phase_field = d
   []
   [psi]

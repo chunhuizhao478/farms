@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../meshfile/fieldscale_small.msh'
+    file =  '../../meshfile/fieldscale_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
