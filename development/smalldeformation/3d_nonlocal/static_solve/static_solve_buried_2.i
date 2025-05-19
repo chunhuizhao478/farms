@@ -304,16 +304,16 @@ nucl_center = '0 0 -10000'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
-    # [./strain_from_initial_stress]
-    #     type = ADComputeDamageBreakageEigenstrainFromInitialStress
-    #     initial_stress = 'func_neg_xx_stress func_pos_xy_stress 0  
-    #                       func_pos_xy_stress func_neg_yy_stress 0  
-    #                       0 0 func_neg_zz_stress'
-    #     eigenstrain_name = ini_stress_to_strain
-    #     lambda_o = ${lambda_o}
-    #     shear_modulus_o = ${shear_modulus_o}
-    #     xi_o = ${xi_o}
-    # [../]
+    [./strain_from_initial_stress]
+        type = ADComputeDamageBreakageEigenstrainFromInitialStress
+        initial_stress = '-50e6 -20e6 0  
+                          -20e6 -50e6 0  
+                          0 0 -50e6'
+        eigenstrain_name = ini_stress_to_strain
+        lambda_o = ${lambda_o}
+        shear_modulus_o = ${shear_modulus_o}
+        xi_o = ${xi_o}
+    [../]
 []  
 
 [Preconditioning]
@@ -348,12 +348,12 @@ nucl_center = '0 0 -10000'
 []
 
 [BCs]
-    [fix_bottom_z]
-        type = ADDirichletBC
-        variable = disp_z
-        boundary = bottom
-        value = 0
-    []
+    # [fix_bottom_z]
+    #     type = ADDirichletBC
+    #     variable = disp_z
+    #     boundary = bottom
+    #     value = 0
+    # []
     #Note: use neuamnnBC gives minimum waves than pressureBC  
     [static_pressure_left]
         type = ADNeumannBC
