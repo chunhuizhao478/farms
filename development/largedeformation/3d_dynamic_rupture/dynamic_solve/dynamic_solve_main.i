@@ -1,8 +1,9 @@
+#implicit continuum damage-breakage model dynamics
 fluid_density = 1000   
 solid_density = 2700
 gravity_pos = 9.81
+gravity_neg = -9.81
 
-#implicit continuum damage-breakage model dynamics
 [Mesh]
     [./msh]
         type = FileMeshGenerator
@@ -21,12 +22,10 @@ gravity_pos = 9.81
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        # coord = ' -120000 -120000 -120000;
-        #            120000 -120000 -120000;
-        #            120000 120000  -120000;
-        #           -120000 120000  -120000'
         coord = ' -120000 -120000 -120000;
-        120000 120000  -120000'
+                   120000 -120000 -120000;
+                   120000 120000  -120000;
+                  -120000 120000  -120000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -273,6 +272,11 @@ gravity_pos = 9.81
         gamma = 0.5
         eta = 0
     []  
+    [gravity]
+        type = Gravity
+        variable = disp_z
+        value = ${gravity_neg}
+    []    
 []
 
 #parameters for the initial stress field
@@ -473,7 +477,7 @@ linear_variation_cutoff_distance = 15600
         prop_name = strain_invariant_ratio
         radius = 200
         weights = BAZANT
-        execute_on = TIMESTEP_END
+        execute_on = LINEAR
     []
 []
 
@@ -508,7 +512,7 @@ linear_variation_cutoff_distance = 15600
     petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    # petsc_options_value = 'ilu       NONZERO'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
@@ -566,8 +570,8 @@ linear_variation_cutoff_distance = 15600
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+        time_step_interval = 1
+        # show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
         type = CSV

@@ -17,12 +17,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        # coord = ' -120000 -120000 -120000;
-        #            120000 -120000 -120000;
-        #            120000 120000  -120000;
-        #           -120000 120000  -120000'
         coord = ' -120000 -120000 -120000;
-        120000 120000  -120000'
+                   120000 -120000 -120000;
+                   120000 120000  -120000;
+                  -120000 120000  -120000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -212,13 +210,6 @@
         from_variable = initial_damage_aux
         execute_on = 'TIMESTEP_BEGIN'
     []
-    #get structural stress coefficient
-    # [get_structural_stress_coefficient]
-    #     type = MaterialRealAux
-    #     variable = structural_stress_coefficient_sub
-    #     property = structural_stress_coefficient
-    # []
-    #
     [get_Cd]
         type = MaterialRealAux
         variable = Cd_aux
@@ -241,10 +232,10 @@
     #add shear perturbation to the system
     [damage_perturbation]
         type = PerturbationRadialSource
-        nucl_center = '0 0 -500'
+        nucl_center = '0 0 -7500'
         peak_value = 0.3
         thickness = 200
-        length = 2000
+        length = 200
         duration = 1.0
         perturbation_type = 'damage'
         sigma_divisor = 2.0
@@ -312,7 +303,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10
-        show = 'Cd_aux'
+        time_step_interval = 1
+        # show = 'Cd_aux'
     [../]
 []

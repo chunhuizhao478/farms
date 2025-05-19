@@ -1,1 +1,0 @@
-This Multiapp is NOT working due to the fact that there is no boundary condition for the nonlocal equvialent strain

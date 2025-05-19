@@ -11,6 +11,12 @@ solid_density = 2700
 gravity_pos = 9.81
 gravity_neg = -9.81
 
+sigma = 5e2
+peak_val = 0.7
+len_of_fault_strike = 2000
+len_of_fault_dip = 1000
+nucl_center = '0 0 -7500'
+
 ##########################################################################################################################################
 #Mesh section
 #FileMeshGenerator: read mesh file
@@ -35,12 +41,10 @@ gravity_neg = -9.81
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        # coord = ' -120000 -120000 -120000;
-        #            120000 -120000 -120000;
-        #            120000 120000  -120000;
-        #           -120000 120000  -120000'
         coord = ' -120000 -120000 -120000;
-        120000 120000  -120000'
+                   120000 -120000 -120000;
+                   120000 120000  -120000;
+                  -120000 120000  -120000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -268,11 +272,11 @@ gravity_neg = -9.81
     ################################################################################
     [initial_damage_surround]
         type = ADInitialDamageCycleSim3DPlane
-        sigma = 5e2
-        peak_val = 0.7
-        len_of_fault_strike = 2000
-        len_of_fault_dip = 1000
-        nucl_center = '0 0 -500'
+        sigma = ${sigma}
+        peak_val = ${peak_val}
+        len_of_fault_strike = ${len_of_fault_strike}
+        len_of_fault_dip = ${len_of_fault_dip}
+        nucl_center = '${nucl_center}'
         output_properties = 'initial_damage'      
         outputs = exodus
     []
@@ -294,9 +298,9 @@ gravity_neg = -9.81
         type = ADInitialBreakageCycleSim3DPlane
         sigma = 5e2
         peak_val = 0
-        len_of_fault_strike = 2000
-        len_of_fault_dip = 1000
-        nucl_center = '0 0 -500'
+        len_of_fault_strike = ${len_of_fault_strike}
+        len_of_fault_dip = ${len_of_fault_dip}
+        nucl_center = '${nucl_center}'
         output_properties = 'initial_breakage'      
         outputs = exodus
     []
@@ -497,28 +501,28 @@ linear_variation_cutoff_distance = 15600
     []
     #
     [static_pressure_front_shear]
-        type = FunctionNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = front
         function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
-        type = FunctionNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_x
         boundary = back
         function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
-        type = FunctionNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = left
         function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
-        type = FunctionNeumannBC
+        type = ADFunctionNeumannBC
         variable = disp_y
         boundary = right
         function = func_neg_xy_stress

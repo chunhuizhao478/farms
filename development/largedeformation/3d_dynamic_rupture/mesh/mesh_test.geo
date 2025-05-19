@@ -19,10 +19,10 @@ big_zmax = 0;
 // The region will be block 3, and use continuum damage breakage material
 small_xmin = -2000;
 small_xmax = 2000;
-small_ymin = -1000;
-small_ymax = 1000;
-small_zmin = -2000;
-small_zmax = -0;
+small_ymin = -2000;
+small_ymax = 2000;
+small_zmin = -9000;
+small_zmax = -6000;
 
 // Define the inner damage zone box
 // The region will be block 1, and use continuum damage breakage material   
@@ -30,8 +30,8 @@ damage_xmin = -1000;
 damage_xmax = 1000;
 damage_ymin = -100;
 damage_ymax = 100;
-damage_zmin = -1000;
-damage_zmax = -0;
+damage_zmin = -8000;
+damage_zmax = -7000;
 
 // Create the big outer box
 big_box = newv;
