@@ -540,7 +540,7 @@ linear_variation_cutoff_distance = 15600
         type = FarmsIterationAdaptiveDT
         dt = 1.25e-3
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
+        optimal_iterations = 20
         growth_factor = 1.25
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
