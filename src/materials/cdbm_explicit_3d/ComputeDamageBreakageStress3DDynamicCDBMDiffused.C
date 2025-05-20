@@ -144,9 +144,9 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpStress()
 
   /* add pore pressure */
   if (_stress_perturbation[_qp] != 0){
-    sigma_total(0,0) += _stress_perturbation[_qp];
-    sigma_total(1,1) += _stress_perturbation[_qp];
-    sigma_total(2,2) += _stress_perturbation[_qp];
+    sigma_total(0,0) -= _stress_perturbation[_qp];
+    sigma_total(1,1) -= _stress_perturbation[_qp];
+    sigma_total(2,2) -= _stress_perturbation[_qp];
   }
 
   sigma_d = sigma_total - 0.3333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;

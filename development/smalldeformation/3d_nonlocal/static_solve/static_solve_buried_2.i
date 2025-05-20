@@ -133,7 +133,7 @@ nucl_center = '0 0 -10000'
     [get_initial_stress_xy]
         type = FunctionAux 
         variable = stress_xy_initial
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
     []
     [get_initial_stress_zz]
         type = FunctionAux 
