@@ -233,7 +233,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 -7500'
-        peak_value = 0.3
+        peak_value = 0
         thickness = 200
         length = 1000
         duration = 1.0
