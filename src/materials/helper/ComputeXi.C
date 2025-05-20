@@ -25,7 +25,7 @@ ComputeXi::validParams()
 
 ComputeXi::ComputeXi(const InputParameters & parameters)
   : Material(parameters),
-    _xi(declareProperty<Real>("strain_invariant_ratio")),
+    _xi(declareProperty<Real>("xi_initial")),
     _I1(declareProperty<Real>("I1_initial")),
     _I2(declareProperty<Real>("I2_initial")),
     _mechanical_strain(getMaterialProperty<RankTwoTensor>("mechanical_strain"))

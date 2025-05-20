@@ -64,7 +64,7 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::ComputeDamageBreakageStress3DD
     _lambda(declareProperty<Real>("lambda_const")),
     _shear_modulus(declareProperty<Real>("shear_modulus")),
     _gamma_damaged(declareProperty<Real>("damaged_modulus")),
-    _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation"))
+    _stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation"))
 {
 }
 
@@ -118,12 +118,12 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpStress()
   RankTwoTensor eps_e = _mechanical_strain[_qp] - eps_p;
 
   /* convert stress perturbation to strain perturbation */
-  Real shear_strain_perturbation = 0.0;
-  if (_shear_stress_perturbation[_qp] != 0){
-    shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
-    eps_e(0,1) += shear_strain_perturbation;
-    eps_e(1,0) += shear_strain_perturbation;
-  }
+  // Real shear_strain_perturbation = 0.0;
+  // if (_shear_stress_perturbation[_qp] != 0){
+  //   shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
+  //   eps_e(0,1) += shear_strain_perturbation;
+  //   eps_e(1,0) += shear_strain_perturbation;
+  // }
 
   const Real epsilon = 1e-12;
   Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
@@ -141,6 +141,13 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpStress()
   sigma_s = (lambda_out - gamma_damaged_out / xi) * I1 * RankTwoTensor::Identity() + (2 * shear_modulus_out - gamma_damaged_out * xi) * eps_e;
   sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
   sigma_total = (1 - _B_damagedvar_aux[_qp]) * sigma_s + _B_damagedvar_aux[_qp] * sigma_b;
+
+  /* add pore pressure */
+  if (_stress_perturbation[_qp] != 0){
+    sigma_total(0,0) += _stress_perturbation[_qp];
+    sigma_total(1,1) += _stress_perturbation[_qp];
+    sigma_total(2,2) += _stress_perturbation[_qp];
+  }
 
   sigma_d = sigma_total - 0.3333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
 

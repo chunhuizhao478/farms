@@ -472,18 +472,18 @@ linear_variation_cutoff_distance = 15600
         expression = 'alpha_damagedvar_aux'
         outputs = exodus
     []
-    # [damage_perturbation]
-    #     type = PerturbationRadial
-    #     nucl_center = '0 0 -7500'
-    #     peak_value = 20e6
-    #     thickness = 200
-    #     length = 1000
-    #     duration = 1.0
-    #     perturbation_type = 'shear_stress'
-    #     sigma_divisor = 1.0
-    #     output_properties = 'shear_stress_perturbation damage_perturbation'
-    #     outputs = exodus
-    # []
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 -7500'
+        peak_value = 20e6
+        thickness = 200
+        length = 1000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 1.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
+    []
 [] 
 
 [UserObjects]
@@ -523,7 +523,7 @@ linear_variation_cutoff_distance = 15600
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 30
     nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -913,7 +913,7 @@ linear_variation_cutoff_distance = 15600
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub_buried.i'
         execute_on = 'TIMESTEP_BEGIN'
-        sub_cycling = true
+        # sub_cycling = true
         clone_parent_mesh = true
     [../]
 []
