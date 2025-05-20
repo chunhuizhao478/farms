@@ -151,14 +151,14 @@ def main_func(sigmayy, nu, added_normalsts, sigmayy_label, added_normalsts_label
                 if np.count_nonzero(arr_elem_properties[elem_ind,:]) == 0:
                     arr_elem_properties[elem_ind,:] = arr_data
                     #apply nucleation shear stress
-                    # x_max_lim = (61.223+10.0) * 1e-3
-                    # x_min_lim = (61.223-10.0) * 1e-3
-                    # y_max_lim = (71.413+5.5) * 1e-3
-                    # y_min_lim = (71.413-5.5) * 1e-3
-                    x_max_lim = (61.223+8.0) * 1e-3
-                    x_min_lim = (61.223-8.0) * 1e-3
-                    y_max_lim = (71.413+4.5) * 1e-3
-                    y_min_lim = (71.413-4.5) * 1e-3
+                    x_max_lim = (61.223+10.0) * 1e-3
+                    x_min_lim = (61.223-10.0) * 1e-3
+                    y_max_lim = (71.413+5.5) * 1e-3
+                    y_min_lim = (71.413-5.5) * 1e-3
+                    # x_max_lim = (61.223+8.0) * 1e-3
+                    # x_min_lim = (61.223-8.0) * 1e-3
+                    # y_max_lim = (71.413+4.5) * 1e-3
+                    # y_min_lim = (71.413-4.5) * 1e-3
                     if ( np.sum(coord_data_x)/3 <= x_max_lim and np.sum(coord_data_x)/3 >= x_min_lim and np.sum(coord_data_y)/3 <= y_max_lim and np.sum(coord_data_y)/3 >= y_min_lim ):
                         arr_elem_properties[elem_ind,0] = tau_S_nucleation #Pa
             else:
