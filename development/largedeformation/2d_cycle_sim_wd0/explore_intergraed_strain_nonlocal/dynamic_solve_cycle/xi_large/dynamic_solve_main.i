@@ -240,7 +240,7 @@
         gamma = 0.5
         eta = 0   
     []
-        [damping_x]
+    [damping_x]
         type = StiffPropDampingImplicit
         variable = disp_x
         component = 0
@@ -263,11 +263,9 @@
     []
     [func_top_traction]
         type = ParsedFunction
-        expression = '14e6 + 1e-11 * 32.04e9 * t'
-    []
-    [func_bottom_traction]
-        type = ParsedFunction
-        expression = '-14e6 - 1e-11 * 32.04e9 * t'
+        expression = 'if (t>dt, 11e6 + 1e-12 * 32.04e9 * t, 11e6)'
+        symbol_names = 'dt'
+        symbol_values = '1e-3'
     []
     [func_spatial_cg]
         type = SpatialDamageBreakageParameters
@@ -377,9 +375,9 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_bottom_x */damp_bottom_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damping_x */damping_y */damp_top_x */damp_top_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_bottom_x */damp_bottom_y'
     start_time = -1e-12
-    end_time = 1e-2 # dt used in the simulation
+    end_time = 1e-3 # dt used in the simulation
   []
 [../]
   
@@ -395,20 +393,20 @@
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres     hypre  boomeramg True'
+    # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    # petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
-    # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
-    # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
     # nl_forced_its = 3
-    # line_search = 'bt'
+    line_search = 'basic'
     # dt = 1e-2
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-2
+        dt = 1e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
         growth_factor = 1.5
@@ -432,6 +430,7 @@
         type = NewmarkBeta
         beta = 0.25
         gamma = 0.5
+        inactive_tsteps = 1
     [../]
 []
 
@@ -456,34 +455,19 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
+      time_step_interval = 1
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
 []
 
 [BCs]
     #add initial shear stress
-    # [initial_shear_stress_top]
-    #     type = FunctionNeumannBC
-    #     variable = disp_x
-    #     function = func_top_traction
-    #     boundary = top
-    # [] 
-    # [initial_shear_stress_bottom]
-    #     type = NeumannBC
-    #     variable = disp_x
-    #     value = -14e6
-    #     boundary = bottom
-    # []
-    [preset]
-        type = PresetDisplacement
+    [applied_shear_stress_top]
+        type = FunctionNeumannBC
         variable = disp_x
-        acceleration = accel_x
-        velocity = vel_x
+        function = func_top_traction
         boundary = top
-        function = func_top_bc
-        beta = 0.25
-    []
+    [] 
     # 
     [static_pressure_top]
         type = NeumannBC
@@ -527,6 +511,12 @@
         value = 0
     []   
     # fix right ptr
+    [./fix_cptr3_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = corner_ptr2
+        value = 0
+    []
     [./fix_cptr4_y]
         type = DirichletBC
         variable = disp_y
@@ -534,34 +524,34 @@
         value = 0
     [] 
     #add dampers
-    # [damp_top_x]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_x
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 0
-    #     boundary = top
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 3464
-    #     p_wave_speed = 6000
-    #     density = 2700
-    # []
-    # [damp_top_y]
-    #     type = FarmsNonReflectDashpotBC
-    #     variable = disp_y
-    #     displacements = 'disp_x disp_y'
-    #     velocities = 'vel_x vel_y'
-    #     accelerations = 'accel_x accel_y'
-    #     component = 1
-    #     boundary = top
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     shear_wave_speed = 3464
-    #     p_wave_speed = 6000
-    #     density = 2700
-    # []
+    [damp_top_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_top_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
     #
     [damp_bottom_x]
         type = FarmsNonReflectDashpotBC
@@ -657,7 +647,7 @@
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
-        sub_cycling = true
+        # sub_cycling = true
     [../]
 []
 
