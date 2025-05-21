@@ -63,8 +63,10 @@ def main_func(sigmayy, nu, added_normalsts, sigmayy_label, added_normalsts_label
 
     ptr_i_x = 0
     ptr_i_y = 0.037476
-    ptr_j_x = 0.141427
-    ptr_j_y = 0.115869
+    # ptr_j_x = 0.141427
+    # ptr_j_y = 0.115869 
+    ptr_j_x = 0.142127
+    ptr_j_y = 0.116257
 
     #fault line slope 
     slope = (ptr_j_y - ptr_i_y) / (ptr_j_x - ptr_i_x)
