@@ -475,7 +475,7 @@ linear_variation_cutoff_distance = 15600
     [damage_perturbation]
         type = PerturbationRadial
         nucl_center = '0 0 -7500'
-        peak_value = 20e6
+        peak_value = 100e6
         thickness = 200
         length = 1000
         duration = 1.0
