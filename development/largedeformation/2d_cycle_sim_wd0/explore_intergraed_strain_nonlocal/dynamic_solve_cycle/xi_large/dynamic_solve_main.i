@@ -431,7 +431,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
+      time_step_interval = 50
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
 []
