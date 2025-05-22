@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
+    file =  '../meshfile/mesh_3.2up_1.5shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator

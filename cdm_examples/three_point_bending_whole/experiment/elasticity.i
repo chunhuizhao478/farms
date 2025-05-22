@@ -40,7 +40,7 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../meshfile/mesh_1.6up_1.5shrift.msh'
+    file =  '../meshfile/mesh_3.2up_1.5shrift.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -219,8 +219,13 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.001
-  end_time = 100
+  # dt = 0.1
+  end_time = 8.95
+
+  [TimeStepper]
+    type = FunctionDT
+    function = 'if(t>8.86,0.001,0.1)'
+  []
 
   fixed_point_max_its = 20
   accept_on_max_fixed_point_iteration = true
@@ -230,6 +235,6 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 250
+  time_step_interval = 1
   print_linear_residuals = false
 []

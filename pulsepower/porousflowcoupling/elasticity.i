@@ -1,11 +1,39 @@
+# dynamic time integration parameters
+#----------------------------------------------------#
+beta = 0.25
+gamma = 0.5
+hht_alpha = 0.11
+#----------------------------------------------------#
+
+#boundary condition + phase field parameters
+#----------------------------------------------------#
+confinement_pressure  = 1e6
+l = 2e-4 # N * h
+#----------------------------------------------------#
+
+#solid properties
+#----------------------------------------------------#
 E = 50e9
 nu = 0.373
+solid_density = 2600
+Gc_const = 57
+#----------------------------------------------------#
+
+#hydraulic properties
+#----------------------------------------------------#
+fluid_density = 1000
+biot_coefficient = 0.7
+fluid_bulk_modulus = 2.24e+9
+viscosity = 1e-3
+#----------------------------------------------------#
+
+#convert properties
+#----------------------------------------------------#
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
-confinement_pressure  = 1e6
-
-Gc_const = 57
-l = 2e-4 # N * h, N: number of elements, h: element size
+Cs = '${fparse sqrt(G/solid_density)}'
+Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
+#----------------------------------------------------#
 
 [Adaptivity]
   max_h_level = 3
@@ -146,14 +174,14 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     variable = accel_x
     displacement = disp_x
     velocity = vel_x
-    beta = 0.25
+    beta = ${beta}
     execute_on = 'TIMESTEP_END'
   []
   [vel_x]
     type = NewmarkVelAux
     variable = vel_x
     acceleration = accel_x
-    gamma = 0.5
+    gamma = ${gamma}
     execute_on = 'TIMESTEP_END'
   []
   [accel_y]
@@ -161,14 +189,14 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     variable = accel_y
     displacement = disp_y
     velocity = vel_y
-    beta = 0.25
+    beta = ${beta}
     execute_on = 'TIMESTEP_END'
   []
   [vel_y]
     type = NewmarkVelAux
     variable = vel_y
     acceleration = accel_y
-    gamma = 0.5
+    gamma = ${gamma}
     execute_on = 'TIMESTEP_END'
   []
   [accel_z]
@@ -176,14 +204,14 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     variable = accel_z
     displacement = disp_z
     velocity = vel_z
-    beta = 0.25
+    beta = ${beta}
     execute_on = 'TIMESTEP_END'
   []
   [vel_z]
     type = NewmarkVelAux
     variable = vel_z
     acceleration = accel_z
-    gamma = 0.5
+    gamma = ${gamma}
     execute_on = 'TIMESTEP_END'
   []
   #get pulse load aux
@@ -271,13 +299,10 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 [Physics/SolidMechanics/Dynamic]
   [all]
     add_variables = true
-    hht_alpha = 0.11
-    newmark_beta = 0.25
-    newmark_gamma = 0.5
-    # use_automatic_differentiation = true
-    # mass_damping_coefficient = 0.1
-    # stiffness_damping_coefficient = 0.1
-    density = 2450
+    hht_alpha = ${hht_alpha}
+    newmark_beta = ${beta}
+    newmark_gamma = ${gamma}
+    density = ${solid_density}
   []
 []
 
@@ -333,26 +358,26 @@ l = 2e-4 # N * h, N: number of elements, h: element size
   #pressure coupling on stress tensor
   [poro_x]
     type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.7
+    biot_coefficient = ${biot_coefficient}
     variable = disp_x
     component = 0
   []
   [poro_y]
     type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.7
+    biot_coefficient = ${biot_coefficient}
     variable = disp_y
     component = 1
   []
   [poro_z]
     type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = 0.7
+    biot_coefficient = ${biot_coefficient}
     variable = disp_z
     component = 2
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
     type = PorousFlowFullySaturatedMassTimeDerivative
-    biot_coefficient = 0.7
+    biot_coefficient = ${biot_coefficient}
     coupling_type = HydroMechanical
     variable = pp
   []
@@ -426,12 +451,12 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     accelerations = 'accel_x accel_y accel_z'
     component = 0
     boundary = 3
-    beta = 0.25
-    gamma = 0.5
-    alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    beta = ${beta}
+    gamma = ${gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${solid_density}
   []
   [damp_outer_y]
     type = FarmsNonReflectDashpotBC
@@ -441,12 +466,12 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     accelerations = 'accel_x accel_y accel_z'
     component = 1
     boundary = 3
-    beta = 0.25
-    gamma = 0.5
-    alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    beta = ${beta}
+    gamma = ${gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${solid_density}
   []
   [damp_outer_z]
     type = FarmsNonReflectDashpotBC
@@ -456,12 +481,12 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     accelerations = 'accel_x accel_y accel_z'
     component = 2
     boundary = 3
-    beta = 0.25
-    gamma = 0.5
-    alpha = 0.11
-    shear_wave_speed = 2220
-    p_wave_speed = 3630
-    density = 2450
+    beta = ${beta}
+    gamma = ${gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${fparse Cs}
+    p_wave_speed = ${fparse Cp}
+    density = ${solid_density}
   []
 []
 
@@ -471,26 +496,29 @@ l = 2e-4 # N * h, N: number of elements, h: element size
     prop_names = 'K G'
     prop_values = '${K} ${G}'
   []
-  [degradation]
-    type = PowerDegradationFunction
-    property_name = g
-    expression = (1-d)^p*(1-eta)+eta
-    phase_field = d
-    parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
-  []
   [elasticity]
-    type = SmallDeformationIsotropicElasticity ###
+    type = NDSmallDeformationIsotropicElasticity
+    # material property names
     bulk_modulus = K
     shear_modulus = G
     phase_field = d
+    strain_energy_density = psie
+    strain_energy_density_active = psie_active
+    strain_energy_density_derivative = dpsie_dd
     degradation_function = g
+    degradation_function_derivative = dg_dd
+    degradation_function_second_derivative = d2g_dd2
+    # decomposition type
     decomposition = SPECTRAL
+    # model type
+    model_type = AT2
+    # constants
+    eta = 1e-6 
     output_properties = 'elastic_strain psie_active'
     outputs = exodus
   []
   [stress]
-    type = ComputeSmallDeformationStress ###
+    type = NDComputeSmallDeformationStress ###
     elasticity_model = elasticity
     output_properties = 'stress'
     outputs = exodus
@@ -501,10 +529,10 @@ l = 2e-4 # N * h, N: number of elements, h: element size
 [FluidProperties]
   [the_simple_fluid]
     type = SimpleFluidProperties
-    bulk_modulus = 2e+9
-    density0 = 1000
+    bulk_modulus = ${fluid_bulk_modulus}
+    density0 = ${fluid_density}
     thermal_expansion = 0
-    viscosity = 1e-3
+    viscosity = ${viscosity}
   []
 []
 

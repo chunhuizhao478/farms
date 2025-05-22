@@ -70,14 +70,14 @@
 
 [Kernels]
   [diff]
-    type = PFFDiffusion #
+    type = ADPFFDiffusion #
     variable = d
     fracture_toughness = Gc
     regularization_length = l
     normalization_constant = c0
   []
   [source]
-    type = PFFSource
+    type = ADPFFSource
     variable = d
     free_energy = psi
   []
@@ -85,12 +85,12 @@
 
 [Materials]
   [fracture_properties]
-    type = GenericConstantMaterial
+    type = ADGenericConstantMaterial
     prop_names = 'l'
     prop_values = '${l}'
   []
   [Gc_var]
-    type = ParsedMaterial
+    type = ADParsedMaterial
     property_name = Gc
     coupled_variables = 'Gc_var'
     expression = 'Gc_var'
@@ -107,16 +107,16 @@
   [crack_geometric]
     type = CrackGeometricFunction
     property_name = alpha
-    expression = 'd^2'
+    expression = 'd' #AT1 model
     phase_field = d
   []
   [psi]
-    type = DerivativeParsedMaterial
+    type = ADDerivativeParsedMaterial
     property_name = psi
     expression = 'alpha*Gc/c0/l+g*psie_active'
     coupled_variables = 'd psie_active'
     material_property_names = 'alpha(d) g(d) Gc c0 l'
-    derivative_order = 2
+    derivative_order = 1
   []
 []
 
