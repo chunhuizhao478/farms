@@ -301,8 +301,8 @@
     nl_rel_tol = 1e-8
     nl_max_its = 10
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-snes_type'
-    petsc_options_value = 'vinewtonrsls'
+    petsc_options_iname = '-snes_type -ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'vinewtonrsls gmres     hypre  boomeramg True'
     verbose = true
     # dt = 1e-2
     [TimeStepper]
