@@ -17,6 +17,4 @@ virtual Real computeQpOffDiagJacobian(unsigned int jvar);
 private:
 const MaterialProperty<Real> & _coefficient; 
 const VariableValue & _u_old; 
-const VariableValue & _p_dot_old; 
-const Real _gamma;
 };

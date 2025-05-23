@@ -3,42 +3,39 @@
 # Harris, R. M.-P.-A. (2009). The SCEC/USGS Dynamic Earthquake Rupture Code Verification Exercise. Seismological Research Letters, vol. 80, no. 1, pages 119-126.
 
 [Mesh]
-
-    #second_order = true
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 150
-        ny = 150
-        xmin = -15000
-        xmax = 15000
-        ymin = -15000
-        ymax = 15000
-        #elem_type = QUAD9
-        
+        type = FileMeshGenerator
+        file =  './New_Planar_fault.msh'
     []
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
+    [subdomain1]
         input = msh
-        combinatorial_geometry = 'y>0'
+        type = SubdomainBoundingBoxGenerator
+        bottom_left = '-20000 -20000 0'
+        top_right = '10000 10000 0'
+        block_id = 0
+    []
+    [./new_block_1]
+        type = ParsedSubdomainMeshGenerator
+        input = subdomain1
+        combinatorial_geometry = 'y > 0'
         block_id = 1
     []
-    [./split]
+    [./split_1]
         type = BreakMeshByBlockGenerator
-        input = new_block
+        input = new_block_1
         split_interface = true
         add_interface_on_two_sides = true
-    []
-    
+        block_pairs = '0 1'
+    []     
 []
 
 [GlobalParams]
     displacements = 'disp_x disp_y' 
     PorousFlowDictator = dictator
-    q = 0.1
+    q = 0.5
     Dc = 0.4
     T2_o = 120e6
-    elem_size = 100
+    elem_size = 50
     mu_d = 0.525
 []
 
@@ -53,11 +50,11 @@
 
 [Variables]
     [./disp_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./disp_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./p]
@@ -79,14 +76,6 @@
     []
     [./accel_y]
     []
-    [./interface_p_plus]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [./interface_p_minus]
-        order = FIRST
-        family = LAGRANGE
-    []
     [./nodal_area]
         order = FIRST
         family = LAGRANGE
@@ -99,11 +88,19 @@
         order = FIRST
         family = LAGRANGE
     [../]
-    [./resid_secondary_x]
+    [./resid_damping_x]
         order = FIRST
         family = LAGRANGE
     [../]
-    [./resid_secondary_y]
+    [./resid_damping_y]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_pressure_x]
+        order = FIRST
+        family = LAGRANGE
+    [../]
+    [./resid_pressure_y]
         order = FIRST
         family = LAGRANGE
     [../]
@@ -130,19 +127,7 @@
    ##     type = CompVarRate
    #     variable = vel_y
    ##     coupled = disp_y
-    #[]
-    [pressure_global_plus]
-        type = ProjectionAux
-        variable = interface_p_plus
-        v = porepressure
-        boundary = 'Block1_Block0'
-    []
-    [pressure_global_minus]
-        type = ProjectionAux
-        variable = interface_p_minus
-        v = porepressure
-        boundary = 'Block0_Block1'
-    []   
+    #[] 
 []
 
 [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -161,6 +146,7 @@
         component = 0
         displacements = 'disp_x disp_y'
         use_displaced_mesh = false     
+        save_in = 'resid_primary_x' 
     [../]
     [./stressdiv_y]
         type = StressDivergenceTensors
@@ -168,6 +154,7 @@
         component = 1
         displacements = 'disp_x disp_y'
         use_displaced_mesh = false
+        save_in = 'resid_primary_y' 
     [../]
     [./skeletoninertia_x]
         type = InertialForce
@@ -181,26 +168,28 @@
     [../]
     [poro_x]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.567
+        biot_coefficient = 0.4092
         variable = disp_x
         component = 0
+        save_in = 'resid_pressure_x'
     []
     [poro_y]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.567
+        biot_coefficient = 0.4092
         variable = disp_y
         component = 1
+        save_in = 'resid_pressure_y'
     []
     [mass0]
         type = PorousFlowFullySaturatedMassTimeDerivative
-        biot_coefficient = 0.567
+        biot_coefficient = 0.4092
         coupling_type = HydroMechanical
-        variable = porepressure
+        variable = p
         multiply_by_density = false
     []
     [flux]
         type = PorousFlowFullySaturatedDarcyBase
-        variable = porepressure
+        variable = p
         gravity = '0 0 0'
         multiply_by_density = false
     []
@@ -208,11 +197,13 @@
         type = StiffPropDamping
         variable = 'disp_x'
         component = '0'
+        save_in = 'resid_damping_x'
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = 'disp_y'
         component = '1'
+        save_in = 'resid_damping_y'
     []
 []
 
@@ -222,8 +213,8 @@
     []
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        bulk_modulus = 15.46e9
-        shear_modulus = 32e9
+        bulk_modulus = 21.09e9
+        shear_modulus = 18.9e9
         use_displaced_mesh = false
     []
     [stress]
@@ -235,7 +226,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2320
+        prop_values = 2419
     []
     [eff_fluid_pressure_qp]
         type = PorousFlowEffectiveFluidPressure
@@ -245,7 +236,7 @@
     []
     [ppss]
         type = PorousFlow1PhaseFullySaturated
-        porepressure = porepressure
+        porepressure = p
     []
     [massfrac]
         type = PorousFlowMassFraction
@@ -257,17 +248,17 @@
     []
     [porosity]
         type = PorousFlowPorosityConst # only the initial value of this is ever used
-        porosity = 0.2
+        porosity = 0.14
     []
     [biot_modulus]
         type = PorousFlowConstantBiotModulus
-        biot_coefficient = 0.567
-        solid_bulk_compliance = 6.4683053e-11
+        biot_coefficient = 0.4092
+        solid_bulk_compliance = 4.7412329e-11
         fluid_bulk_modulus = 2.25e9
     []
     [permeability]
         type = PorousFlowPermeabilityConst
-        permeability = '1.128052989e-12 0 0   0 1.128052989e-12 0   0 0 1.128052989e-12'
+        permeability = '2.3e-13 0 0   0 2.3e-13 0   0 0 2.3e-13'
     []
     [./czm_stress_derivative]
         type = StressDerivative2
@@ -276,8 +267,14 @@
     [./czm_mat]
         type = PoroSlipWeakeningFriction2dNoInertia
         boundary = 'Block0_Block1'
-        pressure_plus = interface_p_plus
-        pressure_minus = interface_p_minus
+        pressure_plus = p
+        pressure_minus = p
+        react_x = resid_primary_x
+        react_y = resid_primary_y
+        react_pressure_x = resid_pressure_x
+        react_pressure_y = resid_pressure_y 
+        react_damp_x = resid_damping_x
+        react_damp_y = resid_damping_y
         nodal_area = nodal_area
     [../]
 []
@@ -285,40 +282,121 @@
 [BCs]
   [./fault_p]
     type = FunctionNeumannBC
-    variable = porepressure
+    variable = p
     boundary = Block0_Block1
     function = 0.0
   [../]
   [./fault_n]
     type = FunctionNeumannBC
-    variable = porepressure
+    variable = p
     boundary = Block1_Block0
     function = 0.0
   [../]
   [./flux_top]
     type = FunctionNeumannBC
-    variable = porepressure
+    variable = p
     boundary = top
     function = 0.0
   [../]
   [./flux_bot]
     type = FunctionNeumannBC
-    variable = porepressure
+    variable = p
     boundary = bottom
     function = 0.0
   [../]
   [./flux_left]
     type = FunctionNeumannBC
-    variable = porepressure
+    variable = p
     boundary = left
     function = 0.0
   [../]
   [./flux_right]
     type = FunctionNeumannBC
-    variable = porepressure
+    variable = p
     boundary = right
     function = 0.0
-  [../]
+  []
+  ##non-reflecting bc
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 4003
+        shear_wave_speed = 2444
+        boundary = right
+    []
 []
 
 [UserObjects]
@@ -343,10 +421,10 @@
 [Executioner]
     type = Transient
     #solve_type = 'PJFNK'
-    dt = 0.002
-    end_time = 4
+    dt = 0.001
+    end_time = 4.8
     #verbose = true
-    #automatic_scaling = true
+    automatic_scaling = true
     [TimeIntegrator]
         type = CentralDifference
         #type = NewmarkBeta
@@ -357,7 +435,7 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 10
+    time_step_interval = 20
 []
 
 #[Debug]

@@ -2,8 +2,8 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 100
-        ny = 100
+        nx = 200
+        ny = 200
         xmin = -4
         xmax = 4
         ymin = -4
@@ -25,7 +25,6 @@
 
 [GlobalParams]
     displacements = 'disp_x disp_y'
-    PorousFlowDictator = dictator
 []
 
 [Variables]
@@ -38,19 +37,17 @@
         family = LAGRANGE
     [../]
 
-    [p]
-        family = LAGRANGE
-        order = FIRST
-    []
-            [lambda_y]
+    [lambda_y]
         # Lagrange multiplier for normal traction
         family = LAGRANGE
         order = FIRST
+        initial_condition = 1e-20
     []
-        [lambda_x]
+    [lambda_x]
         # Lagrange multiplier for tangential traction
         family = LAGRANGE
         order = FIRST
+        initial_condition = 1e-20
     []
 
 
@@ -88,15 +85,6 @@
         family = MONOMIAL
     []
 
-[]
-
-[UserObjects]
-    [dictator]
-        type = PorousFlowDictator
-        porous_flow_vars = 'p disp_x disp_y'
-        number_fluid_phases = 1
-        number_fluid_components = 1
-    []
 []
 
 [AuxKernels]
@@ -140,41 +128,17 @@
 []
 
 [Kernels]
-    # Poroelastic coupling
-    [poro_x]
-        type = PorousFlowEffectiveStressCoupling
-        variable = disp_x
-        component = 0
-        biot_coefficient = 0.8145
-    []
-    [poro_y]
-        type = PorousFlowEffectiveStressCoupling
-        variable = disp_y
-        component = 1
-        biot_coefficient = 0.8145
-    []
-    
-    # Mass conservation for poroelasticity
-    [mass]
-        type = PorousFlowFullySaturatedMassTimeDerivative
-        variable = p
-        biot_coefficient = 0.8145
-    []
-    
-    # Darcy flow
-    [flux]
-        type = PorousFlowFullySaturatedDarcyBase
-        variable = p
-        gravity = '0 0 0'
-    []
+
     # Lagrange multiplier time derivatives
     [lambda_x_time]
-        type = TimeDerivative
+        type = CoefTimeDerivative
         variable = lambda_x
+        Coefficient = 1e-5 # Small coefficient
     []
     [lambda_y_time]
-        type = TimeDerivative
+        type = CoefTimeDerivative
         variable = lambda_y
+        Coefficient = 1e-5  # Small coefficient
     []
 []
 
@@ -201,33 +165,23 @@
         coupled_disp = disp_x
         boundary = 'Block0_Block1'
     []
-  
-    # Normal traction continuity with Lagrange multiplier
-    [y_traction]
-        type = FaultNormalTractionLagrangeMultiplier
-        variable = disp_y
-        neighbor_var = disp_y
-        lambda_y = lambda_y
-        boundary = 'Block0_Block1'
-    []
-    
-    # Shear traction continuity with Lagrange multiplier
-    [x_traction]
+    [lambda_X]
         type = FaultShearTractionLagrangeMultiplier
         variable = disp_x
         neighbor_var = disp_x
         lambda_x = lambda_x
         boundary = 'Block0_Block1'
     []
-[]
-
-[FluidProperties]
-    [simple_fluid]
-        type = SimpleFluidProperties
-        bulk_modulus = 2.2e9
-        density0 = 1000
-        viscosity = 1e-3
+    
+    [lambda_Y]
+        type = FaultNormalTractionLagrangeMultiplier
+        variable = disp_y
+        neighbor_var = disp_y
+        lambda_y = lambda_y
+        boundary = 'Block0_Block1'
     []
+  
+    
 []
 
 [Materials]
@@ -241,42 +195,7 @@
     [stress]
         type = ComputeLinearElasticStress
     []
-    # Poroelasticity materials
-    [porosity]
-        type = PorousFlowPorosityConst
-        porosity =  0.0274
-    []
-    [biot_modulus]
-        type = PorousFlowConstantBiotModulus
-        biot_coefficient = 0.8145
-        solid_bulk_compliance = 2.5e-11
-        fluid_bulk_modulus = 2e9
-    []
-    [permeability_lower]
-        type = PorousFlowPermeabilityConst
-        permeability = '0.025e-9 0 0 0 0.025e-9 0 0 0 0.025e-9'
-    []
-    [temperature]
-        type = PorousFlowTemperature
-    []
-    [eff_fluid_pressure]
-        type = PorousFlowEffectiveFluidPressure
-    []
-    [vol_strain]
-        type = PorousFlowVolumetricStrain
-    []
-    [ppss]
-        type = PorousFlow1PhaseFullySaturated
-        porepressure = p
-    []
-    [massfrac]
-        type = PorousFlowMassFraction
-    []
-    [simple_fluid_qp]
-        type = PorousFlowSingleComponentFluid
-        fp = simple_fluid
-        phase = 0
-    []
+
 []
 
 
@@ -293,35 +212,10 @@
     value = 0
     boundary = 'bottom top'
   []
-  [bottom_flux]
-    type = FunctionNeumannBC
-    variable = p
-    boundary = left
-    function = flux_fcn
-  []
-  [top_pressure]
-    type = DirichletBC
-    variable = p
-    boundary = 'top'
-    value = 0
-  []
- # [slipx]
-#    type = CoupledVarNeumannBC
- #   variable = lambda_x
- #   boundary = 'Block0_Block1'
- #   v = slip_xx
- # []
-
-
+  
   
 []
 
-[Functions]
-  [flux_fcn]
-    type = ParsedFunction
-    value = 'if( y > 0, 0, 0)'
-  []
-[]
 
 
 [Postprocessors]
@@ -343,13 +237,17 @@
   [smp]
     type = SMP
     full = true
-    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-    petsc_options_value = 'lu       mumps                        200'
+    petsc_options = '-ksp_view_mat -ksp_view_preconditioner -ksp_monitor_singular_value'
+    petsc_options_iname = '-ksp_type -pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+    petsc_options_value = 'gmres      lu       mumps                        200'
   []
 []
+
 [Executioner]
     type = Transient
  #   solve_type = Newton
+    nl_rel_tol = 1e-6  # Relative tolerance
+ # nl_abs_tol = 1e-8  # Absolute tolerance
     
     [TimeStepper]
         type = AdaptiveTimeStepCalculator
@@ -370,10 +268,11 @@
 []
 
 [Outputs]
-    exodus = true
-    interval = 1
-    print_linear_residuals = true
+  exodus = true
 []
+
+
+
 
 [MultiApps]
     # SubApp to solve rate-and-state friction
@@ -390,8 +289,8 @@
     [send_tractions]
         type = MultiAppCopyTransfer
         to_multi_app = rate_state_app
-        source_variable = 'lambda_x lambda_y p'
-        variable = 'traction_tangential traction_normal p_fault'
+        source_variable = 'lambda_x lambda_y'
+        variable = 'traction_tangential traction_normal'
         execute_on = 'TIMESTEP_BEGIN'
     []
     

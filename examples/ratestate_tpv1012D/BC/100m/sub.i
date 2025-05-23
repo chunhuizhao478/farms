@@ -94,12 +94,28 @@
         order = FIRST
         family = LAGRANGE
     []
+    [jacob_sub_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [jacob_sub_y]
+        order = FIRST
+        family = LAGRANGE
+    []
     #residual received from mainApp (damping)
     [resid_damp_sub_x]
         order = FIRST
         family = LAGRANGE
     []
     [resid_damp_sub_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [jacob_damp_sub_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [jacob_damp_sub_y]
         order = FIRST
         family = LAGRANGE
     []
@@ -253,12 +269,31 @@
     [../]
 []
 
+
 [Modules/TensorMechanics/CohesiveZoneMaster]
     [./czm_ik]
         boundary = 'Block0_Block1'
         strain = SMALL
     [../]
 []
+
+[Kernels]
+    [./inertia_x]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_sub_x
+    []
+    [./inertia_y]
+        type = InertialForce
+        use_displaced_mesh = false
+        variable = disp_sub_y
+    []
+[]
+
+[Problem]
+    extra_tag_vectors = 'restore_tag_x restore_tag_y'
+[]
+
 
 [InterfaceKernels]
     #apply displacement prediction and retrieve its residuals
@@ -268,6 +303,7 @@
         neighbor_var = disp_sub_x
         extra_vector_tags = 'restore_tag_x'
         boundary = 'Block0_Block1'
+        y_var = disp_sub_y
     []
     [./ratestate_y]
         type = RateStateInterfaceKernelGlobaly
@@ -275,12 +311,10 @@
         neighbor_var = disp_sub_y
         extra_vector_tags = 'restore_tag_y'
         boundary = 'Block0_Block1'
+        x_var = disp_sub_x
     []
 []
 
-[Problem]
-    extra_tag_vectors = 'restore_tag_x restore_tag_y'
-[]
 
 [Materials]
     [elasticity]
@@ -303,6 +337,10 @@
         reaction_rsf_y  = resid_sub_y
         reaction_damp_x = resid_damp_sub_x
         reaction_damp_y = resid_damp_sub_y
+        jacob_x  = jacob_sub_x
+        jacob_y  = jacob_sub_y
+        jacob_damp_x = jacob_damp_sub_x
+        jacob_damp_y = jacob_damp_sub_y
         Ts_perturb = ini_shear_stress_perturb
         boundary = 'Block0_Block1'
         output_properties = 'sliprate_strike slip_strike statevar traction_strike traction_normal alongfaultdisp_strike_plus alongfaultdisp_strike_minus'
@@ -311,13 +349,13 @@
 []
 
 [UserObjects]
-    #compute element side volume (using CONTACT modulus)
-    # [element_side_volume]
-    #     type = NodalArea
-    #     variable = element_side_volume
-    #     boundary = 'Block0_Block1 Block1_Block0'
-    #     execute_on = 'initial TIMESTEP_BEGIN'
-    # []
+    compute element side volume (using CONTACT modulus)
+     [element_side_volume]
+         type = NodalArea
+         variable = element_side_volume
+         boundary = 'Block0_Block1 Block1_Block0'
+         execute_on = 'initial TIMESTEP_BEGIN'
+    []
     [recompute_residual_tag_x]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag_x'
@@ -338,11 +376,18 @@
     []
 []
 
+[Preconditioning]
+  [./smp]
+    type = SMP
+    full = true
+  [../]
+[]
+
 [Executioner]
     type = Transient
     [TimeIntegrator]
         type = CentralDifference
-        solve_type = lumped
+        #solve_type = lumped
     []
 []
 
