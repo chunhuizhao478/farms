@@ -2,16 +2,16 @@ SetFactory("OpenCASCADE");
 
 // Parameters
 lc = 0.001;         // global mesh size
-lc_refined = 0.0001; // refined mesh size
+lc_refined = 5e-5; // refined mesh size
 
 x0 = 0.0140; //notch tip coordinate x
 y0 = 0.0016; //notch tip coordinate y
 
-s1 = 0.0025; //shrift
+s1 = 0.0020; //shrift
 u1 = 0.0032; //up
 r1 = 0.001;  //radius
 
-s2 = 0.0025; //shrift
+s2 = 0.0020; //shrift
 u2 = 0.0032; //shrift
 r2 = 0.001;  //radius
 

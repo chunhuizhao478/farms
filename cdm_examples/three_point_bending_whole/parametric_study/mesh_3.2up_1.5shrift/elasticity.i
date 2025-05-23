@@ -220,8 +220,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.01
-  end_time = 15
+  dt = 0.025
+  end_time = 20
 
   # [TimeStepper]
   #   type = FunctionDT
@@ -236,6 +236,6 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 1
   print_linear_residuals = false
 []

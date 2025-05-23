@@ -220,13 +220,13 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  # dt = 0.1
+  dt = 0.05
   end_time = 15
 
-  [TimeStepper]
-    type = FunctionDT
-    function = func_time_stepper
-  []
+  # [TimeStepper]
+  #   type = FunctionDT
+  #   function = func_time_stepper
+  # []
 
   fixed_point_max_its = 20
   accept_on_max_fixed_point_iteration = true
