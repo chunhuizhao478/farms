@@ -2,8 +2,8 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 100
-        ny = 100
+        nx = 200
+        ny = 200
         xmin = -4
         xmax = 4
         ymin = -4
@@ -322,7 +322,7 @@
         cp = 5500                # P-wave velocity
         a_prem = 0.1             # Proportionality index for stable time step
         shear_modulus = 30e9     # Shear modulus
-        permeability = 1   # Permeability value (k_py)
+        permeability = 1e-9   # Permeability value (k_py)
         biot_modulus = 1   # Inverse of Biot modulus (c_o)
         a_o = 0.015              # Direct effect parameter
         b_o = 0.02               # State evolution parameter

@@ -1,7 +1,7 @@
 /*
 Material Description of Slip Weakening Friction
 */
-
+#include "FEProblem.h"
 #include "PoroSlipWeakeningFriction2dNoInertia.h"
 #include "InterfaceKernel.h"
 
@@ -17,8 +17,15 @@ PoroSlipWeakeningFriction2dNoInertia::validParams()
   params.addRequiredCoupledVar("nodal_area","nodal area");
   params.addParam<Real>("mu_d", 1.0, "Value of dynamic friction parameter");
   params.addParam<Real>("Dc", 1.0, "Value of characteristic length");
+  params.addParam<Real>("elem_size", 1.0, "Value of element size");
   params.addRequiredCoupledVar("pressure_plus","Pressure at postive side of the fault");
   params.addRequiredCoupledVar("pressure_minus","Pressure at minus side of the fault");
+  params.addRequiredCoupledVar("react_x","reaction in x dir");
+  params.addRequiredCoupledVar("react_y","reaction in y dir");
+  params.addRequiredCoupledVar("react_damp_x","reaction in x dir");
+  params.addRequiredCoupledVar("react_damp_y","reaction in y dir");
+  params.addRequiredCoupledVar("react_pressure_x","reaction in x dir");
+  params.addRequiredCoupledVar("react_pressure_y","reaction in y dir");
   return params;
 }
 
@@ -28,12 +35,26 @@ PoroSlipWeakeningFriction2dNoInertia::PoroSlipWeakeningFriction2dNoInertia(const
     _nodal_area(coupledValue("nodal_area")),
     _mu_d(getParam<Real>("mu_d")),
     _Dc(getParam<Real>("Dc")),
+    _nodal_area2(getParam<Real>("elem_size")),
+    _rot(getMaterialPropertyByName<RankTwoTensor>(_base_name + "czm_total_rotation")),
     _stress(getMaterialPropertyByName<RankTwoTensor>(_base_name + "stress")),
     _dstress(getMaterialPropertyByName<RankTwoTensor>(_base_name + "dstress")),
     _interface_displacement_jump_old(getMaterialPropertyOld<RealVectorValue>(_base_name + "interface_displacement_jump")),
     _interface_displacement_jump_older(getMaterialPropertyOlder<RealVectorValue>(_base_name + "interface_displacement_jump")),
     _interface_pressure_plus(coupledNeighborValue("pressure_plus")),
     _interface_pressure_minus(coupledValue("pressure_minus")),
+    _reaction_x(coupledValue("react_x")),
+    _reaction_neighbor_x(coupledNeighborValue("react_x")),
+    _reaction_y(coupledValue("react_y")),
+    _reaction_neighbor_y(coupledNeighborValue("react_y")),
+    _reaction_damp_x(coupledValue("react_damp_x")),
+    _reaction_neighbor_damp_x(coupledNeighborValue("react_damp_x")),
+    _reaction_damp_y(coupledValue("react_damp_y")),
+    _reaction_neighbor_damp_y(coupledNeighborValue("react_damp_y")),
+    _reaction_pressure_x(coupledValue("react_pressure_x")),
+    _reaction_neighbor_pressure_x(coupledNeighborValue("react_pressure_x")),
+    _reaction_pressure_y(coupledValue("react_pressure_y")),
+    _reaction_neighbor_pressure_y(coupledNeighborValue("react_pressure_y")),
     _density(getMaterialPropertyByName<Real>(_base_name + "density"))
      
 {
@@ -66,7 +87,7 @@ double PoroNoInertiacomputeT1oDistribution2D(Real x_coord)
   }
   else
   {
-      T1_o = 70.0e6;
+      T1_o = 73.0e6;
   }
   return T1_o;
 }
@@ -74,6 +95,8 @@ double PoroNoInertiacomputeT1oDistribution2D(Real x_coord)
 void
 PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
 {   
+  if(_fe_problem.getCurrentExecuteOnFlag()=="LINEAR")
+  {
   //Incremental displacement jump 
   RealVectorValue displacement_jump_rate = (_interface_displacement_jump[_qp] - _interface_displacement_jump_older[_qp])*(1/_dt);
 
@@ -98,7 +121,7 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   Real dfd_disp =0;
   Real T2_o = _T2_o;
   Real area = _nodal_area[_qp];
-
+  Real area2 = _nodal_area2/2;
 
   //pressure state 
    // Real p = std::max(_interface_pressure_plus[_qp], _interface_pressure_minus[_qp]);
@@ -113,8 +136,44 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   //Obtain x_coord of current qp
   Real x_coord =_q_point[_qp](0);
 
+  //Compute reaction on plus/minus faces in local coordinate
+   RealVectorValue elem_react_plus(_reaction_x[_qp],_reaction_y[_qp]);
+   RealVectorValue local_elem_react_plus = _rot[_qp].transpose() * elem_react_plus;
+
+   RealVectorValue elem_react_minus(-_reaction_neighbor_x[_qp],-_reaction_neighbor_y[_qp]);
+   RealVectorValue local_elem_react_minus = _rot[_qp].transpose() * elem_react_minus;
+   
+   Real R_plus_local_y  =    local_elem_react_plus(0);
+   Real Rx_plus  =  - local_elem_react_plus(1);
+   Real R_minus_local_y =    local_elem_react_minus(0);
+   Real Rx_minus =  - local_elem_react_minus(1);
+
+   //Compute damping on plus/minus faces in local coordinate
+   RealVectorValue elem_react_damp_plus(_reaction_damp_x[_qp],_reaction_damp_y[_qp]);
+   RealVectorValue local_elem_react_damp_plus = _rot[_qp].transpose() * elem_react_damp_plus;
+
+   RealVectorValue elem_react_damp_minus(-_reaction_neighbor_damp_x[_qp],-_reaction_neighbor_damp_y[_qp]);
+   RealVectorValue local_elem_react_damp_minus = _rot[_qp].transpose() * elem_react_damp_minus;
+   
+   Real R_plus_damp_local_y  =    local_elem_react_damp_plus(0);
+   Real Rx_plus_damp  =  - local_elem_react_damp_plus(1);
+   Real R_minus_damp_local_y =    local_elem_react_damp_minus(0);
+   Real Rx_minus_damp =  - local_elem_react_damp_minus(1);
+
+  //Compute pressure on plus/minus faces in local coordinate
+   RealVectorValue elem_react_pressure_plus(_reaction_pressure_x[_qp],_reaction_pressure_y[_qp]);
+   RealVectorValue local_elem_react_pressure_plus = _rot[_qp].transpose() * elem_react_pressure_plus;
+
+   RealVectorValue elem_react_pressure_minus(-_reaction_neighbor_pressure_x[_qp],-_reaction_neighbor_pressure_y[_qp]);
+   RealVectorValue local_elem_react_pressure_minus = _rot[_qp].transpose() * elem_react_pressure_minus;
+   
+   Real R_plus_pressure_local_y  =    local_elem_react_pressure_plus(0);
+   Real Rx_plus_pressure  =  - local_elem_react_pressure_plus(1);
+   Real R_minus_pressure_local_y =    local_elem_react_pressure_minus(0);
+   Real Rx_minus_pressure =  - local_elem_react_pressure_minus(1);
+
   //Compute node mass
-  Real M = _density[_qp] * area * area/2; 
+  Real M = _density[_qp] * area * area2; 
 
   //Compute mu_s for current qp
   mu_s = PoroNoInertiacomputeMusDistribution2D(x_coord);
@@ -123,18 +182,23 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   T1_o = PoroNoInertiacomputeT1oDistribution2D(x_coord);
 
   //Compute sticking stress
-  Real T1  = -(1/_dt)*M*displacement_jump_rate(1)/(2*area) + shear + T1_o;
-  Real T2  = - T2_o + p;
+    Real T1 =  -(1/_dt)*M*displacement_jump_rate(1)/(2*area)
+               +  ( ( Rx_plus + Rx_plus_damp - Rx_minus  - Rx_minus_damp ) / ( 2*area) )  + T1_o;
+  
+  
+    Real T2 =  -T2_o 
+          + ( (R_plus_local_y + R_plus_damp_local_y + R_plus_pressure_local_y - R_minus_local_y - R_minus_damp_local_y - R_minus_pressure_local_y) / ( 2*area) );
 
+   Real T2_SW =  T2_o - p;
 //Compute friction strength
   if (std::abs(_interface_displacement_jump[_qp](1)) < Dc)
   {
-    tau_f = (mu_s - (mu_s - mu_d)*std::abs(_interface_displacement_jump[_qp](1))/Dc)*(-T2); // square for shear component
-    dtau_f = -(mu_s - mu_d)/Dc*(-T2)*(_interface_displacement_jump[_qp](1))/(std::abs(_interface_displacement_jump[_qp](1)));
+    tau_f = (mu_s - (mu_s - mu_d)*std::abs(_interface_displacement_jump[_qp](1))/Dc)*(T2_SW); // square for shear component
+    dtau_f = -(mu_s - mu_d)/Dc*(T2_SW)*(_interface_displacement_jump[_qp](1))/(std::abs(_interface_displacement_jump[_qp](1)));
   }
   else
   {
-    tau_f = mu_d * (-T2);
+    tau_f = mu_d * (T2_SW);
     dtau_f = 0;
   }
 
@@ -151,7 +215,8 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   //Assign back traction as BC in CZM
   RealVectorValue traction;
 
-  traction(0) = 0; 
+   //  traction(0) =  -(T2+T2_o); 
+  traction(0) = T2+T2_o;
   traction(1) = -(T1-T1_o);
   traction(2) = 0;
 
@@ -176,4 +241,5 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   
   _interface_traction[_qp] = traction;
   _dinterface_traction_djump[_qp] = dtraction;
+}
 }

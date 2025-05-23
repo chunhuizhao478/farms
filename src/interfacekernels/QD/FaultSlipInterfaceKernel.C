@@ -35,10 +35,10 @@ FaultSlipInterfaceKernel::computeQpResidual(Moose::DGResidualType type)
   switch (type)
   {
     case Moose::DGResidualType::Element:
-      return _test[_i][_qp] * r;
+      return -_test[_i][_qp] * r;
     
     case Moose::DGResidualType::Neighbor:
-      return -_test_neighbor[_i][_qp] * r;
+      return _test_neighbor[_i][_qp] * r;
     
     default:
       return 0.0;
@@ -51,20 +51,21 @@ FaultSlipInterfaceKernel::computeQpJacobian(Moose::DGJacobianType type)
   // Only contribute to Jacobian if this variable is the displacement
   if (_var.number() != _coupled_disp_num)
     return 0.0;
-    
+  // Calculate the jump in displacement
+  Real jump = _coupled_disp[_qp] - _coupled_disp_neighbor[_qp];  
   switch (type)
   {
     case Moose::DGJacobianType::ElementElement:
-      return _test[_i][_qp] *  _phi[_j][_qp];
+      return _test[_i][_qp] *  _phi[_j][_qp] * jump;
     
     case Moose::DGJacobianType::NeighborNeighbor:
-      return -_test_neighbor[_i][_qp] *  _phi_neighbor[_j][_qp];
+      return -_test_neighbor[_i][_qp] *  _phi_neighbor[_j][_qp]* jump;
     
     case Moose::DGJacobianType::ElementNeighbor:
-      return -_test[_i][_qp] *  _phi_neighbor[_j][_qp];
+      return -_test[_i][_qp] *  _phi_neighbor[_j][_qp]* jump;
     
     case Moose::DGJacobianType::NeighborElement:
-      return _test_neighbor[_i][_qp] *  _phi[_j][_qp];
+      return _test_neighbor[_i][_qp] *  _phi[_j][_qp]* jump;
     
     default:
       return 0.0;
@@ -74,28 +75,8 @@ FaultSlipInterfaceKernel::computeQpJacobian(Moose::DGJacobianType type)
 Real
 FaultSlipInterfaceKernel::computeQpOffDiagJacobian(Moose::DGJacobianType type, unsigned int jvar)
 {
-  if (jvar == _slip_var)
-  {
-    // Jacobian contributions for slip variable
-    switch (type)
-    {
-      case Moose::DGJacobianType::ElementElement:
-        return -_test[_i][_qp] *  _phi[_j][_qp];
-      
-      case Moose::DGJacobianType::NeighborNeighbor:
-        return _test_neighbor[_i][_qp] *  _phi_neighbor[_j][_qp];
-      
-      case Moose::DGJacobianType::ElementNeighbor:
-        return 0.0;
-      
-      case Moose::DGJacobianType::NeighborElement:
-        return 0.0;
-      
-      default:
-        return 0.0;
-    }
-  }
-  else if (jvar == _coupled_disp_num)
+  
+  if (jvar == _coupled_disp_num)
   {
     // Jacobian for coupled displacement
     switch (type)

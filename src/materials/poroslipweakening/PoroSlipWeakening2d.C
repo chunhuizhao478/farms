@@ -130,8 +130,8 @@ void
 PoroSlipWeakening2d::computeInterfaceTractionAndDerivatives()
 {   
 
-  // if(_fe_problem.getCurrentExecuteOnFlag()=="LINEAR")
-  //  {
+   if(_fe_problem.getCurrentExecuteOnFlag()=="LINEAR")
+     {
   //Local displacement jump rate
    RealVectorValue displacement_jump_rate = (_interface_displacement_jump[_qp] - _interface_displacement_jump_older[_qp])*(1/_dt);
  
@@ -271,8 +271,12 @@ PoroSlipWeakening2d::computeInterfaceTractionAndDerivatives()
     // Real T1 =  -(1/_dt)*M*displacement_jump_rate(1)/(2*area) + shear + T1_o;
     //  Real T2 = - T2_o  + (1/_dt)*Mf*(fluid_vel_jump(0)+(1/_dt)*fluid_disp_jump(0))/(2*area)  ;
 
+    // Real T1 =  -(1/_dt)*M*displacement_jump_rate(1)/(2*area) - (1/_dt)*Mf*fluid_vel_jump(1)/(2*area)
+              // +  ( ( Rx_plus + Rx_plus_damp + Rx_plus_pressure - Rx_minus  - Rx_minus_damp - Rx_minus_pressure) / ( 2*area) )  + T1_o;
+
     Real T1 =  -(1/_dt)*M*displacement_jump_rate(1)/(2*area) - (1/_dt)*Mf*fluid_vel_jump(1)/(2*area)
-              +  ( ( Rx_plus + Rx_plus_damp + Rx_plus_pressure - Rx_minus  - Rx_minus_damp - Rx_minus_pressure) / ( 2*area) )  + T1_o;
+               +  ( ( Rx_plus + Rx_plus_damp - Rx_minus  - Rx_minus_damp ) / ( 2*area) )  + T1_o;
+  
   
     Real T2 =   //(1/_dt)*M*(displacement_jump_rate(0)+(1/_dt)*displacement_jump(0))/(2*area) 
                0+ (1/_dt)*Mf*(fluid_vel_jump(0)+(1/_dt)*fluid_disp_jump(0))/(2*area)  
@@ -317,7 +321,8 @@ PoroSlipWeakening2d::computeInterfaceTractionAndDerivatives()
      Real dtau_f_dp  = 0;
 
    //Compute friction strength
-   Real T2_SW = -(T2 + p);
+  //  Real T2_SW = -(T2 + p);
+      Real T2_SW = T2_o - p;
 
    if (std::abs(displacement_jump(1)) < Dc)
    {
@@ -401,9 +406,9 @@ PoroSlipWeakening2d::computeInterfaceTractionAndDerivatives()
   //  std::cout << "T2 " << T2+T2_o << std::endl;
 
    _interface_traction[_qp] = traction;
-   _dinterface_traction_djump[_qp] = dtraction_ddisp;
-   _dinterface_traction_djump_vf[_qp] = dtraction_dfluidvel;
-   _dinterface_traction_dpressure[_qp] = dtraction_dp;
+   _dinterface_traction_djump[_qp] = 0;
+   _dinterface_traction_djump_vf[_qp] = 0;
+   _dinterface_traction_dpressure[_qp] = 0;
   
    _interface_pressure[_qp] = 0 ;
    _dinterface_pressure_djump[_qp] = 0;
@@ -411,4 +416,4 @@ PoroSlipWeakening2d::computeInterfaceTractionAndDerivatives()
 
   //  std::cout<<_fe_problem.getCurrentExecuteOnFlag()<<std::endl;
 }
-// }
+}
