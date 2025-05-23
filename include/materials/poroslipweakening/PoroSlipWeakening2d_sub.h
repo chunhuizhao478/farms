@@ -31,9 +31,6 @@ protected:
 
   const std::string _permeability_type;
 
-  const VariableValue & _interface_pressure_plus; 
-  const VariableValue & _interface_pressure_minus;
-
   const VariableValue & _disp_x;
   const VariableValue & _disp_neighbor_x;
   const VariableValue & _disp_y;
@@ -43,21 +40,24 @@ protected:
   const VariableValue & _disp_neighbor_x_older;
   const VariableValue & _disp_y_older;
   const VariableValue & _disp_neighbor_y_older;
+
+  const VariableValue & _interface_pressure_plus; 
+  const VariableValue & _interface_pressure_minus;
   
   const VariableValue & _reaction_x;
   const VariableValue & _reaction_neighbor_x;
   const VariableValue & _reaction_y;
   const VariableValue & _reaction_neighbor_y;
 
-  const VariableValue & _reaction_pressure_x;
-  const VariableValue & _reaction_neighbor_pressure_x;
-  const VariableValue & _reaction_pressure_y;
-  const VariableValue & _reaction_neighbor_pressure_y;
-
   const VariableValue & _reaction_damp_x;
   const VariableValue & _reaction_neighbor_damp_x;
   const VariableValue & _reaction_damp_y;
   const VariableValue & _reaction_neighbor_damp_y;
+
+  const VariableValue & _reaction_pressure_x;
+  const VariableValue & _reaction_neighbor_pressure_x;
+  const VariableValue & _reaction_pressure_y;
+  const VariableValue & _reaction_neighbor_pressure_y;
 
   const VariableValue & _fluid_vel_x;
   const VariableValue & _fluid_vel_neighbor_x;

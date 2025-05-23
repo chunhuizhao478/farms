@@ -15,6 +15,7 @@ virtual Real computeQpResidual();
 virtual Real computeQpJacobian();
 virtual Real computeQpOffDiagJacobian(unsigned int jvar);
 private:
-const MaterialProperty<Real> & _coefficient; 
+
 const VariableValue & _u_old; 
+const MaterialProperty<Real> & _coefficient; 
 };
