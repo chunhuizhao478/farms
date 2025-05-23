@@ -27,6 +27,8 @@ protected:
   const MaterialProperty<RankTwoTensor> & _dstress;
   const MaterialProperty<RealVectorValue> & _interface_displacement_jump_old;
   const MaterialProperty<RealVectorValue> & _interface_displacement_jump_older;
+  const VariableValue & _interface_pressure_plus; 
+  const VariableValue & _interface_pressure_minus;
 
   const VariableValue & _reaction_x;
   const VariableValue & _reaction_neighbor_x;
@@ -43,8 +45,7 @@ protected:
   const VariableValue & _reaction_damp_y;
   const VariableValue & _reaction_neighbor_damp_y;
   
-  const VariableValue & _interface_pressure_plus; 
-  const VariableValue & _interface_pressure_minus;
+
   
   const MaterialProperty<Real> & _density;
 

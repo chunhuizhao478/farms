@@ -32,12 +32,12 @@ CZMComputeLocalTractionBaseQDRSF2D::CZMComputeLocalTractionBaseQDRSF2D(const Inp
     _a(getParam<Real>("a")),
     _b(getParam<Real>("b")),
     _L(getParam<Real>("L")),
-    _statevarini(getParam<Real>("statevarini")),
     _Vini(getParam<Real>("Vini")),
+    _statevarini(getParam<Real>("statevarini")),
     _sliprate(declarePropertyByName<Real>("sliprate")),
+    _slip(declarePropertyByName<Real>("slip")),
     _statevar(declarePropertyByName<Real>("statevar")),
-    _statevar_dot(declarePropertyByName<Real>("statevar_dot")),
-    _slip(declarePropertyByName<Real>("slip"))
+    _statevar_dot(declarePropertyByName<Real>("statevar_dot"))   
 
 {
 }

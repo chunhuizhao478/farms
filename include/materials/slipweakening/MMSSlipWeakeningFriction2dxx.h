@@ -52,10 +52,10 @@ protected:
   const Real _lambda; // First Lamé parameter
   const Real _mu;     // Shear modulus (second Lamé parameter)
   
-  // Derived parameters
-  static constexpr Real _tau_s = 50e6;    // Static friction strength (Pa)
-  static constexpr Real _tau_d = 26.25e6; // Dynamic friction strength (Pa)
-  
   // Parameters for the spatial derivatives of the manufactured solution
   const Real _width; // Width parameter for Gaussian spatial function
+
+    // Derived parameters
+  static constexpr Real _tau_s = 50e6;    // Static friction strength (Pa)
+  static constexpr Real _tau_d = 26.25e6; // Dynamic friction strength (Pa)
 };
