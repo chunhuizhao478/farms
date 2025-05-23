@@ -10,9 +10,9 @@
     [./msh]
       type = GeneratedMeshGenerator
       dim = 3
-      nx = 150
-      ny = 150
-      nz = 150
+      nx = 25
+      ny = 25
+      nz = 25
       xmin = -15000
       xmax = 15000
       ymin = -15000
@@ -252,7 +252,7 @@
     [./nodal_area]
       type = NodalArea
       variable = nodal_area
-      boundary = 'interface secondary_interface'
+      boundary = 'interface'
       execute_on = 'initial TIMESTEP_BEGIN'
     [../]
   []

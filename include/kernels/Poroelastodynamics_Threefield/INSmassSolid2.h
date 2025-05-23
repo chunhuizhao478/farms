@@ -13,6 +13,10 @@ virtual Real computeQpResidual();
 virtual Real computeQpJacobian();
 virtual Real computeQpOffDiagJacobian(unsigned int jvar);
 private:
+
+const VariableValue & _u_dot; 
+const VariableValue & _du_dot_du; 
+const MaterialProperty<Real> & _coefficient_M; 
 unsigned int _ndisp; // number of displacement components (1D, 2D or 3D)
 unsigned int _ux_var; // id of displacement components
 unsigned int _uy_var;

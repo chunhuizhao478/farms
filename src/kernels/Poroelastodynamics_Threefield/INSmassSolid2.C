@@ -12,6 +12,9 @@ return params;
 }
 INSmassSolid2::INSmassSolid2(const InputParameters & parameters)
 :Kernel(parameters),
+_u_dot(_var.uDot()), 
+_du_dot_du(_var.duDotDu()),
+_coefficient_M(getMaterialProperty<Real>("biot_modulus")),
 _ux_var(coupled("displacements",0)),
 _uy_var(_mesh.dimension() >= 2 ? coupled("displacements",1) : libMesh::invalid_uint),
 _uz_var(_mesh.dimension() == 3 ? coupled("displacements",2) : libMesh::invalid_uint),
@@ -31,15 +34,15 @@ return 0.0;
 
 Real div_u = _grad_ux[_qp](0) + _grad_uy[_qp](1) + _grad_uz[_qp](2);
 Real div_u_older = _grad_ux_older[_qp](0) + _grad_uy_older[_qp](1) + _grad_uz_older[_qp](2);
-Real div_v = ( div_u - div_u_older ) * 1 / _dt / 1;
+Real div_v = ( div_u - div_u_older ) / _dt ;
 
-return - _test[_i][_qp] * _coefficient[_qp] * div_v;
+return _test[_i][_qp] * (_coefficient[_qp] * div_v + _u_dot[_qp] * 1/_coefficient_M[_qp]);
 }
 Real
 INSmassSolid2::computeQpJacobian()
 {
 // Derivative wrt p is zero
-return 0.0;
+return _test[_i][_qp] * _phi[_j][_qp] * _du_dot_du[_qp] * 1/_coefficient_M[_qp];
 }
 Real
 INSmassSolid2::computeQpOffDiagJacobian(unsigned int jvar)
@@ -47,11 +50,11 @@ INSmassSolid2::computeQpOffDiagJacobian(unsigned int jvar)
 if (_dt == 0)
 return 0.0;
 else if (jvar == _ux_var)
-return -( 1 / 1 /_dt) *_grad_phi[_j][_qp](0)*_test[_i][_qp]*_coefficient[_qp];
+return ( 1 /_dt) *_grad_phi[_j][_qp](0)*_test[_i][_qp]*_coefficient[_qp];
 else if (jvar == _uy_var)
-return -( 1 / 1 /_dt) *_grad_phi[_j][_qp](1)*_test[_i][_qp]*_coefficient[_qp];
+return ( 1 /_dt) *_grad_phi[_j][_qp](1)*_test[_i][_qp]*_coefficient[_qp];
 else if (jvar == _uz_var)
-return -( 1 / 1 /_dt) *_grad_phi[_j][_qp](2)*_test[_i][_qp]*_coefficient[_qp];
+return ( 1 /_dt) *_grad_phi[_j][_qp](2)*_test[_i][_qp]*_coefficient[_qp];
 else
 return 0.0;
 }

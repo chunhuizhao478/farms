@@ -1,0 +1,196 @@
+import gmsh
+import math
+import numpy as np
+
+# Initialize GMSH
+gmsh.initialize()
+gmsh.model.add("Fault_and_Circular_Boundary")
+
+# Parameters for the domain
+x_min, x_max = -20000, 20000
+y_min, y_max = -10000, 10000
+
+# Parameters for the inclined fault
+fault_length = 40000
+fault_angle = math.radians(0)  
+x_fault_start = -fault_length / 2 * math.cos(fault_angle)
+y_fault_start = fault_length / 2 * math.sin(fault_angle)
+x_fault_end = fault_length / 2 * math.cos(fault_angle)
+y_fault_end = -fault_length / 2 * math.sin(fault_angle)
+
+# Element size parameters
+lc_fine_fault = 75  
+base_size = 300     
+
+# Create rectangular region around the fault line
+rect_width = 1500 
+rect_length = fault_length   
+
+# Create points for the domain corners
+p1 = gmsh.model.occ.addPoint(x_min, y_min, 0, base_size)
+p2 = gmsh.model.occ.addPoint(x_max, y_min, 0, base_size)
+p3 = gmsh.model.occ.addPoint(x_max, y_max, 0, base_size)
+p4 = gmsh.model.occ.addPoint(x_min, y_max, 0, base_size)
+
+# Create lines for the domain boundary
+l1 = gmsh.model.occ.addLine(p1, p2)
+l2 = gmsh.model.occ.addLine(p2, p3)
+l3 = gmsh.model.occ.addLine(p3, p4)
+l4 = gmsh.model.occ.addLine(p4, p1)
+
+# Create points and line for the fault
+fault_p1 = gmsh.model.occ.addPoint(x_fault_start, y_fault_start, 0, lc_fine_fault)
+fault_p2 = gmsh.model.occ.addPoint(x_fault_end, y_fault_end, 0, lc_fine_fault)
+fault_line = gmsh.model.occ.addLine(fault_p1, fault_p2)
+
+# Create curve loops for the domain
+domain_loop = gmsh.model.occ.addCurveLoop([l1, l2, l3, l4])
+surface = gmsh.model.occ.addPlaneSurface([domain_loop])
+
+# Calculate the corners of the rectangle
+dx = rect_length / 2
+dy = rect_width / 2
+
+rect_p1 = gmsh.model.occ.addPoint(-dx, dy, 0, lc_fine_fault)
+rect_p2 = gmsh.model.occ.addPoint(-dx, -dy, 0, lc_fine_fault)
+rect_p3 = gmsh.model.occ.addPoint(dx, -dy, 0, lc_fine_fault)
+rect_p4 = gmsh.model.occ.addPoint(dx, dy, 0, lc_fine_fault)
+
+# Create lines for the rectangle
+rect_l1 = gmsh.model.occ.addLine(rect_p1, rect_p2)
+rect_l2 = gmsh.model.occ.addLine(rect_p2, rect_p3)
+rect_l3 = gmsh.model.occ.addLine(rect_p3, rect_p4)
+rect_l4 = gmsh.model.occ.addLine(rect_p4, rect_p1)
+
+# Create a loop for the rectangle
+rect_loop = gmsh.model.occ.addCurveLoop([rect_l1, rect_l2, rect_l3, rect_l4])
+rect_surface = gmsh.model.occ.addPlaneSurface([rect_loop])
+
+# First synchronize before fragmentation
+gmsh.model.occ.synchronize()
+
+# Set transfinite curves before fragmentation
+n_points_width = int(rect_width / lc_fine_fault) + 1
+n_points_length = int(rect_length / lc_fine_fault) + 1
+
+gmsh.model.mesh.setTransfiniteCurve(rect_l1, n_points_width)
+gmsh.model.mesh.setTransfiniteCurve(rect_l2, n_points_length)
+gmsh.model.mesh.setTransfiniteCurve(rect_l3, n_points_width)
+gmsh.model.mesh.setTransfiniteCurve(rect_l4, n_points_length)
+
+# Create size field for graduated mesh
+gmsh.model.mesh.field.add("Distance", 1)
+gmsh.model.mesh.field.setNumbers(1, "PointsList", [fault_p1, fault_p2])
+gmsh.model.mesh.field.setNumber(1, "NNodesByEdge", 100)
+
+# Create threshold field for size transition
+gmsh.model.mesh.field.add("Threshold", 2)
+gmsh.model.mesh.field.setNumber(2, "IField", 1)
+gmsh.model.mesh.field.setNumber(2, "LcMin", lc_fine_fault)
+gmsh.model.mesh.field.setNumber(2, "LcMax", base_size)
+gmsh.model.mesh.field.setNumber(2, "DistMin", base_size)
+gmsh.model.mesh.field.setNumber(2, "DistMax", 5000)
+
+# Apply the size field
+gmsh.model.mesh.field.setAsBackgroundMesh(2)
+
+# Fragment the geometry
+out1, _ = gmsh.model.occ.fragment([(2, surface)], [(2, rect_surface)])
+gmsh.model.occ.synchronize()
+
+# After fragmentation, find the rectangular surface
+all_surfaces = gmsh.model.getEntities(2)
+rect_surface_tag = None
+for surf in all_surfaces:
+    com = gmsh.model.occ.getCenterOfMass(2, surf[1])
+    if abs(com[1]) < rect_width and abs(com[0]) < rect_length/2:
+        rect_surface_tag = surf[1]
+        break
+
+if rect_surface_tag is not None:
+    # Fragment with fault line
+    out2, _ = gmsh.model.occ.fragment([(2, rect_surface_tag)], [(1, fault_line)])
+    gmsh.model.occ.synchronize()
+    
+    # Find the new surface tags after final fragmentation
+    final_surfaces = gmsh.model.getEntities(2)
+    for surf in final_surfaces:
+        com = gmsh.model.occ.getCenterOfMass(2, surf[1])
+        if abs(com[1]) < rect_width and abs(com[0]) < rect_length/2:
+            gmsh.model.mesh.setTransfiniteSurface(surf[1], "Right")
+            gmsh.model.mesh.setRecombine(2, surf[1])
+
+
+# Mesh settings for quadratic quad elements
+gmsh.option.setNumber("Mesh.Algorithm", 8)           # Frontal-Delaunay for quads
+gmsh.option.setNumber("Mesh.RecombineAll", 1)        # Recombine triangles into quads
+gmsh.option.setNumber("Mesh.RecombinationAlgorithm", 2)  # More aggressive recombination
+gmsh.option.setNumber("Mesh.ElementOrder", 2)        # Changed to 2 for quadratic elements
+gmsh.option.setNumber("Mesh.SecondOrderLinear", 0)   # Keep curved edges for quadratic elements
+gmsh.option.setNumber("Mesh.SecondOrderIncomplete", 0)  # Use complete second order elements
+gmsh.option.setNumber("Mesh.OptimizeNetgen", 1)      # Optimize the mesh
+gmsh.option.setNumber("Mesh.MeshSizeMax", base_size) # Maximum element size
+gmsh.option.setNumber("Mesh.HighOrderOptimize", 0)   # Optimize high-order meshes (2 = optimization + elastic smoothing)
+
+# After all geometry operations and before meshing, define physical groups
+curves = gmsh.model.getEntities(1)
+bottom_curves = []
+right_curves = []
+top_curves = []
+left_curves = []
+
+# Find boundary curves using coordinates
+for dim, tag in curves:
+    start = gmsh.model.getBoundary([(1, tag)], False, False, False)[0]
+    end = gmsh.model.getBoundary([(1, tag)], False, False, False)[1]
+    
+    start_coord = gmsh.model.getValue(0, abs(start[1]), [])
+    end_coord = gmsh.model.getValue(0, abs(end[1]), [])
+    
+    if abs(start_coord[1] - y_min) < 1e-3 and abs(end_coord[1] - y_min) < 1e-3:
+        bottom_curves.append(tag)
+    elif abs(start_coord[1] - y_max) < 1e-3 and abs(end_coord[1] - y_max) < 1e-3:
+        top_curves.append(tag)
+    elif abs(start_coord[0] - x_min) < 1e-3 and abs(end_coord[0] - x_min) < 1e-3:
+        left_curves.append(tag)
+    elif abs(start_coord[0] - x_max) < 1e-3 and abs(end_coord[0] - x_max) < 1e-3:
+        right_curves.append(tag)
+
+# Create physical groups for the boundaries
+if bottom_curves:
+    group = gmsh.model.addPhysicalGroup(1, bottom_curves, 1)
+    gmsh.model.setPhysicalName(1, group, "bottom")
+
+if right_curves:
+    group = gmsh.model.addPhysicalGroup(1, right_curves, 2)
+    gmsh.model.setPhysicalName(1, group, "right")
+
+if top_curves:
+    group = gmsh.model.addPhysicalGroup(1, top_curves, 3)
+    gmsh.model.setPhysicalName(1, group, "top")
+
+if left_curves:
+    group = gmsh.model.addPhysicalGroup(1, left_curves, 4)
+    gmsh.model.setPhysicalName(1, group, "left")
+
+# Create physical group for the fault line
+fault_group = gmsh.model.addPhysicalGroup(1, [fault_line], 5)
+gmsh.model.setPhysicalName(1, fault_group, "fault")
+
+# Ensure all groups are saved
+gmsh.option.setNumber("Mesh.SaveAll", 1)
+gmsh.option.setNumber("Mesh.SaveGroupsOfNodes", 1)
+gmsh.option.setNumber("Mesh.SaveGroupsOfElements", 1)
+gmsh.option.setNumber("Mesh.Binary", 0)  # Save in ASCII format
+
+# Generate mesh
+gmsh.model.mesh.generate(2)
+
+# Save the mesh
+gmsh.write("Planar_fault_unstructured.msh")
+
+# Launch GMSH GUI
+gmsh.fltk.run()
+
+# Finalize GMSH
+gmsh.finalize()
