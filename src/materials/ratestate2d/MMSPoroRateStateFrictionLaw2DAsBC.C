@@ -53,13 +53,8 @@ MMSPoroRateStateFrictionLaw2DAsBC::MMSPoroRateStateFrictionLaw2DAsBC(const Input
     _rsf_L(getParam<Real>("rsf_L")),
     _delta_o(getParam<Real>("delta_o")),
     _density(getMaterialPropertyByName<Real>(_base_name + "density")),
-<<<<<<< HEAD
     _rhof(getMaterialPropertyByName<Real>(_base_name + "rhof")),
     _len2(coupledValue("nodal_area")),
-=======
-    _len2(coupledValue("nodal_area")),
-    _rhof(getMaterialPropertyByName<Real>(_base_name + "rhof")),
->>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
     _rot(getMaterialPropertyByName<RankTwoTensor>(_base_name + "czm_total_rotation")),
     _reaction_rsf_x(coupledValue("reaction_rsf_x")),
     _reaction_rsf_y(coupledValue("reaction_rsf_y")),
@@ -69,11 +64,6 @@ MMSPoroRateStateFrictionLaw2DAsBC::MMSPoroRateStateFrictionLaw2DAsBC(const Input
     _reaction_rsf_pressure_y(coupledValue("reaction_rsf_pressure_y")),
     _reaction_rsf_neighbor_pressure_x(coupledNeighborValue("reaction_rsf_pressure_x")),
     _reaction_rsf_neighbor_pressure_y(coupledNeighborValue("reaction_rsf_pressure_y")),
-<<<<<<< HEAD
-=======
-    _interface_pressure_plus(coupledNeighborValue("interface_pressure")),
-    _interface_pressure_minus(coupledValue("interface_pressure")),
->>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
     _reaction_damp_x(coupledValue("reaction_damp_x")),
     _reaction_damp_y(coupledValue("reaction_damp_y")),
     _reaction_damp_neighbor_x(coupledNeighborValue("reaction_damp_x")),
@@ -82,11 +72,8 @@ MMSPoroRateStateFrictionLaw2DAsBC::MMSPoroRateStateFrictionLaw2DAsBC(const Input
     _reaction_pressdamp_y(coupledValue("reaction_pressdamp_y")),
     _reaction_pressdamp_neighbor_x(coupledNeighborValue("reaction_pressdamp_x")),
     _reaction_pressdamp_neighbor_y(coupledNeighborValue("reaction_pressdamp_y")),
-<<<<<<< HEAD
     _interface_pressure_plus(coupledNeighborValue("interface_pressure")),
     _interface_pressure_minus(coupledValue("interface_pressure")),
-=======
->>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
     _alongfaultvel_strike_plus_old(getMaterialPropertyOldByName<Real>("alongfaultvel_strike_plus")),
     _alongfaultvel_strike_minus_old(getMaterialPropertyOldByName<Real>("alongfaultvel_strike_minus")),
     _alongfaultvel_normal_plus_old(getMaterialPropertyOldByName<Real>("alongfaultvel_normal_plus")),
