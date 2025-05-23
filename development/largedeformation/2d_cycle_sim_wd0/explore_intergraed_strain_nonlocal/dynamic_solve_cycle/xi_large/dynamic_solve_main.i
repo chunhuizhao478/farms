@@ -16,15 +16,9 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-600000 -600000 0'
+        coord = '0 -600000 0'
         new_boundary = corner_ptr
         input = sidesets
-    []
-    [./extranodeset2]
-        type = ExtraNodesetGenerator
-        coord = '600000 -600000 0'
-        new_boundary = corner_ptr2
-        input = extranodeset1
     []
     displacements = 'disp_x disp_y'
 []
@@ -256,7 +250,7 @@
     []
     [func_top_traction]
         type = ParsedFunction
-        expression = '11e6 + 1e-9 * 32.04e9 * t'
+        expression = '12e6 + 1e-9 * 32.04e9 * t'
     []
 []
 
@@ -359,7 +353,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_bottom_x */damp_bottom_y'
+    disable_objects = '*/inertia_x */inertia_y */get_accel_x */get_accel_y */get_vel_x */get_vel_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -383,7 +377,7 @@
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
-    # automatic_scaling = true
+    automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
     # dt = 1e-2
@@ -436,16 +430,21 @@
     [../]
 []
 
-[BCs] 
-    [preset]
-        type = PresetDisplacement
+[BCs]  
+    # 
+    [bc_fix_bottom_y]
+        type = DirichletBC
+        variable = disp_y
+        value = 0
+        boundary = bottom
+    []
+    #add initial shear stress
+    [initial_shear_stress]
+        type = FunctionNeumannBC
         variable = disp_x
-        acceleration = accel_x
-        velocity = vel_x
+        function = func_top_traction
         boundary = top
-        function = func_top_bc
-        beta = 0.25
-    []  
+    [] 
     # 
     [static_pressure_top]
         type = NeumannBC
@@ -453,14 +452,7 @@
         boundary = top
         value = -50e6
         displacements = 'disp_x disp_y'
-    []   
-    [static_pressure_bottom]
-        type = NeumannBC
-        variable = disp_y
-        boundary = bottom
-        value = 50e6
-        displacements = 'disp_x disp_y'
-    []  
+    []    
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
@@ -475,7 +467,7 @@
         value = -50e6
         displacements = 'disp_x disp_y'
     []       
-    # fix left ptr
+    # fix ptr
     [./fix_cptr1_x]
         type = DirichletBC
         variable = disp_x
@@ -486,13 +478,6 @@
         type = DirichletBC
         variable = disp_y
         boundary = corner_ptr
-        value = 0
-    []   
-    # fix right ptr
-    [./fix_cptr4_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = corner_ptr2
         value = 0
     []
     #add dampers
@@ -525,34 +510,34 @@
     #     density = 2700
     # []
     #
-    [damp_bottom_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_bottom_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
+    # [damp_bottom_x]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_x
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 0
+    #     boundary = bottom
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 3464
+    #     p_wave_speed = 6000
+    #     density = 2700
+    # []
+    # [damp_bottom_y]
+    #     type = FarmsNonReflectDashpotBC
+    #     variable = disp_y
+    #     displacements = 'disp_x disp_y'
+    #     velocities = 'vel_x vel_y'
+    #     accelerations = 'accel_x accel_y'
+    #     component = 1
+    #     boundary = bottom
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     shear_wave_speed = 3464
+    #     p_wave_speed = 6000
+    #     density = 2700
+    # []
     #
     [damp_left_x]
         type = FarmsNonReflectDashpotBC
@@ -644,7 +629,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../../static_solve_newbc/static_solve_out.e'
+      mesh = '../../static_solve/static_solve_out.e'
       system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true
