@@ -20,7 +20,6 @@ protected:
   Real _T2_o;
   Real _mu_d;
   Real _Dc;
-  Real _q;
   Real _nodal_area2;
 
   const MaterialProperty<Real> &_biot_coefficient;
@@ -47,15 +46,15 @@ protected:
   const VariableValue & _reaction_y;
   const VariableValue & _reaction_neighbor_y;
 
-  const VariableValue & _reaction_pressure_x;
-  const VariableValue & _reaction_neighbor_pressure_x;
-  const VariableValue & _reaction_pressure_y;
-  const VariableValue & _reaction_neighbor_pressure_y;
-
   const VariableValue & _reaction_damp_x;
   const VariableValue & _reaction_neighbor_damp_x;
   const VariableValue & _reaction_damp_y;
   const VariableValue & _reaction_neighbor_damp_y;
+
+  const VariableValue & _reaction_pressure_x;
+  const VariableValue & _reaction_neighbor_pressure_x;
+  const VariableValue & _reaction_pressure_y;
+  const VariableValue & _reaction_neighbor_pressure_y;
 
   const VariableValue & _jacobian_x;
   const VariableValue & _jacobian_neighbor_x;
