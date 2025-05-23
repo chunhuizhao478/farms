@@ -101,12 +101,6 @@ QuasiDynamicRSF::computeInterfaceTractionAndDerivatives()
     Real theta_dot = - V_new / _L * (f_new - _f_o + (_b - _a) * std::log(V_new  / _V_o));
     Real theta_new = computeStateVariable(theta_old, theta_dot, theta_dot_old);
 
-    std::cout 
-          << ", Tx = " << _tangential_traction[_qp]
-          << ", Ty = " <<  _normal_traction[_qp]
-          << ", p_f = " << p_f
-          << std::endl;
-
     // Store results
     _sliprate[_qp] = V_new;
     _statevar[_qp] = theta_new;

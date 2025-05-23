@@ -72,11 +72,17 @@ FaultShearTractionLagrangeMultiplier::computeQpOffDiagJacobian(Moose::DGJacobian
     switch (type)
     {
       case Moose::DGJacobianType::ElementElement:
-        return _test[_i][_qp] * _phi[_j][_qp];
+        return _test[_i][_qp] *  _phi[_j][_qp];
+      
       case Moose::DGJacobianType::NeighborNeighbor:
-        return -_test_neighbor[_i][_qp] * _phi_neighbor[_j][_qp]; // No contribution from element lambda to neighbor
-      default:
-        return 0.0;
+        return -_test_neighbor[_i][_qp] *  _phi_neighbor[_j][_qp];
+      
+      case Moose::DGJacobianType::ElementNeighbor:
+        return -_test[_i][_qp] *  _phi_neighbor[_j][_qp];
+      
+      case Moose::DGJacobianType::NeighborElement:
+        return _test_neighbor[_i][_qp] *  _phi[_j][_qp];
+      
     }
   }
    return 0.0;

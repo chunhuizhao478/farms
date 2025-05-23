@@ -15,7 +15,7 @@
         combinatorial_geometry = 'y<0'
         block_id = 1
     []
-    #add "Block0_Block1" and "Block1_Block0" interfaces
+
     [./split]
         type = BreakMeshByBlockGenerator
         input = new_block
@@ -349,6 +349,16 @@
     []
 []
 
+[Preconditioning]
+  [./smp]
+    type = SMP
+    full = true
+            petsc_options = '-snes_ksp_ew'
+        petsc_options_iname = '-ksp_gmres_restart -pc_type'
+        petsc_options_value = '100 asm'
+  [../]
+[]
+
 [Executioner]
     type = Transient
     dt = 0.00125
@@ -356,7 +366,7 @@
   #  num_steps = 10
     [TimeIntegrator]
         type = CentralDifference
-        solve_type = lumped
+        #solve_type = lumped
     []
 []
 

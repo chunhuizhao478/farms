@@ -60,6 +60,7 @@ PoroRateStateInterfaceKernelGlobalx::PoroRateStateInterfaceKernelGlobalx(const I
 Real
 PoroRateStateInterfaceKernelGlobalx::computeQpResidual(Moose::DGResidualType type)
 {
+
   Real r = 0;
   switch (type)
   {
@@ -72,6 +73,7 @@ PoroRateStateInterfaceKernelGlobalx::computeQpResidual(Moose::DGResidualType typ
       break;
   }
   return r;
+  
 }
 
 Real
