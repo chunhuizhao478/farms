@@ -54,10 +54,13 @@ protected:
   const VariableValue & _reaction_pressdamp_neighbor_x;
   const VariableValue & _reaction_pressdamp_neighbor_y;
 
+<<<<<<< HEAD
     // Permeability and interface pressure
   const VariableValue & _interface_pressure_plus;
   const VariableValue & _interface_pressure_minus;
 
+=======
+>>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
   
 
   //shear stress perturbatio
@@ -94,12 +97,23 @@ protected:
   const MaterialProperty<Real> & _traction_strike_old;
   const MaterialProperty<Real> & _traction_normal_old;
 
+<<<<<<< HEAD
 
   const VariableValue & _mms_sliprate;
    const VariableValue & _mms_shear;
    const VariableValue & _mms_normal;
    const VariableValue & _mms_pressure;
    
+=======
+  // Permeability and interface pressure
+  const VariableValue & _interface_pressure_plus;
+  const VariableValue & _interface_pressure_minus;
+
+   const VariableValue & _mms_shear;
+   const VariableValue & _mms_normal;
+   const VariableValue & _mms_pressure;
+   const VariableValue & _mms_sliprate;
+>>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
 
   // Fluid displacement and velocity
   const VariableValue & _fluid_disp_x;
