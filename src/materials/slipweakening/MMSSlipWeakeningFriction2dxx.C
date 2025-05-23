@@ -29,8 +29,13 @@ MMSSlipWeakeningFriction2dxx::validParams()
 
 MMSSlipWeakeningFriction2dxx::MMSSlipWeakeningFriction2dxx(const InputParameters & parameters)
   : CZMComputeLocalTractionTotalBase(parameters),
+<<<<<<< HEAD
     _nodal_area(coupledValue("nodal_area")),
     _T2_o(getParam<Real>("T2_o")), 
+=======
+    _T2_o(getParam<Real>("T2_o")), 
+    _nodal_area(coupledValue("nodal_area")),
+>>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
     _mu_d(getParam<Real>("mu_d")),
     _Dc(getParam<Real>("Dc")),
     _delta(getParam<Real>("delta")),
