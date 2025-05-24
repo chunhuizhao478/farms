@@ -61,15 +61,15 @@ protected:
   const VariableValue & _jacobian_y;
   const VariableValue & _jacobian_neighbor_y;
 
-  const VariableValue & _jacobian_pressure_x;
-  const VariableValue & _jacobian_neighbor_pressure_x;
-  const VariableValue & _jacobian_pressure_y;
-  const VariableValue & _jacobian_neighbor_pressure_y;
-
   const VariableValue & _jacobian_damp_x;
   const VariableValue & _jacobian_neighbor_damp_x;
   const VariableValue & _jacobian_damp_y;
   const VariableValue & _jacobian_neighbor_damp_y;
+
+  const VariableValue & _jacobian_pressure_x;
+  const VariableValue & _jacobian_neighbor_pressure_x;
+  const VariableValue & _jacobian_pressure_y;
+  const VariableValue & _jacobian_neighbor_pressure_y;
 
   const MaterialProperty<RealVectorValue> & _interface_fluid_vel_jump_old;
 
