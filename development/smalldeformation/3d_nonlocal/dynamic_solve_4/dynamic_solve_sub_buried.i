@@ -239,8 +239,8 @@
         duration = 1.0
         perturbation_type = 'damage'
         sigma_divisor = 1.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
+        # output_properties = 'shear_stress_perturbation damage_perturbation'
+        # outputs = exodus
     [] 
 [] 
 
@@ -298,12 +298,4 @@
         solution_uo = init_sol_components
         from_variable = initial_breakage_aux
     []
-[]
-
-[Outputs]
-    [./exodus]
-        type = Exodus
-        time_step_interval = 20
-        # show = 'Cd_aux'
-    [../]
 []
