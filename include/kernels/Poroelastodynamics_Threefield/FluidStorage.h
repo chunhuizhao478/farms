@@ -11,6 +11,7 @@
 
 #include "TimeKernel.h"
 #include "Material.h"
+#include "InertialForce.h"
 
 // Forward Declarations
 class TimeIntegrator;
