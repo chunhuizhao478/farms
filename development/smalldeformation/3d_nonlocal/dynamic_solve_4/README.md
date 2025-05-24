@@ -1,0 +1,1 @@
+50m, other same as dynamic_solve_2 [may24]

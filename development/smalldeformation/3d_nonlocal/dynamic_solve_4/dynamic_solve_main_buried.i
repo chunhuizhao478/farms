@@ -15,7 +15,7 @@ chi = 0.8
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large_buried.msh'
+        file = '../mesh/mesh_large_buried_50m.msh'
     []
     [./sidesets]
         input = msh
@@ -282,6 +282,25 @@ chi = 0.8
         variable = disp_z
         value = ${gravity_neg}
     []    
+    #
+    [stiffpropdamping_x]
+        type = StiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.2
+    []
+    [stiffpropdamping_y]
+        type = StiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.2
+    []
+    [stiffpropdamping_z]
+        type = StiffPropDampingImplicit
+        variable = disp_z
+        component = 2
+        zeta = 0.2
+    []
 []
 
 #parameters for the initial stress field
@@ -489,9 +508,9 @@ linear_variation_cutoff_distance = 15600
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 300
+        length_scale = 200
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 200 #radius kept the same scale of length scale
         weights = BAZANT3D
         execute_on = LINEAR
     []
@@ -509,7 +528,7 @@ linear_variation_cutoff_distance = 15600
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
     start_time = -1e-12
-    end_time = 5e-3 # dt used in the simulation
+    end_time = 1.25e-3 # dt used in the simulation
   []
 [../]
   
@@ -538,7 +557,7 @@ linear_variation_cutoff_distance = 15600
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 5e-3
+        dt = 1.25e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
@@ -938,7 +957,7 @@ linear_variation_cutoff_distance = 15600
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_buried_2_out.e'
+      mesh = '../static_solve/static_solve_buried_50m_out.e'
       system_variables = 'disp_x disp_y disp_z initial_xi_aux initial_I2_aux initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true

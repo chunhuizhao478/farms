@@ -2,7 +2,7 @@
 [Mesh]
 [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large_buried.msh'
+        file = '../mesh/mesh_large_buried_50m.msh'
     []
     [./sidesets]
         input = msh
@@ -56,7 +56,7 @@
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-8
-    cd_hat = 1e4
+    cd_hat = 1e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -257,19 +257,19 @@
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-6
     nl_max_its = 30
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-8
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
     # dt = 1e-2
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 5e-3
+        dt = 1.25e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
-        growth_factor = 1.25
+        growth_factor = 1.1
         max_time_step_bound = 1e7
     []
 []
@@ -277,7 +277,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_buried_2_out.e'
+      mesh = '../static_solve/static_solve_buried_50m_out.e'
       system_variables = 'initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true
