@@ -22,7 +22,7 @@ _nf(getMaterialProperty<Real>("porosity")),
 _K(getMaterialProperty<Real>("hydconductivity")),
 //_us_dot_dot(coupledDotDot("skeleton_acceleration")),
 _us_var_num(coupled("skeleton_acceleration")),
-_time_integrator(*_sys.getTimeIntegrator())
+_time_integrator(_sys.getTimeIntegrator())
 {
 //    _u_dot_old = &(_var.uDotOld());
     _du_dot_du = &(_var.duDotDu());

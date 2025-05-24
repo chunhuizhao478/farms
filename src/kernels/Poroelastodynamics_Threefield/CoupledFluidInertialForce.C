@@ -22,7 +22,7 @@ CoupledFluidInertialForce::CoupledFluidInertialForce(const InputParameters & par
     _wf(coupledValue("fluid_vel")),
     _wf_older(coupledValueOld("fluid_vel")),
     _w_var_num(coupled("fluid_vel")),
-    _time_integrator(*_sys.getTimeIntegrator())
+    _time_integrator(_sys.getTimeIntegrator())
 {
   this->addFEVariableCoupleableVectorTag(_time_integrator.uDotFactorTag());
   _wf_dot_factor_dof = &coupledVectorTagDofValue("fluid_vel", _time_integrator.uDotFactorTag());

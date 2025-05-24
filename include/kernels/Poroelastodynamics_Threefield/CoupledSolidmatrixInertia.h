@@ -29,5 +29,5 @@ const VariableValue * _us_dot_dot_dof; // skeleton acceleration for explicit
 const VariableValue * _dus_dot_dot_du;
 const VariableValue * _u_dot_factor;
 const VariableValue * _du_dot_du;
-  TimeIntegrator & _time_integrator;
+const TimeIntegrator & _time_integrator;;
 };

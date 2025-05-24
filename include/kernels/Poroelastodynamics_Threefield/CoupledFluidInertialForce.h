@@ -32,5 +32,5 @@ private:
   unsigned int _w_var_num;              // id of the Darcy vel variable
   
   /// The TimeIntegrator
-  TimeIntegrator & _time_integrator;
+  const TimeIntegrator & _time_integrator;
 };

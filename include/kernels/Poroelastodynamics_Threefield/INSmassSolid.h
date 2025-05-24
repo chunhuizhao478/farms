@@ -34,5 +34,5 @@ const VariablePhiGradient & _vectorx_phi;
 const VariablePhiGradient & _vectory_phi;
 const VariablePhiGradient & _vectorz_phi;
 /// The TimeIntegrator
- TimeIntegrator & _time_integrator;
+const TimeIntegrator & _time_integrator;
 };

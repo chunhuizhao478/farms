@@ -35,5 +35,5 @@ protected:
   const VariableValue * _du_dot_du;
   const VariableValue * _u_dot_factor_dof;
   /// The TimeIntegrator
-  TimeIntegrator & _time_integrator;
+  const TimeIntegrator & _time_integrator;
 };
