@@ -282,5 +282,5 @@
 # []
 
 [Debug]
-  show_execution_order = true
+  show_execution_order = ALWAYS
 []
