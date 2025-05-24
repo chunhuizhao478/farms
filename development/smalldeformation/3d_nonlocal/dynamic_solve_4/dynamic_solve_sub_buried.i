@@ -119,19 +119,6 @@
         order = FIRST
         family = MONOMIAL
     []
-    #
-    [Cd_aux]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [xio_aux]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [xid_aux]
-        order = FIRST
-        family = LAGRANGE
-    []
 []
 
 [Kernels]
@@ -210,12 +197,6 @@
         from_variable = initial_damage_aux
         execute_on = 'TIMESTEP_BEGIN'
     []
-    [get_Cd]
-        type = MaterialRealAux
-        variable = Cd_aux
-        property = Cd
-    []
-    #
 []
 
 [Materials]
@@ -260,8 +241,8 @@
     nl_rel_tol = 1e-6
     nl_max_its = 30
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-snes_type'
-    petsc_options_value = 'vinewtonrsls'
+    petsc_options_iname = '-snes_type -ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'vinewtonrsls gmres     hypre  boomeramg True'
     verbose = true
     # dt = 1e-2
     [TimeStepper]
