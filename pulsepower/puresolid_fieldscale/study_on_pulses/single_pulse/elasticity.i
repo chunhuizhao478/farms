@@ -6,9 +6,11 @@ density = 2600
 
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
-l = '${fparse 3/8 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size
+l = '${fparse 3/8 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
+
+#fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
 [Adaptivity]
   max_h_level = 3
