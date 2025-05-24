@@ -2,6 +2,7 @@
 
 #include "Kernel.h"
 #include "Material.h"
+#include "InertialForce.h"
 //Forward Declarations
 class FluidStorageNewmark : public Kernel
 {

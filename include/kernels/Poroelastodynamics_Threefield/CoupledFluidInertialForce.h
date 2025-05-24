@@ -2,6 +2,7 @@
 #pragma once
 #include "TimeKernel.h"
 #include "Material.h"
+#include "InertialForce.h"
 
 class TimeIntegrator;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TimeKernel.h"
+#include "InertialForce.h"
 
 // Forward Declarations
 class TimeIntegrator;
