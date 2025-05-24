@@ -2,7 +2,7 @@
 
 #include "TotalLagrangianStressDivergence.h"
 
-class StiffPropDampingImplicit : public TotalLagrangianStressDivergence
+class StiffPropDampingImplicit : public StressDivergenceTensors
 {
 public:
   static InputParameters validParams();

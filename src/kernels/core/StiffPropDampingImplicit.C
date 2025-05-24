@@ -10,7 +10,7 @@ registerMooseObject("farmsApp", StiffPropDampingImplicit);
 InputParameters
 StiffPropDampingImplicit::validParams()
 {
-  InputParameters params = TotalLagrangianStressDivergence::validParams();
+  InputParameters params = StressDivergenceTensors::validParams();
   params.addClassDescription(
       "Compute Stiffness Proportional Damping Residual");
   params.addRequiredRangeCheckedParam<unsigned int>("component",
@@ -24,7 +24,7 @@ StiffPropDampingImplicit::validParams()
 }
 
 StiffPropDampingImplicit::StiffPropDampingImplicit(const InputParameters & parameters)
-  : TotalLagrangianStressDivergence(parameters),
+  : StressDivergenceTensors(parameters),
   
   //Get stress tensor from previous time step
   _stress_old(getMaterialPropertyOldByName<RankTwoTensor>("stress")),
@@ -58,7 +58,7 @@ StiffPropDampingImplicit::computeQpJacobian()
   if ( _t < _dt)
     return 0.0;
   else
-    return TotalLagrangianStressDivergence::computeQpJacobian() * (_q);
+    return StressDivergenceTensors::computeQpJacobian() * (_q);
 }
 
 Real
@@ -68,5 +68,5 @@ StiffPropDampingImplicit::computeQpOffDiagJacobian(unsigned int jvar)
   if ( _t < _dt)
     return 0.0;
   else
-    return TotalLagrangianStressDivergence::computeQpOffDiagJacobian(jvar) * (_q);
+    return StressDivergenceTensors::computeQpOffDiagJacobian(jvar) * (_q);
 }
