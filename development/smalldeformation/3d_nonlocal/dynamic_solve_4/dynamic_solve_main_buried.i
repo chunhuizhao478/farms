@@ -284,19 +284,19 @@ chi = 0.8
     []    
     #
     [stiffpropdamping_x]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_x
         component = 0
         zeta = 0.2
     []
     [stiffpropdamping_y]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_y
         component = 1
         zeta = 0.2
     []
     [stiffpropdamping_z]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_z
         component = 2
         zeta = 0.2
