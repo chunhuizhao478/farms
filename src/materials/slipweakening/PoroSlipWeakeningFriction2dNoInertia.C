@@ -87,7 +87,7 @@ double PoroNoInertiacomputeT1oDistribution2D(Real x_coord)
   }
   else
   {
-      T1_o = 73.0e6;
+      T1_o = 70.0e6;
   }
   return T1_o;
 }
@@ -121,7 +121,7 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   Real dfd_disp =0;
   Real T2_o = _T2_o;
   Real area = _nodal_area[_qp];
-  Real area2 = _nodal_area2/2;
+  Real area2 = _nodal_area2/6;
 
   //pressure state 
    // Real p = std::max(_interface_pressure_plus[_qp], _interface_pressure_minus[_qp]);
@@ -240,6 +240,6 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   // std::cout << "shear " << shear << std::endl;
   
   _interface_traction[_qp] = traction;
-  _dinterface_traction_djump[_qp] = dtraction;
+  _dinterface_traction_djump[_qp] = 0;
 }
 }
