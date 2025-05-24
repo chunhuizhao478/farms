@@ -3,10 +3,9 @@
 # Harris, R. M.-P.-A. (2009). The SCEC/USGS Dynamic Earthquake Rupture Code Verification Exercise. Seismological Research Letters, vol. 80, no. 1, pages 119-126.
 
 [Mesh]
-<<<<<<< HEAD
     [./msh]
         type = FileMeshGenerator
-        file =  './Planar_fault_SECOND.msh'
+        file =  './Planar_fault_unstructured.msh'
     []
     [subdomain1]
         input = msh
@@ -30,48 +29,13 @@
     []     
 []
 
-=======
-
-    [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 100
-        ny = 100
-        xmin = -15000
-        xmax = 15000
-        ymin = -15000
-        ymax = 15000
-        elem_type = QUAD9
-        
-    []
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'y>0'
-        block_id = 1
-    []
-    [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block
-        split_interface = true
-        add_interface_on_two_sides = true
-    []
-    
-[]
-
-
->>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
 [GlobalParams]
     displacements = 'disp_x disp_y' 
     fluid_vel = 'fluid_vel_x fluid_vel_y'
     porepressure = 'p'
     q = 0.5
     Dc = 0.4
-<<<<<<< HEAD
-    elem_size = 56.25
-=======
-    elem_size = 100
->>>>>>> 6188d19945ce13b4debb058d2e709731e3f73bb8
+    elem_size = 75
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -535,7 +499,7 @@
 
 [Executioner]
     type = Transient
-    dt = 0.0005
+    dt = 0.00085
     end_time = 3.6
     automatic_scaling = true
     [TimeIntegrator]
@@ -546,6 +510,6 @@
 
 [Outputs]
     exodus = true
-    time_step_interval = 40
+    time_step_interval = 20
 []
 
