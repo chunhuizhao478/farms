@@ -897,7 +897,6 @@ linear_variation_cutoff_distance = 15600
         execute_on = 'TIMESTEP_BEGIN'
         # sub_cycling = true
         clone_parent_mesh = true
-        min_procs_per_app = 400
     [../]
 []
 
@@ -905,8 +904,8 @@ linear_variation_cutoff_distance = 15600
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub'
-        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
+        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub initial_damage_sub_aux'
+        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux alpha_damagedvar_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
     [push_disp]
@@ -972,4 +971,8 @@ linear_variation_cutoff_distance = 15600
         solution_uo = init_sol_components
         from_variable = initial_breakage_aux
     []    
+[]
+
+[Problem]
+    verbose_multiapps = true
 []

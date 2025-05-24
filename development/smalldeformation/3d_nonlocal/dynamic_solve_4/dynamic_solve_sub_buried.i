@@ -189,15 +189,15 @@
     []
 []
 
-[AuxKernels]
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_sub_aux
-        solution = init_sol_components
-        from_variable = initial_damage_aux
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-[]
+# [AuxKernels]
+#     [get_initial_damage]
+#         type = SolutionAux
+#         variable = initial_damage_sub_aux
+#         solution = init_sol_components
+#         from_variable = initial_damage_aux
+#         execute_on = 'TIMESTEP_BEGIN'
+#     []
+# []
 
 [Materials]
     # # damage
@@ -255,28 +255,32 @@
     []
 []
 
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = '../static_solve/static_solve_buried_50m_out.e'
-      system_variables = 'initial_damage_aux initial_breakage_aux'
-      timestep = LATEST
-      force_preaux = true
-      execute_on = 'INITIAL'
-    [../]
-[]
+# [UserObjects]
+#     [./init_sol_components]
+#       type = SolutionUserObject
+#       mesh = '../static_solve/static_solve_buried_50m_out.e'
+#       system_variables = 'initial_damage_aux initial_breakage_aux'
+#       timestep = LATEST
+#       force_preaux = true
+#       execute_on = 'INITIAL'
+#     [../]
+# []
 
-[ICs]
-    [alpha_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = alpha_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = initial_damage_aux
-    []  
-    [B_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = B_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = initial_breakage_aux
-    []
+# [ICs]
+#     [alpha_damagedvar_sub_ic]
+#         type = SolutionIC
+#         variable = alpha_damagedvar_sub
+#         solution_uo = init_sol_components
+#         from_variable = initial_damage_aux
+#     []  
+#     [B_damagedvar_sub_ic]
+#         type = SolutionIC
+#         variable = B_damagedvar_sub
+#         solution_uo = init_sol_components
+#         from_variable = initial_breakage_aux
+#     []
+# []
+
+[Debug]
+  show_execution_order = true
 []
