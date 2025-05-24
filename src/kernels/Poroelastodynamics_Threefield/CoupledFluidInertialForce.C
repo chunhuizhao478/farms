@@ -22,7 +22,7 @@ CoupledFluidInertialForce::CoupledFluidInertialForce(const InputParameters & par
     _wf(coupledValue("fluid_vel")),
     _wf_older(coupledValueOld("fluid_vel")),
     _w_var_num(coupled("fluid_vel")),
-    _time_integrator(_sys.getTimeIntegrator())
+    _time_integrator(_sys.getTimeIntegrator(_w_var_num))  // Fixed: pass variable number
 {
   this->addFEVariableCoupleableVectorTag(_time_integrator.uDotFactorTag());
   _wf_dot_factor_dof = &coupledVectorTagDofValue("fluid_vel", _time_integrator.uDotFactorTag());
@@ -35,8 +35,7 @@ CoupledFluidInertialForce::computeQpResidual()
 {
   if (_dt == 0)
     return 0.0;
-    
-  return _test[_i][_qp] * _rhof[_qp] * (*_wf_dot_factor)[_qp] ;
+  return _test[_i][_qp] * _rhof[_qp] * (*_wf_dot_factor)[_qp];
 }
 
 Real
@@ -50,7 +49,7 @@ CoupledFluidInertialForce::computeQpOffDiagJacobian(unsigned int jvar)
 {
   if (_dt == 0)
     return 0.0;
-    
+  
   if (jvar != _w_var_num)
     return 0.0;
     
