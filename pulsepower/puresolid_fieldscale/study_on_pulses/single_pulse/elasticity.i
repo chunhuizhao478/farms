@@ -514,5 +514,10 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   time_step_interval = 10
   print_linear_residuals = false
   csv = true
+  [checkpoint]
+      type = Checkpoint
+      time_step_interval = 20
+      num_files = 2
+  []
 []
 
