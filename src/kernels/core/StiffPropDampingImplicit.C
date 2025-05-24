@@ -27,10 +27,10 @@ StiffPropDampingImplicit::StiffPropDampingImplicit(const InputParameters & param
   : TotalLagrangianStressDivergence(parameters),
   
   //Get stress tensor from previous time step
-  _stress_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "pk1_stress")),
+  _stress_old(getMaterialPropertyOldByName<RankTwoTensor>("stress")),
   
   //Get stress tensor from current time step
-  _stress(getMaterialPropertyByName<RankTwoTensor>(_base_name + "pk1_stress")),
+  _stress(getMaterialPropertyByName<RankTwoTensor>("stress")),
   
   //Ratio factor 
   _q(getParam<Real>("zeta")),
