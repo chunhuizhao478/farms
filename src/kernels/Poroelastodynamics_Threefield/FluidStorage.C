@@ -33,7 +33,7 @@ FluidStorage::FluidStorage(const InputParameters & parameters)
   : TimeKernel(parameters),
    _lumping(getParam<bool>("lumping")),
    _Biot_modulus(getMaterialProperty<Real>("biot_modulus")),
-   _time_integrator(*_sys.getTimeIntegrator())
+   _time_integrator(_sys.getTimeIntegrator())
 {
     _du_dot_du = &(_var.duDotDu());
 

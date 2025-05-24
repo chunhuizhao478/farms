@@ -23,7 +23,7 @@ _vz_var(*getVar("displacements", 1)),
 _vectorx_phi(_assembly.gradPhi(_vx_var)),
 _vectory_phi(_assembly.gradPhi(_vy_var)),
 _vectorz_phi(_assembly.gradPhi(_vz_var)),
-_time_integrator(*_sys.getTimeIntegrator())
+_time_integrator(_sys.getTimeIntegrator())
 {
 
     this->addFEVariableCoupleableVectorTag(_time_integrator.uDotFactorTag());

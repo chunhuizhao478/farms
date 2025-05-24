@@ -21,7 +21,7 @@ _us_var_num(coupled("displacements")),
 _us_older(coupledDofValuesOlder("displacements")),
 _us_old(coupledDofValuesOld("displacements")),
 _us(coupledDofValues("displacements")),
-_time_integrator(*_sys.getTimeIntegrator())
+_time_integrator(_sys.getTimeIntegrator())
 {
     this->addFEVariableCoupleableVectorTag(_time_integrator.uDotFactorTag());
     this->addFEVariableCoupleableVectorTag(_time_integrator.uDotDotFactorTag());

@@ -17,7 +17,7 @@ FluidInertialForce::FluidInertialForce(const InputParameters & parameters)
 _lumping(getParam<bool>("lumping")),
 _rhof(getMaterialProperty<Real>("rhof")),
 _nf(getMaterialProperty<Real>("porosity")),
-_time_integrator(*_sys.getTimeIntegrator())
+_time_integrator(_sys.getTimeIntegrator())
 {
     _du_dot_du = &(_var.duDotDu());
 
