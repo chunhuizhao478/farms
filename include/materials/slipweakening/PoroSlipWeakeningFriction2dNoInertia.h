@@ -36,15 +36,15 @@ protected:
   const VariableValue & _reaction_y;
   const VariableValue & _reaction_neighbor_y;
 
-  const VariableValue & _reaction_pressure_x;
-  const VariableValue & _reaction_neighbor_pressure_x;
-  const VariableValue & _reaction_pressure_y;
-  const VariableValue & _reaction_neighbor_pressure_y;
-
   const VariableValue & _reaction_damp_x;
   const VariableValue & _reaction_neighbor_damp_x;
   const VariableValue & _reaction_damp_y;
   const VariableValue & _reaction_neighbor_damp_y;
+
+  const VariableValue & _reaction_pressure_x;
+  const VariableValue & _reaction_neighbor_pressure_x;
+  const VariableValue & _reaction_pressure_y;
+  const VariableValue & _reaction_neighbor_pressure_y;
   
 
   
