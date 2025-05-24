@@ -57,7 +57,7 @@ InertialForceFluid::InertialForceFluid(const InputParameters & parameters)
     _num_phases(_dictator.numPhases()),
     _fluid_density_qp(getMaterialProperty<std::vector<Real>>("PorousFlow_fluid_phase_density_qp")),
     _porosity(getMaterialProperty<Real>("PorousFlow_porosity_qp")),
-    _time_integrator(*_sys.getTimeIntegrator())
+    _time_integrator(_sys.getTimeIntegrator())
 {
   if (_has_beta && _has_gamma && _has_velocity && _has_acceleration)
   {
