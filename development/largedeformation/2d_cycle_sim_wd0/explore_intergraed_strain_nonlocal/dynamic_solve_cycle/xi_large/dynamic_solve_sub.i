@@ -2,7 +2,6 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
         file = '../../mesh/mesh_large.msh'
     []
     [./sidesets]
@@ -16,9 +15,15 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -600000 0'
+        coord = '-600000 -600000 0'
         new_boundary = corner_ptr
         input = sidesets
+    []
+    [./extranodeset2]
+        type = ExtraNodesetGenerator
+        coord = '600000 -600000 0'
+        new_boundary = corner_ptr2
+        input = extranodeset1
     []
 []
 
@@ -32,10 +37,10 @@
     shear_modulus_o = 32.04e9
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -1.0
+    xi_0 = -0.8
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -1.2
+    xi_d = -0.9
     
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
@@ -206,13 +211,6 @@
         from_variable = alpha_damagedvar_output
         execute_on = 'TIMESTEP_BEGIN'
     []
-    #get structural stress coefficient
-    # [get_structural_stress_coefficient]
-    #     type = MaterialRealAux
-    #     variable = structural_stress_coefficient_sub
-    #     property = structural_stress_coefficient
-    # []
-    #
     [get_Cd]
         type = MaterialRealAux
         variable = Cd_aux
@@ -224,7 +222,7 @@
         variable = xio_aux
         function = func_spatial_xio
     []
-    [get_cg]
+    [get_xid]
         type = FunctionAux
         variable = xid_aux
         function = func_spatial_xid
@@ -234,16 +232,16 @@
 [Functions]
     [func_spatial_xio]
         type = SpatialDamageBreakageParameters
-        W = 8e3 #half the total width
-        w = 4e3
-        max_val = -1.0
+        W = 1e3 #half the total width
+        w = 1e3
+        max_val = -0.8
         min_val = 1.8
     []
     [func_spatial_xid]
         type = SpatialDamageBreakageParameters
-        W = 8e3 #half the total width
-        w = 4e3
-        max_val = -1.2
+        W = 1e3 #half the total width
+        w = 1e3
+        max_val = -0.9
         min_val = 1.8
     []
 []
@@ -258,9 +256,10 @@
         #use strain rate dependent Cd
         use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
-        #
+        #use spatial xio
         use_spatial_xio = true
         xio_aux = xio_aux
+        #use spatial xid
         use_spatial_xid = true
         xid_aux = xid_aux
     []
@@ -268,7 +267,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 0'
-        peak_value = 0
+        peak_value = 0.3
         thickness = 200
         length = 2000
         duration = 1.0
@@ -295,8 +294,8 @@
     nl_rel_tol = 1e-8
     nl_max_its = 10
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-snes_type -ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'vinewtonrsls gmres     hypre  boomeramg True'
+    petsc_options_iname = '-snes_type'
+    petsc_options_value = 'vinewtonrsls'
     verbose = true
     # dt = 1e-2
     [TimeStepper]
@@ -338,7 +337,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 50
-        show = 'Cd_aux xio_aux xid_aux'
+        time_step_interval = 40
+        show = 'Cd_aux'
     [../]
 []
