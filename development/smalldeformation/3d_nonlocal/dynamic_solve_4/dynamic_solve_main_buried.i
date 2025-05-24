@@ -897,6 +897,7 @@ linear_variation_cutoff_distance = 15600
         execute_on = 'TIMESTEP_BEGIN'
         # sub_cycling = true
         clone_parent_mesh = true
+        min_procs_per_app = 400
     [../]
 []
 
