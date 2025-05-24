@@ -236,14 +236,14 @@
         type = SpatialDamageBreakageParameters
         W = 8e3 #half the total width
         w = 4e3
-        max_val = -0.8
+        max_val = -1.0
         min_val = 1.8
     []
     [func_spatial_xid]
         type = SpatialDamageBreakageParameters
         W = 8e3 #half the total width
         w = 4e3
-        max_val = -0.9
+        max_val = -1.2
         min_val = 1.8
     []
 []
