@@ -281,6 +281,6 @@
 #     []
 # []
 
-[Debug]
-  show_execution_order = ALWAYS
-[]
+# [Debug]
+#   show_execution_order = ALWAYS
+# []
