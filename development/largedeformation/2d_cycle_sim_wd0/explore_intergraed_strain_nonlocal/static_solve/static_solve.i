@@ -236,19 +236,19 @@
 []
 
 [BCs]
+    [bc_fix_top_x]
+        type = DirichletBC
+        variable = disp_x
+        value = 0
+        boundary = top
+    []
+    #
     [bc_fix_bottom_y]
         type = DirichletBC
         variable = disp_y
         value = 0
         boundary = bottom
     []
-    #add initial shear stress
-    [initial_shear_stress]
-        type = NeumannBC
-        variable = disp_x
-        value = 12e6
-        boundary = top
-    [] 
     # 
     [static_pressure_top]
         type = NeumannBC

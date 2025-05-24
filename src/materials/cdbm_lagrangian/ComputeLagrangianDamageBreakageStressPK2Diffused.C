@@ -85,7 +85,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat")),
   //---------------------------------------------------------------------------------------------//
   //add shear stress perturbation
-  _shear_stress_perturbation(getMaterialProperty<Real>("shear_stress_perturbation"))
+  _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation"))
 {
 }
 
@@ -563,15 +563,15 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   // Ee = 0.5 * (Ee + Ee.transpose());
   // //----------------------------------------------------------------------------//
 
-  //Compute shear perturbation
-  //----------------------------------------------------------------------------//
-  Real shear_strain_perturbation = 0.0;
-  if (_shear_stress_perturbation[_qp] != 0){
-    shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * _shear_modulus[_qp]);
-    Ee(0,1) += shear_strain_perturbation;
-    Ee(1,0) += shear_strain_perturbation;
-  }
-  //----------------------------------------------------------------------------//
+  // //Compute shear perturbation
+  // //----------------------------------------------------------------------------//
+  // Real shear_strain_perturbation = 0.0;
+  // if (_shear_stress_perturbation[_qp] != 0){
+  //   shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * _shear_modulus[_qp]);
+  //   Ee(0,1) += shear_strain_perturbation;
+  //   Ee(1,0) += shear_strain_perturbation;
+  // }
+  // //----------------------------------------------------------------------------//
 
   /* Compute I1 */
   Real I1 = Ee.trace();
@@ -594,6 +594,14 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
+
+  /* add pore pressure */
+  if (_shear_stress_perturbation[_qp] != 0){
+    std::cout << "Shear stress perturbation: " << _shear_stress_perturbation[_qp] << std::endl;
+    sigma_total(0,0) -= _shear_stress_perturbation[_qp];
+    sigma_total(1,1) -= _shear_stress_perturbation[_qp];
+    sigma_total(2,2) -= _shear_stress_perturbation[_qp];
+  }
 
   // add structral stress
   for (unsigned int i = 0; i < 3; ++i){

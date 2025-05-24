@@ -236,7 +236,7 @@ ComputeDamageBreakageStress3DDynamicCDBMDebug::computeQpStress()
   //   eps_e(1,0) += shear_strain_perturbation;
   // }  
 
-  const Real epsilon = 1e-16;
+  const Real epsilon = 1e-12;
   Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
   Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
   Real xi = I1/std::sqrt(I2); //catch the nan error in the initial solve
@@ -248,14 +248,14 @@ ComputeDamageBreakageStress3DDynamicCDBMDebug::computeQpStress()
   RankTwoTensor sigma_d;
   const auto I = RankTwoTensor::Identity();
 
-  /* Compute effective elasticity tensor */
-  // C_ijkl = lambda_eff * delta_ij * delta_kl + 2 * mu_eff * (delta_ik * delta_jl + delta_il * delta_jk);
-  // sigma_ij = lambda_eff * delta_ij * I1 + 2 * mu_eff * eps_ij;
-  // lambda_eff = (1 - B) * (lambda_out - gamma_damaged_out / xi) + B * (2 * a2 + a1 / xi + 3 * a3 * xi)
-  // mu_eff = (1 - B) * 1/2 * (2 * shear_modulus_out - gamma_damaged_out * xi) + B * 1/2 * (2 * a0 + a1 * xi - a3 * std::pow(xi, 3))
-  Real lambda_eff = (1 - B_out) * (lambda_out - gamma_damaged_out / xi) + B_out * (2 * a2 + a1 / xi + 3 * a3 * xi);
-  Real mu_eff = (1 - B_out) * 0.5 * (2 * shear_modulus_out - gamma_damaged_out * xi) + B_out * 0.5 * (2 * a0 + a1 * xi - a3 * std::pow(xi, 3));
-  _Eeff[_qp].fillFromInputVector({lambda_eff, mu_eff}, RankFourTensor::symmetric_isotropic);
+  // /* Compute effective elasticity tensor */
+  // // C_ijkl = lambda_eff * delta_ij * delta_kl + 2 * mu_eff * (delta_ik * delta_jl + delta_il * delta_jk);
+  // // sigma_ij = lambda_eff * delta_ij * I1 + 2 * mu_eff * eps_ij;
+  // // lambda_eff = (1 - B) * (lambda_out - gamma_damaged_out / xi) + B * (2 * a2 + a1 / xi + 3 * a3 * xi)
+  // // mu_eff = (1 - B) * 1/2 * (2 * shear_modulus_out - gamma_damaged_out * xi) + B * 1/2 * (2 * a0 + a1 * xi - a3 * std::pow(xi, 3))
+  // Real lambda_eff = (1 - B_out) * (lambda_out - gamma_damaged_out / xi) + B_out * (2 * a2 + a1 / xi + 3 * a3 * xi);
+  // Real mu_eff = (1 - B_out) * 0.5 * (2 * shear_modulus_out - gamma_damaged_out * xi) + B_out * 0.5 * (2 * a0 + a1 * xi - a3 * std::pow(xi, 3));
+  // _Eeff[_qp].fillFromInputVector({lambda_eff, mu_eff}, RankFourTensor::symmetric_isotropic);
 
   /* Compute stress */
   sigma_s = (lambda_out - gamma_damaged_out / xi) * I1 * RankTwoTensor::Identity() + (2 * shear_modulus_out - gamma_damaged_out * xi) * eps_e;
@@ -282,25 +282,25 @@ ComputeDamageBreakageStress3DDynamicCDBMDebug::computeQpStress()
   _xi[_qp] = xi;
   _sigma_d[_qp] = sigma_d;
 
-  // stress = C * e
-  _stress[_qp] = _Eeff[_qp] * _eps_e[_qp];
-
-  // Assign value for elastic strain, which is equal to the mechanical strain
-  _elastic_strain[_qp] = _eps_e[_qp];
-
-  // Compute dstress_dstrain
-  _Jacobian_mult[_qp] = _Eeff[_qp];
-
-  // // Rotate the stress state to the current configuration
-  // _stress[_qp] = sigma_total;
+  // // stress = C * e
+  // _stress[_qp] = _Eeff[_qp] * _eps_e[_qp];
 
   // // Assign value for elastic strain, which is equal to the mechanical strain
-  // _elastic_strain[_qp] = eps_e;
+  // _elastic_strain[_qp] = _eps_e[_qp];
 
-  // // Compute tangent
-  // RankFourTensor tangent;
-  // computeQpTangentModulus(tangent,I1,I2,xi,eps_e);
-  // _Jacobian_mult[_qp] = tangent;
+  // // Compute dstress_dstrain
+  // _Jacobian_mult[_qp] = _Eeff[_qp];
+
+  // Rotate the stress state to the current configuration
+  _stress[_qp] = sigma_total;
+
+  // Assign value for elastic strain, which is equal to the mechanical strain
+  _elastic_strain[_qp] = eps_e;
+
+  // Compute tangent
+  RankFourTensor tangent;
+  computeQpTangentModulus(tangent,I1,I2,xi,eps_e);
+  _Jacobian_mult[_qp] = tangent;
 
   //Compute equivalent strain rate
   RankTwoTensor epsilon_rate = (eps_p - _eps_p_old[_qp])/_dt;

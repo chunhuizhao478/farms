@@ -244,7 +244,7 @@
 [Functions]
     [func_top_bc]
         type = ParsedFunction
-        expression = 'if (t>dt, 3400 + 1e-8 * t, 3400)'
+        expression = 'if (t>dt, 1e-8 * t, 0)'
         symbol_names = 'dt'
         symbol_values = '1e-2'
     []
@@ -321,12 +321,12 @@
     [damage_perturbation]
         type = PerturbationRadial
         nucl_center = '0 0 0'
-        peak_value = 0
+        peak_value = 30e6
         thickness = 200
-        length = 2000
+        length = 1000
         duration = 1.0
         perturbation_type = 'shear_stress'
-        sigma_divisor = 2.0
+        sigma_divisor = 1.0
         output_properties = 'shear_stress_perturbation damage_perturbation'
         outputs = exodus
     []
@@ -379,7 +379,7 @@
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
     # nl_forced_its = 3
-    line_search = 'bt'
+    # line_search = 'bt'
     # dt = 1e-2
     verbose = true
     [TimeStepper]
@@ -425,8 +425,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+      time_step_interval = 50
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 shear_stress_perturbation'
     [../]
     [checkpoint]
         type = Checkpoint
@@ -435,7 +435,16 @@
     []
 []
 
-[BCs]  
+[BCs] 
+    [preset]
+        type = PresetDisplacement
+        variable = disp_x
+        acceleration = accel_x
+        velocity = vel_x
+        boundary = top
+        function = func_top_bc
+        beta = 0.25
+    []  
     # 
     [bc_fix_bottom_y]
         type = DirichletBC
@@ -443,13 +452,6 @@
         value = 0
         boundary = bottom
     []
-    #add initial shear stress
-    [initial_shear_stress]
-        type = FunctionNeumannBC
-        variable = disp_x
-        function = func_top_traction
-        boundary = top
-    [] 
     # 
     [static_pressure_top]
         type = NeumannBC

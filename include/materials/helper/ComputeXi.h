@@ -31,6 +31,8 @@ protected:
   /// @brief Define the xi as material property
   MaterialProperty<Real> & _xi;
 
+  MaterialProperty<Real> & _xi_name2;
+
   MaterialProperty<Real> & _I1;
 
   MaterialProperty<Real> & _I2;

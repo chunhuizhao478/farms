@@ -26,6 +26,7 @@ ComputeXi::validParams()
 ComputeXi::ComputeXi(const InputParameters & parameters)
   : Material(parameters),
     _xi(declareProperty<Real>("strain_invariant_ratio")),
+    _xi_name2(declareProperty<Real>("xi_initial")),
     _I1(declareProperty<Real>("I1_initial")),
     _I2(declareProperty<Real>("I2_initial")),
     _mechanical_strain(getMaterialProperty<RankTwoTensor>("mechanical_strain"))
@@ -39,6 +40,7 @@ ComputeXi::initQpStatefulProperties()
   _I1[_qp] = 0.0;
   _I2[_qp] = 0.0;
   _xi[_qp] = -std::sqrt(3);
+  _xi_name2[_qp] = -std::sqrt(3);
 }
 
 void
@@ -47,4 +49,5 @@ ComputeXi::computeQpProperties()
     _I1[_qp] = (_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2));
     _I2[_qp] = _mechanical_strain[_qp](0,0)*_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)*_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2)*_mechanical_strain[_qp](2,2)+2*_mechanical_strain[_qp](0,1)*_mechanical_strain[_qp](0,1)+2*_mechanical_strain[_qp](0,2)*_mechanical_strain[_qp](0,2)+2*_mechanical_strain[_qp](1,2)*_mechanical_strain[_qp](1,2);
     _xi[_qp] = (_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2))/std::sqrt(_mechanical_strain[_qp](0,0)*_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)*_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2)*_mechanical_strain[_qp](2,2)+2*_mechanical_strain[_qp](0,1)*_mechanical_strain[_qp](0,1)+2*_mechanical_strain[_qp](0,2)*_mechanical_strain[_qp](0,2)+2*_mechanical_strain[_qp](1,2)*_mechanical_strain[_qp](1,2));
+    _xi_name2[_qp] = (_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2))/std::sqrt(_mechanical_strain[_qp](0,0)*_mechanical_strain[_qp](0,0)+_mechanical_strain[_qp](1,1)*_mechanical_strain[_qp](1,1)+_mechanical_strain[_qp](2,2)*_mechanical_strain[_qp](2,2)+2*_mechanical_strain[_qp](0,1)*_mechanical_strain[_qp](0,1)+2*_mechanical_strain[_qp](0,2)*_mechanical_strain[_qp](0,2)+2*_mechanical_strain[_qp](1,2)*_mechanical_strain[_qp](1,2));
 }
