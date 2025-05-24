@@ -56,7 +56,7 @@
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-8
-    cd_hat = 1e4
+    cd_hat = 1e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -233,7 +233,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 -7500'
-        peak_value = 0
+        peak_value = 0.3
         thickness = 200
         length = 1000
         duration = 1.0
@@ -257,9 +257,9 @@
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
+    nl_rel_tol = 1e-6
     nl_max_its = 30
-    nl_abs_tol = 1e-10
+    nl_abs_tol = 1e-8
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
@@ -268,7 +268,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1.25e-3
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
+        optimal_iterations = 20
         growth_factor = 1.1
         max_time_step_bound = 1e7
     []

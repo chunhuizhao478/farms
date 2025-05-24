@@ -282,6 +282,25 @@ chi = 0.8
         variable = disp_z
         value = ${gravity_neg}
     []    
+    #
+    [stiffpropdamping_x]
+        type = StiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.2
+    []
+    [stiffpropdamping_y]
+        type = StiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.2
+    []
+    [stiffpropdamping_z]
+        type = StiffPropDampingImplicit
+        variable = disp_z
+        component = 2
+        zeta = 0.2
+    []
 []
 
 #parameters for the initial stress field
@@ -443,18 +462,18 @@ linear_variation_cutoff_distance = 15600
         outputs = exodus
     []
     #shear stress perturbation
-    # [damage_perturbation]
-    #     type = PerturbationRadial
-    #     nucl_center = '0 0 0'
-    #     peak_value = 0
-    #     thickness = 200
-    #     length = 2000
-    #     duration = 1.0
-    #     perturbation_type = 'shear_stress'
-    #     sigma_divisor = 2.0
-    #     output_properties = 'shear_stress_perturbation damage_perturbation'
-    #     outputs = exodus
-    # []
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 0
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
+    []
     # [./strain_from_initial_stress]
     #     type = ComputeDamageBreakageEigenstrainFromInitialStress
     #     initial_stress = 'func_neg_xx_stress func_pos_xy_stress 0  
@@ -472,18 +491,18 @@ linear_variation_cutoff_distance = 15600
         expression = 'alpha_damagedvar_aux'
         outputs = exodus
     []
-    [damage_perturbation]
-        type = PerturbationRadial
-        nucl_center = '0 0 -7500'
-        peak_value = 30e6
-        thickness = 200
-        length = 1000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
-        sigma_divisor = 1.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
-    []
+    # [damage_perturbation]
+    #     type = PerturbationRadial
+    #     nucl_center = '0 0 -7500'
+    #     peak_value = 20e6
+    #     thickness = 200
+    #     length = 1000
+    #     duration = 1.0
+    #     perturbation_type = 'shear_stress'
+    #     sigma_divisor = 1.0
+    #     output_properties = 'shear_stress_perturbation damage_perturbation'
+    #     outputs = exodus
+    # []
 [] 
 
 [UserObjects]
@@ -491,7 +510,7 @@ linear_variation_cutoff_distance = 15600
         type = ElkRadialAverage
         length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 300 #radius kept the same scale of length scale
         weights = BAZANT3D
         execute_on = LINEAR
     []
@@ -540,7 +559,7 @@ linear_variation_cutoff_distance = 15600
         type = FarmsIterationAdaptiveDT
         dt = 1.25e-3
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
+        optimal_iterations = 20
         growth_factor = 1.25
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
