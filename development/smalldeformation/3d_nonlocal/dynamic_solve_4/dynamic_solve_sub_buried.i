@@ -256,7 +256,7 @@
     # dt = 1e-2
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1.25e-3
+        dt = 1e-4
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
