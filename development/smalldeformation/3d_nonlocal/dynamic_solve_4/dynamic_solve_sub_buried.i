@@ -191,10 +191,9 @@
 
 [AuxKernels]
     [get_initial_damage]
-        type = MaterialRealAux
+        type = FunctionAux
         variable = initial_damage_sub_aux
-        property = initial_damage
-        execute_on = 'INITIAL'
+        function = function_damage_surround
     []
 []
 
@@ -222,17 +221,18 @@
         # output_properties = 'shear_stress_perturbation damage_perturbation'
         # outputs = exodus
     [] 
-    [initial_damage_surround]
-        type = InitialDamageCycleSim3DPlane
+[] 
+
+[Function]
+    [function_damage_surround]
+        type = InitialDamageCycleSim3DPlaneFunction
         sigma = 5e2
         peak_val = 0.7
         len_of_fault_strike = 14000
         len_of_fault_dip = 10000
         nucl_center = '0 0 -10000'
-        output_properties = 'initial_damage'      
-        outputs = exodus
     []
-[] 
+[]
 
 [Preconditioning]
     [smp]
@@ -264,22 +264,11 @@
     []
 []
 
-# [UserObjects]
-#     [./init_sol_components]
-#       type = SolutionUserObject
-#       mesh = '../static_solve/static_solve_buried_50m_out.e'
-#       system_variables = 'initial_damage_aux initial_breakage_aux'
-#       timestep = LATEST
-#       force_preaux = true
-#       execute_on = 'INITIAL'
-#     [../]
-# []
-
 [ICs]
     [alpha_damagedvar_sub_ic]
-        type = FunctorIC
+        type = FunctionIC
         variable = alpha_damagedvar_sub
-        functor = initial_damage_sub_aux
+        function = function_damage_surround
     []  
     [B_damagedvar_sub_ic]
         type = ConstantIC
@@ -287,10 +276,6 @@
         value = 0
     []
 []
-
-# [Debug]
-#   show_execution_order = ALWAYS
-# []
 
 [Outputs]
     exodus = true
