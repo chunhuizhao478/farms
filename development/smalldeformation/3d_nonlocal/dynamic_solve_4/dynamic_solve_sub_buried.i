@@ -293,8 +293,5 @@
 # []
 
 [Outputs]
-    [./nemesis]
-        type = Nemesis
-        time_step_interval = 1
-    [../]
+    exodus = true
 []
