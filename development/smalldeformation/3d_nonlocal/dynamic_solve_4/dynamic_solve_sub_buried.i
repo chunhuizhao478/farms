@@ -189,15 +189,14 @@
     []
 []
 
-# [AuxKernels]
-#     [get_initial_damage]
-#         type = SolutionAux
-#         variable = initial_damage_sub_aux
-#         solution = init_sol_components
-#         from_variable = initial_damage_aux
-#         execute_on = 'TIMESTEP_BEGIN'
-#     []
-# []
+[AuxKernels]
+    [get_initial_damage]
+        type = MaterialRealAux
+        variable = initial_damage_sub_aux
+        property = initial_damage
+        execute_on = 'INITIAL'
+    []
+[]
 
 [Materials]
     # # damage
@@ -223,6 +222,16 @@
         # output_properties = 'shear_stress_perturbation damage_perturbation'
         # outputs = exodus
     [] 
+    [initial_damage_surround]
+        type = InitialDamageCycleSim3DPlane
+        sigma = 5e2
+        peak_val = 0.7
+        len_of_fault_strike = 14000
+        len_of_fault_dip = 10000
+        nucl_center = '0 0 -10000'
+        output_properties = 'initial_damage'      
+        outputs = exodus
+    []
 [] 
 
 [Preconditioning]
@@ -266,20 +275,18 @@
 #     [../]
 # []
 
-# [ICs]
-#     [alpha_damagedvar_sub_ic]
-#         type = SolutionIC
-#         variable = alpha_damagedvar_sub
-#         solution_uo = init_sol_components
-#         from_variable = initial_damage_aux
-#     []  
-#     [B_damagedvar_sub_ic]
-#         type = SolutionIC
-#         variable = B_damagedvar_sub
-#         solution_uo = init_sol_components
-#         from_variable = initial_breakage_aux
-#     []
-# []
+[ICs]
+    [alpha_damagedvar_sub_ic]
+        type = FunctorIC
+        variable = alpha_damagedvar_sub
+        functor = initial_damage_sub_aux
+    []  
+    [B_damagedvar_sub_ic]
+        type = ConstantIC
+        variable = B_damagedvar_sub
+        value = 0
+    []
+[]
 
 # [Debug]
 #   show_execution_order = ALWAYS

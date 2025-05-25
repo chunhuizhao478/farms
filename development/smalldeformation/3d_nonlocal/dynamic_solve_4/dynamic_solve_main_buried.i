@@ -471,9 +471,9 @@ linear_variation_cutoff_distance = 15600
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 300
+        length_scale = 200
         prop_name = strain_invariant_ratio
-        radius = 300 #radius kept the same scale of length scale
+        radius = 200 #radius kept the same scale of length scale
         weights = BAZANT3D
         execute_on = 'TIMESTEP_END'
     []
@@ -491,7 +491,7 @@ linear_variation_cutoff_distance = 15600
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */stiffpropdamping_x */stiffpropdamping_y */stiffpropdamping_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_top_x */damp_top_y */damp_top_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
     start_time = -1e-12
-    end_time = 1e-4 # dt used in the simulation
+    end_time = 1.25e-3 # dt used in the simulation
   []
 [../]
   
@@ -520,7 +520,7 @@ linear_variation_cutoff_distance = 15600
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-4
+        dt = 1.25e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
@@ -528,7 +528,7 @@ linear_variation_cutoff_distance = 15600
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
-        constant_dt_on_overspeed = 2.5e-3
+        constant_dt_on_overspeed = 5e-3
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
         maxvelz = 'maxvelz'
@@ -946,8 +946,8 @@ linear_variation_cutoff_distance = 15600
     [pull_resid]
         type = MultiAppCopyTransfer
         from_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub initial_damage_sub_aux'
-        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux alpha_damagedvar_aux'
+        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub'
+        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
     [push_disp]
