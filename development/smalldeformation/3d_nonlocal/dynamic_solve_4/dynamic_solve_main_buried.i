@@ -512,7 +512,7 @@ linear_variation_cutoff_distance = 15600
         prop_name = strain_invariant_ratio
         radius = 300 #radius kept the same scale of length scale
         weights = BAZANT3D
-        execute_on = LINEAR
+        execute_on = TIMESTEP_END
     []
 []
 
