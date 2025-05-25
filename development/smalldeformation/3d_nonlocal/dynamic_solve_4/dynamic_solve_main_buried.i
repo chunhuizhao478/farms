@@ -139,10 +139,25 @@ chi = 0.8
         family = MONOMIAL
     []
     #
+    [gradx_alpha_damagedvar]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [grady_alpha_damagedvar]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    #spatial damage parameters
+    [cg_aux]
+        order = FIRST
+        family = LAGRANGE
+    []
+    #
     [nonlocal_xi]
         order = FIRST
         family = MONOMIAL
     []
+    
 []
 
 [AuxKernels]
@@ -417,8 +432,8 @@ linear_variation_cutoff_distance = 15600
         type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
         alpha_damagedvar_aux = alpha_damagedvar_aux
         B_damagedvar_aux = B_damagedvar_aux
-        # output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
-        # outputs = exodus
+        output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
+        outputs = exodus
         block = '1 3'
     []
     #elastic material
@@ -429,22 +444,22 @@ linear_variation_cutoff_distance = 15600
     []
     [compute_stress]
         type = ComputeLinearElasticStress
-        # outputs = exodus
+        outputs = exodus
         block = '2'
     []
     #strain invariant ratio
     [comp_strain_invariant_ratio]
         type = ComputeXi 
-        # output_properties = 'strain_invariant_ratio'
-        # outputs = exodus
+        output_properties = 'strain_invariant_ratio'
+        outputs = exodus
         block = '2'
     []
     #nonlocal eqstrain
     [nonlocal_eqstrain]
         type = ElkNonlocalEqstrain
         average_UO = eqstrain_averaging
-        # output_properties = 'eqstrain_nonlocal'
-        # outputs = exodus
+        output_properties = 'eqstrain_nonlocal'
+        outputs = exodus
     []
     #shear stress perturbation
     [damage_perturbation]
@@ -456,25 +471,48 @@ linear_variation_cutoff_distance = 15600
         duration = 1.0
         perturbation_type = 'shear_stress'
         sigma_divisor = 2.0
-        # output_properties = 'shear_stress_perturbation damage_perturbation'
-        # outputs = exodus
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
     []
+    # [./strain_from_initial_stress]
+    #     type = ComputeDamageBreakageEigenstrainFromInitialStress
+    #     initial_stress = 'func_neg_xx_stress func_pos_xy_stress 0  
+    #                       func_pos_xy_stress func_neg_yy_stress 0  
+    #                       0 0 func_neg_zz_stress'
+    #     eigenstrain_name = ini_stress_to_strain
+    #     lambda_o = ${lambda_o}
+    #     shear_modulus_o = ${shear_modulus_o}
+    #     xi_o = ${xi_0}
+    # [../]
     [initial_damage_mat] #ComputeDamageBreakageEigenstrainFromInitialStress call it
         type = ParsedMaterial
         property_name = 'initial_damage'
         coupled_variables = 'alpha_damagedvar_aux'
         expression = 'alpha_damagedvar_aux'
+        outputs = exodus
     []
+    # [damage_perturbation]
+    #     type = PerturbationRadial
+    #     nucl_center = '0 0 -7500'
+    #     peak_value = 20e6
+    #     thickness = 200
+    #     length = 1000
+    #     duration = 1.0
+    #     perturbation_type = 'shear_stress'
+    #     sigma_divisor = 1.0
+    #     output_properties = 'shear_stress_perturbation damage_perturbation'
+    #     outputs = exodus
+    # []
 [] 
 
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 200
+        length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 200 #radius kept the same scale of length scale
+        radius = 300 #radius kept the same scale of length scale
         weights = BAZANT3D
-        execute_on = 'TIMESTEP_END'
+        execute_on = LINEAR
     []
 []
 
@@ -490,7 +528,7 @@ linear_variation_cutoff_distance = 15600
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */stiffpropdamping_x */stiffpropdamping_y */stiffpropdamping_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_top_x */damp_top_y */damp_top_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
     start_time = -1e-12
-    end_time = 1e-4 # dt used in the simulation
+    end_time = 1.25e-3 # dt used in the simulation
   []
 [../]
   
@@ -519,7 +557,7 @@ linear_variation_cutoff_distance = 15600
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-4
+        dt = 1.25e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
@@ -566,10 +604,10 @@ linear_variation_cutoff_distance = 15600
 [../]
 
 [Outputs]
-    [./nemesis]
-        type = Nemesis
-        time_step_interval = 20
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux deviatroic_strain_rate_aux nonlocal_xi'
+    [./exodus]
+        type = Exodus
+        time_step_interval = 1
+        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_01 elastic_strain_tensor_01 plastic_strain_tensor_01 total_strain_tensor_01'
     [../]
     [./csv]
         type = CSV
@@ -1011,5 +1049,5 @@ linear_variation_cutoff_distance = 15600
         variable = B_damagedvar_aux
         solution_uo = init_sol_components
         from_variable = initial_breakage_aux
-    []   
+    []    
 []

@@ -266,7 +266,7 @@
     # dt = 1e-2
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-4
+        dt = 1.25e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
@@ -303,7 +303,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 20
+        time_step_interval = 1
         # show = 'Cd_aux'
     [../]
 []
