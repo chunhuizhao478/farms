@@ -489,9 +489,9 @@ linear_variation_cutoff_distance = 15600
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */stiffpropdamping_x */stiffpropdamping_y */stiffpropdamping_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
+    disable_objects = '*/vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */inertia_x */inertia_y */inertia_z */stiffpropdamping_x */stiffpropdamping_y */stiffpropdamping_z */damp_left_x */damp_left_y */damp_left_z */damp_right_x */damp_right_y */damp_right_z */damp_bottom_x */damp_bottom_y */damp_bottom_z */damp_top_x */damp_top_y */damp_top_z */damp_front_x */damp_front_y */damp_front_z */damp_back_x */damp_back_y */damp_back_z'
     start_time = -1e-12
-    end_time = 1.25e-3 # dt used in the simulation
+    end_time = 1e-4 # dt used in the simulation
   []
 [../]
   
@@ -520,7 +520,7 @@ linear_variation_cutoff_distance = 15600
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1.25e-3
+        dt = 1e-4
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
@@ -528,7 +528,7 @@ linear_variation_cutoff_distance = 15600
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
-        constant_dt_on_overspeed = 5e-3
+        constant_dt_on_overspeed = 2.5e-3
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
         maxvelz = 'maxvelz'
@@ -672,6 +672,48 @@ linear_variation_cutoff_distance = 15600
 []
 
 [BCs]
+    [damp_top_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y disp_z'
+        velocities = 'vel_x vel_y vel_z'
+        accelerations = 'accel_x accel_y accel_z'
+        component = 0
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_top_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y disp_z'
+        velocities = 'vel_x vel_y vel_z'
+        accelerations = 'accel_x accel_y accel_z'
+        component = 1
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_top_z]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_z
+        displacements = 'disp_x disp_y disp_z'
+        velocities = 'vel_x vel_y vel_z'
+        accelerations = 'accel_x accel_y accel_z'
+        component = 2
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []       
     #
     [damp_bottom_x]
         type = FarmsNonReflectDashpotBC
@@ -971,8 +1013,4 @@ linear_variation_cutoff_distance = 15600
         solution_uo = init_sol_components
         from_variable = initial_breakage_aux
     []    
-[]
-
-[Problem]
-    verbose_multiapps = true
 []
