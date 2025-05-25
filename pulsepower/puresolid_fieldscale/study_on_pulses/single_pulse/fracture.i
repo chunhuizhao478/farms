@@ -24,13 +24,13 @@
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
-        refine = 0.5
+        refine = 0.2
       []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*0.5*Gc_const/l}'
-      []      
+      # [strain_energy_marker]
+      #   type = ValueThresholdMarker
+      #   variable = psie_active
+      #   refine = '${fparse 1.0*0.5*Gc_const/l}'
+      # []      
   []
 []
 
