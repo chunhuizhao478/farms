@@ -284,3 +284,10 @@
 # [Debug]
 #   show_execution_order = ALWAYS
 # []
+
+[Outputs]
+    [./nemesis]
+        type = Nemesis
+        time_step_interval = 1
+    [../]
+[]
