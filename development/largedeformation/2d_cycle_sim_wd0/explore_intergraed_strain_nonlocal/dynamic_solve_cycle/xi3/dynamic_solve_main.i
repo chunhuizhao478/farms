@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_local.msh'
+        file = '../../mesh/mesh_local.msh'
     []
     [mergeblock1]
         type = RenameBlockGenerator
@@ -258,19 +258,19 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    [] 
+    []
     [damping_x]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_x
         component = 0
         zeta = 0.2
     []
     [damping_y]
-        type = StiffPropDampingImplicit
+        type = LagrangianStiffPropDampingImplicit
         variable = disp_y
         component = 1
         zeta = 0.2
-    []          
+    []       
 []
 
 [Functions]
@@ -438,6 +438,7 @@
         constant_dt_on_overspeed = 1e-2
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
+        maxvelz = 'maxvelz'
     []
     # [TimeStepper]
     #     type = IterationAdaptiveDT
@@ -465,6 +466,10 @@
         type = NodalExtremeValue
         variable = vel_y
     [../]
+    [./maxvelz]
+        type = NodalExtremeValue
+        variable = vel_z
+    [../]
 [../]
 
 [Outputs]
@@ -474,8 +479,8 @@
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
-       type = CSV
-       time_step_interval = 1
+        type = CSV
+        time_step_interval = 1
     []
 []
 
@@ -690,7 +695,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_newbc/static_solve_local_out.e'
+      mesh = '../../static_solve_newbc/static_solve_local_out.e'
       system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true

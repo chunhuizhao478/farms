@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_local.msh'
+        file = '../../mesh/mesh_local.msh'
     []
     [mergeblock1]
         type = RenameBlockGenerator
@@ -242,7 +242,7 @@
         variable = xio_aux
         function = func_spatial_xio
     []
-    [get_cg]
+    [get_xid]
         type = FunctionAux
         variable = xid_aux
         function = func_spatial_xid
@@ -252,14 +252,14 @@
 [Functions]
     [func_spatial_xio]
         type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
+        W = 3e3 #half the total width
         w = 1e3
         max_val = -0.8
         min_val = 1.8
     []
     [func_spatial_xid]
         type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
+        W = 3e3 #half the total width
         w = 1e3
         max_val = -0.9
         min_val = 1.8
@@ -276,9 +276,12 @@
         #use strain rate dependent Cd
         use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
-        use_block_restricted_parameters = true
-        straindep_increase_block_id_applied = 4
-        straindep_decrease_block_id_applied = 5
+        #use spatial xio
+        use_spatial_xio = true
+        xio_aux = xio_aux
+        #use spatial xid
+        use_spatial_xid = true
+        xid_aux = xid_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]
@@ -328,7 +331,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_newbc/static_solve_local_out.e'
+      mesh = '../../static_solve_newbc/static_solve_local_out.e'
       system_variables = 'alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true
