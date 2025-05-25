@@ -223,7 +223,7 @@
     [] 
 [] 
 
-[Function]
+[Functions]
     [function_damage_surround]
         type = InitialDamageCycleSim3DPlaneFunction
         sigma = 5e2
