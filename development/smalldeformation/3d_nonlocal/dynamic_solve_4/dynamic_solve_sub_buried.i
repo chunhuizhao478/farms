@@ -119,6 +119,19 @@
         order = FIRST
         family = MONOMIAL
     []
+    #
+    [Cd_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [xio_aux]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [xid_aux]
+        order = FIRST
+        family = LAGRANGE
+    []
 []
 
 [Kernels]
@@ -191,10 +204,18 @@
 
 [AuxKernels]
     [get_initial_damage]
-        type = FunctionAux
+        type = SolutionAux
         variable = initial_damage_sub_aux
-        function = function_damage_surround
+        solution = init_sol_components
+        from_variable = initial_damage_aux
+        execute_on = 'TIMESTEP_BEGIN'
     []
+    [get_Cd]
+        type = MaterialRealAux
+        variable = Cd_aux
+        property = Cd
+    []
+    #
 []
 
 [Materials]
@@ -218,21 +239,10 @@
         duration = 1.0
         perturbation_type = 'damage'
         sigma_divisor = 1.0
-        # output_properties = 'shear_stress_perturbation damage_perturbation'
-        # outputs = exodus
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
     [] 
 [] 
-
-[Functions]
-    [function_damage_surround]
-        type = InitialDamageCycleSim3DPlaneFunction
-        sigma = 5e2
-        peak_val = 0.7
-        len_of_fault_strike = 14000
-        len_of_fault_dip = 10000
-        nucl_center = '0 0 -10000'
-    []
-[]
 
 [Preconditioning]
     [smp]
@@ -264,19 +274,36 @@
     []
 []
 
+[UserObjects]
+    [./init_sol_components]
+      type = SolutionUserObject
+      mesh = '../static_solve/static_solve_buried_50m_out.e'
+      system_variables = 'initial_damage_aux initial_breakage_aux'
+      timestep = LATEST
+      force_preaux = true
+      execute_on = 'INITIAL'
+    [../]
+[]
+
 [ICs]
     [alpha_damagedvar_sub_ic]
-        type = FunctionIC
+        type = SolutionIC
         variable = alpha_damagedvar_sub
-        function = function_damage_surround
+        solution_uo = init_sol_components
+        from_variable = initial_damage_aux
     []  
     [B_damagedvar_sub_ic]
-        type = ConstantIC
+        type = SolutionIC
         variable = B_damagedvar_sub
-        value = 0
+        solution_uo = init_sol_components
+        from_variable = initial_breakage_aux
     []
 []
 
 [Outputs]
-    exodus = true
+    [./exodus]
+        type = Exodus
+        time_step_interval = 20
+        # show = 'Cd_aux'
+    [../]
 []

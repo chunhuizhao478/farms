@@ -143,7 +143,6 @@ chi = 0.8
         order = FIRST
         family = MONOMIAL
     []
-    
 []
 
 [AuxKernels]
@@ -1012,5 +1011,5 @@ linear_variation_cutoff_distance = 15600
         variable = B_damagedvar_aux
         solution_uo = init_sol_components
         from_variable = initial_breakage_aux
-    []    
+    []   
 []
