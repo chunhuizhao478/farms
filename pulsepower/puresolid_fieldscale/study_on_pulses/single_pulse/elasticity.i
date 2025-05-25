@@ -19,8 +19,12 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [Markers]
       [./combo]
           type = ComboMarker
-          markers = 'damage_marker strain_energy_marker'
+          markers = 'damage_marker'
       [../]
+      # [./combo]
+      #     type = ComboMarker
+      #     markers = 'damage_marker strain_energy_marker'
+      # [../]
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
