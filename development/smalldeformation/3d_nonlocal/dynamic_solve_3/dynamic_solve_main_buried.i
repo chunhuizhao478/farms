@@ -281,6 +281,24 @@ chi = 0.8
         type = Gravity
         variable = disp_z
         value = ${gravity_neg}
+    []
+    [stiffpropdamping_x]
+        type = StiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.2
+    []
+    [stiffpropdamping_y]
+        type = StiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.2
+    []
+    [stiffpropdamping_z]
+        type = StiffPropDampingImplicit
+        variable = disp_z
+        component = 2
+        zeta = 0.2
     []    
 []
 
