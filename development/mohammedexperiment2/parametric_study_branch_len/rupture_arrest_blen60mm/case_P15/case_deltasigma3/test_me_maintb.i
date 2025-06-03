@@ -430,6 +430,11 @@
         time_step_interval = 40
         show = 'disp_slipweakening_x disp_slipweakening_y vel_slipweakening_y ini_shear_sts ini_normal_sts T1_aux T2_aux jump_x_aux jump_y_aux jump_x_rate_aux jump_y_rate_aux'
     []
+    [checkpoint]
+        type = Checkpoint
+        time_step_interval = 200
+        num_files = 2
+    []
     [csv]
         type = CSV
         execute_on = 'timestep_end'
