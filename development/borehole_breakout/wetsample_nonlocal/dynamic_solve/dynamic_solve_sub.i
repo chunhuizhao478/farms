@@ -247,7 +247,7 @@ beta_width = 0.05
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 10
+        dt = 1e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.25

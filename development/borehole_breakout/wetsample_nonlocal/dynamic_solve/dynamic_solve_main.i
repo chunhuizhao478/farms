@@ -6,6 +6,8 @@ poissons_ratio = 0.22
 solid_bulk_compliance = 3.46e-11
 lambda_o = ${fparse youngs_modulus*poissons_ratio/(1+poissons_ratio)/(1-2*poissons_ratio)}
 shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
+length_scale = 3e-3
+crack_surface_roughness_correction_factor = 1.0
 #-------------------------------------------------#
 
 #damage-breakage properties
@@ -19,6 +21,7 @@ Cg = 1e-12
 #-------------------------------------------------#
 porosity = 0.008
 permeability = '1E-20 0 0 0 1E-20 0 0 0 1E-20'
+intrinsic_permeability = 1E-20
 fluid_density = 1000
 viscosity = 1e-3
 biot_coefficient = 0.5
@@ -35,7 +38,7 @@ inner_confinement_pressure = 3.4e6
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../meshfile/mesh_adaptive_test.msh'
     [] 
 []
 
@@ -289,6 +292,11 @@ inner_confinement_pressure = 3.4e6
         output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
         outputs = exodus
         block = '3'
+        #porous flow coupling
+        porous_flow_coupling = true
+        crack_surface_roughness_correction_factor = ${crack_surface_roughness_correction_factor}
+        length_scale = ${length_scale}
+        intrinsic_permeability = ${intrinsic_permeability}
     []
     #elastic material
     [elastic_tensor]
@@ -387,7 +395,7 @@ inner_confinement_pressure = 3.4e6
     ##########################################################
     ##### Compute Constant Permeability and Biot Modulus #####
     ##########################################################
-    #comopute permeability
+    #compute permeability
     [permeability_constant]
         type = PorousFlowPermeabilityConst
         permeability = ${permeability}
@@ -434,13 +442,13 @@ inner_confinement_pressure = 3.4e6
 []
 
 [UserObjects]
-    [eqstrain_averaging]
+    [eqstrain_averaging] #length scale = radius = grain size 
         type = ElkRadialAverage
-        length_scale = 0.0015
+        length_scale = ${length_scale}
         prop_name = strain_invariant_ratio
-        radius = 0.001
+        radius = ${length_scale}
         weights = BAZANT
-        execute_on = LINEAR
+        execute_on = TIMESTEP_END
     []
 []
 
@@ -448,7 +456,7 @@ inner_confinement_pressure = 3.4e6
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-2.6477e-5 - 3.3e-7 * t'
+        expression = 'if (t > 1e-3, -2.6477e-5 - 3.3e-7 * t, -2.6477e-5)'
     []
     #strain
     [func_strain_xx]
@@ -489,18 +497,27 @@ inner_confinement_pressure = 3.4e6
       full = true
     []
 []
+
+[Controls] # turns off inertial terms for the SECOND time step
+  [./period0]
+    type = TimePeriod
+    disable_objects = '*/mass0'
+    start_time = -1e-12
+    end_time = 1e-3 # dt used in the simulation
+  []
+[../]
   
 [Executioner]
     type = Transient
-    solve_type = 'NEWTON'
-    # solve_type = 'PJFNK'
+    # solve_type = 'NEWTON'
+    solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 30
     nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -515,9 +532,9 @@ inner_confinement_pressure = 3.4e6
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 10
+        dt = 1e-3
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
+        optimal_iterations = 20
         growth_factor = 1.25
         max_time_step_bound = 100
     []
@@ -532,7 +549,7 @@ inner_confinement_pressure = 3.4e6
     [./exodus]
         type = Exodus
         time_step_interval = 1 ###
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_22 elastic_strain_tensor_22 plastic_strain_tensor_22 total_strain_tensor_22'
+        # show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_22 elastic_strain_tensor_22 plastic_strain_tensor_22 total_strain_tensor_22'
     [../]
     [./csv]
         type = CSV
@@ -581,16 +598,16 @@ inner_confinement_pressure = 3.4e6
         [../]
     []
     #inner pressure
-    [inner_pressure]
-        type = PorousFlowPiecewiseLinearSink
-        variable = pp
-        boundary = '5'
-        pt_vals = '-1e9 1e9' # x coordinates defining g
-        multipliers = '-1e9 1e9' # y coordinates defining g
-        PT_shift = ${inner_confinement_pressure}
-        flux_function = 1E-6 # Variable C
-        fluid_phase = 0
-    []
+    # [inner_pressure]
+    #     type = PorousFlowPiecewiseLinearSink
+    #     variable = pp
+    #     boundary = '5'
+    #     pt_vals = '-1e9 1e9' # x coordinates defining g
+    #     multipliers = '-1e9 1e9' # y coordinates defining g
+    #     PT_shift = ${inner_confinement_pressure}
+    #     flux_function = 1E-6 # Variable C
+    #     fluid_phase = 0
+    # []
 []
 
 [MultiApps]
@@ -639,16 +656,16 @@ inner_confinement_pressure = 3.4e6
 
 [ICs]
     [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
+        type = SolutionIC
+        variable = disp_x
+        solution_uo = init_sol_components
+        from_variable = disp_x
     []
     [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
+        type = SolutionIC
+        variable = disp_y
+        solution_uo = init_sol_components
+        from_variable = disp_y
     []
     [disp_z_ic]
         type = SolutionIC
@@ -656,17 +673,23 @@ inner_confinement_pressure = 3.4e6
         solution_uo = init_sol_components
         from_variable = disp_z
     []
+    [pp_ic]
+        type = SolutionIC
+        variable = pp
+        solution_uo = init_sol_components
+        from_variable = pp
+    []
     [strain_invariant_ratio_ic]
-      type = SolutionIC
-      variable = nonlocal_xi
-      solution_uo = init_sol_components
-      from_variable = initial_xi_aux
+        type = SolutionIC
+        variable = nonlocal_xi
+        solution_uo = init_sol_components
+        from_variable = initial_xi_aux
     []
     [I2_aux_ic]
-      type = SolutionIC
-      variable = I2_aux
-      solution_uo = init_sol_components
-      from_variable = initial_I2_aux
+        type = SolutionIC
+        variable = I2_aux
+        solution_uo = init_sol_components
+        from_variable = initial_I2_aux
     []  
 []
 

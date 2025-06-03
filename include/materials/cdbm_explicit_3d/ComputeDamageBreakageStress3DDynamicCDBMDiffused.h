@@ -54,6 +54,18 @@ protected:
   /// @brief Compute the deviatoric strain rate tensor
   virtual void computeDeviatroicStrainRateTensor();
 
+  /// @brief Compute crack strain and orientation
+  virtual void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
+
+  /// @brief Update the solid bulk compliance
+  virtual void updateSolidBulkCompliance();
+
+  /// @brief Update the effective permeability for cracking
+  virtual void updatePermeabilityForCracking();
+
+  /// @brief Heaviside function
+  virtual void HeavisideFunction(Real & x);
+
   /// additional variables
   /// initial lambda constant value
   Real _lambda_o;
@@ -123,4 +135,25 @@ protected:
 
   /// shear stress perturbation
   const MaterialProperty<Real> & _stress_perturbation;
+
+  /// porous flow coupling flag
+  bool _porous_flow_coupling;
+
+  /// solid bulk compliance damaged
+  MaterialProperty<Real> & _solid_bulk_compliance_damaged;
+
+  /// crack surface roughness correction factor
+  Real _crack_surface_roughness_correction_factor;
+
+  /// length scale for nonlocal eqstrain
+  Real _length_scale;
+
+  /// intrinsic permeability for the material, the intrisic permeability is used to take diagonal of the permeability tensor
+  Real _intrinsic_permeability;
+
+  /// effective permeability
+  MaterialProperty<RealTensorValue> & _effective_perm;
+
+  /// crack rotation tensor
+  MaterialProperty<RankTwoTensor> & _crack_rotation;
 };

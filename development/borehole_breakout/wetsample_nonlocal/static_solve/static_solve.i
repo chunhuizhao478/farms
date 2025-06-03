@@ -25,7 +25,7 @@ inner_confinement_pressure = 3.4e6
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/mesh_adaptive.msh'
+        file =  '../meshfile/mesh_adaptive_test.msh'
     []
     displacements = 'disp_x disp_y disp_z'
 []
@@ -40,20 +40,23 @@ inner_confinement_pressure = 3.4e6
     [disp_x]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     #pore pressure
     [pp]
         order = FIRST
         family = LAGRANGE  
-        initial_condition = 0
+        initial_condition = 3.4e6
     []
 []
   
@@ -187,13 +190,6 @@ inner_confinement_pressure = 3.4e6
         boundary = 7
         value = 0
     []
-    # #applied load on inner boundary pore pressure
-    # [applied_pore_pressure]
-    #     type = DirichletBC
-    #     variable = pp
-    #     boundary = 5
-    #     value = 0
-    # []
     #applied load on top boundary
     [applied_top_z_dispload]
         type = FunctionDirichletBC
@@ -215,16 +211,16 @@ inner_confinement_pressure = 3.4e6
         [../]
     []
     #inner pressure
-    [inner_pressure]
-        type = PorousFlowPiecewiseLinearSink
-        variable = pp
-        boundary = '5'
-        pt_vals = '-1e9 1e9' # x coordinates defining g
-        multipliers = '-1e9 1e9' # y coordinates defining g
-        PT_shift = ${inner_confinement_pressure}
-        flux_function = 1E-6 # Variable C
-        fluid_phase = 0
-    []
+    # [inner_pressure]
+    #     type = PorousFlowPiecewiseLinearSink
+    #     variable = pp
+    #     boundary = '5'
+    #     pt_vals = '-1e9 1e9' # x coordinates defining g
+    #     multipliers = '-1e9 1e9' # y coordinates defining g
+    #     PT_shift = ${inner_confinement_pressure}
+    #     flux_function = 1E-6 # Variable C
+    #     fluid_phase = 0
+    # []
 []
 
 [Functions]
@@ -345,9 +341,10 @@ inner_confinement_pressure = 3.4e6
 [Executioner]
     type = Steady
     solve_type = Newton
-    petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
-    petsc_options_value = '101                asm      lu'
-    automatic_scaling = true
+    # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
+    # petsc_options_value = '101                asm      lu'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  boomeramg True'
     line_search = 'none'
     # num_steps = 1
     l_max_its = 100
