@@ -4,9 +4,9 @@ ft = 25.5e6
 Gc_const = 57
 density = 2600
 
-K = '${fparse E/3/(1-2*nu)}'
-G = '${fparse E/2/(1+nu)}'
-l = '${fparse 3/8 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m
+K = '${fparse E/3.0/(1.0-2.0*nu)}'
+G = '${fparse E/2.0/(1.0+nu)}'
+l = '${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
@@ -218,7 +218,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     fitting_param_alpha = 0.35
     discharge_center = '0.25 0.25 0.01'
     number_of_pulses = 1
-    peak_pressure = 100e6
+    peak_pressure = 500e6
   []
 []
 
