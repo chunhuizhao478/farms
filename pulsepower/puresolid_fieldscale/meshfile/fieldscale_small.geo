@@ -1,9 +1,9 @@
 SetFactory("OpenCASCADE");
 
 // Define the rectangular box dimensions
-length = 1; // Length in meters
-width = 1;  // Width in meters
-height = 0.02; // Height in meters
+length = 0.5; // Length in meters
+width = 0.5;  // Width in meters
+height = 0.01; // Height in meters
 
 // Define the cylindrical hole dimensions
 holeRadius = 0.1; // Radius in meters (diameter is 0.2m)

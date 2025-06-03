@@ -216,9 +216,9 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     gap = 0.02
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '0.5 0.5 0.01'
+    discharge_center = '0.25 0.25 0.01'
     number_of_pulses = 1
-    peak_pressure = 200e6
+    peak_pressure = 100e6
   []
 []
 
@@ -515,12 +515,12 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 40
   print_linear_residuals = false
   csv = true
   [checkpoint]
       type = Checkpoint
-      time_step_interval = 20
+      time_step_interval = 40
       num_files = 2
   []
 []
