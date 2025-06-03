@@ -9,13 +9,14 @@ hht_alpha = 0.11
 #----------------------------------------------------#
 confinement_pressure  = 1e6
 l = 2e-4 # N * h
+eta = 1e-6
 #----------------------------------------------------#
 
 #solid properties
 #----------------------------------------------------#
-E = 50e9
-nu = 0.373
-solid_density = 2600
+E = 3.2e10
+nu = 0.2
+solid_density = 2450
 Gc_const = 57
 #----------------------------------------------------#
 
@@ -25,6 +26,9 @@ fluid_density = 1000
 biot_coefficient = 0.7
 fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
+porosity = 0.008
+solid_bulk_modulus_compliance = 1.524e-11
+permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 #----------------------------------------------------#
 
 #convert properties
@@ -105,14 +109,17 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
   [disp_x]
     order = FIRST
     family = LAGRANGE  
+    scaling = 1e-6
   []
   [disp_y]
     order = FIRST
     family = LAGRANGE  
+    scaling = 1e-6
   []
   [disp_z]
     order = FIRST
     family = LAGRANGE  
+    scaling = 1e-6
   []
   #pore pressure
   [pp]
@@ -162,13 +169,14 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
     order = CONSTANT
     family = MONOMIAL
   []
+  #porous flow aux variables
 []
 
 [AuxKernels]
-  [./error_measure]
-    type = ErrorPsiMeasure
-    variable = eng_err
-  [../]
+  # [./error_measure]
+  #   type = ErrorPsiMeasure
+  #   variable = eng_err
+  # [../]
   [accel_x]
     type = NewmarkAccelAux
     variable = accel_x
@@ -221,79 +229,79 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
     function = func_tri_pulse
     execute_on = timestep_end
   []
-  ### PorousFlow Aux ###
-  #biot modulus
-  [biot_modulus]
-    type = MaterialRealAux
-    property = PorousFlow_constant_biot_modulus_qp
-    variable = biot_modulus_aux
-    execute_on = 'TIMESTEP_END'
-  []
-  #effective permeability
-  [effective_permeability_00]
-    type = MaterialRealTensorValueAux
-    property = effective_perm_smeared_crack
-    row = 0
-    column = 0
-    variable = effective_perm00_aux
-  []
-  [effective_permeability_11]
-    type = MaterialRealTensorValueAux
-    property = effective_perm_smeared_crack
-    row = 1
-    column = 1
-    variable = effective_perm11_aux
-  []
-  [effective_permeability_22]
-    type = MaterialRealTensorValueAux
-    property = effective_perm_smeared_crack
-    row = 2
-    column = 2
-    variable = effective_perm22_aux
-  []
-  [effective_permeability_01]
-    type = MaterialRealTensorValueAux
-    property = effective_perm_smeared_crack
-    row = 0
-    column = 1
-    variable = effective_perm01_aux
-  []
-  [effective_permeability_02]
-    type = MaterialRealTensorValueAux
-    property = effective_perm_smeared_crack
-    row = 0
-    column = 2
-    variable = effective_perm02_aux
-  []
-  [effective_permeability_12]
-    type = MaterialRealTensorValueAux
-    property = effective_perm_smeared_crack
-    row = 1
-    column = 2
-    variable = effective_perm12_aux
-  []  
+  # ### PorousFlow Aux ###
+  # #biot modulus
+  # [biot_modulus]
+  #   type = MaterialRealAux
+  #   property = PorousFlow_constant_biot_modulus_qp
+  #   variable = biot_modulus_aux
+  #   execute_on = 'TIMESTEP_END'
+  # []
+  # #effective permeability
+  # [effective_permeability_00]
+  #   type = MaterialRealTensorValueAux
+  #   property = effective_perm_smeared_crack
+  #   row = 0
+  #   column = 0
+  #   variable = effective_perm00_aux
+  # []
+  # [effective_permeability_11]
+  #   type = MaterialRealTensorValueAux
+  #   property = effective_perm_smeared_crack
+  #   row = 1
+  #   column = 1
+  #   variable = effective_perm11_aux
+  # []
+  # [effective_permeability_22]
+  #   type = MaterialRealTensorValueAux
+  #   property = effective_perm_smeared_crack
+  #   row = 2
+  #   column = 2
+  #   variable = effective_perm22_aux
+  # []
+  # [effective_permeability_01]
+  #   type = MaterialRealTensorValueAux
+  #   property = effective_perm_smeared_crack
+  #   row = 0
+  #   column = 1
+  #   variable = effective_perm01_aux
+  # []
+  # [effective_permeability_02]
+  #   type = MaterialRealTensorValueAux
+  #   property = effective_perm_smeared_crack
+  #   row = 0
+  #   column = 2
+  #   variable = effective_perm02_aux
+  # []
+  # [effective_permeability_12]
+  #   type = MaterialRealTensorValueAux
+  #   property = effective_perm_smeared_crack
+  #   row = 1
+  #   column = 2
+  #   variable = effective_perm12_aux
+  # []  
   #darcy velocity
-  [bulk_vel_x]
-    type = PorousFlowDarcyVelocityComponent
-    variable = darcy_vel_x
-    component = x
-    fluid_phase = 0
-    gravity = '0 0 0'
-  []
-  [bulk_vel_y]
-    type = PorousFlowDarcyVelocityComponent
-    variable = darcy_vel_y
-    component = y
-    fluid_phase = 0
-    gravity = '0 0 0'
-  []
-  [bulk_vel_z]
-    type = PorousFlowDarcyVelocityComponent
-    variable = darcy_vel_z
-    component = z
-    fluid_phase = 0
-    gravity = '0 0 0'
-  []
+  # [bulk_vel_x]
+  #   type = PorousFlowDarcyVelocityComponent
+  #   variable = darcy_vel_x
+  #   component = x
+  #   fluid_phase = 0
+  #   gravity = '0 0 0'
+  # []
+  # [bulk_vel_y]
+  #   type = PorousFlowDarcyVelocityComponent
+  #   variable = darcy_vel_y
+  #   component = y
+  #   fluid_phase = 0
+  #   gravity = '0 0 0'
+  # []
+  # [bulk_vel_z]
+  #   type = PorousFlowDarcyVelocityComponent
+  #   variable = darcy_vel_z
+  #   component = z
+  #   fluid_phase = 0
+  #   gravity = '0 0 0'
+  # []
 []
 
 [Physics/SolidMechanics/Dynamic]
@@ -303,6 +311,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
     newmark_beta = ${beta}
     newmark_gamma = ${gamma}
     density = ${solid_density}
+    eigenstrain_names = 'static_initial_strain_tensor'
   []
 []
 
@@ -511,9 +520,9 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
     # decomposition type
     decomposition = SPECTRAL
     # model type
-    model_type = AT2
+    model_type = AT1
     # constants
-    eta = 1e-6 
+    eta = ${eta}
     output_properties = 'elastic_strain psie_active'
     outputs = exodus
   []
@@ -522,6 +531,94 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
     elasticity_model = elasticity
     output_properties = 'stress'
     outputs = exodus
+  []
+  #solid properties
+  ##-------------------------------------------------------------------------##
+  [./initial_strain]
+    type = GenericFunctionRankTwoTensor
+    tensor_name = static_initial_strain_tensor
+    tensor_functions = 'func_strain_xx     func_strain_xy      func_strain_xz 
+                        func_strain_xy     func_strain_yy      func_strain_yz
+                        func_strain_xz     func_strain_yz      func_strain_zz'
+  []
+  [density]
+    type = GenericConstantMaterial
+    prop_names = 'density'
+    prop_values = ${solid_density}
+  []
+  #define initial bulk modulus material property
+  #check with youngs_modulus = 50e9, poissons_ratio = 0.373
+  [solid_bulk_modulus_compliance]
+    type = GenericConstantMaterial
+    prop_names = solid_bulk_modulus_compliance
+    prop_values = ${solid_bulk_modulus_compliance}
+  []
+  ##-------------------------------------------------------------------------##
+  #porous flow related properties
+  ##-------------------------------------------------------------------------##
+  [temperature]
+    type = PorousFlowTemperature
+  []
+  [eff_fluid_pressure_qp]
+    type = PorousFlowEffectiveFluidPressure
+  []
+  #compute volumetric strain and its rate
+  [vol_strain]
+    type = PorousFlowVolumetricStrain
+    outputs = exodus
+  []
+  #This Material is used for the fully saturated single-phase situation "
+  #"where porepressure is the primary variable", saturation = 1.0
+  [ppss]
+    type = PorousFlow1PhaseFullySaturated
+    porepressure = pp
+  []
+  #List of variables that represent the mass fractions.
+  #If no "variables are provided then num_phases=1=num_components."
+  [massfrac]
+    type = PorousFlowMassFraction
+  []
+  #compute porosity
+  [porosity]
+    type = PorousFlowPorosityConst # only the initial value of this is ever used
+    porosity = ${porosity}
+  []
+  # #comopute permeability
+  # [permeability]
+  #   type = ElkPorousFlowPermeabilityDamaged
+  # []
+  # #compute biot modulus #include damaged solid compliance
+  # [biot_modulus]
+  #   type = ElkPorousFlowDamagedBiotModulus
+  #   biot_coefficient = ${biot_coefficient}
+  #   solid_bulk_compliance = ${solid_bulk_modulus_compliance}
+  #   fluid_bulk_modulus = ${fluid_bulk_modulus}
+  # []
+  ##----------------------------------------------------------##
+  #compute permeability
+  [permeability_constant]
+      type = PorousFlowPermeabilityConst
+      permeability = ${permeability}
+  []
+  #compute biot modulus
+  [biot_modulus_constant]
+      type = PorousFlowConstantBiotModulus
+      biot_coefficient = ${biot_coefficient}
+      solid_bulk_compliance = ${solid_bulk_modulus_compliance}
+      fluid_bulk_modulus = ${fluid_bulk_modulus}
+  []  
+  ##----------------------------------------------------------##
+  #Compute density and viscosity
+  [simple_fluid_qp]
+    type = PorousFlowSingleComponentFluid
+    fp = the_simple_fluid
+    phase = 0
+  []
+  #define relative permeability as 1 (used in PorousFlowDarcyVelocityComponent)
+  [relperm]
+    type = PorousFlowRelativePermeabilityConst
+    phase = 0
+    kr = 1
   []
 []
 
@@ -557,15 +654,18 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
   type = Transient
 
   solve_type = NEWTON
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  petsc_options_value = 'lu       superlu_dist                 '
-  automatic_scaling = true
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  # petsc_options_value = 'lu       superlu_dist                 '
+  # automatic_scaling = true
+
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  petsc_options_value = ' lu       mumps       100'
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.5e-8
-  end_time = 1000
+  dt = 0.25e-8
+  end_time = 2e-5
 
   fixed_point_max_its = 5
   accept_on_max_fixed_point_iteration = true
@@ -581,8 +681,38 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 40
+  time_step_interval = 80
   print_linear_residuals = false
-  csv = true
+  [out]
+    type = Checkpoint
+    time_step_interval = 80
+    num_files = 2
+  []
 []
 
+[ICs]
+  [disp_x_ic]
+    type = SolutionIC
+    variable = disp_x
+    solution_uo = init_sol_components
+    from_variable = disp_x
+  []
+  [disp_y_ic]
+    type = SolutionIC
+    variable = disp_y
+    solution_uo = init_sol_components
+    from_variable = disp_y
+  []
+  [disp_z_ic]
+    type = SolutionIC
+    variable = disp_z
+    solution_uo = init_sol_components
+    from_variable = disp_z
+  []
+  [pp_ic]
+    type = SolutionIC
+    variable = pp
+    solution_uo = init_sol_components
+    from_variable = pp
+  []
+[]

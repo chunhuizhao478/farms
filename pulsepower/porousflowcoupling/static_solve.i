@@ -1,6 +1,23 @@
 confinement_pressure  = 1e6
 initial_pore_pressure = 0.0965e6
 
+#solid properties
+#----------------------------------------------------#
+E = 3.2e10
+nu = 0.2
+#----------------------------------------------------#
+
+#hydraulic properties
+#----------------------------------------------------#
+fluid_density = 1000
+biot_coefficient = 0.7
+fluid_bulk_modulus = 2.24e+9
+viscosity = 1e-3
+porosity = 0.008
+solid_bulk_modulus_compliance = 1.524e-11
+permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
+#----------------------------------------------------#
+
 [Mesh]
     [./msh]
       type = FileMeshGenerator
@@ -70,19 +87,19 @@ initial_pore_pressure = 0.0965e6
     #it is declared in "PorousFlowEffectiveFluidPressure"
     [poro_x]
       type = PorousFlowEffectiveStressCoupling
-      biot_coefficient = 0.7
+      biot_coefficient = ${biot_coefficient}
       variable = disp_x
       component = 0
     []
     [poro_y]
       type = PorousFlowEffectiveStressCoupling
-      biot_coefficient = 0.7
+      biot_coefficient = ${biot_coefficient}
       variable = disp_y
       component = 1
     []
     [poro_z]
       type = PorousFlowEffectiveStressCoupling
-      biot_coefficient = 0.7
+      biot_coefficient = ${biot_coefficient}
       component = 2
       variable = disp_z
     []
@@ -141,8 +158,8 @@ initial_pore_pressure = 0.0965e6
   [Materials]
     [./elasticity_tensor]
       type = ComputeIsotropicElasticityTensor
-      youngs_modulus = 50e9
-      poissons_ratio = 0.373
+      youngs_modulus = ${E}
+      poissons_ratio = ${nu}
     [../]
     [./elastic_stress]
       type = ComputeFiniteStrainElasticStress
@@ -179,19 +196,19 @@ initial_pore_pressure = 0.0965e6
     #compute porosity
     [porosity]
       type = PorousFlowPorosityConst # only the initial value of this is ever used
-      porosity = 0.008
+      porosity = ${porosity}
     []
     #comopute permeability
     [permeability]
       type = PorousFlowPermeabilityConst
-      permeability = '5E-19 0 0 0 5E-19 0 0 0 5E-19'
+      permeability = ${permeability} 
     []
     #compute biot modulus
     [biot_modulus]
       type = PorousFlowConstantBiotModulus
-      biot_coefficient = 0.7
-      solid_bulk_compliance = 1.524e-11 #checked
-      fluid_bulk_modulus = 2.24e+9
+      biot_coefficient = ${biot_coefficient}
+      solid_bulk_compliance = ${solid_bulk_modulus_compliance}
+      fluid_bulk_modulus = ${fluid_bulk_modulus}
     []
     #Compute density and viscosity
     [simple_fluid_qp]
@@ -205,10 +222,10 @@ initial_pore_pressure = 0.0965e6
   [FluidProperties]
     [the_simple_fluid]
       type = SimpleFluidProperties
-      bulk_modulus = 2.24e9
-      density0 = 1000
+      bulk_modulus = ${fluid_bulk_modulus}
+      density0 = ${fluid_density}
       thermal_expansion = 0
-      viscosity = 1e-3
+      viscosity = ${viscosity}
     []
   []
 
