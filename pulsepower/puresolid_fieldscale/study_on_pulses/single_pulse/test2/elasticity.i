@@ -41,6 +41,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     input_files = fracture.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
+    clone_parent_mesh = true
   []
 []
 
