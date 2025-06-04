@@ -641,7 +641,7 @@ inner_confinement_pressure = 3.4e6
 [UserObjects]
     [dictator]
         type = PorousFlowDictator
-        porous_flow_vars = 'pp'
+        porous_flow_vars = 'pp disp_x disp_y disp_z'
         number_fluid_phases = 1
         number_fluid_components = 1
     []
