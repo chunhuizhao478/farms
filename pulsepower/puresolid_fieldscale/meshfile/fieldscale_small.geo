@@ -10,7 +10,7 @@ holeRadius = 0.1; // Radius in meters (diameter is 0.2m)
 holeHeight = height; // The hole goes through the entire thickness of the box
 
 // Mesh size
-meshSize = 0.0025;
+meshSize = 0.005;
 meshSize_bc = 0.01;
 
 // Create the box

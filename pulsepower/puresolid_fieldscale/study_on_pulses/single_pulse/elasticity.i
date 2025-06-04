@@ -6,7 +6,8 @@ density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  5e-3 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m
+l =  1.0e-2 
+#'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
@@ -18,23 +19,19 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   cycles_per_step = 2
   [Markers]
       [./combo]
-          type = ComboMarker
-          markers = 'damage_marker'
+        type = ComboMarker
+        markers = 'damage_marker strain_energy_marker'
       [../]
-      # [./combo]
-      #     type = ComboMarker
-      #     markers = 'damage_marker strain_energy_marker'
-      # [../]
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
-        refine = 0.2
+        refine = 0.5
       []
-      # [strain_energy_marker]
-      #   type = ValueThresholdMarker
-      #   variable = psie_active
-      #   refine = '${fparse 1.0*0.5*Gc_const/l}'
-      # []      
+      [strain_energy_marker]
+        type = ValueThresholdMarker
+        variable = psie_active
+        refine = '${fparse 1.0*3/8*Gc_const/l}'
+      []    
   []
 []
 
@@ -212,13 +209,13 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 4e-5
-    EM = 30
+    EM = 0.03
     gap = 0.02
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0.25 0.25 0.01'
     number_of_pulses = 1
-    peak_pressure = 200e6
+    peak_pressure = 80e6
   []
 []
 
@@ -520,7 +517,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 40
+  time_step_interval = 10
   print_linear_residuals = false
   csv = true
   [checkpoint]
@@ -529,4 +526,3 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
       num_files = 2
   []
 []
-

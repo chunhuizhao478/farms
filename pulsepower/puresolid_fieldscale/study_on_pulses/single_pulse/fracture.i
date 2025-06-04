@@ -18,23 +18,19 @@
   cycles_per_step = 2
   [Markers]
       [./combo]
-          type = ComboMarker
-          markers = 'damage_marker'
+        type = ComboMarker
+        markers = 'damage_marker strain_energy_marker'
       [../]
-      # [./combo]
-      #     type = ComboMarker
-      #     markers = 'damage_marker strain_energy_marker'
-      # [../]
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
-        refine = 0.2
+        refine = 0.5
       []
-      # [strain_energy_marker]
-      #   type = ValueThresholdMarker
-      #   variable = psie_active
-      #   refine = '${fparse 1.0*0.5*Gc_const/l}'
-      # []      
+      [strain_energy_marker]
+        type = ValueThresholdMarker
+        variable = psie_active
+        refine = '${fparse 1.0*3/8*Gc_const/l}'
+      []      
   []
 []
 
