@@ -351,18 +351,18 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
   solve_type = NEWTON
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.5e-7
+  dt = 0.25e-7
   end_time = 2e-5
 
   fixed_point_max_its = 5
