@@ -77,17 +77,17 @@ inner_confinement_pressure = 3.4e6
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE     
         # scaling = 1E-6
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE    
         # scaling = 1E-6
     []
     [disp_z]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
         # scaling = 1E-6
     []
