@@ -390,7 +390,9 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  dt = 0.5e-7
+  nl_max_its = 5
+
+  dt = 0.25e-7
   end_time = 16e-5
 
   fixed_point_max_its = 5
