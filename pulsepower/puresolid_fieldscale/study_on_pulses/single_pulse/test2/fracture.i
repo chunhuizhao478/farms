@@ -12,42 +12,42 @@
   []
 []
 
-[Adaptivity]
-  max_h_level = 5
-  marker = 'combo'
-  cycles_per_step = 1
-  [Markers]
-      [./combo]
-        type = FarmsComboMarker
-        markers = 'damage_marker strain_energy_marker'
-        meshsize_marker = 'meshsize_marker'
-        block = 2
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.5
-        block = 2
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc_const/l}'
-        block = 2
-      []   
-      # if mesh_size > dxmin, refine
-      # if mesh_size < dxmin/100, coarsen (which never happens)
-      # otherwise, do nothing
-      [meshsize_marker]
-        type = ValueThresholdMarker
-        variable = mesh_size
-        refine = '${fparse 2 * dx_min}'
-        coarsen = '${fparse dx_min/100}'
-        third_state = DO_NOTHING
-        block = 2
-      [] 
-  []
-[]
+# [Adaptivity]
+#   max_h_level = 5
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#         block = 2
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#         block = 2
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#         block = 2
+#       []   
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${fparse 2 * dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#         block = 2
+#       [] 
+#   []
+# []
 
 [Variables]
   [d]
@@ -137,6 +137,13 @@
     material_property_names = 'alpha(d) g(d) Gc c0 l'
     derivative_order = 1
   []
+[]
+
+[Preconditioning]
+    [smp]
+      type = SMP
+      full = true
+    []
 []
 
 [Executioner]

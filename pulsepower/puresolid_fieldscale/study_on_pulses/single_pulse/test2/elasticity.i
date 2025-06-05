@@ -14,42 +14,42 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
-[Adaptivity]
-  max_h_level = 5
-  marker = 'combo'
-  cycles_per_step = 1
-  [Markers]
-      [./combo]
-        type = FarmsComboMarker
-        markers = 'damage_marker strain_energy_marker'
-        meshsize_marker = 'meshsize_marker'
-        block = 2
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.5
-        block = 2
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc_const/l}'
-        block = 2
-      []   
-      # if mesh_size > dxmin, refine
-      # if mesh_size < dxmin/100, coarsen (which never happens)
-      # otherwise, do nothing
-      [meshsize_marker]
-        type = ValueThresholdMarker
-        variable = mesh_size
-        refine = '${fparse 2 * dx_min}'
-        coarsen = '${fparse dx_min/100}'
-        third_state = DO_NOTHING
-        block = 2
-      [] 
-  []
-[]
+# [Adaptivity]
+#   max_h_level = 5
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#         block = 2
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#         block = 2
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#         block = 2
+#       []   
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${fparse 2 * dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#         block = 2
+#       [] 
+#   []
+# []
 
 [MultiApps]
   [fracture]
@@ -413,7 +413,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 5
     growth_factor = 1.25
-    max_time_step_bound = 1e-6
+    max_time_step_bound = 1e-7
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -424,7 +424,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 5
+  time_step_interval = 10
   print_linear_residuals = false
   csv = true
   show = 'd pulse_load_aux mesh_size'
