@@ -379,11 +379,11 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
   solve_type = NEWTON
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   automatic_scaling = true
 
@@ -392,7 +392,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
   nl_max_its = 5
 
-  dt = 0.25e-7
+  dt = 1e-8
   end_time = 16e-5
 
   fixed_point_max_its = 5
@@ -409,7 +409,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 2
   print_linear_residuals = false
   csv = true
   show = 'd pulse_load_aux mesh_size'
