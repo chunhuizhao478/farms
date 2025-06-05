@@ -41,7 +41,7 @@
       [meshsize_marker]
         type = ValueThresholdMarker
         variable = mesh_size
-        refine = '${dx_min}'
+        refine = '${fparse 2 * dx_min}'
         coarsen = '${fparse dx_min/100}'
         third_state = DO_NOTHING
         block = 2
