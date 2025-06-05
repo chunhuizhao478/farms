@@ -3,10 +3,11 @@ nu = 0.373
 # ft = 25.5e6
 Gc_const = 57
 density = 2600
+dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2e-4 
+l =  1e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -14,24 +15,39 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
 [Adaptivity]
-  max_h_level = 2
+  max_h_level = 3
   marker = 'combo'
-  cycles_per_step = 2
+  cycles_per_step = 1
   [Markers]
       [./combo]
-        type = ComboMarker
+        type = FarmsComboMarker
         markers = 'damage_marker strain_energy_marker'
+        meshsize_marker = 'meshsize_marker'
+        block = 2
       [../]
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
         refine = 0.5
+        block = 2
       []
       [strain_energy_marker]
         type = ValueThresholdMarker
         variable = psie_active
         refine = '${fparse 1.0*3/8*Gc_const/l}'
-      []    
+        block = 2
+      []   
+      # if mesh_size > dxmin, refine
+      # if mesh_size < dxmin/100, coarsen (which never happens)
+      # otherwise, do nothing
+      [meshsize_marker]
+        type = ValueThresholdMarker
+        variable = mesh_size
+        refine = '${dx_min}'
+        coarsen = '${fparse dx_min/100}'
+        third_state = DO_NOTHING
+        block = 2
+      [] 
   []
 []
 
@@ -39,8 +55,9 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l}'
+    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
+    clone_parent_mesh = true
   []
 []
 
@@ -54,8 +71,8 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [to_psie_active]
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
-    variable = psie_active
-    source_variable = psie_active
+    variable = 'psie_active mesh_size'
+    source_variable = 'psie_active mesh_size'
   []
 []
 
@@ -128,6 +145,11 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     order = CONSTANT
     family = MONOMIAL
   []
+  #
+  [mesh_size]
+    family = MONOMIAL
+    order = CONSTANT
+  []
 []
 
 [AuxKernels]
@@ -187,6 +209,12 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     function = func_tri_pulse
     execute_on = timestep_end
   []
+  #mesh size aux
+  [mesh_size_aux]
+    type = MeshSize
+    variable = mesh_size
+    execute_on = 'TIMESTEP_END'
+  []
 []
 
 [Physics/SolidMechanics/Dynamic]
@@ -224,7 +252,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [./Pressure]
     #assign pressure on inner surface
     [pressure_inner]
-      boundary = 4
+      boundary = 5
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = true
@@ -234,14 +262,14 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [./fix_top_z]
     type = DirichletBC
     variable = disp_z
-    boundary = 2
+    boundary = 3
     value = 0
   []
   #fix all displacements in bottom
   [./fix_bottom_z]
     type = DirichletBC
     variable = disp_z
-    boundary = 5
+    boundary = 6
     value = 0
   []    
   # fix ptr
@@ -274,7 +302,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     velocities = 'vel_x vel_y vel_z'
     accelerations = 'accel_x accel_y accel_z'
     component = 0
-    boundary = 3
+    boundary = 4
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
@@ -289,7 +317,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     velocities = 'vel_x vel_y vel_z'
     accelerations = 'accel_x accel_y accel_z'
     component = 1
-    boundary = 3
+    boundary = 4
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
@@ -304,7 +332,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     velocities = 'vel_x vel_y vel_z'
     accelerations = 'accel_x accel_y accel_z'
     component = 2
-    boundary = 3
+    boundary = 4
     beta = 0.25
     gamma = 0.5
     alpha = 0.11
