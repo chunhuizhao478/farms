@@ -410,6 +410,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   time_step_interval = 10
   print_linear_residuals = false
   csv = true
+  show = 'd pulse_load_aux mesh_size'
   [checkpoint]
       type = Checkpoint
       time_step_interval = 20
