@@ -43,7 +43,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
       [meshsize_marker]
         type = ValueThresholdMarker
         variable = mesh_size
-        refine = '${dx_min}'
+        refine = '${2 * dx_min}'
         coarsen = '${fparse dx_min/100}'
         third_state = DO_NOTHING
         block = 2
@@ -424,7 +424,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 5
   print_linear_residuals = false
   csv = true
   show = 'd pulse_load_aux mesh_size'
