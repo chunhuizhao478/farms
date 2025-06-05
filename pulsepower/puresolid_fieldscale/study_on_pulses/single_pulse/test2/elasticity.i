@@ -397,9 +397,9 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 
-  nl_max_its = 5
+  nl_max_its = 10
 
-  dt = 1e-8
+  # dt = 1e-8
   end_time = 16e-5
 
   fixed_point_max_its = 5
@@ -407,6 +407,14 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   fixed_point_rel_tol = 1e-8
   fixed_point_abs_tol = 1e-10
 
+  [TimeStepper]
+    type = FarmsIterationAdaptiveDT
+    dt = 1e-8
+    cutback_factor_at_failure = 0.5
+    optimal_iterations = 5
+    growth_factor = 1.25
+    max_time_step_bound = 1e-6
+  []
   [./TimeIntegrator]
     type = NewmarkBeta
     beta = 0.25
