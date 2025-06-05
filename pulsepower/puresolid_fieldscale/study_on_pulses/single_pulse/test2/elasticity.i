@@ -3,7 +3,7 @@ nu = 0.373
 # ft = 25.5e6
 Gc_const = 57
 density = 2600
-dx_min = 5e-5
+# dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
@@ -55,7 +55,8 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    # cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
