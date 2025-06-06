@@ -43,7 +43,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
       [meshsize_marker]
         type = ValueThresholdMarker
         variable = mesh_size
-        refine = '${fparse 2 * dx_min}'
+        refine = '${fparse 4 * dx_min}'
         coarsen = '${fparse dx_min/100}'
         third_state = DO_NOTHING
         block = 2
