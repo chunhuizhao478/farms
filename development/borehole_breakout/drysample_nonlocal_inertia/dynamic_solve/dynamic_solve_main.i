@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../meshfile/mesh_adaptive_refined.msh'
     [] 
 []
 
@@ -116,21 +116,24 @@
 
 [AuxKernels]
     [vel_x]
-        type = CompVarRate
+        type = NewmarkVelAux
         variable = vel_x
-        coupled = disp_x
+        acceleration = accel_x
+        gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
     [vel_y]
-        type = CompVarRate
+        type = NewmarkVelAux
         variable = vel_y
-        coupled = disp_y
+        acceleration = accel_y
+        gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
     [vel_z]
-        type = CompVarRate
+        type = NewmarkVelAux
         variable = vel_z
-        coupled = disp_z
+        acceleration = accel_z
+        gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
     #
