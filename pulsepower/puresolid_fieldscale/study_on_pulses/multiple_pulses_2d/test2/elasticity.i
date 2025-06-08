@@ -213,11 +213,12 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     execute_on = timestep_end
   []
   #mesh size aux
-  [mesh_size_aux]
-    type = MeshSize
+  [./max]
+    type = ElementLengthAux
     variable = mesh_size
-    execute_on = 'TIMESTEP_END'
-  []
+    method = max
+    execute_on = TIMESTEP_BEGIN
+  [../]
 []
 
 [Physics/SolidMechanics/Dynamic]
@@ -239,14 +240,14 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     shape_param_alpha = 4.658e5
     shape_param_beta = 4.661e5
     rise_time = 3e-6
-    single_pulse_duration = 4e-5
+    single_pulse_duration = 2e-5
     EM = 0.03
     gap = 0.02
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0'
     number_of_pulses = 4
-    peak_pressure = 200e6
+    peak_pressure = 100e6
   []
 []
 
@@ -407,7 +408,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   nl_abs_tol = 1e-10
 
   # dt = 0.5e-7
-  end_time = 16e-5
+  end_time = 6e-5
 
   fixed_point_max_its = 5
   accept_on_max_fixed_point_iteration = true
