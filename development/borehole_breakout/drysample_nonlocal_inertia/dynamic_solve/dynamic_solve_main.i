@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_refined.msh'
+        file = '../meshfile/mesh_adaptive.msh'
     [] 
 []
 
@@ -66,6 +66,18 @@
         order = FIRST
         family = LAGRANGE
     []
+    [accel_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     #
     [alpha_damagedvar_aux]
         order = FIRST
@@ -115,6 +127,14 @@
 []
 
 [AuxKernels]
+    [accel_x]
+        type = NewmarkAccelAux
+        variable = accel_x
+        displacement = disp_x
+        velocity = vel_x
+        beta = 0.25
+        execute_on = 'TIMESTEP_END'
+    []
     [vel_x]
         type = NewmarkVelAux
         variable = vel_x
@@ -122,11 +142,27 @@
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []
+    [accel_y]
+        type = NewmarkAccelAux
+        variable = accel_y
+        displacement = disp_y
+        velocity = vel_y
+        beta = 0.25
+        execute_on = 'TIMESTEP_END'
+    []
     [vel_y]
         type = NewmarkVelAux
         variable = vel_y
         acceleration = accel_y
         gamma = 0.5
+        execute_on = 'TIMESTEP_END'
+    []
+    [accel_z]
+        type = NewmarkAccelAux
+        variable = accel_z
+        displacement = disp_z
+        velocity = vel_z
+        beta = 0.25
         execute_on = 'TIMESTEP_END'
     []
     [vel_z]
@@ -176,10 +212,42 @@
   []
 []
 
+[Kernels]
+    [./inertia_x]
+        type = InertialForce
+        variable = disp_x
+        acceleration = accel_x
+        velocity = vel_x
+        beta = 0.25
+        gamma = 0.5
+        eta = 0
+    []
+    [./inertia_y]
+        type = InertialForce
+        variable = disp_y
+        acceleration = accel_y
+        velocity = vel_y
+        beta = 0.25
+        gamma = 0.5
+        eta = 0
+    []    
+    [./inertia_z]
+        type = InertialForce
+        variable = disp_z
+        acceleration = accel_z
+        velocity = vel_z
+        beta = 0.25
+        gamma = 0.5
+        eta = 0
+    []
+[]
+
 [Materials]
-    # [strain]
-    #     type = ComputeSmallStrain
-    # []
+    [density]
+        type = GenericConstantMaterial
+        prop_names = 'density'
+        prop_values = '2640'
+    []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
         alpha_damagedvar_aux = alpha_damagedvar_aux
@@ -286,9 +354,9 @@
         max_time_step_bound = 10
     []
     [./TimeIntegrator]
-        type = ImplicitEuler
-        # type = BDF2
-        # type = CrankNicolson
+        type = NewmarkBeta
+        beta = 0.25
+        gamma = 0.5
     [../]
 []
 
