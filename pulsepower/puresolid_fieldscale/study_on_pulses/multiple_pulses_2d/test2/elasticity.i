@@ -404,6 +404,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
   automatic_scaling = true
 
+  l_max_its = 100
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
   nl_max_its = 15
