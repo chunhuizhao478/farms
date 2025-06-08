@@ -247,7 +247,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0'
     number_of_pulses = 4
-    peak_pressure = 100e6
+    peak_pressure = 200e6
   []
 []
 
