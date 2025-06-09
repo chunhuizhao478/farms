@@ -37,8 +37,7 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::validParams()
 
   //porous flow coupling
   params.addParam<bool>("porous_flow_coupling", false, "Flag to indicate if this material is coupled to a porous flow module");
-  params.addParam<Real>("crack_surface_roughness_correction_factor", -1.0, "the factor to correct the crack opening based on crack surface roughness");
-  params.addParam<Real>("length_scale", -1.0, "the length scale for nonlocal eqstrain");
+  params.addParam<Real>("coeff_b", -1.0, "the factor to govern the exponential permeability enhancement");
   params.addParam<Real>("intrinsic_permeability", -1.0, "the intrisic permeability for the material, the intrisic permeability is used to take diagonal of the permeability tensor");
 
   return params;
@@ -73,17 +72,12 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::ComputeDamageBreakageStress3DD
     _stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation")),
     //## Porous flow coupling ##
     _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
-    _solid_bulk_compliance_damaged(declareProperty<Real>(_base_name + "solid_bulk_compliance_damaged")),
-    _crack_surface_roughness_correction_factor(getParam<Real>("crack_surface_roughness_correction_factor")),
-    _length_scale(getParam<Real>("length_scale")),
+    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged")),
+    _coeff_b(getParam<Real>("coeff_b")),
     _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
     _effective_perm(declareProperty<RealTensorValue>("effective_perm")),
     _crack_rotation(declareProperty<RankTwoTensor>("crack_rotation"))
 {
-  //add check on porous flow coupling parameters
-  if (_porous_flow_coupling && ( _crack_surface_roughness_correction_factor < 0.0 || _length_scale < 0.0 || _intrinsic_permeability < 0.0) ){
-    mooseError("The crack surface roughness correction factor, length scale and intrinsic permeability must be positive when using the porous flow coupling.");
-  }
 }
 
 void
@@ -601,45 +595,20 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::updatePermeabilityForCracking(
   // Get transformation matrix
   const RankTwoTensor & R = _crack_rotation[_qp];
 
-  // The first column of the rotation tensor is the direction of the maximum principal strain, extract it as the normal to the crack plane
-  RealVectorValue normal_to_crack_plane = R.column(0);
-
-  // Normalize the normal to the crack plane
-  RealVectorValue normalized_normal_to_crack_plane = normal_to_crack_plane / normal_to_crack_plane.norm();
-
-  // Compute the crack opening
-  Real xid = _alpha_damagedvar_aux[_qp] -  0.5;
-  HeavisideFunction(xid);
-
-  // Compute open crack width w_c
-  Real w_c = std::norm(_length_scale * ( 1 + normalized_normal_to_crack_plane * _elastic_strain[_qp] * normalized_normal_to_crack_plane ) );
-
-  // Compute closed crack width w_r
-  Real w_r = std::sqrt(12 * ( 10 * _intrinsic_permeability) );
-
-  // Compute the aperture w_h, take the maximum between w_c and w_r
-  Real w_h = std::max(_crack_surface_roughness_correction_factor * w_c * xid, _crack_surface_roughness_correction_factor * w_r * xid);
-
-  //Compute the effective permeability
-  RankTwoTensor perm_frac = (w_h * w_h / 12.0) * (RankTwoTensor::Identity() - RankTwoTensor::outerProduct(normalized_normal_to_crack_plane, normalized_normal_to_crack_plane));
+  // Initialize effective permeability new
+  RankTwoTensor effective_perm_new;
 
   //Compute the intrinsic permeability
   RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
 
-  //Compute the effective permeability
-  _effective_perm[_qp] = perm_intrinsic + _alpha_damagedvar_aux[_qp] * perm_frac;
+  // Initialize effective permeability new
+  effective_perm_new = perm_intrinsic * std::exp( _alpha_damagedvar_aux[_qp] * _coeff_b );
 
-  // Ensure effective permeability is not less than intrinsic permeability
-  for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
-  {
-      for (unsigned int j = 0; j < LIBMESH_DIM; ++j)
-      {
-          if (_effective_perm[_qp](i,j) < perm_intrinsic(i,j))
-          {
-            _effective_perm[_qp](i,j) = perm_intrinsic(i,j);
-          }
-      }
-  }
+  // Rotate back to global frame
+  effective_perm_new.rotate(R);
+
+  // Update effective perm
+  _effective_perm[_qp] = effective_perm_new;
 
 }
 

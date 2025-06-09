@@ -143,10 +143,7 @@ protected:
   MaterialProperty<Real> & _solid_bulk_compliance_damaged;
 
   /// crack surface roughness correction factor
-  Real _crack_surface_roughness_correction_factor;
-
-  /// length scale for nonlocal eqstrain
-  Real _length_scale;
+  Real _coeff_b;
 
   /// intrinsic permeability for the material, the intrisic permeability is used to take diagonal of the permeability tensor
   Real _intrinsic_permeability;
