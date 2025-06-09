@@ -127,51 +127,69 @@
 []
 
 [AuxKernels]
-    [accel_x]
-        type = NewmarkAccelAux
-        variable = accel_x
-        displacement = disp_x
-        velocity = vel_x
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
+    # [accel_x]
+    #     type = NewmarkAccelAux
+    #     variable = accel_x
+    #     displacement = disp_x
+    #     velocity = vel_x
+    #     beta = 0.25
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [vel_x]
+    #     type = NewmarkVelAux
+    #     variable = vel_x
+    #     acceleration = accel_x
+    #     gamma = 0.5
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [accel_y]
+    #     type = NewmarkAccelAux
+    #     variable = accel_y
+    #     displacement = disp_y
+    #     velocity = vel_y
+    #     beta = 0.25
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [vel_y]
+    #     type = NewmarkVelAux
+    #     variable = vel_y
+    #     acceleration = accel_y
+    #     gamma = 0.5
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [accel_z]
+    #     type = NewmarkAccelAux
+    #     variable = accel_z
+    #     displacement = disp_z
+    #     velocity = vel_z
+    #     beta = 0.25
+    #     execute_on = 'TIMESTEP_END'
+    # []
+    # [vel_z]
+    #     type = NewmarkVelAux
+    #     variable = vel_z
+    #     acceleration = accel_z
+    #     gamma = 0.5
+    #     execute_on = 'TIMESTEP_END'
+    # []
     [vel_x]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_x
-        acceleration = accel_x
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_y]
-        type = NewmarkAccelAux
-        variable = accel_y
-        displacement = disp_y
-        velocity = vel_y
-        beta = 0.25
+        coupled = disp_x
         execute_on = 'TIMESTEP_END'
     []
     [vel_y]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_y
-        acceleration = accel_y
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_z]
-        type = NewmarkAccelAux
-        variable = accel_z
-        displacement = disp_z
-        velocity = vel_z
-        beta = 0.25
+        coupled = disp_y
         execute_on = 'TIMESTEP_END'
     []
     [vel_z]
-        type = NewmarkVelAux
+        type = CompVarRate
         variable = vel_z
-        acceleration = accel_z
-        gamma = 0.5
+        coupled = disp_z
         execute_on = 'TIMESTEP_END'
-    []
+    []    
     #
     [get_xi]
         type = MaterialRealAux
