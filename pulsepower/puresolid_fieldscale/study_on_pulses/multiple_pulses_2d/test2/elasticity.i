@@ -3,7 +3,7 @@ nu = 0.373
 # ft = 25.5e6
 Gc_const = 57
 density = 2600
-dx_min = 1e-4
+dx_min = 2.5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
@@ -240,7 +240,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     shape_param_alpha = 4.658e5
     shape_param_beta = 4.661e5
     rise_time = 3e-6
-    single_pulse_duration = 2e-5
+    single_pulse_duration = 4e-5
     EM = 0.03
     gap = 0.02
     convert_efficiency = 1.0
