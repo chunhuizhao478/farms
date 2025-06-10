@@ -384,10 +384,15 @@
         time_step_interval = 10 ###
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_22 elastic_strain_tensor_22 plastic_strain_tensor_22 total_strain_tensor_22'
     [../]
-    [./csv]
-        type = CSV
-        time_step_interval = 1
-    [../]
+    # [./csv]
+    #     type = CSV
+    #     time_step_interval = 1
+    # [../]
+    [checkpoint]
+        type = Checkpoint
+        time_step_interval = 20
+        num_files = 2
+    []
 []
 
 [BCs]

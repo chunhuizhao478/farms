@@ -582,13 +582,18 @@ inner_confinement_pressure = 3.4e6
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1 ###
+        time_step_interval = 10 ###
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi effective_perm00_aux effective_perm01_aux effective_perm11_aux effective_perm22_aux'
     [../]
-    [./csv]
-        type = CSV
-        time_step_interval = 1
-    [../]
+    # [./csv]
+    #     type = CSV
+    #     time_step_interval = 1
+    # [../]
+    [checkpoint]
+        type = Checkpoint
+        time_step_interval = 20
+        num_files = 2
+    []
 []
 
 [BCs]
