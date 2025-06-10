@@ -21,19 +21,19 @@
         type = FarmsComboMarker
         markers = 'damage_marker strain_energy_marker'
         meshsize_marker = 'meshsize_marker'
-        block = 5
+        block = '4 5'
       [../]
       [damage_marker]
         type = ValueThresholdMarker
         variable = d
         refine = 0.5
-        block = 5
+        block = '4 5'
       []
       [strain_energy_marker]
         type = ValueThresholdMarker
         variable = psie_active
         refine = '${fparse 1.0*3/8*Gc_const/l}'
-        block = 5
+        block = '4 5'
       []   
       # if mesh_size > dxmin, refine
       # if mesh_size < dxmin/100, coarsen (which never happens)
@@ -44,7 +44,7 @@
         refine = '${dx_min}'
         coarsen = '${fparse dx_min/100}'
         third_state = DO_NOTHING
-        block = 5
+        block = '4 5'
       [] 
   []
 []
