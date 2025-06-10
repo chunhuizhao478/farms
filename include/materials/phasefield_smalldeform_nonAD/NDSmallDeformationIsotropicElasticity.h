@@ -33,6 +33,11 @@ private:
   virtual RankFourTensor computeJacobianSpectralDecomposition(const RankTwoTensor & strain);
   virtual RankFourTensor computeJacobianVolDevDecomposition(const RankTwoTensor & strain);
 
+  // @{ add additional functions for porous flow coupling
+  virtual void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
+  virtual void updatePermeabilityForCracking();
+  // @}
+
   // @{ Helper functions
   Real Macaulay(const Real x, const bool deriv = false);
   std::vector<Real> Macaulay(const std::vector<Real> & v, const bool deriv = false);
@@ -71,4 +76,19 @@ private:
 
   /// Decomposittion types
   const enum class Decomposition { none, spectral, voldev } _decomposition;
+
+  /// Add additional material properties for porous flow coupling
+  //@{ Rotation tensor used to rotate tensors into crack local coordinates
+  MaterialProperty<RankTwoTensor> & _crack_rotation;
+  const MaterialProperty<RankTwoTensor> & _crack_rotation_old;
+  ///@}
+
+  /// @brief define the effective permeability
+  MaterialProperty<RealTensorValue> & _effective_perm;
+  const MaterialProperty<RealTensorValue> & _effective_perm_old;  
+
+  const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
+  const Real _intrinsic_permeability;
+  const Real _coeff_b; // coefficient for the exponential function in the effective permeability
+
 };

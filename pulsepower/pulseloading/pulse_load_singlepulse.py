@@ -30,8 +30,8 @@ def objective(params, t0, td, epsilon=1e-6):
     return peak_time_error + decay_error
 
 # Parameters for both cases
-td_values = [5e-5]  # Fixed decay time
-t0 = 2e-6  # Two different rise times
+td_values = [4e-5]  # Fixed decay time
+t0 = 3e-6  # Two different rise times
 epsilon = np.finfo(float).eps 
 
 # Colors for the plots

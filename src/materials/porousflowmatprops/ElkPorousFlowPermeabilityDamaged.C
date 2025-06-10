@@ -22,7 +22,7 @@ ElkPorousFlowPermeabilityDamaged::validParams()
 
 ElkPorousFlowPermeabilityDamaged::ElkPorousFlowPermeabilityDamaged(const InputParameters & parameters)
   : PorousFlowPermeabilityBase(parameters),
-    _effective_perm(getMaterialProperty<RealTensorValue>("effective_perm_smeared_crack"))
+    _effective_perm(getMaterialProperty<RealTensorValue>("effective_perm"))
 {
 }
 

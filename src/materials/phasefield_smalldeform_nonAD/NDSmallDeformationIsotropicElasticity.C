@@ -48,6 +48,10 @@ NDSmallDeformationIsotropicElasticity::validParams()
       "The type of the model: AT1, AT2, PF_CZM");
   
   params.addRequiredParam<Real>("eta", "Parameter in the degradation function");
+  params.addParam<bool>("porous_flow_coupling", false, "Enable porous flow coupling");
+  params.addParam<Real>("intrinsic_permeability", 5e-19, "Intrinsic permeability in m^2");
+  params.addParam<Real>("coeff_b", 5.0,
+                        "Coefficient for the exponential function in the effective permeability");
 
   return params;
 }
@@ -81,7 +85,16 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     // Constants
     _eta(getParam<Real>("eta")),
 
-    _decomposition(getParam<MooseEnum>("decomposition").getEnum<Decomposition>())
+    _decomposition(getParam<MooseEnum>("decomposition").getEnum<Decomposition>()),
+
+    //porous flow coupling
+    _crack_rotation(declareProperty<RankTwoTensor>("crack_rotation")),
+    _crack_rotation_old(getMaterialPropertyOldByName<RankTwoTensor>("crack_rotation")),
+    _effective_perm(declareProperty<RealTensorValue>("effective_perm")),
+    _effective_perm_old(getMaterialPropertyOldByName<RealTensorValue>("effective_perm")),
+    _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
+    _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
+    _coeff_b(getParam<Real>("coeff_b"))
 {
 }
 
@@ -165,6 +178,14 @@ NDSmallDeformationIsotropicElasticity::computeStressSpectralDecomposition(
   Real psie_inactive = psie_intact - _psie_active[_qp];
   _psie[_qp] = _g[_qp] * _psie_active[_qp] + psie_inactive;
   _dpsie_dd[_qp] = _dg_dd[_qp] * _psie_active[_qp];
+
+  //Porous flow coupling
+  /* Compute Principal Strains and Rotation Matrix */
+  RealVectorValue strain_in_crack_dir; //principal strains
+  computeCrackStrainAndOrientation(strain_in_crack_dir);
+
+  // Compute effective permeability
+  updatePermeabilityForCracking();
 
   return stress;
 }
@@ -313,4 +334,61 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
   }
   else
     mooseError("Unknown model type: " + _model_type);
+}
+
+void
+NDSmallDeformationIsotropicElasticity::computeCrackStrainAndOrientation(
+    RealVectorValue & strain_in_crack_dir)
+{
+  // The rotation tensor is ordered such that directions for pre-existing cracks appear first
+  // in the list of columns.  For example, if there is one existing crack, its direction is in the
+  // first column in the rotation tensor.
+
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+    return;
+
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor eigvec;
+
+  _elastic_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
+
+  // If the elastic strain is beyond the cracking strain, save the eigen vectors as
+  // the rotation tensor. Reverse their order so that the third principal strain
+  // (most tensile) will correspond to the first crack.
+  _crack_rotation[_qp].fillColumn(0, eigvec.column(2));
+  _crack_rotation[_qp].fillColumn(1, eigvec.column(1));
+  _crack_rotation[_qp].fillColumn(2, eigvec.column(0));
+
+  strain_in_crack_dir(0) = eigval[2];
+  strain_in_crack_dir(1) = eigval[1];
+  strain_in_crack_dir(2) = eigval[0];
+}
+
+void
+NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
+{
+
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+    return;
+
+  // Get transformation matrix
+  const RankTwoTensor & R = _crack_rotation[_qp];
+
+  // Initialize effective permeability new
+  RankTwoTensor effective_perm_new;
+
+  //Compute the intrinsic permeability
+  RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
+
+  // Initialize effective permeability new
+  effective_perm_new = perm_intrinsic * std::exp( _d[_qp] * _coeff_b );
+
+  // Rotate back to global frame
+  effective_perm_new.rotate(R);
+
+  // Update effective perm
+  _effective_perm[_qp] = effective_perm_new;
+
 }
