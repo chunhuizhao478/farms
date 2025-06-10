@@ -13,7 +13,7 @@
 []
 
 [Adaptivity]
-  max_h_level = 5
+  max_h_level = 7
   marker = 'combo'
   cycles_per_step = 1
   [Markers]
