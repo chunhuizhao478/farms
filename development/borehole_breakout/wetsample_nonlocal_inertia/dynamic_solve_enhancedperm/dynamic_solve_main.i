@@ -661,7 +661,7 @@ inner_confinement_pressure = 3.4e6
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux' #local xi
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []

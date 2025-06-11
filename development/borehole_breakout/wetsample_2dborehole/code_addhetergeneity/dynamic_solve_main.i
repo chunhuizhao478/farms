@@ -6,7 +6,7 @@ poissons_ratio = 0.22
 solid_bulk_compliance = 3.46e-11
 lambda_o = ${fparse youngs_modulus*poissons_ratio/(1+poissons_ratio)/(1-2*poissons_ratio)}
 shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
-length_scale = 3e-3
+length_scale = 1.3e-3
 coeff_b = 5.0
 #-------------------------------------------------#
 
@@ -38,13 +38,15 @@ inner_confinement_pressure = 3.4e6
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_test.msh'
+        # file = '../meshfile/mesh_adaptive_test.msh'
+        file = '../mesh/2dborehole_order1.msh'
     [] 
 []
 
 [GlobalParams]
 
-    displacements = 'disp_x disp_y disp_z'
+    # displacements = 'disp_x disp_y disp_z'
+    displacements = 'disp_x disp_y'
     PorousFlowDictator = dictator #All porous modules must contain
       
     ##----continuum damage breakage model----##
@@ -86,11 +88,6 @@ inner_confinement_pressure = 3.4e6
         family = LAGRANGE    
         scaling = 1E-6
     []
-    [disp_z]
-        order = FIRST
-        family = LAGRANGE    
-        scaling = 1E-6
-    []
     [pp]
         order = FIRST
         family = LAGRANGE
@@ -107,10 +104,6 @@ inner_confinement_pressure = 3.4e6
         order = FIRST
         family = LAGRANGE
     []
-    [vel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
     [accel_x]
         order = FIRST
         family = LAGRANGE
@@ -119,10 +112,10 @@ inner_confinement_pressure = 3.4e6
         order = FIRST
         family = LAGRANGE
     []
-    [accel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
+    # [vel_z]
+    #     order = FIRST
+    #     family = LAGRANGE
+    # []
     #
     [alpha_damagedvar_aux]
         order = FIRST
@@ -146,10 +139,6 @@ inner_confinement_pressure = 3.4e6
         family = MONOMIAL      
     []
     [./effective_perm11_aux]
-        order = FIRST
-        family = MONOMIAL      
-    [] 
-    [./effective_perm22_aux]
         order = FIRST
         family = MONOMIAL      
     [] 
@@ -205,12 +194,6 @@ inner_confinement_pressure = 3.4e6
         coupled = disp_y
         execute_on = 'TIMESTEP_END'
     []
-    [vel_z]
-        type = CompVarRate
-        variable = vel_z
-        coupled = disp_z
-        execute_on = 'TIMESTEP_END'
-    []
     #
     [biot_modulus]
         type = MaterialRealAux
@@ -223,19 +206,19 @@ inner_confinement_pressure = 3.4e6
         type = MaterialRealAux
         variable = xi_aux
         property = strain_invariant_ratio
-        block = '3'
+        block = '8'
     []
     [get_I2]
         type = MaterialRealAux
         variable = I2_aux
         property = second_elastic_strain_invariant
-        block = '3'
+        block = '8'
     [] 
     [get_deviatroic_strain_rate]
         type = MaterialRealAux
         variable = deviatroic_strain_rate_aux
         property = deviatroic_strain_rate
-        block = '3'
+        block = '8'
     []
     #
     [get_nonlocal_xi]
@@ -250,7 +233,7 @@ inner_confinement_pressure = 3.4e6
       row = 0
       column = 0
       variable = effective_perm00_aux
-      block = '3'
+      block = '8'
     []
     [effective_permeability_01]
       type = MaterialRealTensorValueAux
@@ -258,7 +241,7 @@ inner_confinement_pressure = 3.4e6
       row = 0
       column = 1
       variable = effective_perm01_aux
-      block = '3'
+      block = '8'
     []
     [effective_permeability_11]
       type = MaterialRealTensorValueAux
@@ -266,15 +249,7 @@ inner_confinement_pressure = 3.4e6
       row = 1
       column = 1
       variable = effective_perm11_aux
-      block = '3'
-    [] 
-    [effective_permeability_22]
-      type = MaterialRealTensorValueAux
-      property = effective_perm
-      row = 2
-      column = 2
-      variable = effective_perm22_aux
-      block = '3'
+      block = '8'
     []   
 []
 
@@ -297,15 +272,6 @@ inner_confinement_pressure = 3.4e6
         gamma = 0.5
         eta = 0
     []
-    [inertia_z]
-        type = InertialForce
-        variable = disp_z
-        acceleration = accel_z
-        velocity = vel_z
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
     [dispkernel_x]
         type = StressDivergenceTensors
         variable = disp_x
@@ -315,11 +281,6 @@ inner_confinement_pressure = 3.4e6
         type = StressDivergenceTensors
         variable = disp_y
         component = 1
-    []
-    [dispkernel_z]
-        type = StressDivergenceTensors
-        variable = disp_z
-        component = 2
     []
     #pressure coupling on stress tensor
     [poro_x]
@@ -333,12 +294,6 @@ inner_confinement_pressure = 3.4e6
         biot_coefficient = ${biot_coefficient}
         variable = disp_y
         component = 1
-    []
-    [poro_z]
-        type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = ${biot_coefficient}
-        variable = disp_z
-        component = 2
     []
     #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
     #(pp - pp_old)/dt = pp_rate: if initial pp is zero, then the rate is not defined in the first time step
@@ -368,7 +323,7 @@ inner_confinement_pressure = 3.4e6
         B_damagedvar_aux = B_damagedvar_aux
         output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
         outputs = exodus
-        block = '3'
+        block = '8'
         #porous flow coupling
         porous_flow_coupling = true
         coeff_b = ${coeff_b}
@@ -383,14 +338,14 @@ inner_confinement_pressure = 3.4e6
     [compute_stress]
         type = ComputeLinearElasticStress
         outputs = exodus
-        block = '1 2'
+        block = '6 7'
     []
     #strain invariant ratio
     [comp_strain_invariant_ratio]
         type = ComputeXi 
         output_properties = 'strain_invariant_ratio'
         outputs = exodus
-        block = '1 2'
+        block = '6 7'
     []
     #nonlocal eqstrain
     [nonlocal_eqstrain]
@@ -449,10 +404,10 @@ inner_confinement_pressure = 3.4e6
     ##### Compute Damaged Permeability and Biot Modulus #####
     #########################################################
     # #compute permeability
-    # [permeability]
-    #     type = FarmsPorousFlowPermeabilityDamaged
-    #     block = '8'
-    # []
+    [permeability]
+        type = FarmsPorousFlowPermeabilityDamaged
+        block = '8'
+    []
     # #compute biot modulus #include damaged solid compliance
     # [biot_modulus]
     #     type = FarmsPorousFlowDamagedBiotModulus
@@ -468,7 +423,7 @@ inner_confinement_pressure = 3.4e6
     [permeability_constant]
         type = PorousFlowPermeabilityConst
         permeability = ${permeability}
-        block = '1 2 3'
+        block = '6 7'
     []
     #compute biot modulus
     [biot_modulus_constant]
@@ -476,7 +431,7 @@ inner_confinement_pressure = 3.4e6
         biot_coefficient = ${biot_coefficient}
         solid_bulk_compliance = ${solid_bulk_compliance}
         fluid_bulk_modulus = ${fluid_bulk_modulus}
-        block = '1 2 3'
+        block = '6 7 8'
     []    
     ##########################################################
     #Compute density and viscosity
@@ -546,15 +501,15 @@ inner_confinement_pressure = 3.4e6
     start_time = -1e-12
     end_time = 1e10
     # num_steps = 10
-    l_max_its = 100
+    l_max_its = 30
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
-    # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-    # petsc_options_value = ' lu       mumps       100'
+    # petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    # petsc_options_value = 'gmres          1000      100       hypre  boomeramg True'
+    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+    petsc_options_value = ' lu       mumps       100'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
@@ -583,17 +538,12 @@ inner_confinement_pressure = 3.4e6
     [./exodus]
         type = Exodus
         time_step_interval = 10 ###
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi effective_perm00_aux effective_perm01_aux effective_perm11_aux effective_perm22_aux'
+        # show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi stress_22 elastic_strain_tensor_22 plastic_strain_tensor_22 total_strain_tensor_22'
     [../]
-    # [./csv]
-    #     type = CSV
-    #     time_step_interval = 1
-    # [../]
-    [checkpoint]
-        type = Checkpoint
-        time_step_interval = 20
-        num_files = 2
-    []
+    [./csv]
+        type = CSV
+        time_step_interval = 1
+    [../]
 []
 
 [BCs]
@@ -601,39 +551,33 @@ inner_confinement_pressure = 3.4e6
     [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
-        boundary = 7
+        boundary = 3
         value = 0
     []
     [fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        boundary = 7
-        value = 0
-    []
-    [fix_bottom_z]
-        type = DirichletBC
-        variable = disp_z
-        boundary = 7
+        boundary = 3
         value = 0
     []
     #applied load on top boundary
     [applied_top_z_dispload]
         type = FunctionDirichletBC
-        variable = disp_z
-        boundary = 6
+        variable = disp_y
+        boundary = 2
         function = applied_load_top
     [] 
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]
-          boundary = 4
+          boundary = '4 5'
           factor = ${outer_confinement_pressure}
           displacements = 'disp_x disp_y'
         [../]
         [./inner_boundary]
-          boundary = 5
+          boundary = 1
           factor = ${inner_confinement_pressure}
-          displacements = 'disp_x disp_y disp_z'
+          displacements = 'disp_x disp_y'
         [../]
     []
 []
@@ -661,7 +605,7 @@ inner_confinement_pressure = 3.4e6
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
+        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux' #local xi
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
