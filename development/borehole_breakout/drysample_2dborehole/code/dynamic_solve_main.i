@@ -200,8 +200,19 @@ dt = 1e-3
     []
 []
 
+[Physics/SolidMechanics/Dynamic]
+  [all]
+    add_variables = true
+    hht_alpha = 0.11
+    newmark_beta = 0.25
+    newmark_gamma = 0.5
+    density = ${solid_density}
+    planar_formulation = 'PLANE_STRAIN'
+  []
+[]
+
 [Kernels]
-    [inertia_x]
+    [./inertia_x]
         type = InertialForce
         variable = disp_x
         acceleration = accel_x
@@ -210,7 +221,7 @@ dt = 1e-3
         gamma = 0.5
         eta = 0
     []
-    [inertia_y]
+    [./inertia_y]
         type = InertialForce
         variable = disp_y
         acceleration = accel_y
@@ -218,23 +229,13 @@ dt = 1e-3
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []
-    [dispkernel_x]
-        type = StressDivergenceTensors
-        variable = disp_x
-        component = 0
-    []
-    [dispkernel_y]
-        type = StressDivergenceTensors
-        variable = disp_y
-        component = 1
-    []
+    []    
 []
 
 [Materials]
-    [strain]
-        type = ComputeSmallStrain
-    []
+    # [strain]
+    #     type = ComputeSmallStrain
+    # []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
         alpha_damagedvar_aux = alpha_damagedvar_aux
