@@ -27,7 +27,7 @@ m2 = 1
 
 #strain rate dependent Cd options
 #-------------------------------------------------#
-use_cd_strain_dependent = true
+use_cd_strain_dependent = false
 m_exponent = 0.8
 strain_rate_hat = 1e-4
 cd_hat = 1
@@ -37,6 +37,11 @@ cd_hat = 1
 #-------------------------------------------------#
 outer_confinement_pressure = 17.2e6
 loading = 'if (t > 1e-3, -2.6477e-5 - 3.3e-7 * t, -2.6477e-5)'
+#-------------------------------------------------#
+
+#time stepping
+#-------------------------------------------------#
+dt = 1e-3
 #-------------------------------------------------#
 
 #implicit continuum damage-breakage model dynamics
@@ -307,7 +312,7 @@ loading = 'if (t > 1e-3, -2.6477e-5 - 3.3e-7 * t, -2.6477e-5)'
     type = TimePeriod
     disable_objects = '*/vel_x */vel_y */inertia_x */inertia_y'
     start_time = -1e-12
-    end_time = 1e-3 # dt used in the simulation
+    end_time = ${dt}
   []
 [../]
   
@@ -338,7 +343,7 @@ loading = 'if (t > 1e-3, -2.6477e-5 - 3.3e-7 * t, -2.6477e-5)'
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1e-3
+        dt = ${dt}
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
