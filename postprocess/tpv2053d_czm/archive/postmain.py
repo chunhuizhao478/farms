@@ -10,7 +10,7 @@ import postprocess.postfunc as postfunc
 plotvar = ["jump_x","jump_x_rate","traction_x"]
 save_file_path = "./results"
 dim = 3
-node_per_elem = 8 #hex8 #4 #tet4
+node_per_elem = 4 #hex8 #4 #tet4
 elemblock_ind = 2 #primary surface associated blocks
 
 #whether to save the folder results

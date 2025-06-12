@@ -15,16 +15,16 @@
     block_id = 100
   []
   [./new_block_2]
-      type = ParsedSubdomainMeshGenerator
-      input = new_block_1
-      combinatorial_geometry = 'x >= -15000 & x <= 15000 & z >= -15000 & y > 0'
-      block_id = 200
+    type = ParsedSubdomainMeshGenerator
+    input = new_block_1
+    combinatorial_geometry = 'x >= -15000 & x <= 15000 & z >= -15000 & y > 0'
+    block_id = 200
   []       
   [./split_1]
-      type = BreakMeshByBlockGenerator
-      input = new_block_2
-      split_interface = true
-      block_pairs = '100 200'
+    type = BreakMeshByBlockGenerator
+    input = new_block_2
+    split_interface = true
+    block_pairs = '100 200'
   []      
   [./sidesets]
     input = split_1
@@ -117,83 +117,19 @@
     order = FIRST
     family = MONOMIAL
   []
-  #global quantities
-  [./global_jump_x]
+  ###
+  [jump_x_aux]
     order = FIRST
     family = MONOMIAL
   []
-  [./global_jump_y]
+  [jump_x_rate_aux]
     order = FIRST
     family = MONOMIAL
   []
-  [./global_jump_z]
+  [traction_x_aux]
     order = FIRST
     family = MONOMIAL
-  []
-  [./global_traction_x]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./global_traction_y]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./global_traction_z]
-    order = FIRST
-    family = MONOMIAL
-  []
-  #local quantities
-  [./local_shear_jump]
-      order = FIRST
-      family = MONOMIAL
-  []
-  [./local_shear_jump_rate]
-      order = FIRST
-      family = MONOMIAL
-  []
-  [./local_shear_traction]
-    order = FIRST
-    family = MONOMIAL
-  []
-  #
-  [./local_normal_jump]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./local_normal_jump_rate]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./local_normal_traction]
-    order = FIRST
-    family = MONOMIAL
-  []
-  #
-  [./local_dip_jump]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./local_dip_jump_rate]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./local_dip_traction]
-    order = FIRST
-    family = MONOMIAL
-  []
-  #
-  [./normal_x]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./normal_y]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [./normal_z]
-    order = FIRST
-    family = MONOMIAL
-  []
+  []  
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -322,101 +258,24 @@
     execute_on = 'LINEAR TIMESTEP_BEGIN'
   []
   ##
-  [GetShearJump]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_shear_jump'
-    variable = local_shear_jump
+  [get_jump_x_aux]
+    type = MaterialRealAux
+    property = jump_x
+    variable = jump_x_aux
     boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
   []
-  [GetNormalJump]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_normal_jump'
-    variable = local_normal_jump
+  [get_jump_x_rate_aux]
+    type = FDCompVarRate
+    variable = jump_x_rate_aux
+    coupled = jump_x
+    execute_on = 'TIMESTEP_END'
     boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
   []
-  [GetDipJump]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_dip_jump'
-    variable = local_dip_jump
+  [get_traction_x_aux]
+    type = MaterialRealAux
+    property = traction_x
+    variable = traction_x_aux
     boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetShearJumpRate]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_shear_jump_rate'
-    variable = local_shear_jump_rate
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetNormalJumpRate]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_normal_jump_rate'
-    variable = local_normal_jump_rate
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetDipJumpRate]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_dip_jump_rate'
-    variable = local_dip_jump_rate
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetShearTraction]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_shear_traction'
-    variable = local_shear_traction
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetNormalTraction]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_normal_traction'
-    variable = local_normal_traction
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetDipTraction]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'local_dip_traction'
-    variable = local_dip_traction
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetNormalX]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'normal_x'
-    variable = normal_x
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetNormalY]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'normal_y'
-    variable = normal_y
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
-  []
-  [GetNormalZ]
-    type = FarmsMaterialRealAux3D
-    material_property_name = 'normal_z'
-    variable = normal_z
-    boundary = 'Block100_Block200'
-    ini_normal_sts = ini_normal_stress
-    ini_shear_sts = ini_shear_stress
   []
 []
 
@@ -496,7 +355,7 @@
 
 [Executioner]
   type = Transient
-  dt = 0.005
+  dt = 0.0025
   end_time = 12.0
   # num_steps = 10
   [TimeIntegrator]
@@ -507,8 +366,8 @@
 
 [Outputs]
   exodus = true
-  show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
-  time_step_interval = 40
+  show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux traction_x_aux jump_x_rate_aux'
+  time_step_interval = 20
   [csv]
     type = CSV
     execute_on = 'timestep_end'
@@ -527,7 +386,7 @@
 [VectorPostprocessors]
   [main_fault]
     type = SideValueSampler
-    variable = 'local_shear_traction local_shear_jump local_shear_jump_rate local_dip_traction local_dip_jump local_dip_jump_rate' 
+    variable = 'traction_x_aux jump_x_aux jump_x_rate_aux' 
     boundary = 'Block100_Block200'
     sort_by = x
   []
