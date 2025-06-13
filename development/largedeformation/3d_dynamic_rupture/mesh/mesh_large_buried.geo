@@ -4,34 +4,34 @@ SetFactory("OpenCASCADE");
 
 // Define mesh sizes
 lc_fault = 100; // Finer mesh size inside the fault zone
-lc = 10000;     // Coarser mesh size outside
+lc = 1000;     // Coarser mesh size outside
 
 // Define the big box (outer domain)
 // Later the region will be block 2, and use linear elastic material
-big_xmin = -120000;
-big_xmax = 120000;
-big_ymin = -120000;
-big_ymax = 120000;
-big_zmin = -120000;
+big_xmin = -12000;
+big_xmax = 12000;
+big_ymin = -10000;
+big_ymax = 10000;
+big_zmin = -20000;
 big_zmax = 0;
 
 // Define the small fault zone box
 // The region will be block 3, and use continuum damage breakage material
-small_xmin = -2000;
-small_xmax = 2000;
+small_xmin = -8000;
+small_xmax = 8000;
 small_ymin = -2000;
 small_ymax = 2000;
-small_zmin = -9000;
-small_zmax = -6000;
+small_zmin = -16000;
+small_zmax = -4000;
 
 // Define the inner damage zone box
 // The region will be block 1, and use continuum damage breakage material   
-damage_xmin = -1000;
-damage_xmax = 1000;
+damage_xmin = -7000;
+damage_xmax = 7000;
 damage_ymin = -100;
 damage_ymax = 100;
-damage_zmin = -8000;
-damage_zmax = -7000;
+damage_zmin = -15000;
+damage_zmax = -5000;
 
 // Create the big outer box
 big_box = newv;
@@ -57,11 +57,20 @@ Field[2] = Threshold;
 Field[2].IField = 1;
 Field[2].LcMin = lc_fault;
 Field[2].LcMax = lc;
-Field[2].DistMin = 1400;    // Adjust as needed
-Field[2].DistMax = 60000;  // Adjust as needed
+Field[2].DistMin = 2*lc_fault;
+Field[2].DistMax = 2*lc_fault+0.001;
 
-// Set the Threshold field as the background field
-Background Field = 2;
+// Matheval field returns "distance squared + lc/20"
+Field[3] = MathEval;
+//Field[2].F = Sprintf("0.02*F1 + 0.00001*F1^2 + %g", lc_fault);
+//Field[2].F = Sprintf("0.02*F1 +(F1/2e3)^2 + %g", lc_fault);
+Field[3].F = Sprintf("0.05*F1 +(F1/2.5e3)^2 + %g", lc_fault);
+
+// 3. Create a new field that combines the two fields
+Field[4] = Min;
+Field[4].FieldsList = {2,3};
+
+Background Field = 4;
 
 // Assign Physical Volumes
 volumes[] = Volume{:};

@@ -1,13 +1,29 @@
 #implicit continuum damage-breakage model dynamics
+
+#material properties
+lambda_o = 32.04e9
+shear_modulus_o = 32.04e9
+xi_o = -0.8
+xi_d = -0.85
+chi = 0.8
+m1 = 10
+m2 = 1
+Cg = 1e-10
 fluid_density = 1000   
 solid_density = 2700
 gravity_pos = 9.81
 gravity_neg = -9.81
 
+sigma = 5e2
+peak_val = 0.7
+len_of_fault_strike = 14000
+len_of_fault_dip = 10000
+nucl_center = '0 0 -10000'
+
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_large_buried.msh'
     []
     [./sidesets]
         input = msh
@@ -22,10 +38,10 @@ gravity_neg = -9.81
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -120000 -120000 -120000;
-                   120000 -120000 -120000;
-                   120000 120000  -120000;
-                  -120000 120000  -120000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -38,28 +54,28 @@ gravity_neg = -9.81
     
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
-    lambda_o = 32.04e9
+    lambda_o = ${lambda_o}
         
     #initial shear modulus value (FIRST lame constant) [Pa]
-    shear_modulus_o = 32.04e9
+    shear_modulus_o = ${shear_modulus_o}
     
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-    xi_0 = -0.7
+    xi_0 = ${xi_o}
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-    xi_d = -0.8
+    xi_d = ${xi_d}
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = ${Cg}
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    m1 = 10
+    m1 = ${m1}
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-    m2 = 1
+    m2 = ${m2}
     
     #coefficient of energy ratio Fb/Fs = chi < 1
-    chi = 0.8
+    chi = ${chi}
     
 []
 
@@ -431,8 +447,8 @@ linear_variation_cutoff_distance = 15600
     #elastic material
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
-        lambda = 32.04e9
-        shear_modulus = 32.04e9
+        lambda = ${lambda_o}
+        shear_modulus = ${shear_modulus_o}
     []
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
@@ -457,23 +473,16 @@ linear_variation_cutoff_distance = 15600
     []
     #shear stress perturbation
     [damage_perturbation]
-        type = PerturbationRadial
-        nucl_center = '0 0 0'
-        peak_value = 0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
+        type = GenericConstantMaterial
+        prop_names = 'shear_stress_perturbation damage_perturbation'
+        prop_values = '0 0'
     []
 [] 
 
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 300
+        length_scale = 200
         prop_name = strain_invariant_ratio
         radius = 200
         weights = BAZANT
@@ -535,13 +544,6 @@ linear_variation_cutoff_distance = 15600
         maxvely = 'maxvely'
         maxvelz = 'maxvelz'
     []
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     cutback_factor_at_failure = 0.5
-    #     growth_factor = 2.0
-    #     optimal_iterations = 100
-    #     dt = 1e-2
-    # []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
@@ -622,28 +624,28 @@ linear_variation_cutoff_distance = 15600
         type = FunctionNeumannBC
         variable = disp_x
         boundary = front
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_back_shear]
         type = FunctionNeumannBC
         variable = disp_x
         boundary = back
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     [] 
     [static_pressure_left_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = left
-        function = func_neg_xy_stress
+        function = func_pos_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []  
     [static_pressure_right_shear]
         type = FunctionNeumannBC
         variable = disp_y
         boundary = right
-        function = func_pos_xy_stress
+        function = func_neg_xy_stress
         displacements = 'disp_x disp_y disp_z'
     []   
     # fix ptr
@@ -916,7 +918,7 @@ linear_variation_cutoff_distance = 15600
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_test_cdbm_out.e'
+      mesh = '../static_solve/static_solve_out.e'
       system_variables = 'disp_x disp_y disp_z initial_xi_aux initial_I2_aux initial_damage_aux initial_breakage_aux'
       timestep = LATEST
       force_preaux = true

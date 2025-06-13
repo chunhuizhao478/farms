@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_large_buried.msh'
     []
     [./sidesets]
         input = msh
@@ -17,10 +17,10 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = ' -120000 -120000 -120000;
-                   120000 -120000 -120000;
-                   120000 120000  -120000;
-                  -120000 120000  -120000'
+        coord = ' -12000 -10000 -20000;
+                   12000 -10000 -20000;
+                   12000 10000  -20000;
+                  -12000 10000  -20000'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -233,12 +233,12 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 -7500'
-        peak_value = 0.3
+        peak_value = 0.0
         thickness = 200
-        length = 200
+        length = 1000
         duration = 1.0
         perturbation_type = 'damage'
-        sigma_divisor = 2.0
+        sigma_divisor = 1.0
         output_properties = 'shear_stress_perturbation damage_perturbation'
         outputs = exodus
     [] 
@@ -263,15 +263,6 @@
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
     verbose = true
-    # dt = 1e-2
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-2
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
-        growth_factor = 1.1
-        max_time_step_bound = 1e7
-    []
 []
 
 [UserObjects]
