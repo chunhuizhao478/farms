@@ -259,23 +259,9 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
       boundary = 3
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
-      use_displaced_mesh = true
+      use_displaced_mesh = false
     []             
-  []
-  # fix all displacements in top
-  # [./fix_top_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = 3
-  #   value = 0
-  # []
-  # #fix all displacements in bottom
-  # [./fix_bottom_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = 6
-  #   value = 0
-  # []    
+  []   
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -289,15 +275,6 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     boundary = corner_ptr
     value = 0
   []
-  # [./fix_cptr3_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = corner_ptr
-  #   value = 0
-  # []
-[]
-
-[BCs]
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
@@ -335,21 +312,6 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     p_wave_speed = ${Cp}
     density = ${density}
   []
-  # [damp_outer_z]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_z
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 2
-  #   boundary = 4
-  #   beta = 0.25
-  #   gamma = 0.5
-  #   alpha = 0.11
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  # [] 
 []
 
 [Materials]
@@ -402,7 +364,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
   petsc_options_value = 'gmres     hypre  boomeramg True'
 
-  automatic_scaling = true
+  # automatic_scaling = true
 
   l_max_its = 100
   nl_rel_tol = 1e-8
@@ -434,7 +396,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 100
+  time_step_interval = 1
   print_linear_residuals = false
   csv = true
   [checkpoint]
