@@ -380,7 +380,7 @@
         type = ElkRadialAverage
         length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 300
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -396,7 +396,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y */preset_displacements'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -407,7 +407,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 1e10
+    end_time = 1e100
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -430,7 +430,7 @@
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 8
-        growth_factor = 1.1
+        growth_factor = 2.0
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
@@ -475,7 +475,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 40
+      time_step_interval = 1
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
@@ -486,17 +486,14 @@
 
 [BCs]
     #add initial shear stress
-    [initial_shear_stress_top]
-        type = FunctionNeumannBC
-        variable = disp_x
-        function = func_top_traction
+    [preset_displacements]
+        type = PresetDisplacement
         boundary = top
-    [] 
-    [initial_shear_stress_bottom]
-        type = FunctionNeumannBC
         variable = disp_x
-        function = func_bottom_traction
-        boundary = bottom
+        beta = 0.25
+        velocity = vel_x
+        acceleration = accel_x
+        function = func_top_bc
     []
     # 
     [static_pressure_top]
@@ -517,14 +514,14 @@
         type = NeumannBC
         variable = disp_x
         boundary = left
-        value = 50e6
+        value = 90e6
         displacements = 'disp_x disp_y'
     []  
     [static_pressure_right]
         type = NeumannBC
         variable = disp_x
         boundary = right
-        value = -50e6
+        value = -90e6
         displacements = 'disp_x disp_y'
     []       
     # fix left ptr
@@ -671,7 +668,8 @@
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
-        sub_cycling = true
+        # sub_cycling = true
+        clone_parent_mesh = true
     [../]
 []
 
@@ -695,7 +693,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../../static_solve_newbc/static_solve_local_out.e'
+      mesh = '../../static_solve_newbc/static_solve_local_xi3_out.e'
       system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true
