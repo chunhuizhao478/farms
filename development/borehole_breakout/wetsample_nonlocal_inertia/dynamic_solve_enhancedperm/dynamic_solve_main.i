@@ -585,10 +585,10 @@ inner_confinement_pressure = 3.4e6
         time_step_interval = 1 ###
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi effective_perm00_aux effective_perm01_aux effective_perm11_aux effective_perm22_aux'
     [../]
-    # [./csv]
-    #     type = CSV
-    #     time_step_interval = 1
-    # [../]
+    [./csv]
+        type = CSV
+        time_step_interval = 1
+    [../]
     [checkpoint]
         type = Checkpoint
         time_step_interval = 20
@@ -673,5 +673,19 @@ inner_confinement_pressure = 3.4e6
         porous_flow_vars = 'pp disp_x disp_y'
         number_fluid_phases = 1
         number_fluid_components = 1
+    []
+[]
+
+#compute the reaction force on the top boundary
+[Postprocessors]
+    [./react_z]
+      type = SidesetReaction
+      direction = '0 0 1'
+      stress_tensor = stress
+      boundary = 6
+    [../]
+    [./strain_z]
+        type = FunctionValuePostprocessor
+        function = applied_load_top
     []
 []
