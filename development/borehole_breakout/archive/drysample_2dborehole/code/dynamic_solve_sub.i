@@ -185,6 +185,7 @@
         #use deviatroic strain rate to compute Cd
         use_cd_strain_dependent = ${use_cd_strain_dependent}
         strain_rate = deviatroic_strain_rate_sub_aux
+        output_properties = 'xi_1'
     []
     #add shear perturbation to the system
     [damage_perturbation]
