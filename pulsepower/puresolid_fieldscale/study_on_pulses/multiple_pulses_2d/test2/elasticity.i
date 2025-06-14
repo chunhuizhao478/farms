@@ -3,7 +3,7 @@ nu = 0.373
 # ft = 25.5e6
 Gc_const = 57
 density = 2600
-dx_min = 2.5e-5
+dx_min = 1e-4
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
@@ -396,18 +396,18 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
   solve_type = NEWTON
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
-  automatic_scaling = true
+  # automatic_scaling = true
 
   l_max_its = 100
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
-  nl_max_its = 15
+  nl_max_its = 30
 
   # dt = 0.5e-7
   end_time = 20e-5
@@ -421,7 +421,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     type = FarmsIterationAdaptiveDT
     dt = 1e-8
     cutback_factor_at_failure = 0.5
-    optimal_iterations = 5
+    optimal_iterations = 20
     growth_factor = 1.25
     max_time_step_bound = 1e-7
   []
@@ -434,12 +434,12 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
   [checkpoint]
       type = Checkpoint
-      time_step_interval = 20
+      time_step_interval = 100
       num_files = 2
   []
 []

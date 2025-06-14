@@ -143,13 +143,13 @@
   type = Transient
 
   solve_type = NEWTON
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
+  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
 
-  automatic_scaling = true
+  # automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
