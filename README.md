@@ -6,11 +6,11 @@ FARMS is a MOOSE-based application for simulating dynamic rupture and earthquake
 
 ## Features
 
-(Oct 1st 2023):
-
 Various Frictional Laws: Slip Weakening, Rate-and-State Friction (including strong rate weakeing).
 
 Complex Fault Geometry: Nonplanar Fault (main fault with branches / branch network).
+
+![turkey](https://github.com/user-attachments/assets/fc5c8ed6-7ba2-44c5-9ff8-3535076d6233)
 
 Additional Constitutive Law: Continuum Damage-Breakage Rheology Model.
 
