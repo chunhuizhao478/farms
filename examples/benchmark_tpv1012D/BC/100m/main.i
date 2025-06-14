@@ -2,25 +2,31 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 201
-        ny = 200
-        xmin = -10050
-        xmax = 10050
-        ymin = -10000
-        ymax = 10000
+        nx = 800
+        ny = 800
+        xmin = -40000
+        xmax = 40000
+        ymin = -40000
+        ymax = 40000
     [../]
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'y<0'
-        block_id = 1
+    [./new_block_1]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'y>0 & x>-18000 & x<18000'
+      block_id = 1
     []
-    #add "Block0_Block1" and "Block1_Block0" interfaces
+    [./new_block_2]
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'y<0 & x>-18000 & x<18000'
+      block_id = 2
+    []
     [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block
-        split_interface = true
-        add_interface_on_two_sides = true
+      type = BreakMeshByBlockGenerator
+      input = new_block_2
+      split_interface = true
+      block_pairs = '1 2'
+      add_interface_on_two_sides = true
     []
 []
 
@@ -163,17 +169,17 @@
     extra_tag_vectors = 'restore_tag restore_dampx_tag restore_dampy_tag'
 []
 
-[Modules]
-    [./TensorMechanics]
-        [./Master]
-        [./all]
+[Physics]
+    [SolidMechanics]
+      [QuasiStatic]
+        [all]
             strain = SMALL
             displacements = 'disp_x disp_y'
             planar_formulation = PLANE_STRAIN
             extra_vector_tags = 'restore_tag'
-        [../]
-        [../]
-    [../]
+        []
+      []
+    []
 []
 
 [Kernels]
@@ -246,25 +252,25 @@
         type = MatchedValueBC
         variable = disp_x
         v = disp_plusminus_scaled_x
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
     []
     [./matchval_secondary_x]
         type = MatchedValueBC
         variable = disp_x
         v = disp_plusminus_scaled_x
-        boundary = 'Block1_Block0'
+        boundary = 'Block2_Block1'
     []
     [./matchval_primary_y]
         type = MatchedValueBC
         variable = disp_y
         v = disp_plusminus_scaled_y
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
     []
     [./matchval_secondary_y]
         type = MatchedValueBC
         variable = disp_y
         v = disp_plusminus_scaled_y
-        boundary = 'Block1_Block0'
+        boundary = 'Block2_Block1'
     []
     ##non-reflecting bc
     [./dashpot_top_x]
@@ -351,18 +357,18 @@
 
 [Executioner]
     type = Transient
-    dt = 0.00125
+    dt = 0.0025
     end_time = 5.0
-  #  num_steps = 10
+    #  num_steps = 10
     [TimeIntegrator]
-        type = CentralDifference
+        type = FarmsCentralDifference
         solve_type = lumped
     []
 []
 
 [Outputs]
     exodus = true
-    interval = 20
+    time_step_interval = 20
 []
 
 [MultiApps]
@@ -393,7 +399,3 @@
         execute_on = 'INITIAL TIMESTEP_BEGIN'
     []
 []
-
-# [Debug]
-#     show_execution_order = ALWAYS
-# []

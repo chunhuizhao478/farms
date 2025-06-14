@@ -2,25 +2,31 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 201
-        ny = 200
-        xmin = -10050
-        xmax = 10050
-        ymin = -10000
-        ymax = 10000
+        nx = 800
+        ny = 800
+        xmin = -40000
+        xmax = 40000
+        ymin = -40000
+        ymax = 40000
     [../]
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'y<0'
-        block_id = 1
+    [./new_block_1]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'y>0 & x>-18000 & x<18000'
+      block_id = 1
     []
-    #add "Block0_Block1" and "Block1_Block0" interfaces
+    [./new_block_2]
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'y<0 & x>-18000 & x<18000'
+      block_id = 2
+    []
     [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block
-        split_interface = true
-        add_interface_on_two_sides = true
+      type = BreakMeshByBlockGenerator
+      input = new_block_2
+      split_interface = true
+      block_pairs = '1 2'
+      add_interface_on_two_sides = true
     []
 []
 
@@ -194,68 +200,68 @@
         type = MaterialRealAux
         property = traction_strike
         variable = traction_sub_strike
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_traction_normal]
         type = MaterialRealAux
         property = traction_normal
         variable = traction_sub_normal
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_sliprate_strike]
         type = MaterialRealAux
         property = sliprate_strike
         variable = sliprate_sub_strike
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_sliprate_normal]
         type = MaterialRealAux
         property = sliprate_normal
         variable = sliprate_sub_normal
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_slip_strike]
         type = MaterialRealAux
         property = slip_strike
         variable = slip_sub_strike
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_slip_normal]
         type = MaterialRealAux
         property = slip_normal
         variable = slip_sub_normal
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
     [output_statevar]
         type = MaterialRealAux
         property = statevar
         variable = statevar_sub
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         execute_on = 'TIMESTEP_END'
     []
 []
 
-[Modules]
-    [./TensorMechanics]
-        [./Master]
-        [./all]
-            strain = SMALL
-            displacements = 'disp_sub_x disp_sub_y'
-            planar_formulation = PLANE_STRAIN
-        [../]
-        [../]
-    [../]
+[Physics]
+    [SolidMechanics]
+        [QuasiStatic]
+            [all]
+                strain = SMALL
+                displacements = 'disp_sub_x disp_sub_y'
+                planar_formulation = PLANE_STRAIN
+            []
+        []
+    []
 []
 
 [Modules/TensorMechanics/CohesiveZoneMaster]
     [./czm_ik]
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         strain = SMALL
     [../]
 []
@@ -267,14 +273,14 @@
         variable = disp_sub_x
         neighbor_var = disp_sub_x
         extra_vector_tags = 'restore_tag_x'
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
     []
     [./ratestate_y]
         type = RateStateInterfaceKernelGlobaly
         variable = disp_sub_y
         neighbor_var = disp_sub_y
         extra_vector_tags = 'restore_tag_y'
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
     []
 []
 
@@ -304,20 +310,13 @@
         reaction_damp_x = resid_damp_sub_x
         reaction_damp_y = resid_damp_sub_y
         Ts_perturb = ini_shear_stress_perturb
-        boundary = 'Block0_Block1'
+        boundary = 'Block1_Block2'
         output_properties = 'sliprate_strike slip_strike statevar traction_strike traction_normal alongfaultdisp_strike_plus alongfaultdisp_strike_minus'
-        # outputs = exodus
+        outputs = exodus
     [../]
 []
 
 [UserObjects]
-    #compute element side volume (using CONTACT modulus)
-    # [element_side_volume]
-    #     type = NodalArea
-    #     variable = element_side_volume
-    #     boundary = 'Block0_Block1 Block1_Block0'
-    #     execute_on = 'initial TIMESTEP_BEGIN'
-    # []
     [recompute_residual_tag_x]
         type = ResidualEvaluationUserObject
         vector_tag = 'restore_tag_x'
@@ -341,12 +340,12 @@
 [Executioner]
     type = Transient
     [TimeIntegrator]
-        type = CentralDifference
+        type = FarmsCentralDifference
         solve_type = lumped
     []
 []
 
 [Outputs]
     exodus = true
-    interval = 20
+    time_step_interval = 20
 []
