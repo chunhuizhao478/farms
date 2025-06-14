@@ -1,30 +1,37 @@
 [Mesh]
-    [./msh]
-        type = GeneratedMeshGenerator
-        dim = 3
-        nx = 200
-        ny = 100
-        nz = 200
-        xmin = -10000
-        xmax = 10000
-        ymin = -5000
-        ymax = 5000
-        zmin = -10000
-        zmax = 10000
-    [../]
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
-        input = msh
-        combinatorial_geometry = 'y<0'
-        block_id = 1
-    []
-    #add "Block0_Block1" and "Block1_Block0" interfaces
-    [./split]
-        type = BreakMeshByBlockGenerator
-        input = new_block
-        split_interface = true
-        add_interface_on_two_sides = true
-    []
+  [./msh]
+    type = FileMeshGenerator
+    file = '../../../meshgenerator/tpv1013d/tpv1013d_100m.msh'
+  []
+  [./new_block_1]
+    type = ParsedSubdomainMeshGenerator
+    input = msh
+    combinatorial_geometry = 'x >= -18000 & x <= 18000 & z >= -18000 & y < 0'
+    block_id = 100
+  []
+  [./new_block_2]
+    type = ParsedSubdomainMeshGenerator
+    input = new_block_1
+    combinatorial_geometry = 'x >= -18000 & x <= 18000 & z >= -18000 & y > 0'
+    block_id = 200
+  []       
+  [./split_1]
+    type = BreakMeshByBlockGenerator
+    input = new_block_2
+    split_interface = true
+    block_pairs = '100 200'
+  []      
+  [./sidesets]
+    input = split_1
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0
+                0 0 -1
+                0 0 1'
+    new_boundary = 'left right bottom top back front'
+  [] 
 []
 
 [GlobalParams]
