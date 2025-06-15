@@ -1,14 +1,14 @@
 E = 50e9
 nu = 0.373
-# ft = 25.5e6
+ft = 25.5e6
 Gc_const = 57
 density = 2600
-dx_min = 1e-4
+dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  1e-4 
-#'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
+psic = ${fparse ft * ft / (2 * E)}
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
@@ -55,7 +55,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc_const=${Gc_const};psic=${psic};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -77,14 +77,12 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 []
 
 [GlobalParams]
-  # displacements = 'disp_x disp_y disp_z'
   displacements = 'disp_x disp_y'
 []
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    # file =  '../../../meshfile/fieldscale_test1.msh'
     file =  '../../../2dmeshfile/fieldscale_test2_2d.msh'
   []
   [./extranodeset1]
@@ -94,7 +92,6 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     input = msh
     use_closest_node=true
   []
-  # displacements = 'disp_x disp_y disp_z'
   displacements = 'disp_x disp_y'
 []
 
@@ -142,6 +139,11 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   [mesh_size]
     family = MONOMIAL
     order = CONSTANT
+  []
+  ###
+  [Gc_var]
+    order = CONSTANT
+    family = MONOMIAL
   []
 []
 
@@ -237,20 +239,6 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
       use_displaced_mesh = true
     []             
   []
-  # fix all displacements in top
-  # [./fix_top_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = 3
-  #   value = 0
-  # []
-  # #fix all displacements in bottom
-  # [./fix_bottom_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = 6
-  #   value = 0
-  # []    
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -264,12 +252,6 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     boundary = corner_ptr
     value = 0
   []
-  # [./fix_cptr3_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = corner_ptr
-  #   value = 0
-  # []
 []
 
 [BCs]
@@ -313,18 +295,31 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 []
 
 [Materials]
-  [bulk]
+  [bulk_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'K G'
-    prop_values = '${K} ${G}'
+    prop_names = 'K G l psic'
+    prop_values = '${K} ${G} ${l} ${psic}'
+  []
+  [crack_geometric]
+    type = CrackGeometricFunction
+    property_name = alpha
+    expression = 'd'
+    phase_field = d
+  []
+  [Gc_var]
+    type = ADParsedMaterial
+    property_name = Gc
+    coupled_variables = 'Gc_var'
+    expression = 'Gc_var'
   []
   [degradation]
-    type = PowerDegradationFunction
+    type = RationalDegradationFunction
     property_name = g
-    expression = (1-d)^p*(1-eta)+eta
+    expression = (1-d)^p/((1-d)^p+(Gc/psic*xi/c0/l)*d*(1+a2*d+a2*a3*d^2))*(1-eta)+eta
     phase_field = d
-    parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
+    material_property_names = 'Gc psic xi c0 l '
+    parameter_names = 'p a2 a3 eta '
+    parameter_values = '2 -0.5 0 1e-6'
   []
   [elasticity]
     type = SmallDeformationIsotropicElasticity
@@ -372,7 +367,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   # dt = 0.5e-7
   end_time = 20e-5
 
-  fixed_point_max_its = 5
+  fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = true
   fixed_point_rel_tol = 1e-8
   fixed_point_abs_tol = 1e-10
@@ -394,12 +389,33 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 
 [Outputs]
   exodus = true
-  time_step_interval = 100
+  time_step_interval = 10
   print_linear_residuals = false
   csv = true
   [checkpoint]
       type = Checkpoint
-      time_step_interval = 100
+      time_step_interval = 10
       num_files = 2
+  []
+[]
+
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 12.0 #k
+    scale = ${Gc_const} #lambda
+    location = 0 
+  []
+[] 
+
+[ICs]
+  [./gc_var]
+    type =  RandomIC
+    variable = Gc_var
+    distribution = weibull
+    seed = 100
   []
 []

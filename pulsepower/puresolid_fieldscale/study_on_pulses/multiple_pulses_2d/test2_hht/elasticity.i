@@ -421,7 +421,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
     type = FarmsIterationAdaptiveDT
     dt = 1e-8
     cutback_factor_at_failure = 0.5
-    optimal_iterations = 5
+    optimal_iterations = 10
     growth_factor = 1.25
     max_time_step_bound = 1e-7
   []
