@@ -22,7 +22,7 @@ beta_width = 0.05
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_test.msh'
+        file = '../meshfile/mesh_adaptive.msh'
     [] 
 []
 
@@ -54,9 +54,9 @@ beta_width = 0.05
     Cd_constant = ${Cd_constant}
 
     #strain rate dependent Cd options
-    # m_exponent = 0.8
-    # strain_rate_hat = 1e-8
-    # cd_hat = 1e4
+    m_exponent = 0.8
+    strain_rate_hat = 1e-8
+    cd_hat = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -209,6 +209,7 @@ beta_width = 0.05
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
+        use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system

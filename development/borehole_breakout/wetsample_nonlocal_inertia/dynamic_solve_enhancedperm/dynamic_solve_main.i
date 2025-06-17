@@ -38,7 +38,7 @@ inner_confinement_pressure = 3.4e6
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_test.msh'
+        file = '../meshfile/mesh_adaptive.msh'
     [] 
 []
 
