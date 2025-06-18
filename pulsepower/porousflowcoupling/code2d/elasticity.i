@@ -24,7 +24,7 @@ porosity = 0.008
 solid_bulk_modulus_compliance = 1.524e-11
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
-coeff_b = 5.0 # coefficient for the exponential function in the effective permeability
+coeff_b = 0.1 # coefficient for the exponential function in the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
