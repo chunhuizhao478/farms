@@ -209,6 +209,28 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
   []
 []
 
+[Kernels]
+  #solid
+  [inertia_x]
+      type = ADInertialForce
+      variable = disp_x
+      acceleration = accel_x
+      velocity = vel_x
+      beta = 0.25
+      gamma = 0.5
+      eta = 0
+  []
+  [inertia_y]
+      type = ADInertialForce
+      variable = disp_y
+      acceleration = accel_y
+      velocity = vel_y
+      beta = 0.25
+      gamma = 0.5
+      eta = 0
+  []
+[]
+
 [Functions]
   [func_tri_pulse]
     type = ElkPulseLoadExperiment
@@ -315,8 +337,8 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 [Materials]
   [bulk]
     type = ADGenericConstantMaterial
-    prop_names = 'K G'
-    prop_values = '${K} ${G}'
+    prop_names = 'K G density'
+    prop_values = '${K} ${G} ${density}'
   []
   [degradation]
     type = PowerDegradationFunction
