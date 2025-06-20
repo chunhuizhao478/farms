@@ -1,7 +1,8 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    # file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -12,38 +13,38 @@
   []
 []
 
-[Adaptivity]
-  max_h_level = 5
-  marker = 'combo'
-  cycles_per_step = 1
-  [Markers]
-      [./combo]
-        type = FarmsComboMarker
-        markers = 'damage_marker strain_energy_marker'
-        meshsize_marker = 'meshsize_marker'
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.5
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc_const/l}'
-      []   
-      # if mesh_size > dxmin, refine
-      # if mesh_size < dxmin/100, coarsen (which never happens)
-      # otherwise, do nothing
-      [meshsize_marker]
-        type = ValueThresholdMarker
-        variable = mesh_size
-        refine = '${dx_min}'
-        coarsen = '${fparse dx_min/100}'
-        third_state = DO_NOTHING
-      [] 
-  []
-[]
+# [Adaptivity]
+#   max_h_level = 5
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#       []   
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#       [] 
+#   []
+# []
 
 [Variables]
   [d]
@@ -152,7 +153,7 @@
 []
 
 [Outputs]
-  exodus = false
+  exodus = true
   # time_step_interval = 40
   print_linear_residuals = false
 []
@@ -163,7 +164,7 @@
   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
   [weibull]
     type = Weibull
-    shape = 12.0 #k
+    shape = 15.0 #k
     scale = ${Gc_const} #lambda
     location = 0 
   []

@@ -2,12 +2,12 @@
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
-Gc_const = 57  # critical energy release rate, N * m
+Gc_const = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3 
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 # length scale, m
+l =  5e-5 # length scale, m
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -16,6 +16,7 @@ confinement_pressure  = 1e6
 
 #hydraulic properties
 #----------------------------------------------------#
+initial_pore_pressure = 0.0965e6
 fluid_density = 1000
 biot_coefficient = 0.7
 fluid_bulk_modulus = 2.24e+9
@@ -24,50 +25,50 @@ porosity = 0.008
 solid_bulk_modulus_compliance = 1.524e-11
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
-coeff_b = 0.1 # coefficient for the exponential function in the effective permeability
+coeff_b = 0.2 # coefficient for the exponential function in the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.11
+hht_alpha = 0
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
-[Adaptivity]
-  max_h_level = 5
-  marker = 'combo'
-  cycles_per_step = 1
-  [Markers]
-      [./combo]
-        type = FarmsComboMarker
-        markers = 'damage_marker strain_energy_marker'
-        meshsize_marker = 'meshsize_marker'
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.5
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc_const/l}'
-      []   
-      # if mesh_size > dxmin, refine
-      # if mesh_size < dxmin/100, coarsen (which never happens)
-      # otherwise, do nothing
-      [meshsize_marker]
-        type = ValueThresholdMarker
-        variable = mesh_size
-        refine = '${dx_min}'
-        coarsen = '${fparse dx_min/100}'
-        third_state = DO_NOTHING
-      [] 
-  []
-[]
+# [Adaptivity]
+#   max_h_level = 5
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#       []   
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#       [] 
+#   []
+# []
 
 [MultiApps]
   [fracture]
@@ -102,7 +103,8 @@ hht_alpha = 0.11
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    # file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -118,12 +120,12 @@ hht_alpha = 0.11
   [disp_x]
     order = FIRST
     family = LAGRANGE  
-    scaling = 1e-6
+    scaling = 1e-9
   []
   [disp_y]
     order = FIRST
     family = LAGRANGE  
-    scaling = 1e-6
+    scaling = 1e-9
   []
   [pp]
     order = FIRST
@@ -256,16 +258,6 @@ hht_alpha = 0.11
   []
 []
 
-[Physics/SolidMechanics/Dynamic]
-  [all]
-    add_variables = true
-    hht_alpha = ${hht_alpha}
-    newmark_beta = ${newmark_beta}
-    newmark_gamma = ${newmark_gamma}
-    density = ${solid_density}
-  []
-[]
-
 [Functions]
   [func_tri_pulse]
     type = ElkPulseLoadExperiment
@@ -279,67 +271,98 @@ hht_alpha = 0.11
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 1
-    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
   #strain
-  [func_strain_xx]
+  [func_stress_xx]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = elastic_strain_00
+    from_variable = stress_00
   [../]
-  [func_strain_xy]
+  [func_stress_xy]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = elastic_strain_01
+    from_variable = stress_01
   [../]
-  [func_strain_xz]
+  [func_stress_xz]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = elastic_strain_02
+    from_variable = stress_02
   [../]
-  [func_strain_yy]
+  [func_stress_yy]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = elastic_strain_11
+    from_variable = stress_11
   [../]
-  [func_strain_yz]
+  [func_stress_yz]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = elastic_strain_12
+    from_variable = stress_12
   [../]
-  [func_strain_zz]
+  [func_stress_zz]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = elastic_strain_22
+    from_variable = stress_22
   [../]
 []
 
 [Kernels]
+  #solid
+  [inertia_x]
+      type = InertialForce
+      variable = disp_x
+      acceleration = accel_x
+      velocity = vel_x
+      beta = 0.25
+      gamma = 0.5
+      eta = 0
+  []
+  [inertia_y]
+      type = InertialForce
+      variable = disp_y
+      acceleration = accel_y
+      velocity = vel_y
+      beta = 0.25
+      gamma = 0.5
+      eta = 0
+  []
+  [dispkernel_x]
+      type = StressDivergenceTensors
+      variable = disp_x
+      component = 0
+  []
+  [dispkernel_y]
+      type = StressDivergenceTensors
+      variable = disp_y
+      component = 1
+  []
   #pressure coupling on stress tensor
   [poro_x]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = ${biot_coefficient}
-    variable = disp_x
-    component = 0
+      type = PorousFlowEffectiveStressCoupling
+      biot_coefficient = ${biot_coefficient}
+      variable = disp_x
+      component = 0
   []
   [poro_y]
-    type = PorousFlowEffectiveStressCoupling
-    biot_coefficient = ${biot_coefficient}
-    variable = disp_y
-    component = 1
+      type = PorousFlowEffectiveStressCoupling
+      biot_coefficient = ${biot_coefficient}
+      variable = disp_y
+      component = 1
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
-    type = PorousFlowFullySaturatedMassTimeDerivative
-    biot_coefficient = ${biot_coefficient}
-    coupling_type = HydroMechanical
-    variable = pp
+      type = PorousFlowFullySaturatedMassTimeDerivative
+      biot_coefficient = ${biot_coefficient}
+      coupling_type = HydroMechanical
+      multiply_by_density = false
+      variable = pp
   []
   #flux * grad(test)
   [flux]
-    type = PorousFlowFullySaturatedDarcyBase
-    variable = pp
-    gravity = '0 0 0'
+      type = PorousFlowFullySaturatedDarcyBase
+      variable = pp
+      multiply_by_density = false
+      gravity = '0 0 0'
   []  
 []
 
@@ -374,9 +397,6 @@ hht_alpha = 0.11
     boundary = corner_ptr
     value = 0
   []
-[]
-
-[BCs]
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
@@ -411,6 +431,15 @@ hht_alpha = 0.11
 []
 
 [Materials]
+  [./elasticity_tensor]
+    type = ComputeIsotropicElasticityTensor
+    youngs_modulus = ${E}
+    poissons_ratio = ${nu}
+  [../]
+  [strain]
+    type = ComputeSmallStrain
+    eigenstrain_names = ini_stress
+  []
   [bulk]
     type = GenericConstantMaterial
     prop_names = 'K G'
@@ -450,11 +479,11 @@ hht_alpha = 0.11
   #solid properties
   ##-------------------------------------------------------------------------##
   [./initial_strain]
-    type = GenericFunctionRankTwoTensor
-    tensor_name = static_initial_strain_tensor
-    tensor_functions = 'func_strain_xx     func_strain_xy      func_strain_xz 
-                        func_strain_xy     func_strain_yy      func_strain_yz
-                        func_strain_xz     func_strain_yz      func_strain_zz'
+    type = ComputeEigenstrainFromInitialStress
+    eigenstrain_name = ini_stress
+    initial_stress =   'func_stress_xx     func_stress_xy      func_stress_xz 
+                        func_stress_xy     func_stress_yy      func_stress_yz
+                        func_stress_xz     func_stress_yz      func_stress_zz'
   []
   [density]
     type = GenericConstantMaterial
@@ -510,7 +539,7 @@ hht_alpha = 0.11
   #   fluid_bulk_modulus = ${fluid_bulk_modulus}
   # []
   ##----------------------------------------------------------##
-  # #compute permeability
+  #compute permeability
   # [permeability_constant]
   #     type = PorousFlowPermeabilityConst
   #     permeability = ${permeability}
@@ -559,7 +588,7 @@ hht_alpha = 0.11
   [./init_sol_components]
     type = SolutionUserObject
     mesh = ./static_solve_out.e
-    system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    system_variables = 'disp_x disp_y pp stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
     timestep = LATEST
     force_preaux = true
   [../]
@@ -568,7 +597,7 @@ hht_alpha = 0.11
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/mass0'
+    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
   []
@@ -589,19 +618,23 @@ hht_alpha = 0.11
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  petsc_options_value = ' lu       mumps       100'
+
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
+  nl_max_its = 30
 
   # dt = 0.5e-7
   end_time = 6e-5
 
-  fixed_point_max_its = 5
-  accept_on_max_fixed_point_iteration = true
+  fixed_point_max_its = 10
+  accept_on_max_fixed_point_iteration = false
   fixed_point_rel_tol = 1e-8
   fixed_point_abs_tol = 1e-10
 
@@ -622,7 +655,7 @@ hht_alpha = 0.11
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 1
   print_linear_residuals = false
   csv = true
   [checkpoint]

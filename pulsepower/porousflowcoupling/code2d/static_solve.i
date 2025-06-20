@@ -21,7 +21,8 @@ permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+      # file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+      file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
     []
     [./extranodeset1]
       type = ExtraNodesetGenerator
@@ -239,9 +240,9 @@ permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
     l_max_its = 100
     nl_max_its = 10
     nl_rel_tol = 1e-8
-    nl_abs_tol = 1e-8
+    nl_abs_tol = 1e-10
     l_tol = 1e-5
-    automatic_scaling = true
+    # automatic_scaling = true
   []
   
   [Outputs]
