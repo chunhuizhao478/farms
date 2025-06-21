@@ -48,14 +48,6 @@ m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
 ##-------------------------##
 
-##initial damage parameters
-sigma = 5e2
-peak_val = 0.7
-len_of_fault_strike = 30000
-len_of_fault_dip = 15000
-fault_center = '0 0 -7500'
-##-------------------------##
-
 ##initial stress parameters##
 
 #background stress
