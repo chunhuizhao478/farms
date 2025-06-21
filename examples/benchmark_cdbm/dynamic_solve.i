@@ -478,7 +478,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = FDCompVarRate
     variable = jump_z_rate_aux
     coupled = jump_z
-    execute_on = 'TIMESTEP_END'
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
   []
