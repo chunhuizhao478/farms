@@ -79,17 +79,17 @@ inner_confinement_pressure = 3.4e6
     [disp_x]
         order = FIRST
         family = LAGRANGE     
-        scaling = 1E-6
+        scaling = 1E-9
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE    
-        scaling = 1E-6
+        scaling = 1E-9
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE    
-        scaling = 1E-6
+        scaling = 1E-9
     []
     [pp]
         order = FIRST
@@ -401,16 +401,9 @@ inner_confinement_pressure = 3.4e6
     []
     #shear stress perturbation
     [damage_perturbation]
-        type = PerturbationRadial
-        nucl_center = '0 0 0'
-        peak_value = 0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
+        type = GenericConstantMaterial
+        prop_names = 'damage_perturbation shear_stress_perturbation'
+        prop_values = '0 0'
     []
     [density]
         type = GenericConstantMaterial
@@ -541,8 +534,8 @@ inner_confinement_pressure = 3.4e6
   
 [Executioner]
     type = Transient
-    # solve_type = 'NEWTON'
-    solve_type = 'PJFNK'
+    solve_type = 'NEWTON'
+    # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e10
     # num_steps = 10
@@ -551,10 +544,10 @@ inner_confinement_pressure = 3.4e6
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
-    # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-    # petsc_options_value = ' lu       mumps       100'
+    # petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    # petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
+    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+    petsc_options_value = ' lu       mumps       100'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
@@ -597,6 +590,13 @@ inner_confinement_pressure = 3.4e6
 []
 
 [BCs]
+    #fix pressure 
+    [fix_pressure]
+        type = DirichletBC
+        variable = pp
+        boundary = 5
+        value = ${inner_confinement_pressure}
+    []
     #fix bottom boundary
     [fix_bottom_x]
         type = DirichletBC
@@ -644,7 +644,6 @@ inner_confinement_pressure = 3.4e6
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
-        # sub_cycling = true
         clone_parent_mesh = true
     [../]
 []

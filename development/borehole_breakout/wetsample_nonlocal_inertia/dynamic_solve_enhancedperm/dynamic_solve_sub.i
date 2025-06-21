@@ -152,12 +152,6 @@ beta_width = 0.05
         coupled = B_damagedvar_sub
         block = '3'
     []
-    # [perturb_source_alpha]
-    #     type = PerturbationSource
-    #     variable = alpha_damagedvar_sub
-    #     damage_source = 'damage_perturbation'
-    #     block = '3'
-    # []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
@@ -214,16 +208,9 @@ beta_width = 0.05
     []
     #add shear perturbation to the system
     [damage_perturbation]
-        type = PerturbationRadialSource
-        nucl_center = '0 0 0'
-        peak_value = 0.0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'damage'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
+        type = GenericConstantMaterial
+        prop_names = 'damage_perturbation shear_stress_perturbation'
+        prop_values = '0 0'
     [] 
 [] 
 
@@ -243,22 +230,9 @@ beta_width = 0.05
     nl_rel_tol = 1e-8
     nl_max_its = 10
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-snes_type'
-    petsc_options_value = 'vinewtonrsls'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+    petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-3
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
-        growth_factor = 1.25
-        max_time_step_bound = 100
-    []
-    [./TimeIntegrator]
-        type = ImplicitEuler
-        # type = BDF2
-        # type = CrankNicolson
-    [../]
 []
 
 [Outputs]
