@@ -24,6 +24,8 @@ protected:
   /// method computing the total traction and its derivatives
   void computeInterfaceTractionAndDerivatives() override;
 
+  void initQpStatefulProperties() override;
+
   /// Material properties
   ///@brief state variable
   MaterialProperty<Real> & _state_variable;
@@ -48,13 +50,18 @@ protected:
   
   ///@brief reference slip rate V_o
   const Real _slip_rate_ref;
-  ///@brief reference state variable theta_o
-  const Real _state_variable_ref;
+  ///@brief initial state variable theta_o
+  const Real _state_variable_ini;
   ///@brief reference length scale L
   const Real _length_scale_ref;
   ///@brief background shear traction T1_o
   const Real _T1_o;
   ///@brief background normal traction T2_o
   const Real _T2_o;
+  ///@brief initial slip rate Vini
+  const Real _slip_rate_ini;
+
+  ///@brief shear stress perturbation in strike direction
+  const VariableValue & _T1_perturb;
 
 };
