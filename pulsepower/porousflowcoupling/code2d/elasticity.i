@@ -7,7 +7,7 @@ solid_density = 2600 # kg/m^3
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  5e-5 # length scale, m
+l =  1e-5 # length scale, m
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -25,7 +25,7 @@ porosity = 0.008
 solid_bulk_modulus_compliance = 1.524e-11
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
-coeff_b = 100 # coefficient for the exponential function in the effective permeability
+coeff_b = 0.2 # coefficient for the exponential function in the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
