@@ -250,7 +250,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #output initial shear stress
   [ini_shear_sts_aux]
     order = FIRST
-    family = LAGRANGE
+    family = MONOMIAL
   []
   ###
   #output jump, jump rate, traction quantities
@@ -411,7 +411,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [get_ini_shear_stress_aux]
     type = FunctionAux
     variable = ini_shear_sts_aux
-    function = func_initial_stress_xy
+    function = func_initial_stress_xy_variable
     execute_on = 'TIMESTEP_BEGIN'
   []
   ### slip weakening strike direction
@@ -567,7 +567,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       ini_shear_sts = ini_shear_sts_aux #strike shear stress is positive(clockwise) inside this material object
       boundary = 'Block100_Block200'
   [../]
-  [./static_initial_strain_tensor]
+  [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_strain_tensor
       tensor_functions = 'func_initial_strain_xx   func_initial_strain_xy      func_initial_strain_xz 
@@ -576,7 +576,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       output_properties = 'static_initial_strain_tensor'
       outputs = exodus
   [../]
-  [./static_initial_stress_tensor]
+  [./static_initial_stress_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
       tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
@@ -587,7 +587,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
 [Functions]
   #the initial shear stress needs additional nucleation parameters
-  [./func_initial_stress_xy]
+  [./func_initial_stress_xy_variable]
       type = InitialShearStressCDBM
       peak_value = ${peak_shear_value}
       nucl_center_x = ${nucl_center_x}
@@ -626,11 +626,10 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = ConstantFunction
     value = ${background_stress_xx}
   []
-  # [./func_initial_stress_xy]
-  #   type = SolutionFunction
-  #   solution = init_sol_components
-  #   from_variable = 'stress_01'
-  # []
+  [./func_initial_stress_xy]
+    type = ConstantFunction
+    value = ${background_stress_xy}
+  []
   [./func_initial_stress_xz]
     type = ConstantFunction
     value = ${background_stress_xz}
