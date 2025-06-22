@@ -670,9 +670,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Outputs]
-  exodus = true
-  show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy'
-  time_step_interval = ${exodus_time_step_interval}
+  [exodus]
+    type = Exodus
+    execute_on = 'timestep_end'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy'
+    time_step_interval = ${exodus_time_step_interval}
+  []
   [csv]
     type = CSV
     execute_on = 'timestep_end'
