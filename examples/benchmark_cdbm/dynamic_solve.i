@@ -93,7 +93,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../meshgenerator/tpv205/tpv2053d_100m.msh'
+    file = '../../meshgenerator/tpv205/tpv2053d_400m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -539,7 +539,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #damage breakage model
   [stress_medium]
       type = ComputeDamageBreakageStress3DSlipWeakening
-      output_properties = 'B alpha_damagedvar xi'
+      output_properties = 'B alpha_damagedvar xi I1 I2'
       outputs = exodus
   []
   [dummy_material]
@@ -562,9 +562,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       mu_d = ${mu_d}
       Dc = ${Dc}
       len = ${elem_size}
-      T2_o = ${fparse -1 * background_stress_yy} #normal stress is positive inside this material object
-      T3_o = ${fparse background_stress_zz}
-      ini_shear_sts = ini_shear_sts_aux
+      T2_o = ${fparse -1 * background_stress_yy} #normal stress is positive(compression) inside this material object
+      T3_o = ${fparse background_stress_xz} #dip shear stress is positive(clockwise) inside this material object
+      ini_shear_sts = ini_shear_sts_aux #strike shear stress is positive(clockwise) inside this material object
       boundary = 'Block100_Block200'
   [../]
   [./static_initial_strain_tensor]
@@ -573,13 +573,15 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       tensor_functions = 'func_initial_strain_xx   func_initial_strain_xy      func_initial_strain_xz 
                           func_initial_strain_xy   func_initial_strain_yy      func_initial_strain_yz
                           func_initial_strain_xz   func_initial_strain_yz      func_initial_strain_zz'
+      output_properties = 'static_initial_strain_tensor'
+      outputs = exodus
   [../]
   [./static_initial_stress_tensor]
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
-        tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
-                            func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
-                            func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
+      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
+                          func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
+                          func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
   [../]
 []
 
