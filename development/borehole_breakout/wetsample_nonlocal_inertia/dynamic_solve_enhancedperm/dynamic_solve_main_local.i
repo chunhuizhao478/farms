@@ -504,7 +504,7 @@ inner_confinement_pressure = 3.4e6
         prop_name = strain_invariant_ratio
         radius = ${length_scale}
         weights = BAZANT
-        execute_on = TIMESTEP_END
+        execute_on = 'TIMESTEP_END'
     []
 []
 
@@ -575,7 +575,7 @@ inner_confinement_pressure = 3.4e6
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1 ###
+        time_step_interval = 10 ###
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi effective_perm00_aux effective_perm01_aux effective_perm11_aux effective_perm22_aux'
     [../]
     [./csv]
@@ -642,7 +642,7 @@ inner_confinement_pressure = 3.4e6
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub.i'
+        input_files = 'dynamic_solve_sub_local.i'
         execute_on = 'TIMESTEP_BEGIN'
         clone_parent_mesh = true
     [../]
@@ -656,14 +656,16 @@ inner_confinement_pressure = 3.4e6
         variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
-    #!note: this is now a local xi model
+    #test local xi model
+    #------------------------------------------------------------------#
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
+        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
+    #------------------------------------------------------------------#
 []
 
 [UserObjects]
