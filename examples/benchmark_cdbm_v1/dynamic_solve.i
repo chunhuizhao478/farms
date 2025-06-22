@@ -34,7 +34,7 @@ xi_0 = -0.75 #strain invariants ratio: onset of damage evolution
 xi_d = -0.75 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = 2.5e5 #coefficient gives positive damage evolution
+Cd_constant = 1e5 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
@@ -98,13 +98,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0'
     block_id = 100
   []
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0'
     block_id = 200
   []       
   [./split_1]
