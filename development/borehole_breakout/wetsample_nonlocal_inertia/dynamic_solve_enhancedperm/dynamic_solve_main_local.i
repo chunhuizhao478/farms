@@ -557,18 +557,14 @@ inner_confinement_pressure = 3.4e6
     # line_search = 'bt'
     dt = 100
     verbose = true
-    # [TimeStepper]
-    #     type = FarmsIterationAdaptiveDT
-    #     dt = 1e-3
-    #     cutback_factor_at_failure = 0.5
-    #     optimal_iterations = 20
-    #     growth_factor = 1.25
-    #     max_time_step_bound = 10
-    # []
-    [./TimeStepper]
-        type = ConstantDT
-        dt = 100
-    [../]
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-3
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 20
+        growth_factor = 1.25
+        max_time_step_bound = 500
+    []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25

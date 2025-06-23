@@ -233,6 +233,14 @@ beta_width = 0.05
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
     petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     verbose = true
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1e-3
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 20
+        growth_factor = 1.25
+        max_time_step_bound = 500
+    []
 []
 
 [Outputs]

@@ -573,7 +573,7 @@ inner_confinement_pressure = 3.4e6
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
-        max_time_step_bound = 10
+        max_time_step_bound = 500
     []
     [./TimeIntegrator]
         type = NewmarkBeta
