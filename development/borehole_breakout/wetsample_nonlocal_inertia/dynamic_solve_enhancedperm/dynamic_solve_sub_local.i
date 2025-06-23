@@ -22,7 +22,7 @@ beta_width = 0.05
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../meshfile/mesh_adaptive_test.msh'
     [] 
 []
 
@@ -203,7 +203,6 @@ beta_width = 0.05
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
-        use_cd_strain_dependent = false
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system

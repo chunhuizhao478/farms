@@ -38,7 +38,7 @@ inner_confinement_pressure = 3.4e6
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../meshfile/mesh_adaptive_test.msh'
     [] 
 []
 
@@ -555,16 +555,16 @@ inner_confinement_pressure = 3.4e6
     # automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    # dt = 10
+    dt = 100
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-3
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
-        growth_factor = 1.25
-        max_time_step_bound = 10
-    []
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 1e-3
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 20
+    #     growth_factor = 1.25
+    #     max_time_step_bound = 10
+    # []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
@@ -575,8 +575,8 @@ inner_confinement_pressure = 3.4e6
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10 ###
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi effective_perm00_aux effective_perm01_aux effective_perm11_aux effective_perm22_aux'
+        time_step_interval = 1 ###
+        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi effective_perm00_aux effective_perm01_aux effective_perm11_aux effective_perm22_aux xi_aux'
     [../]
     [./csv]
         type = CSV
