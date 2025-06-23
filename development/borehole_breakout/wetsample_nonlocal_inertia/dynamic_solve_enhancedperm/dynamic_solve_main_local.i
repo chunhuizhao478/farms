@@ -279,33 +279,33 @@ inner_confinement_pressure = 3.4e6
 []
 
 [Kernels]
-    [inertia_x]
-        type = InertialForce
-        variable = disp_x
-        acceleration = accel_x
-        velocity = vel_x
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
-    [inertia_y]
-        type = InertialForce
-        variable = disp_y
-        acceleration = accel_y
-        velocity = vel_y
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
-    [inertia_z]
-        type = InertialForce
-        variable = disp_z
-        acceleration = accel_z
-        velocity = vel_z
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
+    # [inertia_x]
+    #     type = InertialForce
+    #     variable = disp_x
+    #     acceleration = accel_x
+    #     velocity = vel_x
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # []
+    # [inertia_y]
+    #     type = InertialForce
+    #     variable = disp_y
+    #     acceleration = accel_y
+    #     velocity = vel_y
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # []
+    # [inertia_z]
+    #     type = InertialForce
+    #     variable = disp_z
+    #     acceleration = accel_z
+    #     velocity = vel_z
+    #     beta = 0.25
+    #     gamma = 0.5
+    #     eta = 0
+    # []
     [dispkernel_x]
         type = StressDivergenceTensors
         variable = disp_x
