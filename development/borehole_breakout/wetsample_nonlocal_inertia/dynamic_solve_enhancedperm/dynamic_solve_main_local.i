@@ -565,6 +565,10 @@ inner_confinement_pressure = 3.4e6
     #     growth_factor = 1.25
     #     max_time_step_bound = 10
     # []
+    [./TimeStepper]
+        type = ConstantDT
+        dt = 100
+    [../]
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
