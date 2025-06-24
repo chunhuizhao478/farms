@@ -8,10 +8,10 @@ Chunhui Zhao
 
 #include "Function.h"
 
-class ForcedRuptureTimeTPV243D : public Function
+class ForcedRuptureTimeCDBMv2 : public Function
 {
 public:
-  ForcedRuptureTimeTPV243D(const InputParameters & parameters);
+  ForcedRuptureTimeCDBMv2(const InputParameters & parameters);
 
   static InputParameters validParams();
 

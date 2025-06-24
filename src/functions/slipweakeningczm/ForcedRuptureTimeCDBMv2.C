@@ -1,9 +1,9 @@
-#include "ForcedRuptureTimeTPV243D.h"
+#include "ForcedRuptureTimeCDBMv2.h"
 
-registerMooseObject("farmsApp", ForcedRuptureTimeTPV243D);
+registerMooseObject("farmsApp", ForcedRuptureTimeCDBMv2);
 
 InputParameters
-ForcedRuptureTimeTPV243D::validParams()
+ForcedRuptureTimeCDBMv2::validParams()
 {
   InputParameters params = Function::validParams();
   params.addRequiredParam<Real>("loc_x", "nucleation point x coordinate");
@@ -14,7 +14,7 @@ ForcedRuptureTimeTPV243D::validParams()
   return params;
 }
 
-ForcedRuptureTimeTPV243D::ForcedRuptureTimeTPV243D(const InputParameters & parameters)
+ForcedRuptureTimeCDBMv2::ForcedRuptureTimeCDBMv2(const InputParameters & parameters)
   : Function(parameters),
   _loc_x(getParam<Real>("loc_x")),
   _loc_y(getParam<Real>("loc_y")),
@@ -25,7 +25,7 @@ ForcedRuptureTimeTPV243D::ForcedRuptureTimeTPV243D(const InputParameters & param
 }
 
 Real
-ForcedRuptureTimeTPV243D::value(Real /*t*/, const Point & p) const
+ForcedRuptureTimeCDBMv2::value(Real /*t*/, const Point & p) const
 {
   
   //the coordinate follows benchmark
