@@ -194,16 +194,6 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     {
       tau_f = _mu_d * (-T2);
     }
-
-    // Compute fault traction
-    if (std::sqrt(T1 * T1 + T3 * T3) < tau_f)
-    {
-    }
-    else
-    {
-      T1 = tau_f * T1 / std::sqrt(T1 * T1 + T3 * T3);
-      T3 = tau_f * T3 / std::sqrt(T1 * T1 + T3 * T3);
-    }
   
   }
   //Forced rupture nucleation
@@ -244,6 +234,16 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     Real effective_stress = (-T2) - Pf;
     tau_f = _cohesion_aux[_qp] + mu * std::max(effective_stress,0.0);
 
+  }
+
+  // Compute fault traction
+  if (std::sqrt(T1 * T1 + T3 * T3) < tau_f)
+  {
+  }
+  else
+  {
+    T1 = tau_f * T1 / std::sqrt(T1 * T1 + T3 * T3);
+    T3 = tau_f * T3 / std::sqrt(T1 * T1 + T3 * T3);
   }
 
   // Assign back traction in CZM
