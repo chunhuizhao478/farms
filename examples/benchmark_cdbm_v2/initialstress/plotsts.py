@@ -18,9 +18,9 @@ Pf = density_fluid * g * depths
 sigma_zz = -rho * g * depths
 
 # Coefficients for horizontal and shear stresses
-b_xx = 3.5
-b_yy = 1.0
-b_xy = -0.6
+b_xx = 0.926793
+b_yy = 1.073206
+b_xy = -0.169029
 
 # Piecewise definitions
 mask = depths <= 15600
@@ -33,9 +33,9 @@ mask = depths <= 4000
 c = np.where(mask, 0.3e6 + (0.000675e6) * (4000 - depths), 0.3e6)  # cohesion in Pa
 
 # shear strength
-mu_s = 0.677
+mu_s = 0.18
 static_shear_strength = c + abs( mu_s * (sigma_yy + Pf) )
-mu_d = 0.525
+mu_d = 0.12
 residual_shear_strength = c + abs( mu_d * (sigma_yy + Pf) )
 
 # ------------------------
@@ -100,4 +100,22 @@ plt.legend(loc='best')
 plt.grid(True)
 plt.tight_layout()
 plt.savefig('strain_invariants_vs_depth.png', dpi=300)
+plt.show()
+
+# Given stress arrays sigma_xx, sigma_yy, sigma_xy, and depth array depths:
+# Compute the principal stress orientation (in radians)
+theta_rad = 0.5 * np.arctan2(2.0 * sigma_xy, sigma_xx - sigma_yy)
+
+# Convert to degrees
+theta_deg = np.degrees(theta_rad)
+
+# Plot orientation vs depth
+plt.figure(figsize=(6, 8))
+plt.plot(theta_deg, depths / 1e3)  # depth in km
+plt.gca().invert_yaxis()
+plt.xlabel('Max Principal Stress Direction (° from x-axis)')
+plt.ylabel('Depth (km)')
+plt.title('Principal Stress Orientation vs Depth')
+plt.grid(True)
+plt.tight_layout()
 plt.show()
