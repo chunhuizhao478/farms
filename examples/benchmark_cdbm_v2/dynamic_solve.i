@@ -23,10 +23,10 @@ shear_modulus_o = 3.204e10 #second lame constant
 ##-------------------------##
 
 ##Slip weakening parameters##
-Dc = 0.4 #characteristic length (m)
+Dc = 0.3 #0.4 #characteristic length (m)
 q = 0.4 #damping ratio
-mu_s = 0.677 #static friction coefficient
-mu_d = 0.525 #dynamic friction coefficient
+mu_s = 0.18 #0.677 #static friction coefficient
+mu_d = 0.12 #0.525 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
@@ -59,9 +59,9 @@ chi = 0.8 #energy ratio
 #background stress 
 fluid_density = 1000
 gravity = 9.8
-bxx = 3.5
-byy = 1.0
-bxy = -0.6
+bxx = 0.926793
+byy = 1.073206
+bxy = -0.169029
 cutoff_distance = 15600 #cutoff distance for the depth varying stress
 ##------------------------------------------------------------------##
 
