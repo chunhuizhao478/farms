@@ -1,12 +1,16 @@
+#characteristic length scale
+L = 0.1
+P = 3.4e6
+T = 1.08e4
 #solid properties
 #-------------------------------------------------#
 solid_density = 2640
-youngs_modulus = 48.5e9
+youngs_modulus = ${fparse 48.5e9 / P}
 poissons_ratio = 0.22
-solid_bulk_compliance = 3.46e-11
+solid_bulk_compliance = ${fparse 3.46e-11 * P}
 lambda_o = ${fparse youngs_modulus*poissons_ratio/(1+poissons_ratio)/(1-2*poissons_ratio)}
 shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
-length_scale = 0.0013
+# length_scale = ${fparse 0.0013 / L}
 coeff_b = 5.0
 #-------------------------------------------------#
 
@@ -14,24 +18,24 @@ coeff_b = 5.0
 #-------------------------------------------------#
 xi_o = -0.8073
 xi_d = -0.8073
-Cg = 1e-12
+Cg = ${fparse 1e-12 * (P * T)}
 #-------------------------------------------------#
 
 #fluid properties
 #-------------------------------------------------#
 porosity = 0.008
 # permeability = '1E-20 0 0 0 1E-20 0 0 0 1E-20'
-intrinsic_permeability = 1E-20
+intrinsic_permeability = ${fparse 1E-20 / (L * L)}
 fluid_density = 1000
-viscosity = 1e-3
+viscosity = ${fparse 1e-3 / ( P * T )}
 biot_coefficient = 0.5
-fluid_bulk_modulus = 2.2e+9
+fluid_bulk_modulus = ${fparse 2.2e+9 / P } 
 #-------------------------------------------------#
 
 #boundary conditions
 #-------------------------------------------------#
-outer_confinement_pressure = 20.6e6
-inner_confinement_pressure = 3.4e6
+outer_confinement_pressure = ${fparse 20.6e6 / P}
+inner_confinement_pressure = ${fparse 3.4e6 / P}
 #-------------------------------------------------#
 
 #block_ids
@@ -44,7 +48,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_test_rapid.msh'
+        file = 'mesh_nd.msh'
     [] 
 []
 
@@ -85,19 +89,23 @@ damageable_block_ids = '3'
     [disp_x]
         order = FIRST
         family = LAGRANGE     
+        scaling = ${fparse 1 / L}
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE    
+        scaling = ${fparse 1 / L}
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE    
+        scaling = ${fparse 1 / L}
     []
     [pp]
         order = FIRST
         family = LAGRANGE
-        initial_condition = 3.4e6
+        scaling = ${fparse 1 / P}
+        initial_condition = 1
         block = ${damageable_block_ids}
     []
 []
@@ -234,13 +242,13 @@ damageable_block_ids = '3'
         property = deviatroic_strain_rate
         block = ${damageable_block_ids}
     []
-    #
-    [get_nonlocal_xi]
-        type = MaterialRealAux
-        variable = nonlocal_xi
-        property = eqstrain_nonlocal
-    []
-    #
+    
+    # [get_nonlocal_xi]
+    #     type = MaterialRealAux
+    #     variable = nonlocal_xi
+    #     property = eqstrain_nonlocal
+    # []
+    
     [effective_permeability_00]
       type = MaterialRealTensorValueAux
       property = effective_perm
@@ -268,33 +276,6 @@ damageable_block_ids = '3'
 []
 
 [Kernels]
-    # [inertia_x]
-    #     type = InertialForce
-    #     variable = disp_x
-    #     acceleration = accel_x
-    #     velocity = vel_x
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
-    # [inertia_y]
-    #     type = InertialForce
-    #     variable = disp_y
-    #     acceleration = accel_y
-    #     velocity = vel_y
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
-    # [inertia_z]
-    #     type = InertialForce
-    #     variable = disp_z
-    #     acceleration = accel_z
-    #     velocity = vel_z
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
     [dispkernel_x]
         type = StressDivergenceTensors
         variable = disp_x
@@ -382,19 +363,19 @@ damageable_block_ids = '3'
         block = ${elastic_block_ids}
     []
     #strain invariant ratio
-    [comp_strain_invariant_ratio]
-        type = ComputeXi 
-        output_properties = 'strain_invariant_ratio'
-        outputs = exodus
-        block = ${elastic_block_ids}
-    []
+    # [comp_strain_invariant_ratio]
+    #     type = ComputeXi 
+    #     output_properties = 'strain_invariant_ratio'
+    #     outputs = exodus
+    #     block = ${elastic_block_ids}
+    # []
     #nonlocal eqstrain
-    [nonlocal_eqstrain]
-        type = ElkNonlocalEqstrain
-        average_UO = eqstrain_averaging
-        output_properties = 'eqstrain_nonlocal'
-        outputs = exodus
-    []
+    # [nonlocal_eqstrain]
+    #     type = ElkNonlocalEqstrain
+    #     average_UO = eqstrain_averaging
+    #     output_properties = 'eqstrain_nonlocal'
+    #     outputs = exodus
+    # []
     #shear stress perturbation
     [damage_perturbation]
         type = GenericConstantMaterial
@@ -480,22 +461,22 @@ damageable_block_ids = '3'
     []
 []
 
-[UserObjects]
-    [eqstrain_averaging] #length scale = radius = grain size 
-        type = ElkRadialAverage
-        length_scale = ${length_scale}
-        prop_name = strain_invariant_ratio
-        radius = ${length_scale}
-        weights = BAZANT
-        execute_on = 'TIMESTEP_END'
-    []
-[]
+# [UserObjects]
+#     [eqstrain_averaging] #length scale = radius = grain size 
+#         type = ElkRadialAverage
+#         length_scale = ${length_scale}
+#         prop_name = strain_invariant_ratio
+#         radius = ${length_scale}
+#         weights = BAZANT
+#         execute_on = 'TIMESTEP_END'
+#     []
+# []
 
 #18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = 'if (t > 1e-3, -2.6477e-5 - 3.3e-7 * t, -2.6477e-5)'
+        expression = 'if( t > ${fparse 1e-3 / T}, ${fparse -2.6477e-5 / L} + ${fparse -3.3e-7 * T / L}*t, ${fparse -2.6477e-5 / L} )'
     []
 []
 
@@ -510,8 +491,8 @@ damageable_block_ids = '3'
   [./period0]
     type = TimePeriod
     disable_objects = '*/mass0'
-    start_time = -1e-12
-    end_time = 1e-3 # dt used in the simulation
+    start_time = ${fparse -1e-12 / T}
+    end_time = ${fparse 1e-3 / T} # dt used in the simulation
   []
 [../]
   
@@ -519,35 +500,35 @@ damageable_block_ids = '3'
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = -1e-12
+    start_time = ${fparse -1e-12 / T}
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
-    l_tol = 1e-7
+    l_tol = 1e-10
     nl_rel_tol = 1e-6
     nl_max_its = 40
     nl_abs_tol = 1e-8
     # petsc_options = '-ksp_diagonal_scale -ksp_diagonal_scale_fix'
     # petsc_options_iname = '-pc_type -sub_pc_type -sub_pc_factor_shift_type -pc_asm_overlap'
     # petsc_options_value = ' asm      lu           NONZERO                   2'
-    petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
-    # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-    # petsc_options_value = ' lu       mumps       100'
+    # petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    # petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
+    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+    petsc_options_value = ' lu       mumps       100'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     # automatic_scaling = true
     # nl_forced_its = 3
-    # line_search = 'bt'
+    line_search = 'basic'
     # dt = 100
     verbose = true
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 1e-3
+        dt = ${fparse 1e-3 / T}
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
+        optimal_iterations = 30
         growth_factor = 1.25
     []
     [./TimeIntegrator]
@@ -618,7 +599,7 @@ damageable_block_ids = '3'
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_local.i'
+        input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
         clone_parent_mesh = true
     [../]
@@ -681,7 +662,7 @@ damageable_block_ids = '3'
     []
     [strain_invariant_ratio_ic]
         type = SolutionIC
-        variable = nonlocal_xi
+        variable = xi_aux
         solution_uo = init_sol_components
         from_variable = initial_xi_aux
     []

@@ -1,8 +1,12 @@
+#characteristic length scale
+L = 0.1
+P = 3.4e6
+T = 1.08e4
 #implicit continuum damage-breakage model dynamics
 #solid properties
 #-------------------------------------------------#
 # solid_density = 2640
-youngs_modulus = 48.5e9
+youngs_modulus = ${fparse 48.5e9 / P}
 poissons_ratio = 0.22
 # solid_bulk_compliance = 3.46e-11
 lambda_o = ${fparse youngs_modulus*poissons_ratio/(1+poissons_ratio)/(1-2*poissons_ratio)}
@@ -14,9 +18,9 @@ shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
 xi_o = -0.8073
 xi_d = -0.8073
 # Cg = 1e-12
-Cd_constant = 80
+Cd_constant = ${fparse 80 * T}
 CdCb_multiplier = 100
-beta_width = 0.05
+beta_width = ${fparse 0.05 / L}
 #-------------------------------------------------#
 
 #block_ids
@@ -28,7 +32,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_test_rapid.msh'
+        file = 'mesh_nd.msh'
     [] 
 []
 
@@ -229,7 +233,7 @@ damageable_block_ids = '3'
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
-    start_time = -1e-12
+    start_time = ${fparse -1e-12 / T}
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-8
@@ -240,9 +244,9 @@ damageable_block_ids = '3'
     verbose = true
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 1
+        dt = ${fparse 1e-3 / T}
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
+        optimal_iterations = 30
         growth_factor = 1.25
     []
 []

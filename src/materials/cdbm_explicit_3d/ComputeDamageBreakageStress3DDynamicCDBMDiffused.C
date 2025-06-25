@@ -74,7 +74,9 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::ComputeDamageBreakageStress3DD
     _coeff_b(getParam<Real>("coeff_b")),
     _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
     _effective_perm(declareProperty<RealTensorValue>("effective_perm")),
-    _crack_rotation(declareProperty<RankTwoTensor>("crack_rotation"))
+    _crack_rotation(declareProperty<RankTwoTensor>("crack_rotation")),
+    _elasticity_tensor_name(_base_name + "elasticity_tensor"),
+    _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_elasticity_tensor_name))
 {
 }
 
@@ -127,9 +129,8 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpStress()
   RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_damagedvar_aux[_qp],_m1) * _sigma_d_old[_qp];
   RankTwoTensor eps_e = _mechanical_strain[_qp] - eps_p;
 
-  const Real epsilon = 1e-12;
-  Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
-  Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
+  Real I1 = eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
+  Real I2 = eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
   Real xi = I1/std::sqrt(I2); //catch the nan error in the initial solve
 
   //Represent sigma (solid(s) + granular(b))
@@ -169,7 +170,7 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpStress()
 
   // Compute tangent
   RankFourTensor tangent;
-  computeQpTangentModulus(tangent,I1,I2,xi,eps_e);
+  computeQpTangentModulus(tangent,I1,I2,xi,eps_e,a0,a1,a2,a3,gamma_damaged_r);
   _Jacobian_mult[_qp] = tangent;
 
   // Compute deviatoric strain rate
@@ -272,235 +273,132 @@ ComputeDamageBreakageStress3DDynamicCDBMDiffused::alphacr_root2(Real xi, Real ga
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
 }
 
-// void
-// ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpTangentModulus(RankFourTensor & tangent, 
-//                                                       Real I1, 
-//                                                       Real I2, 
-//                                                       Real xi, 
-//                                                       RankTwoTensor Ee)
-// {
-
-//   /*
-//   compute gammar, breakage coefficients
-//   */
-//   Real gamma_damaged_r = computegammar();
-//   std::vector<Real> avec = computecoefficients(gamma_damaged_r);
-//   Real a0 = avec[0];
-//   Real a1 = avec[1];
-//   Real a2 = avec[2];
-//   Real a3 = avec[3];
-
-//   const Real adjusted_I2 = (I2 <= 1e-8) ? 1e-8 : I2;
-//   const RankTwoTensor identity = RankTwoTensor::Identity();
-
-//   // Precompute dxidE tensor
-//   RankTwoTensor dxidE_tensor;
-//   for (unsigned int k = 0; k < 3; ++k)
-//     for (unsigned int l = 0; l < 3; ++l)
-//       dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
-
-//   const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
-
-//   // Compute terms for dSedE
-//   const Real lambda_term = _lambda[_qp] - _gamma_damaged[_qp] / xi;
-//   const Real shear_term = 2.0 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi;
-
-//   RankFourTensor term_se1 = identity.outerProduct(-_gamma_damaged[_qp] * I1 * dxim1dE_tensor);
-//   RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
-//   RankFourTensor term_se3 = Ee.outerProduct(-_gamma_damaged[_qp] * dxidE_tensor);
-//   RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
-
-//   RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
-
-//   // Compute terms for dSbdE
-//   const Real coeff2_b = 2.0 * a2 + a1 / xi + 3.0 * a3 * xi;
-//   const Real coeff4_b = 2.0 * a0 + a1 * xi - a3 * xi * xi * xi;
-
-//   RankFourTensor term_b1 = identity.outerProduct((a1 * dxim1dE_tensor + 3 * a3 * dxidE_tensor) * I1);
-//   RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
-//   RankFourTensor term_b3 = Ee.outerProduct(a1 * dxidE_tensor - a3 * 3 * xi * xi * dxidE_tensor);
-//   RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
-
-//   RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
-
-//   // Combine and assign tangent
-//   tangent = (1.0 - _B_damagedvar_aux[_qp]) * dSedE + _B_damagedvar_aux[_qp] * dSbdE;  
-
-// }
-
-void ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpTangentModulus(
-    RankFourTensor & tangent,
-    Real            I1,
-    Real            I2,
-    Real            xi,
-    RankTwoTensor   Ee)
+void
+ComputeDamageBreakageStress3DDynamicCDBMDiffused::computeQpTangentModulus(RankFourTensor & tangent, 
+                                                      Real I1, 
+                                                      Real I2, 
+                                                      Real xi, 
+                                                      RankTwoTensor Ee,
+                                                      Real a0,
+                                                      Real a1,
+                                                      Real a2,
+                                                      Real a3,
+                                                      Real gamma_damaged_r)
 {
-  //
-  // ─── 0) The arguments I1,I2,xi,Ee were pre‐computed in computeQpStress()
-  //           I1 = trace(Ee) + tiny_epsilon
-  //           I2 = Ee:Ee  + tiny_epsilon
-  //           xi = I1/sqrt(I2)
-  //           Ee = elastic strain at this qp
-  // ───────────────────────────────────────────────────────────────────────────
-  //
-  // Inside this function you should NOT redeclare I1, I2, xi, or Ee.
-  // They are already correct. Instead, just use them directly.
-  //
 
-  //
-  // ─── 1) Recompute any “old” quantities needed (gamma, a0..a3, B_val, lambda_out, mu_out) ───
-  //
-  // NOTE: we assume you have already written computegammar() and computecoefficients()
-  //       exactly as in your code, and that they rely on _qp internally.
-  const Real gamma_damaged_r = computegammar();       // e.g. γ(…) at this qp
-  std::vector<Real> avec = computecoefficients(gamma_damaged_r);
-  const Real a0 = avec[0];
-  const Real a1 = avec[1];
-  const Real a2 = avec[2];
-  const Real a3 = avec[3];
+  // Use consistent values - same as in stress computation
 
-  // pulled directly from your existing material fields:
-  const Real lambda_out = _lambda[_qp];
-  const Real mu_out     = _shear_modulus[_qp];
-  const Real gamma_d    = _gamma_damaged[_qp];
-  const Real B_val      = _B_damagedvar_aux[_qp];
+  // Use the SAME values as in stress computation
+  Real lambda_out = _lambda_o;
+  Real shear_modulus_out = _shear_modulus_o + _alpha_damagedvar_aux[_qp] * _xi_0 * gamma_damaged_r;
+  Real gamma_damaged_out = _alpha_damagedvar_aux[_qp] * gamma_damaged_r;
 
-  //
-  // ─── 2) Build scalar coefficients A, m_s, C1, m_b ────────────────────────────────────────────
-  //
-  //   A  = λ − γ/ξ
-  //   m_s = 2 μ − γ ξ
-  //
-  const Real A  = lambda_out - gamma_d/xi;
-  const Real ms = 2.0*mu_out   - gamma_d*xi;
+  // Safety check for small I2
+  const Real adjusted_I2 = std::max(I2, 1e-12);
+  const Real sqrt_I2 = std::sqrt(adjusted_I2);
+  const RankTwoTensor identity = RankTwoTensor::Identity();
 
-  //   C1 = 2 a2 + a1/ξ + 3 a3 ξ
-  //   m_b = 2 a0 + a1 ξ − a3 ξ³
-  //
-  const Real C1 = 2.0*a2 + a1/xi + 3.0*a3*xi;
-  const Real mb = 2.0*a0 + a1*xi - a3*xi*xi*xi;
+  // Check for limiting case: alpha = 0, B = 0 (should return elasticity tensor)
+  // if (std::abs(_alpha_damagedvar_aux[_qp]) < 1e-12 && std::abs(_B_damagedvar_aux[_qp]) < 1e-12) {
+  //   // Standard elasticity tensor: C_ijkl = λ δ_ij δ_kl + μ (δ_ik δ_jl + δ_il δ_jk)
+  //   tangent.zero();
+  //   for (unsigned int i = 0; i < 3; ++i) {
+  //     for (unsigned int j = 0; j < 3; ++j) {
+  //       for (unsigned int k = 0; k < 3; ++k) {
+  //         for (unsigned int l = 0; l < 3; ++l) {
+  //           tangent(i, j, k, l) = _lambda_o * identity(i, j) * identity(k, l) + 
+  //                                 _shear_modulus_o * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
+  //         }
+  //       }
+  //     }
+  //   }
+  //   return;
+  // }
 
-  //
-  // ─── 3) Pre‐compute sub‐coefficients for derivatives ∂ξ/∂E etc. ─────────────────────────────
-  //
-  //   dξ/dE will be a RankTwoTensor:  (∂ξ/∂E)_{ij} = ??? 
-  //   We know ξ = I1/√(I2).  Therefore:
-  //     ∂ξ/∂E_{ij}
-  //     = ( ∂I1/∂E_{ij} · √I2  -  I1·(1/(2√I2))·∂I2/∂E_{ij} )  / (I2)  
-  //     = [ (δ_{ij})·√I2  -  (I1/(2√I2))·(2 E_e_{ij}) ] / I2
-  //     = (1/√I2) [ δ_{ij}  -  (I1/I2) E_e_{ij} ].
-  //
-  //   In code form:
-  //
-  const Real sqrtI2 = std::sqrt(I2);
-  RankTwoTensor dxi_dE_tensor;
-  {
-    // fill all nine components of dxi_dE_tensor
-    const Real inv_sqrtI2 = 1.0/sqrtI2;
-    const Real I1_over_I2  = I1 / I2;            // I1/I2
-    for (unsigned int i=0; i<3; ++i)
-      for (unsigned int j=0; j<3; ++j)
-      {
-        // ∂I1/∂E_{ij} = δ_{ij},  ∂I2/∂E_{ij} = 2·E_e_{ij}
-        // so:
-        //   ∂ξ/∂E_{ij} = ( δ_{ij}·sqrtI2  -  (I1/(2 sqrtI2))·2·E_e_{ij} ) / I2
-        //              = (1/√I2) [ δ_{ij}  - (I1/I2) E_e_{ij} ].
-        const Real delta_ij = (i==j) ? 1.0 : 0.0;
-        dxi_dE_tensor(i,j) = inv_sqrtI2 * ( delta_ij - I1_over_I2 * Ee(i,j) );
-      }
+  // Corrected derivative: ∂ξ/∂E_kl = ∂(I1/√I2)/∂E_kl
+  // = (∂I1/∂E_kl * √I2 - I1 * ∂I2/∂E_kl / (2√I2)) / I2
+  // where ∂I1/∂E_kl = δ_kl and ∂I2/∂E_kl = 2*E_kl
+  RankTwoTensor dxidE_tensor;
+  for (unsigned int k = 0; k < 3; ++k) {
+    for (unsigned int l = 0; l < 3; ++l) {
+      dxidE_tensor(k, l) = identity(k, l) / sqrt_I2 - I1 * Ee(k, l) / std::pow(adjusted_I2, 1.5);
+    }
   }
 
-  // Now pre‐compute:
-  //   γ/ξ²    and   −γ
-  //   (−a1/ξ² + 3a3)  and  ( a1 − 3a3 ξ² )
-  //
-  const Real gamma_over_xi2    = gamma_d / (xi*xi);
-  const Real minus_gamma       = -gamma_d;
+  // ∂(1/ξ)/∂E = -1/ξ² * ∂ξ/∂E
+  const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
 
-  const Real coef_dC1_dxi      = -a1/(xi*xi) + 3.0*a3;       // ∂C1/∂ξ
-  const Real coef_dm_b_dxi     =  a1       - 3.0*a3*xi*xi;   // ∂m_b/∂ξ
+  // Compute solid phase tangent (dSs/dE)
+  const Real lambda_term = lambda_out - gamma_damaged_out / xi;
+  const Real shear_term = 2.0 * shear_modulus_out - gamma_damaged_out * xi;
 
-  //
-  // ─── 4) Build the identity tensors ────────────────────────────────────────────────────────
-  //
-  // Note:  RankTwoTensor::Identity()         gives I_{ij} = δ_{ij}
-  //        RankFourTensor::IdentityFour()  gives I4_{ijkl} = ½(δ_{ik}δ_{jl} + δ_{il}δ_{jk})
-  //
-  const RankTwoTensor  I2_Identity = RankTwoTensor::Identity();
-  const RankFourTensor I4_Identity = RankFourTensor::IdentityFour();
+  RankFourTensor dSsdE;
+  dSsdE.zero();
+  
+  // CORRECTED: Complete implementation of solid phase tangent
+  // ∂S^s_ij/∂E_kl = (-γ ∂ξ^(-1)/∂E_kl)I_1 δ_ij + (λ - γ/ξ) ∂I_1/∂E_kl δ_ij + (-γ ∂ξ/∂E_kl)E_ij + (2μ - γξ) ∂E_ij/∂E_kl
+  for (unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) {
+      for (unsigned int k = 0; k < 3; ++k) {
+        for (unsigned int l = 0; l < 3; ++l) {
+          // Term 1a: (λ - γ/ξ) * ∂I1/∂E_kl * δ_ij = (λ - γ/ξ) * δ_kl * δ_ij
+          dSsdE(i, j, k, l) += lambda_term * identity(i, j) * identity(k, l);
+          
+          // Term 1b: (-γ ∂ξ^(-1)/∂E_kl) * I1 * δ_ij - PREVIOUSLY MISSING
+          dSsdE(i, j, k, l) -= gamma_damaged_out * dxim1dE_tensor(k, l) * I1 * identity(i, j);
+          
+          // Term 2a: (2μ - γξ) * ∂E_ij/∂E_kl
+          Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
+          dSsdE(i, j, k, l) += shear_term * I4_ijkl;
+          
+          // Term 2b: (-γ ∂ξ/∂E_kl) * E_ij
+          dSsdE(i, j, k, l) -= gamma_damaged_out * dxidE_tensor(k, l) * Ee(i, j);
+        }
+      }
+    }
+  }
 
-  //
-  // ─── 5) Build all four sub‐terms for C_s = ∂σ_s/∂E ─────────────────────────────────────────
-  //
-  //   σ_s = A·I1·I + m_s·E_e
-  //
-  // Term_s1 = A · ( I ⊗ I )
-  RankFourTensor term_s1 = I2_Identity.outerProduct( I2_Identity );
-  term_s1 *= A;
+  // Compute granular phase tangent (dSb/dE)
+  const Real coeff2_b = 2.0 * a2 + a1 / xi + 3.0 * a3 * xi;
+  const Real coeff4_b = 2.0 * a0 + a1 * xi - a3 * xi * xi * xi;
 
-  // Term_s2 = m_s · I4
-  RankFourTensor term_s2 = I4_Identity;
-  term_s2 *= ms;
+  RankFourTensor dSbdE;
+  dSbdE.zero();
+  
+ // CORRECTED: Complete implementation of granular phase tangent
+  // ∂S^b_ij/∂E_kl = (a_1 ∂ξ^(-1)/∂E_kl + 3a_3 ∂ξ/∂E_kl)I_1 δ_ij + (2a_2 + a_1/ξ + 3a_3ξ) ∂I_1/∂E_kl δ_ij
+  //                + (a_1 ∂ξ/∂E_kl - a_3 ∂ξ^3/∂E_kl)E_ij + (2a_0 + a_1ξ - a_3ξ^3) ∂E_ij/∂E_kl
+  for (unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) {
+      for (unsigned int k = 0; k < 3; ++k) {
+        for (unsigned int l = 0; l < 3; ++l) {
+          // Term 1a: (2a_2 + a_1/ξ + 3a_3ξ) * ∂I1/∂E_kl * δ_ij = coeff2_b * δ_kl * δ_ij
+          dSbdE(i, j, k, l) += coeff2_b * identity(i, j) * identity(k, l);
+          
+          // Term 1b: a_1 * ∂ξ^(-1)/∂E_kl * I1 * δ_ij - PREVIOUSLY MISSING
+          dSbdE(i, j, k, l) += a1 * dxim1dE_tensor(k, l) * I1 * identity(i, j);
+          
+          // Term 1c: 3a_3 * ∂ξ/∂E_kl * I1 * δ_ij
+          dSbdE(i, j, k, l) += 3.0 * a3 * dxidE_tensor(k, l) * I1 * identity(i, j);
+          
+          // Term 2a: (2a_0 + a_1ξ - a_3ξ^3) * ∂E_ij/∂E_kl
+          Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
+          dSbdE(i, j, k, l) += coeff4_b * I4_ijkl;
+          
+          // Term 2b: a_1 * ∂ξ/∂E_kl * E_ij
+          dSbdE(i, j, k, l) += a1 * dxidE_tensor(k, l) * Ee(i, j);
+          
+          // Term 2c: -a_3 * ∂ξ^3/∂E_kl * E_ij
+          // ∂ξ^3/∂E_kl = 3ξ^2 * ∂ξ/∂E_kl
+          dSbdE(i, j, k, l) -= a3 * 3.0 * xi * xi * dxidE_tensor(k, l) * Ee(i, j);
+        }
+      }
+    }
+  }
 
-  // Term_s3 = I1 · [ I ⊗ ( (γ/ξ²)·(∂ξ/∂E) ) ]
-  RankTwoTensor temp_s3 = dxi_dE_tensor;
-  temp_s3            *= gamma_over_xi2;              // = (γ/ξ²)·(∂ξ/∂E)
-  RankFourTensor term_s3 = I2_Identity.outerProduct( temp_s3 );
-  term_s3          *= I1;
+  // Combine: tangent = (1-B)*dSs/dE + B*dSb/dE
+  tangent = dSsdE * (1.0 - _B_damagedvar_aux[_qp]) + dSbdE * _B_damagedvar_aux[_qp]; 
 
-  // Term_s4 = E_e ⊗ [ (−γ) · (∂ξ/∂E) ]
-  RankTwoTensor temp_s4 = dxi_dE_tensor;
-  temp_s4            *= minus_gamma;                  // = (−γ)·(∂ξ/∂E)
-  RankFourTensor term_s4 = Ee.outerProduct( temp_s4 );
-
-  // Assemble C_s = term_s1 + term_s2 + term_s3 + term_s4
-  RankFourTensor C_s = term_s1;
-  C_s += term_s2;
-  C_s += term_s3;
-  C_s += term_s4;
-
-  //
-  // ─── 6) Build all four sub‐terms for C_b = ∂σ_b/∂E ─────────────────────────────────────────
-  //
-  //   σ_b = C1·I1·I + m_b·E_e
-  //
-  // Term_b1 = C1 · ( I ⊗ I )
-  RankFourTensor term_b1 = I2_Identity.outerProduct( I2_Identity );
-  term_b1 *= C1;
-
-  // Term_b2 = m_b · I4
-  RankFourTensor term_b2 = I4_Identity;
-  term_b2 *= mb;
-
-  // Term_b3 = I1 · [ I ⊗ ( (−a1/ξ² + 3a3)·(∂ξ/∂E) ) ]
-  RankTwoTensor temp_b3 = dxi_dE_tensor;
-  temp_b3            *= coef_dC1_dxi;                // = (−a1/ξ² + 3a3)·(∂ξ/∂E)
-  RankFourTensor term_b3 = I2_Identity.outerProduct( temp_b3 );
-  term_b3          *= I1;
-
-  // Term_b4 = E_e ⊗ [ (a1 − 3a3 ξ²) · (∂ξ/∂E) ]
-  RankTwoTensor temp_b4 = dxi_dE_tensor;
-  temp_b4            *= coef_dm_b_dxi;               // = (a1 − 3a3 ξ²)·(∂ξ/∂E)
-  RankFourTensor term_b4 = Ee.outerProduct( temp_b4 );
-
-  // Assemble C_b = term_b1 + term_b2 + term_b3 + term_b4
-  RankFourTensor C_b = term_b1;
-  C_b += term_b2;
-  C_b += term_b3;
-  C_b += term_b4;
-
-  //
-  // ─── 7) Combine:  C_total = (1−B)·C_s + B·C_b  (we freeze ∂B/∂E = 0) ───────────────────────
-  //
-  tangent = C_s;
-  tangent *= (1.0 - B_val);
-
-  RankFourTensor Cb_scaled = C_b;
-  Cb_scaled *= B_val;
-
-  tangent += Cb_scaled;
-
-  // done: “tangent” now holds ∂σ_total/∂E_e at this qp
 }
 
 void

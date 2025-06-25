@@ -12,9 +12,18 @@ coeff_b = 5.0
 
 #damage-breakage properties
 #-------------------------------------------------#
+Cg = 1e-12
 xi_o = -0.8073
 xi_d = -0.8073
-Cg = 1e-12
+Cd_constant = 80
+CdCb_multiplier = 100
+beta_width = 0.05
+CBH_constant = 0
+C_1 = 0
+C_2 = 0.05
+D = 0
+xi_max = 1.8
+xi_min = -1.8
 #-------------------------------------------------#
 
 #fluid properties
@@ -78,6 +87,42 @@ damageable_block_ids = '3'
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
 
+    #<strain invariants ratio: maximum allowable value>: set boundary
+    #Xu_etal_P15-2D
+    #may need a bit space, use 1.5 as boundary
+    xi_max = 1.8
+    
+    #<strain invariants ratio: minimum allowable value>: set boundary
+    #Xu_etal_P15-2D
+    xi_min = -1.8
+
+    #if option 2, use Cd_constant #specify by auxiliary variable
+    Cd_constant = ${Cd_constant}
+
+    #strain rate dependent Cd options
+    # m_exponent = 0.8
+    # strain_rate_hat = 1e-8
+    # cd_hat = 1e4
+
+    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
+    CdCb_multiplier = ${CdCb_multiplier}
+
+    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
+    CBH_constant = 0
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
+    C_1 = 0
+
+    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
+    C_2 = 0.05
+
+    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
+    beta_width = ${beta_width}
+
+    #diffusion parameter #close the gradient
+    D = 0
+
 []
 
 
@@ -85,14 +130,17 @@ damageable_block_ids = '3'
     [disp_x]
         order = FIRST
         family = LAGRANGE     
+        scaling = 1E-6
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE    
+        scaling = 1E-6
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE    
+        scaling = 1E-6
     []
     [pp]
         order = FIRST
@@ -193,7 +241,13 @@ damageable_block_ids = '3'
         order = FIRST
         family = MONOMIAL
     []
-    
+    #
+    [alpha_grad_x]
+    []
+    [alpha_grad_y]
+    []
+    [alpha_grad_z]
+    []
 []
 
 [AuxKernels]
@@ -268,33 +322,33 @@ damageable_block_ids = '3'
 []
 
 [Kernels]
-    # [inertia_x]
-    #     type = InertialForce
-    #     variable = disp_x
-    #     acceleration = accel_x
-    #     velocity = vel_x
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
-    # [inertia_y]
-    #     type = InertialForce
-    #     variable = disp_y
-    #     acceleration = accel_y
-    #     velocity = vel_y
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
-    # [inertia_z]
-    #     type = InertialForce
-    #     variable = disp_z
-    #     acceleration = accel_z
-    #     velocity = vel_z
-    #     beta = 0.25
-    #     gamma = 0.5
-    #     eta = 0
-    # []
+    [inertia_x]
+        type = InertialForce
+        variable = disp_x
+        acceleration = accel_x
+        velocity = vel_x
+        beta = 0.25
+        gamma = 0.5
+        eta = 0
+    []
+    [inertia_y]
+        type = InertialForce
+        variable = disp_y
+        acceleration = accel_y
+        velocity = vel_y
+        beta = 0.25
+        gamma = 0.5
+        eta = 0
+    []
+    [inertia_z]
+        type = InertialForce
+        variable = disp_z
+        acceleration = accel_z
+        velocity = vel_z
+        beta = 0.25
+        gamma = 0.5
+        eta = 0
+    []
     [dispkernel_x]
         type = StressDivergenceTensors
         variable = disp_x
@@ -359,12 +413,15 @@ damageable_block_ids = '3'
         #Jun 24th: the eigensstrain is not needed here is the displacement field is loaded from static solve
     []
     [stress_medium]
-        type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
+        type = ComputeDamageBreakageStress3DDynamicCDBMDebug ##need to modify this
         alpha_damagedvar_aux = alpha_damagedvar_aux
         B_damagedvar_aux = B_damagedvar_aux
         output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
         outputs = exodus
         block = ${damageable_block_ids}
+        alpha_grad_x = alpha_grad_x
+        alpha_grad_y = alpha_grad_y
+        alpha_grad_z = alpha_grad_z
         #porous flow coupling
         porous_flow_coupling = true
         coeff_b = ${coeff_b}
@@ -509,7 +566,7 @@ damageable_block_ids = '3'
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/mass0'
+    disable_objects = '*/mass0 */inertia_x */inertia_y */inertia_z'
     start_time = -1e-12
     end_time = 1e-3 # dt used in the simulation
   []
@@ -530,10 +587,10 @@ damageable_block_ids = '3'
     # petsc_options = '-ksp_diagonal_scale -ksp_diagonal_scale_fix'
     # petsc_options_iname = '-pc_type -sub_pc_type -sub_pc_factor_shift_type -pc_asm_overlap'
     # petsc_options_value = ' asm      lu           NONZERO                   2'
-    petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-    petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
-    # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-    # petsc_options_value = ' lu       mumps       100'
+    # petsc_options_iname = '-ksp_type -ksp_max_it -ksp_gmres_restart -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    # petsc_options_value = 'gmres          100      100       hypre  boomeramg True'
+    petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+    petsc_options_value = ' lu       mumps       100'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
@@ -544,21 +601,24 @@ damageable_block_ids = '3'
     # dt = 100
     verbose = true
     [TimeStepper]
-        type = IterationAdaptiveDT
+        type = FarmsIterationAdaptiveDT
         dt = 1e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
+        max_time_step_bound = 500
     []
     [./TimeIntegrator]
-        type = ImplicitEuler
+        type = NewmarkBeta
+        beta = 0.25
+        gamma = 0.5
     [../]
 []
 
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 10 ###
+        time_step_interval = 1 ###
         show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux nonlocal_xi xi_aux pp I2_aux'
     [../]
     [./csv]
@@ -614,36 +674,6 @@ damageable_block_ids = '3'
     []
 []
 
-[MultiApps]
-    [./sub_app]
-        type = TransientMultiApp
-        positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_local.i'
-        execute_on = 'TIMESTEP_BEGIN'
-        clone_parent_mesh = true
-    [../]
-[]
-
-[Transfers]
-    [pull_resid]
-        type = MultiAppCopyTransfer
-        from_multi_app = sub_app
-        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub'
-        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #test local xi model
-    #------------------------------------------------------------------#
-    [push_disp]
-        type = MultiAppCopyTransfer
-        to_multi_app = sub_app
-        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
-        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #------------------------------------------------------------------#
-[]
-
 [UserObjects]
     [dictator]
         type = PorousFlowDictator
@@ -654,7 +684,7 @@ damageable_block_ids = '3'
     [./init_sol_components]
         type = SolutionUserObject
         mesh = ./static_solve_out.e
-        system_variables = 'disp_x disp_y disp_z pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22 initial_I2_aux initial_xi_aux'
+        system_variables = 'disp_x disp_y disp_z pp'
         timestep = LATEST
         force_preaux = true
     [../]
@@ -678,19 +708,7 @@ damageable_block_ids = '3'
         variable = disp_z
         solution_uo = init_sol_components
         from_variable = disp_z
-    []
-    [strain_invariant_ratio_ic]
-        type = SolutionIC
-        variable = nonlocal_xi
-        solution_uo = init_sol_components
-        from_variable = initial_xi_aux
-    []
-    [I2_aux_ic]
-        type = SolutionIC
-        variable = I2_aux
-        solution_uo = init_sol_components
-        from_variable = initial_I2_aux
-    []  
+    [] 
 []
 
 #compute the reaction force on the top boundary

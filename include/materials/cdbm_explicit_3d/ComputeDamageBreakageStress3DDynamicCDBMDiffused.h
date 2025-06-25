@@ -49,7 +49,7 @@ protected:
   Real alphacr_root2(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute elasticity tensor for small strain
-  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee);
+  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee, Real a0, Real a1, Real a2, Real a3, Real gamma_damaged_r);
 
   /// @brief Compute the deviatoric strain rate tensor
   virtual void computeDeviatroicStrainRateTensor();
@@ -153,4 +153,10 @@ protected:
 
   /// crack rotation tensor
   MaterialProperty<RankTwoTensor> & _crack_rotation;
+
+  /// Name of the elasticity tensor material property
+  const std::string _elasticity_tensor_name;
+  /// Elasticity tensor material property
+  const MaterialProperty<RankFourTensor> & _elasticity_tensor;
+
 };
