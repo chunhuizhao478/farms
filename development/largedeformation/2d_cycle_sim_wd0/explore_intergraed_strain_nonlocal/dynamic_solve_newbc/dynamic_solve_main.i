@@ -15,15 +15,9 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-60000 -60000 0'
+        coord = '0 -480000 0'
         new_boundary = corner_ptr
         input = sidesets
-    []
-    [./extranodeset2]
-        type = ExtraNodesetGenerator
-        coord = '60000 -60000 0'
-        new_boundary = corner_ptr2
-        input = extranodeset1
     []
     displacements = 'disp_x disp_y'
 []
@@ -364,7 +358,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -444,11 +438,18 @@
 []
 
 [BCs]
+    # fix bottom boundary
+    [fix_bottom_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = bottom
+        value = 0
+    []
     #add initial shear stress
     [initial_shear_stress_top]
         type = NeumannBC
         variable = disp_x
-        value = 11e6
+        value = 13e6
         boundary = top
     [] 
     # 
@@ -459,13 +460,6 @@
         value = -50e6
         displacements = 'disp_x disp_y'
     []   
-    [static_pressure_bottom]
-        type = NeumannBC
-        variable = disp_y
-        boundary = bottom
-        value = 50e6
-        displacements = 'disp_x disp_y'
-    []  
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
@@ -492,14 +486,7 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    []   
-    # fix right ptr
-    [./fix_cptr4_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = corner_ptr2
-        value = 0
-    []
+    [] 
     #add dampers
     [damp_top_x]
         type = FarmsNonReflectDashpotBC
@@ -529,36 +516,6 @@
         p_wave_speed = 6000
         density = 2700
     []
-    #
-    [damp_bottom_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_bottom_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    #
     [damp_left_x]
         type = FarmsNonReflectDashpotBC
         variable = disp_x
@@ -587,7 +544,6 @@
         p_wave_speed = 6000
         density = 2700
     []
-    #
     [damp_right_x]
         type = FarmsNonReflectDashpotBC
         variable = disp_x
