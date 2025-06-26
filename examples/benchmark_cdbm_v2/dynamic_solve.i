@@ -23,10 +23,10 @@ shear_modulus_o = 3.204e10 #second lame constant
 ##-------------------------##
 
 ##Slip weakening parameters##
-Dc = 0.3 #0.4 #characteristic length (m)
+Dc = 0.4 #0.4 #characteristic length (m)
 q = 0.4 #damping ratio
-mu_s = 0.18 #0.677 #static friction coefficient
-mu_d = 0.12 #0.525 #dynamic friction coefficient
+mu_s = 0.677 #static friction coefficient
+mu_d = 0.55  #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
@@ -36,11 +36,11 @@ cohesion_min = 0.3 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
-xi_0 = -0.75 #strain invariants ratio: onset of damage evolution
-xi_d = -0.75 #strain invariants ratio: onset of breakage healing
+xi_0 = -1.2 #strain invariants ratio: onset of damage evolution
+xi_d = -1.4 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = 0.625e6 #coefficient gives positive damage evolution
+Cd_constant = 2.2e6 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
@@ -61,7 +61,7 @@ fluid_density = 1000
 gravity = 9.8
 bxx = 0.926793
 byy = 1.073206
-bxy = -0.169029
+bxy = -0.7
 cutoff_distance = 15600 #cutoff distance for the depth varying stress
 ##------------------------------------------------------------------##
 

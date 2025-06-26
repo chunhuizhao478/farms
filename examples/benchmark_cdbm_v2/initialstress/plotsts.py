@@ -20,7 +20,7 @@ sigma_zz = -rho * g * depths
 # Coefficients for horizontal and shear stresses
 b_xx = 0.926793
 b_yy = 1.073206
-b_xy = -0.169029
+b_xy = -0.7
 
 # Piecewise definitions
 mask = depths <= 15600
@@ -33,9 +33,9 @@ mask = depths <= 4000
 c = np.where(mask, 0.3e6 + (0.000675e6) * (4000 - depths), 0.3e6)  # cohesion in Pa
 
 # shear strength
-mu_s = 0.18
+mu_s = 0.677
 static_shear_strength = c + abs( mu_s * (sigma_yy + Pf) )
-mu_d = 0.12
+mu_d = 0.55
 residual_shear_strength = c + abs( mu_d * (sigma_yy + Pf) )
 
 # ------------------------
@@ -70,10 +70,10 @@ stress[:, 2, 2] = sigma_zz
 stress[:, 0, 1] = sigma_xy
 stress[:, 1, 0] = sigma_xy
 
-# Inverse Hooke's law: epsilon_ij = 1/(2μ) σ_ij - λ/(2μ(3λ+2μ)) σ_kk δ_ij
+# Inverse Hooke's law: epsilon_ij = 1/(2μ) s_ij - λ/(2μ(3λ+2μ)) s_kk δ_ij
 trace_coeff = -lmbda / (2 * mu * (3 * lmbda + 2 * mu))
 strain = np.zeros_like(stress)
-enum = np.trace(stress, axis1=1, axis2=2)  # vector of σ_kk
+enum = np.trace(stress, axis1=1, axis2=2)  # vector of s_kk
 for i in range(3):
     for j in range(3):
         strain[:, i, j] = stress[:, i, j] / (2 * mu)
@@ -88,34 +88,55 @@ xi = I1 / np.sqrt(I2)
 # ------------------------
 # Plot Strain Invariants
 # ------------------------
-plt.figure(figsize=(6, 8))
-plt.plot(I1, depths, label=r'$I_1$')
-plt.plot(I2, depths, label=r'$I_2$')
-plt.plot(xi, depths, label=r'$\xi$')
-plt.gca().invert_yaxis()
-plt.ylabel('Depth (m)')
-plt.xlabel('Invariant values')
-plt.title('Strain Invariants vs Depth')
-plt.legend(loc='best')
-plt.grid(True)
-plt.tight_layout()
-plt.savefig('strain_invariants_vs_depth.png', dpi=300)
-plt.show()
+# plt.figure(figsize=(6, 8))
+# plt.plot(I1, depths, label=r'$I_1$')
+# plt.plot(I2, depths, label=r'$I_2$')
+# plt.plot(xi, depths, label=r'$\xi$')
+# plt.gca().invert_yaxis()
+# plt.ylabel('Depth (m)')
+# plt.xlabel('Invariant values')
+# plt.title('Strain Invariants vs Depth')
+# plt.legend(loc='best')
+# plt.grid(True)
+# plt.tight_layout()
+# plt.savefig('strain_invariants_vs_depth.png', dpi=300)
+# plt.show()
 
-# Given stress arrays sigma_xx, sigma_yy, sigma_xy, and depth array depths:
-# Compute the principal stress orientation (in radians)
-theta_rad = 0.5 * np.arctan2(2.0 * sigma_xy, sigma_xx - sigma_yy)
+# -----------------------------------------------------------
+# Principal stresses and maximum-principal orientation (2-D)
+# -----------------------------------------------------------
+# --- pick the target depth (m) ---------------------------------------------
+depth_target = 5000          # 7.5 km
 
-# Convert to degrees
-theta_deg = np.degrees(theta_rad)
+# ---------------------------------------------------------------------------
+# Find the row in `depths` that is closest to the target
+idx = int(np.argmin(np.abs(depths - depth_target)))
+depth_exact = depths[idx]     # the exact depth value in your array
 
-# Plot orientation vs depth
-plt.figure(figsize=(6, 8))
-plt.plot(theta_deg, depths / 1e3)  # depth in km
-plt.gca().invert_yaxis()
-plt.xlabel('Max Principal Stress Direction (° from x-axis)')
-plt.ylabel('Depth (km)')
-plt.title('Principal Stress Orientation vs Depth')
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# ----- stresses already computed in your script ----------------------------
+sxx = sigma_xx[idx]
+syy = sigma_yy[idx]
+szz = sigma_zz[idx]
+sxy = sigma_xy[idx]
+Pf  = Pf[idx]
+xi = xi[idx]  # invariant xi at the target depth
+
+# ----- principal stresses & orientation ------------------------------------
+s_tensor = np.array([[sxx, sxy],
+                     [sxy, syy]])
+
+eigvals, eigvecs = np.linalg.eigh(s_tensor)   # ascending order
+s2, s1 = eigvals                              # s1 = major, s2 = minor
+θ_deg = np.degrees(np.arctan2(eigvecs[1, 0],   # angle of s1
+                              eigvecs[0, 0]))
+
+# ----- report ---------------------------------------------------------------
+print(f"Depth (array snap-to):  {depth_exact/1e3:.3f} km")
+print(f"Pore-fluid pressure:   {Pf/1e6:8.2f}  MPa")
+print(f"szz (vertical):        {szz/1e6:8.2f}  MPa")
+print(f"sxx, syy, sxy:         {sxx/1e6:8.2f}, {syy/1e6:8.2f}, {sxy/1e6:8.2f} MPa")
+print(f"s1 (major):            {s1/1e6:8.2f}  MPa")
+print(f"s2 (minor):            {s2/1e6:8.2f}  MPa")
+print(f"Orientation of s1:     {θ_deg:6.2f}°  (CCW from +x)")
+print(f"Invariant xi:          {xi:.3f}")
+# ---------------------------------------------------------------------------
