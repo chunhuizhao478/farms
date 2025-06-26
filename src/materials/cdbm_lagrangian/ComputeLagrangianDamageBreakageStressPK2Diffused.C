@@ -735,128 +735,123 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
                                                                   RankTwoTensor Ee)
 {
 
-  // //define functions for derivatives
+  // Use consistent values - same as in stress computation
 
-  // //delta function
-  // auto delta = [](int i, int j) -> Real {
-  //   return (i == j) ? 1.0 : 0.0;
-  // };
+  // Use the SAME values as in stress computation
+  Real lambda_out = _lambda_const[_qp];
+  Real shear_modulus_out = _shear_modulus[_qp];
+  Real gamma_damaged_out = _damaged_modulus[_qp];
 
-  // //dI1_dE_{kl}
-  // auto dI1dE = [&](int k, int l) -> Real {
-  //   return delta(k,l);
-  // };
+  Real a0 = _a0[_qp];
+  Real a1 = _a1[_qp];
+  Real a2 = _a2[_qp];
+  Real a3 = _a3[_qp];
 
-  // //dI2_dE_{kl}
-  // auto dI2dE = [&](int k, int l) -> Real {
-  //   return 2 * Ee(k,l);
-  // };
+  // Safety check for small I2
+  const Real adjusted_I2 = std::max(I2, 1e-12);
+  const Real sqrt_I2 = std::sqrt(adjusted_I2);
+  const RankTwoTensor identity = RankTwoTensor::Identity();
 
-  // //dxi_dE_{kl}
-  // auto dxidE = [&](int k, int l) -> Real {
-    
-  //   // Epsilon to avoid division by zero
-  //   const Real epsilon = 1e-12;
-  //   // Adjust I2 if necessary
-  //   Real adjusted_I2 = I2;
-  //   if (I2 <= epsilon) {
-  //     //mooseWarning("I2 is zero or too small (I2 = ", I2, "), adjusting to epsilon.");
-  //     adjusted_I2 = epsilon;
-  //   }
-
-  //   Real dxidE = 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-  //   //mooseInfo("I1 = ", I1, ", I2 = ", I2);
-  //   if (std::isnan(dxidE)){mooseError("dxidE");}
-  //   return delta(k,l) * pow(adjusted_I2,-0.5) - 0.5 * pow(adjusted_I2,-1.5) * dI2dE(k,l) * I1;
-  // };
-
-  // //dE_{ij}_dE_{kl}
-  // auto dEdE = [&](int i, int j, int k, int l) -> Real {
-  //   return delta(i,k) * delta(j,l);
-  //   //return 0.5 * ( delta(i,k) * delta(j,l) + delta(i,l) * delta(j,k) ); //its symmetric form
-  // };
-
-  // //dxi^{-1}_dE_{kl}
-  // auto dxim1dE = [&](int k, int l) -> Real {
-  //   return -1.0 * pow(xi,-2.0) * dxidE(k,l);
-  // };
-
-  // //dxi^3_dE_{kl}
-  // auto dxi3dE = [&](int k, int l) -> Real {
-  //   return 3 * pow(xi,2) * dxidE(k,l);
-  // };
-
-  // //dSe_{ij}_dE_{kl}
-  // auto dSedE = [&](int i, int j, int k, int l) -> Real {
-  //   Real dSedE_components = (- _damaged_modulus[_qp] * dxim1dE(k,l) ) * I1 * delta(i,j);
-  //   dSedE_components += ( _lambda_const[_qp] - _damaged_modulus[_qp] / xi ) * dI1dE(k,l) * delta(i,j);
-  //   dSedE_components += (- _damaged_modulus[_qp] * dxidE(k,l) ) * Ee(i,j);
-  //   dSedE_components += ( 2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi ) * dEdE(i,j,k,l);
-  //   if (std::isnan(dSedE_components)){mooseError("dSedE_components");}
-  //   return dSedE_components;
-  // };
-
-  // //dSb_{ij}_dE_{kl}
-  // auto dSbdE = [&](int i, int j, int k, int l) -> Real {
-  //   Real dSbdE_components = ( _a1[_qp] * dxim1dE(k,l) + 3 * _a3[_qp] * dxidE(k,l) ) * I1 * delta(i,j);
-  //   dSbdE_components += ( 2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi ) * dI1dE(k,l) * delta(i,j);
-  //   dSbdE_components += ( _a1[_qp] * dxidE(k,l) - _a3[_qp] * dxi3dE(k,l) ) * Ee(i,j);
-  //   dSbdE_components += ( 2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * pow(xi,3) ) * dEdE(i,j,k,l);
-  //   return dSbdE_components;
-  // };
-
-  // //dS_{ij}_dE_{kl}
-  // auto dSdE = [&](int i, int j, int k, int l) -> Real {
-  //   return (1 - _B_breakagevar[_qp]) * dSedE(i,j,k,l) + _B_breakagevar[_qp] * dSbdE(i,j,k,l);
-  // };
-
-  // // Compute tangent modulus C
-  // for (unsigned int i = 0; i < 3; i++){
-  //   for (unsigned int j = 0; j < 3; j++){
-  //     for (unsigned int k = 0; k < 3; k++){
-  //       for (unsigned int l = 0; l < 3; l++){
-  //         if (std::isnan(dSdE(i,j,k,l))){mooseError("encounter nan error: dSdE(i,j,k,l)");}
-  //         tangent(i,j,k,l) += dSdE(i,j,k,l);
+  // Check for limiting case: alpha = 0, B = 0 (should return elasticity tensor)
+  // if (std::abs(_alpha_damagedvar_aux[_qp]) < 1e-12 && std::abs(_B_damagedvar_aux[_qp]) < 1e-12) {
+  //   // Standard elasticity tensor: C_ijkl = λ δ_ij δ_kl + μ (δ_ik δ_jl + δ_il δ_jk)
+  //   tangent.zero();
+  //   for (unsigned int i = 0; i < 3; ++i) {
+  //     for (unsigned int j = 0; j < 3; ++j) {
+  //       for (unsigned int k = 0; k < 3; ++k) {
+  //         for (unsigned int l = 0; l < 3; ++l) {
+  //           tangent(i, j, k, l) = _lambda_o * identity(i, j) * identity(k, l) + 
+  //                                 _shear_modulus_o * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
+  //         }
   //       }
   //     }
   //   }
+  //   return;
   // }
 
-  const Real adjusted_I2 = (I2 <= 1e-12) ? 1e-12 : I2;
-  const RankTwoTensor identity = RankTwoTensor::Identity();
-
-  // Precompute dxidE tensor
+  // Corrected derivative: ∂ξ/∂E_kl = ∂(I1/√I2)/∂E_kl
+  // = (∂I1/∂E_kl * √I2 - I1 * ∂I2/∂E_kl / (2√I2)) / I2
+  // where ∂I1/∂E_kl = δ_kl and ∂I2/∂E_kl = 2*E_kl
   RankTwoTensor dxidE_tensor;
-  for (unsigned int k = 0; k < 3; ++k)
-    for (unsigned int l = 0; l < 3; ++l)
-      dxidE_tensor(k, l) = (identity(k, l) * adjusted_I2 - I1 * Ee(k, l)) / std::pow(adjusted_I2, 1.5);
+  for (unsigned int k = 0; k < 3; ++k) {
+    for (unsigned int l = 0; l < 3; ++l) {
+      dxidE_tensor(k, l) = identity(k, l) / sqrt_I2 - I1 * Ee(k, l) / std::pow(adjusted_I2, 1.5);
+    }
+  }
 
+  // ∂(1/ξ)/∂E = -1/ξ² * ∂ξ/∂E
   const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
 
-  // Compute terms for dSedE
-  const Real lambda_term = _lambda_const[_qp] - _damaged_modulus[_qp] / xi;
-  const Real shear_term = 2.0 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi;
+  // Compute solid phase tangent (dSs/dE)
+  const Real lambda_term = lambda_out - gamma_damaged_out / xi;
+  const Real shear_term = 2.0 * shear_modulus_out - gamma_damaged_out * xi;
 
-  RankFourTensor term_se1 = identity.outerProduct(-_damaged_modulus[_qp] * I1 * dxim1dE_tensor);
-  RankFourTensor term_se2 = identity.outerProduct(identity) * lambda_term;
-  RankFourTensor term_se3 = Ee.outerProduct(-_damaged_modulus[_qp] * dxidE_tensor);
-  RankFourTensor term_se4 = RankFourTensor(RankFourTensor::initIdentityFour) * shear_term;
+  RankFourTensor dSsdE;
+  dSsdE.zero();
+  
+  // CORRECTED: Complete implementation of solid phase tangent
+  // ∂S^s_ij/∂E_kl = (-γ ∂ξ^(-1)/∂E_kl)I_1 δ_ij + (λ - γ/ξ) ∂I_1/∂E_kl δ_ij + (-γ ∂ξ/∂E_kl)E_ij + (2μ - γξ) ∂E_ij/∂E_kl
+  for (unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) {
+      for (unsigned int k = 0; k < 3; ++k) {
+        for (unsigned int l = 0; l < 3; ++l) {
+          // Term 1a: (λ - γ/ξ) * ∂I1/∂E_kl * δ_ij = (λ - γ/ξ) * δ_kl * δ_ij
+          dSsdE(i, j, k, l) += lambda_term * identity(i, j) * identity(k, l);
+          
+          // Term 1b: (-γ ∂ξ^(-1)/∂E_kl) * I1 * δ_ij - PREVIOUSLY MISSING
+          dSsdE(i, j, k, l) -= gamma_damaged_out * dxim1dE_tensor(k, l) * I1 * identity(i, j);
+          
+          // Term 2a: (2μ - γξ) * ∂E_ij/∂E_kl
+          Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
+          dSsdE(i, j, k, l) += shear_term * I4_ijkl;
+          
+          // Term 2b: (-γ ∂ξ/∂E_kl) * E_ij
+          dSsdE(i, j, k, l) -= gamma_damaged_out * dxidE_tensor(k, l) * Ee(i, j);
+        }
+      }
+    }
+  }
 
-  RankFourTensor dSedE = term_se1 + term_se2 + term_se3 + term_se4;
+  // Compute granular phase tangent (dSb/dE)
+  const Real coeff2_b = 2.0 * a2 + a1 / xi + 3.0 * a3 * xi;
+  const Real coeff4_b = 2.0 * a0 + a1 * xi - a3 * xi * xi * xi;
 
-  // Compute terms for dSbdE
-  const Real coeff2_b = 2.0 * _a2[_qp] + _a1[_qp] / xi + 3.0 * _a3[_qp] * xi;
-  const Real coeff4_b = 2.0 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * xi * xi * xi;
+  RankFourTensor dSbdE;
+  dSbdE.zero();
+  
+ // CORRECTED: Complete implementation of granular phase tangent
+  // ∂S^b_ij/∂E_kl = (a_1 ∂ξ^(-1)/∂E_kl + 3a_3 ∂ξ/∂E_kl)I_1 δ_ij + (2a_2 + a_1/ξ + 3a_3ξ) ∂I_1/∂E_kl δ_ij
+  //                + (a_1 ∂ξ/∂E_kl - a_3 ∂ξ^3/∂E_kl)E_ij + (2a_0 + a_1ξ - a_3ξ^3) ∂E_ij/∂E_kl
+  for (unsigned int i = 0; i < 3; ++i) {
+    for (unsigned int j = 0; j < 3; ++j) {
+      for (unsigned int k = 0; k < 3; ++k) {
+        for (unsigned int l = 0; l < 3; ++l) {
+          // Term 1a: (2a_2 + a_1/ξ + 3a_3ξ) * ∂I1/∂E_kl * δ_ij = coeff2_b * δ_kl * δ_ij
+          dSbdE(i, j, k, l) += coeff2_b * identity(i, j) * identity(k, l);
+          
+          // Term 1b: a_1 * ∂ξ^(-1)/∂E_kl * I1 * δ_ij - PREVIOUSLY MISSING
+          dSbdE(i, j, k, l) += a1 * dxim1dE_tensor(k, l) * I1 * identity(i, j);
+          
+          // Term 1c: 3a_3 * ∂ξ/∂E_kl * I1 * δ_ij
+          dSbdE(i, j, k, l) += 3.0 * a3 * dxidE_tensor(k, l) * I1 * identity(i, j);
+          
+          // Term 2a: (2a_0 + a_1ξ - a_3ξ^3) * ∂E_ij/∂E_kl
+          Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
+          dSbdE(i, j, k, l) += coeff4_b * I4_ijkl;
+          
+          // Term 2b: a_1 * ∂ξ/∂E_kl * E_ij
+          dSbdE(i, j, k, l) += a1 * dxidE_tensor(k, l) * Ee(i, j);
+          
+          // Term 2c: -a_3 * ∂ξ^3/∂E_kl * E_ij
+          // ∂ξ^3/∂E_kl = 3ξ^2 * ∂ξ/∂E_kl
+          dSbdE(i, j, k, l) -= a3 * 3.0 * xi * xi * dxidE_tensor(k, l) * Ee(i, j);
+        }
+      }
+    }
+  }
 
-  RankFourTensor term_b1 = identity.outerProduct((_a1[_qp] * dxim1dE_tensor + 3 * _a3[_qp] * dxidE_tensor) * I1);
-  RankFourTensor term_b2 = identity.outerProduct(identity) * coeff2_b;
-  RankFourTensor term_b3 = Ee.outerProduct(_a1[_qp] * dxidE_tensor - _a3[_qp] * 3 * xi * xi * dxidE_tensor);
-  RankFourTensor term_b4 = RankFourTensor(RankFourTensor::initIdentityFour) * coeff4_b;
-
-  RankFourTensor dSbdE = term_b1 + term_b2 + term_b3 + term_b4;
-
-  // Combine and assign tangent
-  tangent = (1.0 - _B_breakagevar[_qp]) * dSedE + _B_breakagevar[_qp] * dSbdE;  
+  // Combine: tangent = (1-B)*dSs/dE + B*dSb/dE
+  tangent = dSsdE * (1.0 - _B_breakagevar[_qp]) + dSbdE * _B_breakagevar[_qp]; 
 
 }
 

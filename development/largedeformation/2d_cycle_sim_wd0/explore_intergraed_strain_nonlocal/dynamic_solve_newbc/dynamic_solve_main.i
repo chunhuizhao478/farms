@@ -2,7 +2,6 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
         file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
@@ -16,14 +15,14 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-600000 -600000 0'
+        coord = '-60000 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
     [./extranodeset2]
         type = ExtraNodesetGenerator
-        coord = '600000 -600000 0'
-        new_boundary = corner_ptr
+        coord = '60000 -60000 0'
+        new_boundary = corner_ptr2
         input = extranodeset1
     []
     displacements = 'disp_x disp_y'
@@ -383,10 +382,12 @@
     nl_rel_tol = 1e-6
     nl_max_its = 10
     nl_abs_tol = 1e-8
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     automatic_scaling = true
@@ -405,16 +406,7 @@
         constrain_by_velocity = true
         vel_threshold = 1e-2
         constant_dt_on_overspeed = 1e-2
-        maxvelx = 'maxvelx'
-        maxvely = 'maxvely'
     []
-    # [TimeStepper]
-    #     type = IterationAdaptiveDT
-    #     cutback_factor_at_failure = 0.5
-    #     growth_factor = 2.0
-    #     optimal_iterations = 100
-    #     dt = 1e-2
-    # []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
@@ -449,15 +441,9 @@
     [initial_shear_stress_top]
         type = NeumannBC
         variable = disp_x
-        value = 13e6
+        value = 11e6
         boundary = top
     [] 
-    [initial_shear_stress_bottom]
-        type = NeumannBC
-        variable = disp_x
-        value = -13e6
-        boundary = bottom
-    []
     # 
     [static_pressure_top]
         type = NeumannBC
@@ -504,9 +490,9 @@
     [./fix_cptr4_y]
         type = DirichletBC
         variable = disp_y
-        boundary = corner_ptr
+        boundary = corner_ptr2
         value = 0
-    [] 
+    []
     #add dampers
     [damp_top_x]
         type = FarmsNonReflectDashpotBC
@@ -631,7 +617,9 @@
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
-        sub_cycling = true
+        # sub_cycling = true
+        clone_parent_mesh = true
+        cli_args = 'maxvelx maxvely'
     [../]
 []
 

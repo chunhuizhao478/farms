@@ -3,7 +3,6 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
         file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
@@ -17,13 +16,13 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-600000 -600000 0'
+        coord = '-60000 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
     [./extranodeset2]
         type = ExtraNodesetGenerator
-        coord = '600000 -600000 0'
+        coord = '60000 -60000 0'
         new_boundary = corner_ptr2
         input = extranodeset1
     []

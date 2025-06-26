@@ -2,7 +2,6 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        # file = '../mesh/mesh_local.msh'
         file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
@@ -16,14 +15,14 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-600000 -600000 0'
+        coord = '-60000 -60000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
     [./extranodeset2]
         type = ExtraNodesetGenerator
-        coord = '600000 -600000 0'
-        new_boundary = corner_ptr
+        coord = '60000 -60000 0'
+        new_boundary = corner_ptr2
         input = extranodeset1
     []
 []
@@ -68,7 +67,7 @@
     CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    C_1 = 1e-4
+    C_1 = 300
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -212,45 +211,11 @@
         from_variable = alpha_damagedvar_output
         execute_on = 'TIMESTEP_BEGIN'
     []
-    #get structural stress coefficient
-    # [get_structural_stress_coefficient]
-    #     type = MaterialRealAux
-    #     variable = structural_stress_coefficient_sub
-    #     property = structural_stress_coefficient
-    # []
     #
     [get_Cd]
         type = MaterialRealAux
         variable = Cd_aux
         property = Cd
-    []
-    #
-    [get_xio]
-        type = FunctionAux
-        variable = xio_aux
-        function = func_spatial_xio
-    []
-    [get_cg]
-        type = FunctionAux
-        variable = xid_aux
-        function = func_spatial_xid
-    []
-[]
-
-[Functions]
-    [func_spatial_xio]
-        type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
-        w = 1e3
-        max_val = -0.8
-        min_val = 1.8
-    []
-    [func_spatial_xid]
-        type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
-        w = 1e3
-        max_val = -0.9
-        min_val = 1.8
     []
 []
 
@@ -264,11 +229,6 @@
         #use strain rate dependent Cd
         use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
-        #
-        # use_spatial_xio = true
-        # xio_aux = xio_aux
-        # use_spatial_xid = true
-        # xid_aux = xid_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]
@@ -301,8 +261,8 @@
     nl_rel_tol = 1e-8
     nl_max_its = 10
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-snes_type'
-    petsc_options_value = 'vinewtonrsls'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+    petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     verbose = true
     # dt = 1e-2
     [TimeStepper]

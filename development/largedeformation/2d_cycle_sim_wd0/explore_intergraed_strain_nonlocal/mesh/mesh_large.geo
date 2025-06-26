@@ -2,23 +2,23 @@ SetFactory("OpenCASCADE");
 
 // Define mesh sizes
 lc_fault = 100;
-lc = 6000;
+lc = 2000;
 
 // Define the big square (2D)
-big_xmin = -600000;
-big_xmax = 600000;
-big_ymin = -600000;
-big_ymax = 600000;
+big_xmin = -60000;
+big_xmax = 60000;
+big_ymin = -60000;
+big_ymax = 60000;
 
 // Define the small box (2D)
-small_xmin = -20000;
-small_xmax = 20000;
+small_xmin = -18000;
+small_xmax = 18000;
 small_ymin = -2000;
 small_ymax = 2000;
 
 // Define the initial damage box (2D)
-smalld_xmin = -19000;
-smalld_xmax = 19000;
+smalld_xmin = -15000;
+smalld_xmax = 15000;
 smalld_ymin = -100;
 smalld_ymax = 100;
 
