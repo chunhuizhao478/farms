@@ -300,7 +300,7 @@ FarmsIterationAdaptiveDT::computeDT()
     }
     else
     {
-      mooseWarning("constrain_by_velocity set to true but maxvelx and/or maxvely postprocessors are not provided.");
+      mooseWarning("constrain_by_velocity set to true but maxvelx and/or maxvely and/or maxvelz postprocessors are not provided. Even in 2D simulations, please provide maxvelz.");
     }
   }
 

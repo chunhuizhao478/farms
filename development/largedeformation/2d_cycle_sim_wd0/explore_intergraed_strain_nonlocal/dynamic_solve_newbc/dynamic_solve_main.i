@@ -348,7 +348,7 @@
         type = ElkRadialAverage
         length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 300
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -369,6 +369,24 @@
     end_time = 1e-2 # dt used in the simulation
   []
 [../]
+
+[Postprocessors]
+  [./_dt]
+    type = TimestepSize
+  []
+  [./maxvelx]
+    type = NodalExtremeValue
+    variable = vel_x
+  []
+  [./maxvely]
+    type = NodalExtremeValue
+    variable = vel_y
+  []
+  [./maxvelz]
+    type = NodalExtremeValue
+    variable = vel_z
+  []
+[]
   
 [Executioner]
     type = Transient
@@ -380,7 +398,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 10
+    nl_max_its = 30
     nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -399,7 +417,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1e-2
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 8
+        optimal_iterations = 20
         growth_factor = 1.1
         max_time_step_bound = 1e7
         #constrain velocity during dynamic simulation
@@ -408,6 +426,7 @@
         constant_dt_on_overspeed = 1e-2
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
+        maxvelz = 'maxvelz'
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -415,20 +434,6 @@
         gamma = 0.5
     [../]
 []
-
-[Postprocessors]
-    [./_dt]
-        type = TimestepSize
-    [../]
-    [./maxvelx]
-        type = NodalExtremeValue
-        variable = vel_x
-    [../]
-    [./maxvely]
-        type = NodalExtremeValue
-        variable = vel_y
-    [../]
-[../]
 
 [Outputs]
     [./exodus]
