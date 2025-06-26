@@ -18,7 +18,7 @@ Pf = density_fluid * g * depths
 sigma_zz = -rho * g * depths
 
 # Coefficients for horizontal and shear stresses
-b_xx = 0.926793
+b_xx = 0
 b_yy = 1.073206
 b_xy = -0.7
 
