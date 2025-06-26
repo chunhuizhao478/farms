@@ -624,7 +624,7 @@
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
-        # sub_cycling = true
+        sub_cycling = true
         clone_parent_mesh = true
     [../]
 []
