@@ -406,6 +406,8 @@
         constrain_by_velocity = true
         vel_threshold = 1e-2
         constant_dt_on_overspeed = 1e-2
+        maxvelx = 'maxvelx'
+        maxvely = 'maxvely'
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -619,7 +621,6 @@
         execute_on = 'TIMESTEP_BEGIN'
         # sub_cycling = true
         clone_parent_mesh = true
-        cli_args = 'maxvelx maxvely'
     [../]
 []
 

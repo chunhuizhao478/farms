@@ -67,7 +67,7 @@
     CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    C_1 = 300
+    C_1 = 1e-4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
