@@ -59,7 +59,7 @@ Field[1].YAxis   = 0;
 Field[1].ZAxis   = 0;
 Field[1].Radius  = 0.0125;         // Same radius as Cylinder(5)
 Field[1].VIn     = lc;             // Fine mesh size inside the cylinder field
-Field[1].VOut    = 0.005;           // Coarser mesh size outside the cylinder field
+Field[1].VOut    = lc;           // Coarser mesh size outside the cylinder field
 
 // Set the background field to use the cylinder field
 Background Field = 1;
