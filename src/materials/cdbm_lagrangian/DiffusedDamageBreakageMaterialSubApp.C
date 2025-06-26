@@ -27,7 +27,7 @@ DiffusedDamageBreakageMaterialSubApp::validParams()
   params.addRequiredParam<Real>(            "xi_d", "strain invariants ratio: onset of breakage healing");
   params.addRequiredParam<Real>(          "xi_min", "strain invariants ratio: minimum allowable value");
   params.addRequiredParam<Real>(          "xi_max", "strain invariants ratio: maximum allowable value");
-  params.addRequiredParam<Real>(     "Cd_constant", "coefficient gives positive damage evolution");
+  // params.addRequiredParam<Real>(     "Cd_constant", "coefficient gives positive damage evolution");
   params.addRequiredParam<Real>(             "C_1", "coefficient of healing for damage evolution");
   params.addRequiredParam<Real>(             "C_2", "coefficient of healing for damage evolution");
   params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
@@ -54,6 +54,11 @@ DiffusedDamageBreakageMaterialSubApp::validParams()
   //use spatial xid
   params.addParam<bool>("use_spatial_xid", false, "use spatial xid");
   params.addCoupledVar("xid_aux", "xid_aux");
+  //use spatial cd or constant cd
+  params.addParam<bool>("use_spatial_cd", false, "Use spatial Cd from an auxiliary variable");
+  params.addCoupledVar("cd_aux", "Auxiliary variable for spatially varying Cd");
+  // Change the Cd_constant parameter from required to optional
+  params.addParam<Real>("Cd_constant", 0.0, "Coefficient gives positive damage evolution (used when not using spatial Cd)");  
   return params;
 }
 
@@ -88,7 +93,7 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _xi_d_value(getParam<Real>("xi_d")),
   _xi_min_value(getParam<Real>("xi_min")),
   _xi_max_value(getParam<Real>("xi_max")),
-  _Cd_constant_value(getParam<Real>("Cd_constant")),
+  // _Cd_constant_value(getParam<Real>("Cd_constant")),
   _CdCb_multiplier_value(getParam<Real>("CdCb_multiplier")),
   _CBH_constant_value(getParam<Real>("CBH_constant")), 
   _beta_width_value(getParam<Real>("beta_width")),
@@ -116,7 +121,11 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _xio_aux(_use_spatial_xio ? coupledValue("xio_aux") : _zero),
   //use spatial xid
   _use_spatial_xid(getParam<bool>("use_spatial_xid")),
-  _xid_aux(_use_spatial_xid ? coupledValue("xid_aux") : _zero)
+  _xid_aux(_use_spatial_xid ? coupledValue("xid_aux") : _zero),
+  //use spatial Cd or constant Cd
+  _use_spatial_cd(getParam<bool>("use_spatial_cd")),
+  _cd_aux(_use_spatial_cd ? coupledValue("cd_aux") : _zero),
+  _Cd_constant_value(_use_spatial_cd ? 0.0 : getParam<Real>("Cd_constant"))
 {
   //check strain rate dependent Cd options
   if (_use_cd_strain_dependent && (_strain_rate_hat < 0 || _cd_hat < 0 || _m_exponent < 0)){
@@ -154,7 +163,11 @@ DiffusedDamageBreakageMaterialSubApp::initQpStatefulProperties()
   _xi_max_mat[_qp] = _xi_max_value;
 
   /* compute _Cd_mat, _CdCb_multiplier_mat, _CBH_constant_mat */
-  _Cd_mat[_qp] = _Cd_constant_value;
+  // _Cd_mat[_qp] = _Cd_constant_value;
+  if (_use_spatial_cd)
+    _Cd_mat[_qp] = _cd_aux[_qp];
+  else
+    _Cd_mat[_qp] = _Cd_constant_value;
   _CdCb_multiplier_mat[_qp] = _CdCb_multiplier_value;
   _CBH_constant_mat[_qp] = _CBH_constant_value;
 
@@ -231,7 +244,10 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
     }
     
   }
-  else{
+  else if (_use_spatial_cd){
+    _Cd_mat[_qp] = _cd_aux[_qp];
+  }
+  else{ //else use constant Cd
     _Cd_mat[_qp] = _Cd_constant_value;
   }
   

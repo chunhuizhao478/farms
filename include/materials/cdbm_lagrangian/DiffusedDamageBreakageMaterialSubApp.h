@@ -66,7 +66,7 @@ protected:
   Real _xi_d_value;
   Real _xi_min_value;
   Real _xi_max_value;
-  Real _Cd_constant_value;
+  // Real _Cd_constant_value;
   Real _CdCb_multiplier_value;
   Real _CBH_constant_value;
   Real _beta_width_value;
@@ -99,5 +99,9 @@ protected:
   //use spatial xid
   bool _use_spatial_xid; //use spatial xio
   const VariableValue & _xid_aux; //xio_aux
+
+  bool _use_spatial_cd;
+  const VariableValue & _cd_aux;
+  Real _Cd_constant_value; //constant Cd value, used when not using spatial Cd
 
 };
