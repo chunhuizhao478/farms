@@ -15,15 +15,9 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-60000 -60000 0'
+        coord = '0 -480000 0'
         new_boundary = corner_ptr
         input = sidesets
-    []
-    [./extranodeset2]
-        type = ExtraNodesetGenerator
-        coord = '60000 -60000 0'
-        new_boundary = corner_ptr2
-        input = extranodeset1
     []
 []
 
@@ -328,7 +322,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 20
+        time_step_interval = 1
         show = 'Cd_aux'
     [../]
 []
