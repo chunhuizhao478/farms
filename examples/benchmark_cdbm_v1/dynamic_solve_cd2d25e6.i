@@ -31,10 +31,10 @@ mu_d = 0.525 #dynamic friction coefficient
 
 ##CDB model parameters##
 xi_0 = -0.75 #strain invariants ratio: onset of damage evolution
-xi_d = -0.9 #strain invariants ratio: onset of breakage healing
+xi_d = -0.75 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = 2.2e6 #coefficient gives positive damage evolution
+Cd_constant = 2.25e6 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
