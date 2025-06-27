@@ -18,9 +18,9 @@ Pf = density_fluid * g * depths
 sigma_zz = -rho * g * depths
 
 # Coefficients for horizontal and shear stresses
-b_xx = 0
+b_xx = 0.926793
 b_yy = 1.073206
-b_xy = -0.7
+b_xy = -0.9
 
 # Piecewise definitions
 mask = depths <= 15600
@@ -33,9 +33,9 @@ mask = depths <= 4000
 c = np.where(mask, 0.3e6 + (0.000675e6) * (4000 - depths), 0.3e6)  # cohesion in Pa
 
 # shear strength
-mu_s = 0.677
+mu_s = 0.85
 static_shear_strength = c + abs( mu_s * (sigma_yy + Pf) )
-mu_d = 0.55
+mu_d = 0.6
 residual_shear_strength = c + abs( mu_d * (sigma_yy + Pf) )
 
 # ------------------------
@@ -106,7 +106,7 @@ xi = I1 / np.sqrt(I2)
 # Principal stresses and maximum-principal orientation (2-D)
 # -----------------------------------------------------------
 # --- pick the target depth (m) ---------------------------------------------
-depth_target = 5000          # 7.5 km
+depth_target = 7500          # 7.5 km
 
 # ---------------------------------------------------------------------------
 # Find the row in `depths` that is closest to the target
