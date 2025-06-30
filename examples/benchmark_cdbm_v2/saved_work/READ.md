@@ -1,1 +1,0 @@
-dynamic_solve_saved1.i: able to generate distributed damage / little breakage (below the transition)
