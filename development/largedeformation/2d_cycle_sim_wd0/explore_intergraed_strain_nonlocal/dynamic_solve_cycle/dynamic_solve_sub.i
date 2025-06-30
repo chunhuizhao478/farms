@@ -227,9 +227,9 @@
 [Functions]
     [func_spatial_cd]
         type = SpatialDamageBreakageParameters
-        W = 2e3 #half the total width
-        w = 10e3
-        max_val = 1e5
+        W = 10e3 #half the total width
+        w = 5e3
+        max_val = 1e6
         min_val = 1e-1
     []
 []
