@@ -30,11 +30,11 @@ mu_d = 0.525 #dynamic friction coefficient
 ##-------------------------##
 
 ##CDB model parameters##
-xi_0 = -0.75 #strain invariants ratio: onset of damage evolution
-xi_d = -0.75 #strain invariants ratio: onset of breakage healing
+xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
+xi_d = -0.9 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = 1.5e6 #coefficient gives positive damage evolution
+Cd_constant = 4e6 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
@@ -71,12 +71,14 @@ background_strain_xz = ${fparse first_hooke_law_factor * background_stress_xz}
 background_strain_yz = ${fparse first_hooke_law_factor * background_stress_yz}
 ##-------------------------##
 
-#nucleation
-peak_shear_value = 81.6e6 #initial shear stress perturbation peak value
+#nucleation parameters
 nucl_center_x = 0 #nucleation center x coordinate
+nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -7500 #nucleation center y coordinate
-nucl_size = 3000 #nucleation size
-##-------------------------##
+r_crit = 4000 #critical distance to hypocenter (m)
+Vs = 3464 #shear wave speed (m/s)
+t0 = 0.5 #nucleation time (s)
+##------------------------------------------------------------------##
 
 ##model parameters##
 dt = 0.0025 #time step size
@@ -304,6 +306,19 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       order = FIRST
       family = MONOMIAL
   [] 
+  #
+  [cohesion_aux]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [forced_rupture_aux]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [fluid_pressure_aux]
+    order = FIRST
+    family = LAGRANGE
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -407,13 +422,34 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = 'resid_z'
     execute_on = 'TIMESTEP_END'
   []
-  ### slip weakening initial shear stress
-  [get_ini_shear_stress_aux]
+  ### slip weakening cohesion
+  [get_cohesion_aux]
     type = FunctionAux
-    variable = ini_shear_sts_aux
-    function = func_initial_stress_xy_variable
-    execute_on = 'TIMESTEP_BEGIN'
+    variable = cohesion_aux
+    function = func_cohesion
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
+  ### slip weakening forced rupture
+  [get_forced_rupture_aux]
+    type = FunctionAux
+    variable = forced_rupture_aux
+    function = func_forced_rupture
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+  []
+  ### fluid pressure
+  [get_fluid_pressure_aux]
+    type = FunctionAux
+    variable = fluid_pressure_aux
+    function = func_fluid_pressure
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+  []
+  ### slip weakening initial shear stress
+  # [get_ini_shear_stress_aux]
+  #   type = FunctionAux
+  #   variable = ini_shear_sts_aux
+  #   function = func_initial_stress_xy_variable
+  #   execute_on = 'TIMESTEP_BEGIN'
+  # []
   ### slip weakening strike direction
   [get_jump_x_aux]
     type = MaterialRealAux
@@ -548,7 +584,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       prop_values = '0 0 0 ${density}'
   []
   [./czm_mat]
-      type = SlipWeakeningFrictionczm3d
+      type = SlipWeakeningFrictionczm3dCDBM
       disp_slipweakening_x     = disp_slipweakening_x
       disp_slipweakening_y     = disp_slipweakening_y
       disp_slipweakening_z     = disp_slipweakening_z
@@ -562,9 +598,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       mu_d = ${mu_d}
       Dc = ${Dc}
       len = ${elem_size}
-      T2_o = ${fparse -1 * background_stress_yy} #normal stress is positive(compression) inside this material object
-      T3_o = ${fparse background_stress_xz} #dip shear stress is positive(clockwise) inside this material object
-      ini_shear_sts = ini_shear_sts_aux #strike shear stress is positive(clockwise) inside this material object
+      #---------------------------------------------#
+      use_forced_rupture = true
+      t0 = ${t0}
+      cohesion_aux = cohesion_aux
+      forced_rupture_aux = forced_rupture_aux
+      fluid_pressure_aux = fluid_pressure_aux
+      #---------------------------------------------#
       boundary = 'Block100_Block200'
   [../]
   [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
@@ -576,7 +616,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       output_properties = 'static_initial_strain_tensor'
       outputs = exodus
   [../]
-  [./static_initial_stress_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
+  [./static_initial_stress_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening, SlipWeakeningFrictionczm3dCDBM
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
       tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
@@ -586,17 +626,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Functions]
-  #the initial shear stress needs additional nucleation parameters
-  [./func_initial_stress_xy_variable]
-      type = InitialShearStressCDBM
-      peak_value = ${peak_shear_value}
-      nucl_center_x = ${nucl_center_x}
-      nucl_center_z = ${nucl_center_z}
-      nucl_size = ${nucl_size}
-      elem_size = ${elem_size}
-      domain_value = ${background_stress_xy}
-  []
-  ###
   [./func_initial_strain_xx]
     type = ConstantFunction
     value = ${background_strain_xx}
@@ -645,6 +674,25 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./func_initial_stress_zz]
     type = ConstantFunction
     value = ${background_stress_zz}
+  []
+  ###fluid pressure###
+  [./func_fluid_pressure]
+    type = ConstantFunction
+    value = 0.0 #fluid pressure is not used in this example
+  []
+  ###cohesion###
+  [./func_cohesion]
+    type = ConstantFunction
+    value = 0.0 #cohesion is not used in this example
+  []
+  ###forcedrupture###
+  [./func_forced_rupture]
+    type = ForcedRuptureTimeCDBMv2
+    loc_x = ${nucl_center_x}
+    loc_y = ${nucl_center_y}
+    loc_z = ${nucl_center_z}
+    r_crit = ${r_crit}
+    Vs = ${Vs}
   []
 []
 
