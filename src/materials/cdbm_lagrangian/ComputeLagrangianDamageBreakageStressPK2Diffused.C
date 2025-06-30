@@ -118,228 +118,20 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::initQpStatefulProperties()
 void
 ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
 {
-  // // PK2 update
-  // computeQpPK2Stress();
-
-  // // Compute Jp, Fp^{-1} //depends on the plastic deformation rate, here no volumetric strain upodate, Jp = 1 (checked)
-  // _Jp[_qp] = _Fp[_qp].det();
-  // RankTwoTensor Fpinv = _Fp[_qp].inverse();
-
-  // //Compute deformation rate D
-  // _D[_qp] = 0.5 * ( _velgrad_L[_qp] + _velgrad_L[_qp].transpose() );
-
-  // // Compute Fp_dot, F_dot
-  // // Here we approximate the rate by first-order, not sure if this is sufficient for varying time steps
-  // // currently MOOSE don't support getMaterialPropertyDot
-  // RankTwoTensor Fp_dot;
-  // RankTwoTensor F_dot;
-  
-  // if (_use_vels_build_L_mat[_qp]){ //use true deformation rate
-
-  //   for (unsigned int i = 0; i < 3; i++){
-  //     for (unsigned int j = 0; j < 3; j++){
-  //       for (unsigned int m = 0; m < 3; m++){
-  //         Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
-  //         F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j); 
-  //       }
-  //     }
-  //   } 
-
-  // }
-  // else{ //finite difference approximation
-
-  //   for (unsigned int i = 0; i < 3; i++){
-  //     for (unsigned int j = 0; j < 3; j++){
-  //         F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
-  //         //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
-  //         for (unsigned int m = 0; m < 3; m++){
-  //           Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
-  //         }
-  //     }
-  //   }
-  
-  // }
- 
-  // // Compute delta function
-  // auto delta = [](int i, int j) -> Real {
-  //   return (i == j) ? 1.0 : 0.0;
-  // };  
-
-  // //Compute dFpdF //need to confirm
-  // auto dFpdF = [&](int i, int j, int k, int l) -> Real {
-  //   if (_dt == 0.0){ //Steady, set zero
-  //     return 0.0;
-  //   } 
-  //   else{ //Transient
-  //     if (Fp_dot(i,j) == 0.0 || F_dot(k,l) == 0.0 ){ //no change of viscoelastic dg, set zero
-  //       return 0.0;
-  //     }
-  //     else{
-  //       return Fp_dot(i,j)/F_dot(k,l);
-  //     }
-  //   }
-  // };
-
-  // // Compute dFedF
-  // auto dFedF = [&](int i, int m, int k, int l) -> Real {
-
-  //   // Since dFp/dF is zero (Fp is explicit), dFedF simplifies
-  //   Real dFedF_val = delta(i,k) * Fpinv(l,m);
-
-  //   //here apply summations to {h,r}
-  //   for (unsigned int h = 0; h < 3; h++){
-  //     for (unsigned int r = 0; r < 3; r++){
-  //       dFedF_val -= _Fe[_qp](i,h) * dFpdF(h,r,k,l) * Fpinv(r,m);
-  //     }
-  //   }    
-
-  //   return dFedF_val;
-
-  // }; 
-
-  // // Compute dEdF
-  // auto dEdF = [&](int p, int q, int k, int l) -> Real {
-    
-  //   //initialize value
-  //   Real dEdF_val = 0.0;
-
-  //   //here apply summations to {m}
-  //   for (unsigned int m = 0; m < 3; m++){
-  //     dEdF_val += 0.5 * ( dFedF(m,p,k,l) * _Fe[_qp](m,q) + _Fe[_qp](m,p) * dFedF(m,q,k,l) );
-  //   }
-
-  //   return dEdF_val;
-
-  // };
-
-  // // Compute dFpmdF
-  // auto dFpmdF = [&](int j, int n, int k, int l) -> Real {
-
-  //   //initialize value
-  //   Real dFpmdF_val = 0.0;
-
-  //   //here apply summations to {i,a}
-  //   for (unsigned int i = 0; i < 3; i++){
-  //     for (unsigned int m = 0; m < 3; m++){
-  //       dFpmdF_val += -1.0 * Fpinv(j,i) * dFpdF(i,m,k,l) * Fpinv(m,n);
-  //     }
-  //   }
-
-  //   return dFpmdF_val;
-
-  // };
-
-  // //Compute pk_jacobian
-  // RankFourTensor pk_jacobian_val;
-  // pk_jacobian_val.zero();  // Make sure the tensor starts with zero values
-  // for (unsigned int i = 0; i < 3; i++){
-  //   for (unsigned int j = 0; j < 3; j++){
-  //     for (unsigned int k = 0; k < 3; k++){
-  //       for (unsigned int l = 0; l < 3; l++){
-  //         for (unsigned int m = 0; m < 3; m++)
-  //         {
-  //           // First term: dFedF(i,m,k,l) * S(m,n) * Fpinv(j,n)
-  //           for (unsigned int n = 0; n < 3; n++){
-  //             pk_jacobian_val(i,j,k,l) += dFedF(i,m,k,l) * _S[_qp](m,n) * Fpinv(j,n);
-  //           }
-            
-  //           // Second term: Fe(i,m) * C(m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n)
-  //           for (unsigned int n = 0; n < 3; n++){
-  //             for (unsigned int p = 0; p < 3; p++){
-  //               for (unsigned int q = 0; q < 3; q++){
-  //                 pk_jacobian_val(i,j,k,l) += _Fe[_qp](i,m) * _C[_qp](m,n,p,q) * dEdF(p,q,k,l) * Fpinv(j,n);
-  //               }
-  //             }
-  //           }
-            
-  //           // Third term: Fe(i,m) * S(m,n) * dFpmdF(j,n,k,l)
-  //           for (unsigned int n = 0; n < 3; n++){
-  //             pk_jacobian_val(i,j,k,l) += _Fe[_qp](i,m) * _S[_qp](m,n) * dFpmdF(j,n,k,l);
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // // Complicated wrapping from PK2 to PK1, see documentation on overleaf
-  // if (_large_kinematics)
-  // {
-  //   //if there is plastic
-  //   // Compute pk1 stress
-  //   _pk1_stress[_qp] = _Fe[_qp] * _S[_qp] * Fpinv.transpose();
-
-  //   // Compute pk1 jacobian
-  //   _pk1_jacobian[_qp] = pk_jacobian_val;
-
-  //   //if there is no plastic 
-  //   // _pk1_stress[_qp] = _F[_qp] * _S[_qp];
-  //   // usingTensorIndices(i_, j_, k_, l_);
-  //   // RankFourTensor dE =
-  //   //     0.5 * (RankTwoTensor::Identity().times<i_, l_, j_, k_>(_F[_qp].transpose()) +
-  //   //            _F[_qp].transpose().times<i_, k_, j_, l_>(RankTwoTensor::Identity()));
-
-  //   // _pk1_jacobian[_qp] = RankTwoTensor::Identity().times<i_, k_, j_, l_>(_S[_qp].transpose()) +
-  //   //                      (_C[_qp] * dE).singleProductI(_F[_qp]);
-
-  // }
-  // else
-  // {
-  //   mooseError("Must selection 'large_kinematics' option!");
-  // }
 
   //--------------------------------------------------------------------------
   // PK2 update
   computeQpPK2Stress();
 
-  // // Compute Jp and the inverse of Fp
-  // if (_add_dilatancy_compaction_anand_mat[_qp]){
-  //   //here we assume exponential dependence of the plastic volume change eta: 
-  //   //eta = ln(J^p), J^p = exp(eta)
-  //   _Jp[_qp] = std::exp(_eta[_qp]);
-  // }
-  // else{
-  //   _Jp[_qp] = _Fp[_qp].det();
-  // }
-
   _Jp[_qp] = _Fp[_qp].det();
   
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
-
-  //Compute deformation rate D
-  // _D[_qp] = 0.5 * ( _velgrad_L[_qp] + _velgrad_L[_qp].transpose() );
 
   // Compute Fp_dot, F_dot
   // Here we approximate the rate by first-order, not sure if this is sufficient for varying time steps
   // currently MOOSE don't support getMaterialPropertyDot
   RankTwoTensor Fp_dot; Fp_dot.zero();
   RankTwoTensor F_dot; F_dot.zero();
-  
-  // if (_use_vels_build_L_mat[_qp]){ //use true deformation rate
-
-  //   for (unsigned int i = 0; i < 3; i++){
-  //     for (unsigned int j = 0; j < 3; j++){
-  //       for (unsigned int m = 0; m < 3; m++){
-  //         Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
-  //         F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j); 
-  //       }
-  //     }
-  //   } 
-
-  // }
-  // else{ //finite difference approximation
-
-  //   for (unsigned int i = 0; i < 3; i++){
-  //     for (unsigned int j = 0; j < 3; j++){
-  //         //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
-  //         F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
-  //         for (unsigned int m = 0; m < 3; m++){
-  //           Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
-  //         }
-  //     }
-  //   }
-  
-  // }
 
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
@@ -501,9 +293,6 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
   {
     // Compute PK1 stress: P = Jp * Fe * S * (Fpinv)^T
     _pk1_stress[_qp] = _Jp[_qp] * _Fe[_qp] * _S[_qp] * Fpinv.transpose();
-    // Here we assume Jp = 1
-    //_pk1_stress[_qp] = _Fe[_qp] * _S[_qp] * Fpinv.transpose();
-    // Assign the computed consistent tangent operator
     _pk1_jacobian[_qp] = pk_jacobian_val;
   }
   else
@@ -529,49 +318,6 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
 
   /* Compute E */
   RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + Ep;
-  //RankTwoTensor E = 0.5 * (_F[_qp].transpose() * _F[_qp] - RankTwoTensor::Identity());
-
-  // //----------------------------------------------------------------------------//
-  // // Add check to ensure Ep is always not exceeding E
-  // Real Eij = 0.0;
-  // Real Epij = 0.0;
-  // for (unsigned int i = 0; i < 3; ++i){
-  //   for (unsigned int j = 0; j < 3; ++j){
-  //     Eij  = E(i,j);
-  //     Epij = Ep(i,j);
-  //     if (Eij > 0.0 && Epij > Eij){
-  //       Epij = Eij;
-  //     }
-  //     else if (Eij < 0.0 && Epij < Eij){
-  //       Epij = Eij;
-  //     }
-  //     else if (Eij == 0.0 && Epij != 0.0){
-  //       Epij = 0.0;
-  //     }
-  //     Ep(i,j) = Epij;
-  //   }
-  // }
-
-  // // Update Ee
-  // // 1) Precompute inverses of Fp
-  // RankTwoTensor Fp_inv  = Fp_updated.inverse();
-  // RankTwoTensor Fp_invT = Fp_inv.transpose();
-
-  // // 2) Compute Ee_corrected = Fp_invT * (E - Ep) * Fp_inv
-  // RankTwoTensor E_minus_Ep = E - Ep;
-  // Ee = Fp_invT * E_minus_Ep * Fp_inv;
-  // Ee = 0.5 * (Ee + Ee.transpose());
-  // //----------------------------------------------------------------------------//
-
-  // //Compute shear perturbation
-  // //----------------------------------------------------------------------------//
-  // Real shear_strain_perturbation = 0.0;
-  // if (_shear_stress_perturbation[_qp] != 0){
-  //   shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * _shear_modulus[_qp]);
-  //   Ee(0,1) += shear_strain_perturbation;
-  //   Ee(1,0) += shear_strain_perturbation;
-  // }
-  // //----------------------------------------------------------------------------//
 
   /* Compute I1 */
   Real I1 = Ee.trace();
@@ -594,21 +340,6 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
-
-  /* add pore pressure */
-  if (_shear_stress_perturbation[_qp] != 0){
-    std::cout << "Shear stress perturbation: " << _shear_stress_perturbation[_qp] << std::endl;
-    sigma_total(0,0) -= _shear_stress_perturbation[_qp];
-    sigma_total(1,1) -= _shear_stress_perturbation[_qp];
-    sigma_total(2,2) -= _shear_stress_perturbation[_qp];
-  }
-
-  // add structral stress
-  for (unsigned int i = 0; i < 3; ++i){
-    for (unsigned int j = 0; j < 3; ++j){
-      sigma_total(i,j) -= _structural_stress_coefficient[_qp] * _grad_alpha_damagedvar[_qp](i) * _grad_alpha_damagedvar[_qp](j);
-    }
-  }
 
   //save
   _Ep[_qp] = Ep;
@@ -697,23 +428,6 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp = _shear_rate_nu[_qp] * N; 
-
-  // //Add dilatancy/compaction effect
-  // if (_add_dilatancy_compaction_anand_mat[_qp]){
-    
-  //   //Compute dilatancy function beta //_dilatancy_function_beta[_qp]
-  //   computedilatancyfunction();
-
-  //   //Update Plastic Deformation Rate Tensor
-  //   Dp = Dp + _dilatancy_function_beta[_qp] * _shear_rate_nu[_qp] * RankTwoTensor::Identity();
-
-  //   //Update plastic volume change
-  //   computeplasticvolumechange();
-
-  // }
-
-  // //Update Plastic Strain
-  // _Ep[_qp] = _Ep_old[_qp] + Dp * _dt;
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;
