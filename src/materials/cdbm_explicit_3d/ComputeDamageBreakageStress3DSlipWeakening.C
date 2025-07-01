@@ -135,6 +135,9 @@ ComputeDamageBreakageStress3DSlipWeakening::computeQpStress()
   Real a2 = avec[2];
   Real a3 = avec[3];
 
+  // std::cout << "gamma_damaged_r: " << gamma_damaged_r << std::endl;
+  // std::cout << "a0: " << a0 << ", a1: " << a1 << ", a2: " << a2 << ", a3: " << a3 << std::endl;
+
   if (_step == 1){
     setupInitial();
   }
@@ -304,6 +307,8 @@ ComputeDamageBreakageStress3DSlipWeakening::computecoefficients(Real gamma_damag
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
+
+  // std::cout << "xi_1: " << _xi_1 << std::endl;
 
   //compute alpha_cr | xi = 0
   Real alpha_cr_xi0 = alphacr_root1(0, gamma_damaged_r);

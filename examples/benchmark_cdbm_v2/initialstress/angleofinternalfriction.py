@@ -1,7 +1,7 @@
 import numpy as np
 
 # Given parameters
-xi_o = -1.1
+xi_o = -0.8
 lmbda_mu_ratio = 1  # lambda_o / mu_o = 1 based on common assumption unless otherwise provided
 
 # Solve for q from equation (A.7)
