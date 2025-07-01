@@ -27,6 +27,9 @@ InitialStressStrainCDBMv2::validParams()
   params.addParam<bool>("get_initial_strain", false, "flag to get initial strain");
   params.addParam<bool>("get_shear_overstress", false, "flag to get initial overstress");
   params.addParam<bool>("get_fluid_pressure", false, "flag to get fluid pressure");
+  params.addParam<bool>("use_overpressure", false, "flag to use overpressure in the stress calculation, default is false");
+  params.addParam<Real>("overpressure_depth_A", -1, "depth at which overpressure starts to be applied");
+  params.addParam<Real>("overpressure_depth_B", -1, "depth at which overpressure stops to be applied");
   return params;
 }
 
@@ -51,7 +54,10 @@ InitialStressStrainCDBMv2::InitialStressStrainCDBMv2(const InputParameters & par
   _get_initial_stress(getParam<bool>("get_initial_stress")),
   _get_initial_strain(getParam<bool>("get_initial_strain")),
   _get_shear_overstress(getParam<bool>("get_shear_overstress")),
-  _get_fluid_pressure(getParam<bool>("get_fluid_pressure"))
+  _get_fluid_pressure(getParam<bool>("get_fluid_pressure")),
+  _use_overpressure(getParam<bool>("use_overpressure")),
+  _overpressure_depth_A(getParam<Real>("overpressure_depth_A")),
+  _overpressure_depth_B(getParam<Real>("overpressure_depth_B"))
 {
   //some checks for parameters
   if (_get_shear_overstress && (_peak_shear_value < 0 || _nucl_center_x < 0 || _nucl_center_z > 0 || _nucl_size < 0 || _elem_size < 0)) {
@@ -66,6 +72,9 @@ InitialStressStrainCDBMv2::InitialStressStrainCDBMv2(const InputParameters & par
   }
   if (_get_fluid_pressure && (_get_initial_stress || _get_initial_strain)) {
     mooseError("When get_fluid_pressure is true, get_initial_stress and get_initial_strain must be false.");
+  }
+  if (_use_overpressure && (_overpressure_depth_A < 0 || _overpressure_depth_B < 0 || _overpressure_depth_A >= _overpressure_depth_B)) {
+    mooseError("When use_overpressure is true, overpressure_depth_A and overpressure_depth_B must be provided and A must be less than B.");
   }
 }
 
@@ -107,7 +116,41 @@ InitialStressStrainCDBMv2::value(Real /*t*/, const Point & p) const
   Real sigmayz = 0; 
 
   //Pf
-  Real Pf = fluid_density * gravity * abs(z_coord);
+  Real Pf = 0.0; //fluid pressure, will be computed later
+  if (!_use_overpressure){
+    Pf = fluid_density * gravity * abs(z_coord);
+  }
+  else{
+    //depth <= A, rho * g * z
+    if ( abs(z_coord) <= _overpressure_depth_A) {
+      Pf = fluid_density * gravity * abs(z_coord);
+    }
+    //depth >= A and depth <= B, Linear‑gradient transition
+    /*
+      Pf_A = density_fluid * g * A
+      Pf[mask2] = Pf_A + g * (
+          density_fluid * (z2 - A) +
+          0.5 * delta_rho * (z2 - A) ** 2 / (B - A)
+      )
+    */
+    else if ( abs(z_coord) > _overpressure_depth_A && abs(z_coord) <= _overpressure_depth_B) {
+      Real Pf_A = fluid_density * gravity * _overpressure_depth_A;
+      Real delta_rho = rock_density - fluid_density;
+      Pf = Pf_A + gravity * (fluid_density * (abs(z_coord) - _overpressure_depth_A) +
+          0.5 * delta_rho * pow((abs(z_coord) - _overpressure_depth_A), 2) / (_overpressure_depth_B - _overpressure_depth_A));
+    }
+    //depth >= B, Over‑pressured below B
+    /*
+    mask3 = depths > B
+    z3 = depths[mask3]
+    Pf_B = density_fluid * g * B + 0.5 * g * delta_rho * (B - A)
+    Pf[mask3] = Pf_B + rho * g * (z3 - B)
+    */
+    else if ( abs(z_coord) > _overpressure_depth_B) {
+      Real Pf_B = fluid_density * gravity * _overpressure_depth_B + 0.5 * gravity * (rock_density - fluid_density) * (_overpressure_depth_B - _overpressure_depth_A);
+      Pf = Pf_B + rock_density * gravity * (abs(z_coord) - _overpressure_depth_B);
+    }
+  }
 
   //sigmazz
   sigmazz = -1 * rock_density * gravity * abs(z_coord);

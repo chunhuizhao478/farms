@@ -38,5 +38,8 @@ public:
   bool _get_initial_strain; //flag to get initial strain
   bool _get_shear_overstress; //flag to get initial shear overstress
   bool _get_fluid_pressure; //flag to get fluid pressure
+  bool _use_overpressure; //flag to use overpressure in the stress calculation
+  Real _overpressure_depth_A; //depth at which overpressure starts to transition from hydrostatic to lithostatic
+  Real _overpressure_depth_B; //depth at which overpressure stops to transition from hydrostatic to lithostatic
 
 };

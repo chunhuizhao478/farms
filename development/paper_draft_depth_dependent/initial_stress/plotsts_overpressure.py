@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 # USER‑PARAMETERS
 # -------------------------------------------------------------------
 A = 8_000.0      # (m) depth where the transition *begins*
-B = 12_000.0     # (m) depth where the transition *ends*
+B = 10_000.0     # (m) depth where the transition *ends*
 z_max = 15_000.0 # (m) modelling depth
 n_pts = 300      # number of depth samples
 
