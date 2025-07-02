@@ -7,7 +7,7 @@ solid_bulk_compliance = 3.46e-11
 lambda_o = ${fparse youngs_modulus*poissons_ratio/(1+poissons_ratio)/(1-2*poissons_ratio)}
 shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
 length_scale = 0.0013
-coeff_b = 5.0
+coeff_b = 10.0
 #-------------------------------------------------#
 
 #damage-breakage properties
