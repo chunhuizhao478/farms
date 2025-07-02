@@ -1,0 +1,1 @@
+use the same bc as dry sample (remove the fix on top boundary x and y)

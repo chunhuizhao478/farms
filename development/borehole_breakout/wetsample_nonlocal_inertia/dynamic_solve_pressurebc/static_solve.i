@@ -185,6 +185,12 @@ damageable_block_ids = '3'
           displacements = 'disp_x disp_y disp_z'
         [../]
     []
+    [pressurebc]
+        type = DirichletBC
+        variable = pp
+        boundary = 5
+        value = ${inner_confinement_pressure}
+    []
 []
 
 [Functions]
