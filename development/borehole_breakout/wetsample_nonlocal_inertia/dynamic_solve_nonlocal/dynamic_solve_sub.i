@@ -14,7 +14,7 @@ shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
 xi_o = -0.8073
 xi_d = -0.8073
 # Cg = 1e-12
-Cd_constant = -1
+Cd_constant = 160
 CdCb_multiplier = 100
 beta_width = 0.05
 #-------------------------------------------------#
@@ -28,7 +28,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/mesh_adaptive_test.msh'
+        file =  '../meshfile/mesh_adaptive.msh'
     [] 
 []
 
@@ -60,9 +60,9 @@ damageable_block_ids = '3'
     Cd_constant = ${Cd_constant}
 
     #strain rate dependent Cd options
-    m_exponent = 0.8
-    strain_rate_hat = 1e-4
-    cd_hat = 10
+    # m_exponent = 0.8
+    # strain_rate_hat = 1e-8
+    # cd_hat = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -209,7 +209,6 @@ damageable_block_ids = '3'
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
-        use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system

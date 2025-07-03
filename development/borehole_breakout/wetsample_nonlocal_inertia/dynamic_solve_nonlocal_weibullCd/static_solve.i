@@ -31,7 +31,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/mesh_adaptive_test.msh'
+        file =  '../meshfile/mesh_adaptive.msh'
     []
     displacements = 'disp_x disp_y disp_z'
 []
@@ -160,18 +160,18 @@ damageable_block_ids = '3'
         boundary = 6
         function = applied_load_top
     []
-    # [fix_top_x]
-    #     type = DirichletBC
-    #     variable = disp_x
-    #     boundary = 6
-    #     value = 0
-    # []
-    # [fix_top_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = 6
-    #     value = 0
-    # []
+    [fix_top_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = 6
+        value = 0
+    []
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = 6
+        value = 0
+    []
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]

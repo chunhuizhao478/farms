@@ -14,7 +14,7 @@ shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
 xi_o = -0.8073
 xi_d = -0.8073
 # Cg = 1e-12
-Cd_constant = 80
+Cd_constant = 160
 CdCb_multiplier = 100
 beta_width = 0.05
 #-------------------------------------------------#
@@ -28,7 +28,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/mesh_adaptive_test.msh'
+        file =  '../meshfile/mesh_adaptive.msh'
     [] 
 []
 
@@ -210,6 +210,8 @@ damageable_block_ids = '3'
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
         strain_rate = deviatroic_strain_rate_sub_aux
+        use_spatial_cd = true
+        cd_aux = Cd_aux
     []
     #add shear perturbation to the system
     [damage_perturbation]
@@ -251,6 +253,26 @@ damageable_block_ids = '3'
     [./exodus]
         type = Exodus
         time_step_interval = 50
-        # show = 'Cd_aux'
+        show = 'Cd_aux'
     [../]
 []
+
+#weibull distribution for Cd
+#--------------------------------------------------#
+[Distributions]
+  [weibull]
+    type = Weibull
+    shape = 15.0 #k
+    scale = ${Cd_constant} #lambda
+    location = 0 
+  []
+[] 
+
+[ICs]
+  [./cd_var]
+    type =  RandomIC
+    variable = Cd_aux
+    distribution = weibull
+  []
+[]
+#--------------------------------------------------#

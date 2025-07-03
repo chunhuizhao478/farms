@@ -44,7 +44,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/mesh_adaptive_test.msh'
+        file =  '../meshfile/mesh_adaptive.msh'
     [] 
 []
 
@@ -337,14 +337,14 @@ damageable_block_ids = '3'
     []
     #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
     #(pp - pp_old)/dt = pp_rate: if initial pp is zero, then the rate is not defined in the first time step
-    # [mass0]
-    #     type = PorousFlowFullySaturatedMassTimeDerivative
-    #     multiply_by_density = false
-    #     biot_coefficient = ${biot_coefficient}
-    #     coupling_type = HydroMechanical
-    #     variable = pp
-    #     block = ${damageable_block_ids}
-    # []
+    [mass0]
+        type = PorousFlowFullySaturatedMassTimeDerivative
+        multiply_by_density = false
+        biot_coefficient = ${biot_coefficient}
+        coupling_type = HydroMechanical
+        variable = pp
+        block = ${damageable_block_ids}
+    []
     #flux * grad(test)
     [flux]
         type = PorousFlowFullySaturatedDarcyBase
@@ -353,20 +353,6 @@ damageable_block_ids = '3'
         gravity = '0 0 0'
         block = ${damageable_block_ids}
     []
-    [poro_vol_exp] #mass lumping is used
-        type = PorousFlowMassVolumetricExpansion
-        variable = pp
-        fluid_component = 0
-        block = ${damageable_block_ids}
-        multiply_by_density = false
-    [] 
-    [mass0] #mass lumping is used
-        type = PorousFlowMassTimeDerivative
-        fluid_component = 0
-        variable = pp
-        block = ${damageable_block_ids}
-        multiply_by_density = false
-    [] 
 []
 
 [Materials]
@@ -540,7 +526,7 @@ damageable_block_ids = '3'
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
-    l_tol = 1e-5
+    l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 40
     nl_abs_tol = 1e-8
@@ -661,12 +647,12 @@ damageable_block_ids = '3'
         variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
-    #test local xi model
+    #test nonlocal xi model
     #------------------------------------------------------------------#
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
-        source_variable = 'I2_aux xi_aux deviatroic_strain_rate_aux'
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
         execute_on = 'TIMESTEP_BEGIN'
     []
