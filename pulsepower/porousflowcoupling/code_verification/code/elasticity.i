@@ -1,31 +1,29 @@
 #solid properties
 #----------------------------------------------------#
-E = 50e9 # Young's modulus
-nu = 0.373 # Poisson's ratio
+E = 40e9 # Young's modulus
+nu = 0.2 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
 ft = 5e6 # tensile strength, Pa
-solid_density = 2600 # kg/m^3 
-dx_min = 2.5e-5 # minimum mesh size, m
+solid_density = 2000 # kg/m^3 
+dx_min = 0.25 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  3e-4 # length scale, m
+l =  ${fparse 5 * dx_min} # length scale, m
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
-confinement_pressure  = 1e6
 #----------------------------------------------------#
 
 #hydraulic properties
 #----------------------------------------------------#
-# initial_pore_pressure = 0.0965e6
+initial_pore_pressure = 0
 fluid_density = 1000
-biot_coefficient = 0.7
+biot_coefficient = 1.0
 fluid_bulk_modulus = 2.24e+9
-viscosity = 1e-3
-porosity = 0.008
-solid_bulk_modulus_compliance = 1.524e-11
-# permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
-intrinsic_permeability = 5e-19 # m^2
+viscosity = 1e-6
+porosity = 0.137 #(determined from given biot modulus = 10 GPa)
+solid_bulk_modulus_compliance = 4.5e-11
+intrinsic_permeability = 1e-15 # m^2
 
 ##exponential permeability model
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
@@ -108,24 +106,33 @@ hht_alpha = 0
 []
 
 [Mesh]
-  [./msh]
-    type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+  [msh]
+    type = GeneratedMeshGenerator
+    dim = 2
+    nx = 160
+    ny = 160
+    xmin = 0
+    xmax = 40
+    ymin = 0
+    ymax = 40
+    elem_type = QUAD4
   []
-  [./extranodeset1]
-    type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
-    new_boundary = corner_ptr
+  [./damage_block]
+    type = SubdomainBoundingBoxGenerator
     input = msh
-    use_closest_node=true
-  []
-  [./subdomain_id]
-    type = SubdomainPerElementGenerator
-    input = extranodeset1
-    element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
-  []
+    block_id = 1
+    bottom_left = '0 20 0'
+    top_right = '4.0 20.25 0'
+  [../]
+  [./sidesets]
+    input = damage_block
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0'
+    new_boundary = 'left right bottom top'
+  [] 
   displacements = 'disp_x disp_y'
 []
 
@@ -232,13 +239,13 @@ hht_alpha = 0
     gamma = ${newmark_gamma}
     execute_on = 'TIMESTEP_END'
   []
-  #get pulse load aux
-  [get_pulse_load_aux]
-    type = FunctionAux 
-    variable = pulse_load_aux
-    function = func_tri_pulse
-    execute_on = timestep_end
-  []
+  # #get pulse load aux
+  # [get_pulse_load_aux]
+  #   type = FunctionAux 
+  #   variable = pulse_load_aux
+  #   function = func_tri_pulse
+  #   execute_on = timestep_end
+  # []
   #mesh size aux
   [./max]
     type = ElementLengthAux
@@ -272,51 +279,6 @@ hht_alpha = 0
 []
 
 [Functions]
-  [func_tri_pulse]
-    type = ElkPulseLoadExperiment
-    shape_param_alpha = 4.658e5
-    shape_param_beta = 4.661e5
-    rise_time = 3e-6
-    single_pulse_duration = 4e-5
-    EM = 0.03
-    gap = 0.001
-    convert_efficiency = 1.0
-    fitting_param_alpha = 0.35
-    discharge_center = '0 0 0.0005'
-    number_of_pulses = 1
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
-  []
-  #strain
-  [func_stress_xx]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_00
-  [../]
-  [func_stress_xy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_01
-  [../]
-  [func_stress_xz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_02
-  [../]
-  [func_stress_yy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_11
-  [../]
-  [func_stress_yz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_12
-  [../]
-  [func_stress_zz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_22
-  [../]
 []
 
 [Kernels]
@@ -380,66 +342,51 @@ hht_alpha = 0
 []
 
 [BCs]
-  #confinement
-  [./Pressure]
-    #assign pressure on inner surface
-    [pressure_inner]
-      boundary = 3
-      function = func_tri_pulse
-      displacements = 'disp_x disp_y'
-      use_displaced_mesh = false
-    []
-    #assign pressure on outer surface
-    [static_pressure_outer]
-      boundary = 1
-      factor = ${confinement_pressure}
-      displacements = 'disp_x disp_y'
-      use_displaced_mesh = false
-    []              
-  []   
-  # fix ptr
-  [./fix_cptr1_x]
+  #fix top displacements
+  [fix_top_x]
     type = DirichletBC
     variable = disp_x
-    boundary = corner_ptr
+    boundary = top
     value = 0
   []
-  [./fix_cptr2_y]
+  [fix_top_y]
     type = DirichletBC
     variable = disp_y
-    boundary = corner_ptr
+    boundary = top
     value = 0
   []
-  #add dampers
-  [damp_outer_x]
-    type = FarmsNonReflectDashpotBC
+  #fix bottom displacements
+  [fix_bottom_x]
+    type = DirichletBC
     variable = disp_x
-    displacements = 'disp_x disp_y'
-    velocities = 'vel_x vel_y'
-    accelerations = 'accel_x accel_y'
-    component = 0
-    boundary = 1
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
+    boundary = bottom
+    value = 0
   []
-  [damp_outer_y]
-    type = FarmsNonReflectDashpotBC
+  [fix_bottom_y]
+    type = DirichletBC
     variable = disp_y
-    displacements = 'disp_x disp_y'
-    velocities = 'vel_x vel_y'
-    accelerations = 'accel_x accel_y'
-    component = 1
-    boundary = 1
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
+    boundary = bottom
+    value = 0
+  []
+  #fix left displacement x
+  [fix_left_x]
+    type = DirichletBC
+    variable = disp_x
+    boundary = left
+    value = 0
+  []
+  #fix right displacements
+  [fix_right_x]
+    type = DirichletBC
+    variable = disp_y
+    boundary = right
+    value = 0
+  []
+  [fix_right_y]
+    type = DirichletBC
+    variable = disp_y
+    boundary = right
+    value = 0
   []
 []
 
@@ -451,7 +398,6 @@ hht_alpha = 0
   [../]
   [strain]
     type = ComputeSmallStrain
-    eigenstrain_names = ini_stress
   []
   [bulk]
     type = GenericConstantMaterial
@@ -504,13 +450,6 @@ hht_alpha = 0
   []
   #solid properties
   ##-------------------------------------------------------------------------##
-  [./initial_strain]
-    type = ComputeEigenstrainFromInitialStress
-    eigenstrain_name = ini_stress
-    initial_stress =   'func_stress_xx     func_stress_xy      func_stress_xz 
-                        func_stress_xy     func_stress_yy      func_stress_yz
-                        func_stress_xz     func_stress_yz      func_stress_zz'
-  []
   [density]
     type = GenericConstantMaterial
     prop_names = 'density'
@@ -611,23 +550,7 @@ hht_alpha = 0
     number_fluid_phases = 1
     number_fluid_components = 1
   []
-  [./init_sol_components]
-    type = SolutionUserObject
-    mesh = ./static_solve_out.e
-    system_variables = 'disp_x disp_y pp stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
-    timestep = LATEST
-    force_preaux = true
-  [../]
 []
-
-[Controls] # turns off inertial terms for the SECOND time step
-  [./period0]
-    type = TimePeriod
-    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
-    start_time = 0
-    end_time = 1e-8 # dt used in the simulation
-  []
-[../]
 
 [Preconditioning]
     [smp]
@@ -654,29 +577,32 @@ hht_alpha = 0
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
-  nl_max_its = 50
+  nl_max_its = 30
 
-  # dt = 0.5e-7
-  end_time = 6e-5
+  dt = 50e-6
+  end_time = 100
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
   fixed_point_rel_tol = 1e-8
   fixed_point_abs_tol = 1e-10
 
-  [TimeStepper]
-    type = FarmsIterationAdaptiveDT
-    dt = 1e-8
-    cutback_factor_at_failure = 0.5
-    optimal_iterations = 20
-    growth_factor = 1.25
-    max_time_step_bound = 1e-7
-  []
   [./TimeIntegrator]
     type = NewmarkBeta
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
   [../]
+[]
+
+[DiracKernels]
+  [sink1]
+    type = PorousFlowSquarePulsePointSource
+    start_time = 0
+    end_time = 100
+    point = '0 20.125 0'
+    mass_flux = 1 # kg/s
+    variable = pp
+  []
 []
 
 [Outputs]
@@ -688,26 +614,5 @@ hht_alpha = 0
       type = Checkpoint
       time_step_interval = 20
       num_files = 2
-  []
-[]
-
-[ICs]
-  [disp_x_ic]
-    type = SolutionIC
-    variable = disp_x
-    solution_uo = init_sol_components
-    from_variable = disp_x
-  []
-  [disp_y_ic]
-    type = SolutionIC
-    variable = disp_y
-    solution_uo = init_sol_components
-    from_variable = disp_y
-  []
-  [pp_ic]
-    type = SolutionIC
-    variable = pp
-    solution_uo = init_sol_components
-    from_variable = pp
   []
 []

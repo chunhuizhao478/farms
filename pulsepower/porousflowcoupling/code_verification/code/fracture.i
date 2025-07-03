@@ -1,21 +1,30 @@
 [Mesh]
-  [./msh]
-    type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+  [msh]
+    type = GeneratedMeshGenerator
+    dim = 2
+    nx = 160
+    ny = 160
+    xmin = 0
+    xmax = 40
+    ymin = 0
+    ymax = 40
+    elem_type = QUAD4
   []
-  [./extranodeset1]
-    type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
-    new_boundary = corner_ptr
+  [./damage_block]
+    type = SubdomainBoundingBoxGenerator
     input = msh
-    use_closest_node=true
-  []
-  [./subdomain_id]
-    type = SubdomainPerElementGenerator
-    input = extranodeset1
-    element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
+    block_id = 1
+    bottom_left = '0 20 0'
+    top_right = '4.0 20.25 0'
+  [../]
+  [./sidesets]
+    input = damage_block
+    type = SideSetsFromNormalsGenerator
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0'
+    new_boundary = 'left right bottom top'
   []
 []
 
@@ -91,7 +100,7 @@
     type = ConstantAux
     variable = initial_damage_aux
     value = 0
-    block = '4 5'
+    block = 0
   []
 []
 
@@ -130,15 +139,8 @@
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l'
-    prop_values = '${l}'
-  []
-  [Gc_var]
-    type = ADParsedMaterial
-    property_name = Gc
-    coupled_variables = 'Gc_var'
-    expression = 'Gc_var'
-    # outputs = exodus
+    prop_names = 'l Gc'
+    prop_values = '${l} ${Gc_const}'
   []
   [degradation]
     type = PowerDegradationFunction
@@ -184,24 +186,4 @@
   exodus = true
   # time_step_interval = 40
   print_linear_residuals = false
-[]
-
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${Gc_const} #lambda
-    location = 0 
-  []
-[] 
-
-[ICs]
-  [./gc_var]
-    type =  RandomIC
-    variable = Gc_var
-    distribution = weibull
-  []
 []

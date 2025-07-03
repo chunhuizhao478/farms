@@ -1,15 +1,18 @@
+pi = 3.14159265358979323846
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
+ft_const = 25.5e6 # tensile strength, N/m^2
 Gc_const = 100  # critical energy release rate, N * m
-ft = 5e6 # tensile strength, Pa
 solid_density = 2600 # kg/m^3 
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  3e-4 # length scale, m
-#'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
+l = 1e-4 # length scale, m
+p = 2.0
+a2 = -0.5
+a3 = 0.0
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
 confinement_pressure  = 1e6
@@ -17,7 +20,7 @@ confinement_pressure  = 1e6
 
 #hydraulic properties
 #----------------------------------------------------#
-# initial_pore_pressure = 0.0965e6
+initial_pore_pressure = 0.0965e6
 fluid_density = 1000
 biot_coefficient = 0.7
 fluid_bulk_modulus = 2.24e+9
@@ -26,13 +29,7 @@ porosity = 0.008
 solid_bulk_modulus_compliance = 1.524e-11
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
-
-##exponential permeability model
-# coeff_b = 10 # coefficient for the exponential function in the effective permeability
-
-##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 2 * Gc_const / ft } # m
-perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
+coeff_b = 5 # coefficient for the exponential function in the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
@@ -81,7 +78,7 @@ hht_alpha = 0
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc_const=${Gc_const};psic=${psic};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -97,8 +94,8 @@ hht_alpha = 0
   [to_psie_active]
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
-    variable = 'psie_active mesh_size'
-    source_variable = 'psie_active mesh_size'
+    variable = 'psie_active mesh_size a1_aux'
+    source_variable = 'psie_active mesh_size a1_aux'
   []
 []
 
@@ -119,12 +116,6 @@ hht_alpha = 0
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
-  []
-  [./subdomain_id]
-    type = SubdomainPerElementGenerator
-    input = extranodeset1
-    element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
   []
   displacements = 'disp_x disp_y'
 []
@@ -160,19 +151,19 @@ hht_alpha = 0
   []
   [vel_x]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   [vel_y]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   [accel_x]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   [accel_y]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   #
   [pulse_load_aux]
@@ -194,6 +185,11 @@ hht_alpha = 0
     order = FIRST
   []
   [effective_perm01_aux]
+    family = MONOMIAL
+    order = FIRST
+  []
+  #
+  [a1_aux]
     family = MONOMIAL
     order = FIRST
   []
@@ -268,6 +264,13 @@ hht_alpha = 0
     row = 0
     column = 1
     variable = effective_perm01_aux
+  []
+  #get a1_aux
+  [a1_aux]
+    type = MaterialRealAux
+    property = a1
+    variable = a1_aux
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
 []
 
@@ -455,13 +458,33 @@ hht_alpha = 0
   []
   [bulk]
     type = GenericConstantMaterial
-    prop_names = 'K G'
-    prop_values = '${K} ${G}'
+    prop_names = 'K G l psic a2 a3 p eta'
+    prop_values = '${K} ${G} ${l} ${psic} ${a2} ${a3} ${p} ${eta}'
   []
+  #material properties variables
+  [ft_var]
+    type = ParsedMaterial
+    property_name = ft
+    coupled_variables = 'ft_var'
+    expression = 'ft_var'
+  []
+  [./lch_prop]
+    type = ParsedMaterial
+    property_name = lch
+    material_property_names = 'ft'
+    expression = 'E*Gc_const/(ft*ft)'
+  []
+  [./a1_prop]
+    type = ParsedMaterial
+    property_name = a1
+    material_property_names = 'lch l'
+    expression = '4.0/pi*lch/l'
+  []
+  ##
   [elasticity]
     type = NDSmallDeformationIsotropicElasticity
     # material property names
-    ##---------------------------------------------##
+    #----------------------------------------------#
     bulk_modulus = K
     shear_modulus = G
     phase_field = d
@@ -471,30 +494,23 @@ hht_alpha = 0
     degradation_function = g
     degradation_function_derivative = dg_dd
     degradation_function_second_derivative = d2g_dd2
-    ##---------------------------------------------##
     # decomposition type
-    ##---------------------------------------------##
+    #----------------------------------------------#
     decomposition = SPECTRAL
-    ##---------------------------------------------##
+    #----------------------------------------------#
     # model type
-    ##---------------------------------------------##
-    model_type = AT1
-    ##---------------------------------------------##
-    # constants
-    ##---------------------------------------------##
-    eta = 1e-6
+    #----------------------------------------------#
+    model_type = PF_CZM
+    lch = 
+    #----------------------------------------------#
     output_properties = 'elastic_strain psie_active'
     outputs = exodus
-    ##---------------------------------------------##
+    #----------------------------------------------#
     # porous flow coupling
-    ##---------------------------------------------##
     porous_flow_coupling = true
-    ##-----darcy_poiseuille_permeability_model-----##
-    darcy_poiseuille_permeability_model = true
     intrinsic_permeability = ${intrinsic_permeability}
-    wc = ${wc}
-    perm_exponent = ${perm_exponent}
-    ##---------------------------------------------##
+    coeff_b = ${coeff_b}
+    #----------------------------------------------#
   []
   [stress]
     type = NDComputeSmallDeformationStress ###
@@ -607,7 +623,7 @@ hht_alpha = 0
 [UserObjects]
   [dictator]
     type = PorousFlowDictator
-    porous_flow_vars = 'pp disp_x disp_y'
+    porous_flow_vars = 'pp'
     number_fluid_phases = 1
     number_fluid_components = 1
   []
@@ -654,7 +670,7 @@ hht_alpha = 0
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
-  nl_max_its = 50
+  nl_max_its = 30
 
   # dt = 0.5e-7
   end_time = 6e-5
@@ -691,6 +707,18 @@ hht_alpha = 0
   []
 []
 
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 12.0 #k
+    scale = ${ft_const} #lambda
+    location = 0 
+  []
+[] 
+
 [ICs]
   [disp_x_ic]
     type = SolutionIC
@@ -709,5 +737,12 @@ hht_alpha = 0
     variable = pp
     solution_uo = init_sol_components
     from_variable = pp
+  []
+  #weibull distribution for the tensile strength
+  [./ft_var]
+    type =  RandomIC
+    variable = ft_var
+    distribution = weibull
+    seed = 100
   []
 []

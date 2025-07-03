@@ -53,6 +53,14 @@ private:
   /// The shear modulus
   const MaterialProperty<Real> & _G;
 
+  /// Name of parameters for PF_CZM model
+  //------------------------------------//
+  MaterialPropertyName _a1_name;
+  MaterialPropertyName _a2_name;
+  MaterialPropertyName _a3_name;
+  MaterialPropertyName _p_name;  
+  //------------------------------------//
+
   /// Name of the phase-field variable
   const VariableValue & _d;
 
@@ -89,6 +97,13 @@ private:
 
   const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
   const Real _intrinsic_permeability;
+
+  // Exponential permeability model
+  const bool _exponential_permeability_model; // flag to indicate if exponential permeability model is used
   const Real _coeff_b; // coefficient for the exponential function in the effective permeability
+  // Darcy-Poiseuille permeability model
+  const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
+  const Real _wc; // characteristic width for the Darcy-Poiseuille model
+  const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
 
 };

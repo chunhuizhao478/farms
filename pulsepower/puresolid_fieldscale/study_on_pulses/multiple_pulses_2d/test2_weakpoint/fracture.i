@@ -1,8 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+    file =  '../../../2dmeshfile/fieldscale_test2_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -11,51 +10,47 @@
     input = msh
     use_closest_node=true
   []
-  [./subdomain_id]
-    type = SubdomainPerElementGenerator
-    input = extranodeset1
-    element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
+[]
+
+[Adaptivity]
+  max_h_level = 7
+  marker = 'combo'
+  cycles_per_step = 1
+  [Markers]
+      [./combo]
+        type = FarmsComboMarker
+        markers = 'damage_marker strain_energy_marker'
+        meshsize_marker = 'meshsize_marker'
+        block = '4 5'
+      [../]
+      [damage_marker]
+        type = ValueThresholdMarker
+        variable = d
+        refine = 0.5
+        block = '4 5'
+      []
+      [strain_energy_marker]
+        type = ValueThresholdMarker
+        variable = psie_active
+        refine = '${fparse 1.0*3/8*Gc_const/l}'
+        block = '4 5'
+      []   
+      # if mesh_size > dxmin, refine
+      # if mesh_size < dxmin/100, coarsen (which never happens)
+      # otherwise, do nothing
+      [meshsize_marker]
+        type = ValueThresholdMarker
+        variable = mesh_size
+        refine = '${dx_min}'
+        coarsen = '${fparse dx_min/100}'
+        third_state = DO_NOTHING
+        block = '4 5'
+      [] 
   []
 []
 
-# [Adaptivity]
-#   max_h_level = 5
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.01
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []   
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#       [] 
-#   []
-# []
-
 [Variables]
   [d]
-    family = LAGRANGE
-    order = FIRST
   []
 []
 
@@ -74,34 +69,14 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  [initial_damage_aux]
-    family = LAGRANGE
-    order = FIRST
-  []
-[]
-
-[AuxKernels]
-  [define_initial_damage_block1]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 1
-    block = 1
-  []
-  [define_initial_damage_block0]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 0
-    block = '4 5'
-  []
 []
 
 [Bounds]
-  [irreversibility_first_step]
-    type = VariableConstantIrreversibleBounds
+  [irreversibility]
+    type = VariableOldValueBounds
     variable = bounds_dummy
     bounded_variable = d
     bound_type = lower
-    bound_value = initial_damage_aux
   []
   [upper]
     type = ConstantBounds
@@ -168,20 +143,20 @@
   type = Transient
 
   solve_type = NEWTON
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
+  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
 
-  automatic_scaling = true
+  # automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
 []
 
 [Outputs]
-  exodus = true
+  exodus = false
   # time_step_interval = 40
   print_linear_residuals = false
 []
@@ -192,7 +167,7 @@
   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
   [weibull]
     type = Weibull
-    shape = 15.0 #k
+    shape = 12.0 #k
     scale = ${Gc_const} #lambda
     location = 0 
   []

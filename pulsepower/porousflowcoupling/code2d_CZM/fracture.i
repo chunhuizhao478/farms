@@ -11,12 +11,6 @@
     input = msh
     use_closest_node=true
   []
-  [./subdomain_id]
-    type = SubdomainPerElementGenerator
-    input = extranodeset1
-    element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
-  []
 []
 
 # [Adaptivity]
@@ -54,8 +48,6 @@
 
 [Variables]
   [d]
-    family = LAGRANGE
-    order = FIRST
   []
 []
 
@@ -74,34 +66,18 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  [initial_damage_aux]
-    family = LAGRANGE
+  [a1_aux]
+    family = MONOMIAL
     order = FIRST
   []
 []
 
-[AuxKernels]
-  [define_initial_damage_block1]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 1
-    block = 1
-  []
-  [define_initial_damage_block0]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 0
-    block = '4 5'
-  []
-[]
-
 [Bounds]
-  [irreversibility_first_step]
-    type = VariableConstantIrreversibleBounds
+  [irreversibility]
+    type = VariableOldValueBounds
     variable = bounds_dummy
     bounded_variable = d
     bound_type = lower
-    bound_value = initial_damage_aux
   []
   [upper]
     type = ConstantBounds
@@ -130,29 +106,29 @@
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l'
-    prop_values = '${l}'
+    prop_names = 'psic l'
+    prop_values = '${psic} ${l}'
+  []
+  [crack_geometric]
+    type = CrackGeometricFunction
+    property_name = alpha
+    expression = 'd'
+    phase_field = d
   []
   [Gc_var]
     type = ADParsedMaterial
     property_name = Gc
     coupled_variables = 'Gc_var'
     expression = 'Gc_var'
-    # outputs = exodus
   []
   [degradation]
-    type = PowerDegradationFunction
+    type = RationalDegradationFunction
     property_name = g
-    expression = (1-d)^p*(1-eta)+eta
+    expression = (1-d),p/((1-d)^p+a1_aux*d*(1+a2*d+a2*a3*d^2))*(1-_eta)+_eta
     phase_field = d
-    parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
-  []
-  [crack_geometric] #AT1 model
-    type = CrackGeometricFunction
-    property_name = alpha
-    expression = 'd'
-    phase_field = d
+    coupled_variables = 'a1_aux'
+    parameter_names = 'p a2 a3 eta '
+    parameter_values = '2 -0.5 0 1e-6'
   []
   [psi]
     type = ADDerivativeParsedMaterial
@@ -168,13 +144,13 @@
   type = Transient
 
   solve_type = NEWTON
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
+  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
 
-  automatic_scaling = true
+  # automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
@@ -184,24 +160,4 @@
   exodus = true
   # time_step_interval = 40
   print_linear_residuals = false
-[]
-
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${Gc_const} #lambda
-    location = 0 
-  []
-[] 
-
-[ICs]
-  [./gc_var]
-    type =  RandomIC
-    variable = Gc_var
-    distribution = weibull
-  []
 []

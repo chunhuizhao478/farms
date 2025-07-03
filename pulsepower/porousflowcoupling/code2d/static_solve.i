@@ -21,8 +21,8 @@ permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      # file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-      file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+      file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+      # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
     []
     [./extranodeset1]
       type = ExtraNodesetGenerator
@@ -30,6 +30,12 @@ permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
       new_boundary = corner_ptr
       input = msh
       use_closest_node=true
+    []
+    [./subdomain_id]
+      type = SubdomainPerElementGenerator
+      input = extranodeset1
+      element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
+      subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
     []
     displacements = 'disp_x disp_y'
   []
