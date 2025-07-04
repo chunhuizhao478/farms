@@ -21,7 +21,7 @@ permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+      file =  '../2dmeshfile/fieldscale_test1_2d_coarse.msh'
       # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
     []
     [./extranodeset1]
@@ -34,8 +34,8 @@ permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
     [./subdomain_id]
       type = SubdomainPerElementGenerator
       input = extranodeset1
-      element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-      subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
+      element_ids = '989 467 550 956 524 981 316 940 987 537 424 932 1079 681 1291 1494 658 629 449 540 317 526 933 982'
+      subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
     []
     displacements = 'disp_x disp_y'
   []

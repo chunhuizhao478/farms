@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_coarse.msh'
     # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
@@ -14,8 +14,8 @@
   [./subdomain_id]
     type = SubdomainPerElementGenerator
     input = extranodeset1
-    element_ids = '928 550 977 613 947 981 553 306 931 563 987 35'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1'
+    element_ids = '989 467 550 956 524 981 316 940 987 537 424 932 1079 681 1291 1494 658 629 449 540 317 526 933 982'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
   []
 []
 
@@ -130,16 +130,16 @@
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l'
-    prop_values = '${l}'
+    prop_names = 'l Gc'
+    prop_values = '${l} ${Gc_const}'
   []
-  [Gc_var]
-    type = ADParsedMaterial
-    property_name = Gc
-    coupled_variables = 'Gc_var'
-    expression = 'Gc_var'
-    # outputs = exodus
-  []
+  # [Gc_var]
+  #   type = ADParsedMaterial
+  #   property_name = Gc
+  #   coupled_variables = 'Gc_var'
+  #   expression = 'Gc_var'
+  #   # outputs = exodus
+  # []
   [degradation]
     type = PowerDegradationFunction
     property_name = g
@@ -186,22 +186,22 @@
   print_linear_residuals = false
 []
 
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${Gc_const} #lambda
-    location = 0 
-  []
-[] 
+# [Distributions]
+#   #typically for granite
+#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+#   [weibull]
+#     type = Weibull
+#     shape = 15.0 #k
+#     scale = ${Gc_const} #lambda
+#     location = 0 
+#   []
+# [] 
 
-[ICs]
-  [./gc_var]
-    type =  RandomIC
-    variable = Gc_var
-    distribution = weibull
-  []
-[]
+# [ICs]
+#   [./gc_var]
+#     type =  RandomIC
+#     variable = Gc_var
+#     distribution = weibull
+#   []
+# []
