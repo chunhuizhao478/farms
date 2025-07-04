@@ -319,7 +319,7 @@ hht_alpha = 0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 20e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 30e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -612,7 +612,7 @@ hht_alpha = 0
 [UserObjects]
   [dictator]
     type = PorousFlowDictator
-    porous_flow_vars = 'pp'
+    porous_flow_vars = 'pp disp_x disp_y'
     number_fluid_phases = 1
     number_fluid_components = 1
   []
