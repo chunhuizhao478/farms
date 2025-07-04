@@ -80,8 +80,20 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     DerivativeMaterialPropertyNameInterface(),
     _K(getMaterialPropertyByName<Real>(prependBaseName("bulk_modulus", true))),
     _G(getMaterialPropertyByName<Real>(prependBaseName("shear_modulus", true))),
+
+    // model type
+    _model_type(getParam<std::string>("model_type")),
     
-    //additional material only used for PF_CZM model
+    // Only retrieve these properties if we're using PF_CZM model
+    _a1_prop(_model_type == "PF_CZM" ? 
+             &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a1")) : nullptr),
+    _a2_prop(_model_type == "PF_CZM" ? 
+             &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a2")) : nullptr),
+    _a3_prop(_model_type == "PF_CZM" ? 
+             &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a3")) : nullptr),
+    _p_prop(_model_type == "PF_CZM" ? 
+             &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("p")) : nullptr),
+    // Store the property names too (only used if model_type is PF_CZM)
     _a1_name(getParam<MaterialPropertyName>("a1")),
     _a2_name(getParam<MaterialPropertyName>("a2")),
     _a3_name(getParam<MaterialPropertyName>("a3")),
@@ -103,9 +115,6 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
         "degradation_function_derivative"))),
     _d2g_dd2(declareProperty<Real>(getParam<MaterialPropertyName>(
         "degradation_function_second_derivative"))),
-
-    // model type
-    _model_type(getParam<std::string>("model_type")),
 
     // Constants
     _eta(getParam<Real>("eta")),
@@ -381,11 +390,11 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
     // Get the parameters
     // a1, a2, a3, p, eta
     // read in the real properties on‐the‐fly
-    const Real a1  = getMaterialPropertyByName<Real>(_a1_name)[_qp];
-    const Real a2  = getMaterialPropertyByName<Real>(_a2_name)[_qp];
-    const Real a3  = getMaterialPropertyByName<Real>(_a3_name)[_qp];
-    const Real p   = getMaterialPropertyByName<Real>(_p_name)[_qp];
-    const Real d   = _d[_qp];
+    const Real a1 = (*_a1_prop)[_qp];
+    const Real a2 = (*_a2_prop)[_qp];
+    const Real a3 = (*_a3_prop)[_qp];
+    const Real p = (*_p_prop)[_qp];
+    const Real d = _d[_qp];
     const Real eta = _eta;
 
     // degradation function

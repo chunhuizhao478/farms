@@ -3,16 +3,22 @@ pi = 3.14159265358979323846
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
-ft_const = 25.5e6 # tensile strength, N/m^2
-Gc_const = 100  # critical energy release rate, N * m
+ft = 25.5e6 # tensile strength, N/m^2
+Gc = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3 
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l = 1e-4 # length scale, m
+l = 4e-3 # length scale, m
+#----------------------------------------------------#
+##linear softening parameters
+c_alpha = ${pi}
 p = 2.0
+lch = '${fparse E*Gc/(ft*ft)}'
+a1 = '${fparse 4.0/pi*lch/l}'
 a2 = -0.5
 a3 = 0.0
+eta = 1e-6
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
 confinement_pressure  = 1e6
@@ -27,9 +33,20 @@ fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = 1.524e-11
+
+#----------------------------------------------------#
+porous_flow_coupling = true # enable porous flow coupling
+
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
-coeff_b = 5 # coefficient for the exponential function in the effective permeability
+
+##exponential permeability model
+# exponential_permeability_model = true # use an exponential function for the effective permeability
+# coeff_b = 10 # coefficient for the exponential function in the effective permeability
+
+##darcy-poiseuille permeability model: ultimate crack opening width
+wc = ${fparse 2 * Gc / ft } # m
+perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
@@ -78,7 +95,7 @@ hht_alpha = 0
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};psic=${psic};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc=${Gc};l=${l};dx_min=${dx_min};a1=${a1};a2=${a2};a3=${a3};p=${p};ft=${ft};eta=${eta};c_alpha=${c_alpha}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -107,8 +124,7 @@ hht_alpha = 0
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_coarse.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -116,6 +132,18 @@ hht_alpha = 0
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainPerElementGenerator
+    input = extranodeset1
+    element_ids = '915 517 95 246 780 953 550 269 956'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1'
+  []
+  [./subdomain_id2]
+    type = SubdomainPerElementGenerator
+    input = subdomain_id
+    element_ids = '1569 88 86 691 1110 1095 1091 605 260 364 485 910 986 192 316 565 1090 1546 1404 293 279 1301 1503'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
   []
   displacements = 'disp_x disp_y'
 []
@@ -151,19 +179,19 @@ hht_alpha = 0
   []
   [vel_x]
     family = LAGRANGE
-    order = SECOND
+    order = FIRST
   []
   [vel_y]
     family = LAGRANGE
-    order = SECOND
+    order = FIRST
   []
   [accel_x]
     family = LAGRANGE
-    order = SECOND
+    order = FIRST
   []
   [accel_y]
     family = LAGRANGE
-    order = SECOND
+    order = FIRST
   []
   #
   [pulse_load_aux]
@@ -190,6 +218,10 @@ hht_alpha = 0
   []
   #
   [a1_aux]
+    family = MONOMIAL
+    order = FIRST
+  []
+  [ft_var]
     family = MONOMIAL
     order = FIRST
   []
@@ -280,46 +312,15 @@ hht_alpha = 0
     shape_param_alpha = 4.658e5
     shape_param_beta = 4.661e5
     rise_time = 3e-6
-    single_pulse_duration = 4e-5
+    single_pulse_duration = 1e-5
     EM = 0.03
     gap = 0.001
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
-    number_of_pulses = 1
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    number_of_pulses = 100
+    peak_pressure = 20e6 #if peak pressure is specified, the depth variation is ignored
   []
-  #strain
-  [func_stress_xx]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_00
-  [../]
-  [func_stress_xy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_01
-  [../]
-  [func_stress_xz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_02
-  [../]
-  [func_stress_yy]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_11
-  [../]
-  [func_stress_yz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_12
-  [../]
-  [func_stress_zz]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = stress_22
-  [../]
 []
 
 [Kernels]
@@ -454,31 +455,11 @@ hht_alpha = 0
   [../]
   [strain]
     type = ComputeSmallStrain
-    eigenstrain_names = ini_stress
   []
   [bulk]
     type = GenericConstantMaterial
-    prop_names = 'K G l psic a2 a3 p eta'
-    prop_values = '${K} ${G} ${l} ${psic} ${a2} ${a3} ${p} ${eta}'
-  []
-  #material properties variables
-  [ft_var]
-    type = ParsedMaterial
-    property_name = ft
-    coupled_variables = 'ft_var'
-    expression = 'ft_var'
-  []
-  [./lch_prop]
-    type = ParsedMaterial
-    property_name = lch
-    material_property_names = 'ft'
-    expression = 'E*Gc_const/(ft*ft)'
-  []
-  [./a1_prop]
-    type = ParsedMaterial
-    property_name = a1
-    material_property_names = 'lch l'
-    expression = '4.0/pi*lch/l'
+    prop_names = 'K G l a1 a2 a3 p ft'
+    prop_values = '${K} ${G} ${l} ${a1} ${a2} ${a3} ${p} ${ft}'
   []
   ##
   [elasticity]
@@ -501,16 +482,24 @@ hht_alpha = 0
     # model type
     #----------------------------------------------#
     model_type = PF_CZM
-    lch = 
+    a1 = a1
+    a2 = a2
+    a3 = a3
+    p = p 
+    eta = ${eta}
     #----------------------------------------------#
     output_properties = 'elastic_strain psie_active'
     outputs = exodus
-    #----------------------------------------------#
+    ##---------------------------------------------##
     # porous flow coupling
-    porous_flow_coupling = true
+    ##---------------------------------------------##
+    porous_flow_coupling = ${porous_flow_coupling}
+    ##-----darcy_poiseuille_permeability_model-----##
+    darcy_poiseuille_permeability_model = true
     intrinsic_permeability = ${intrinsic_permeability}
-    coeff_b = ${coeff_b}
-    #----------------------------------------------#
+    wc = ${wc}
+    perm_exponent = ${perm_exponent}
+    ##---------------------------------------------##
   []
   [stress]
     type = NDComputeSmallDeformationStress ###
@@ -520,13 +509,6 @@ hht_alpha = 0
   []
   #solid properties
   ##-------------------------------------------------------------------------##
-  [./initial_strain]
-    type = ComputeEigenstrainFromInitialStress
-    eigenstrain_name = ini_stress
-    initial_stress =   'func_stress_xx     func_stress_xy      func_stress_xz 
-                        func_stress_xy     func_stress_yy      func_stress_yz
-                        func_stress_xz     func_stress_yz      func_stress_zz'
-  []
   [density]
     type = GenericConstantMaterial
     prop_names = 'density'
@@ -627,13 +609,6 @@ hht_alpha = 0
     number_fluid_phases = 1
     number_fluid_components = 1
   []
-  [./init_sol_components]
-    type = SolutionUserObject
-    mesh = ./static_solve_out.e
-    system_variables = 'disp_x disp_y pp stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
-    timestep = LATEST
-    force_preaux = true
-  [../]
 []
 
 [Controls] # turns off inertial terms for the SECOND time step
@@ -670,10 +645,10 @@ hht_alpha = 0
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
-  nl_max_its = 30
+  nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 6e-5
+  end_time = 1e-3
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -697,52 +672,12 @@ hht_alpha = 0
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
   [checkpoint]
       type = Checkpoint
-      time_step_interval = 20
+      time_step_interval = 1000
       num_files = 2
-  []
-[]
-
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 12.0 #k
-    scale = ${ft_const} #lambda
-    location = 0 
-  []
-[] 
-
-[ICs]
-  [disp_x_ic]
-    type = SolutionIC
-    variable = disp_x
-    solution_uo = init_sol_components
-    from_variable = disp_x
-  []
-  [disp_y_ic]
-    type = SolutionIC
-    variable = disp_y
-    solution_uo = init_sol_components
-    from_variable = disp_y
-  []
-  [pp_ic]
-    type = SolutionIC
-    variable = pp
-    solution_uo = init_sol_components
-    from_variable = pp
-  []
-  #weibull distribution for the tensile strength
-  [./ft_var]
-    type =  RandomIC
-    variable = ft_var
-    distribution = weibull
-    seed = 100
   []
 []

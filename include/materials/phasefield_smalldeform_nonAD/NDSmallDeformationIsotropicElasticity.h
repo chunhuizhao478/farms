@@ -53,12 +53,22 @@ private:
   /// The shear modulus
   const MaterialProperty<Real> & _G;
 
+  // Model type
+  const std::string _model_type;
+
   /// Name of parameters for PF_CZM model
   //------------------------------------//
-  MaterialPropertyName _a1_name;
-  MaterialPropertyName _a2_name;
-  MaterialPropertyName _a3_name;
-  MaterialPropertyName _p_name;  
+  // Store pointers to material properties that are only needed for PF_CZM
+  const MaterialProperty<Real> * _a1_prop;
+  const MaterialProperty<Real> * _a2_prop;
+  const MaterialProperty<Real> * _a3_prop;
+  const MaterialProperty<Real> * _p_prop;
+  
+  // Store the property names
+  const MaterialPropertyName _a1_name;
+  const MaterialPropertyName _a2_name;
+  const MaterialPropertyName _a3_name;
+  const MaterialPropertyName _p_name;
   //------------------------------------//
 
   /// Name of the phase-field variable
@@ -75,9 +85,6 @@ private:
   MaterialProperty<Real> & _dg_dd;
   MaterialProperty<Real> & _d2g_dd2;
   // @}
-
-  // Model type
-  const std::string _model_type;
 
   // Constants
   const Real _eta;

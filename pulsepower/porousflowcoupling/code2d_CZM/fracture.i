@@ -1,8 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_coarse.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -10,6 +9,18 @@
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainPerElementGenerator
+    input = extranodeset1
+    element_ids = '915 517 95 246 780 953 550 269 956'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1'
+  []
+  [./subdomain_id2]
+    type = SubdomainPerElementGenerator
+    input = subdomain_id
+    element_ids = '1569 88 86 691 1110 1095 1091 605 260 364 485 910 986 192 316 565 1090 1546 1404 293 279 1301 1503'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
   []
 []
 
@@ -70,15 +81,41 @@
     family = MONOMIAL
     order = FIRST
   []
+  [initial_damage_aux]
+    family = LAGRANGE
+    order = FIRST
+  []
+[]
+
+[AuxKernels]
+  [define_initial_damage_block1]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0.9
+    block = 1
+  []
+  [define_initial_damage_block0]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0
+    block = '4 5'
+  []
 []
 
 [Bounds]
-  [irreversibility]
-    type = VariableOldValueBounds
+  [irreversibility_first_step]
+    type = VariableConstantIrreversibleBounds
     variable = bounds_dummy
     bounded_variable = d
     bound_type = lower
+    bound_value = initial_damage_aux
   []
+  # [irreversibility]
+  #   type = VariableOldValueBounds
+  #   variable = bounds_dummy
+  #   bounded_variable = d
+  #   bound_type = lower
+  # []
   [upper]
     type = ConstantBounds
     variable = bounds_dummy
@@ -90,11 +127,11 @@
 
 [Kernels]
   [diff]
-    type = ADPFFDiffusion #
+    type = ADPFFDiffusion
     variable = d
     fracture_toughness = Gc
     regularization_length = l
-    normalization_constant = c0
+    normalization_constant = c_alpha
   []
   [source]
     type = ADPFFSource
@@ -106,36 +143,28 @@
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'psic l'
-    prop_values = '${psic} ${l}'
+    prop_names =  'l Gc a1 a2 a3 p eta c_alpha'
+    prop_values = '${l} ${Gc} ${a1} ${a2} ${a3} ${p} ${eta} ${c_alpha}'
   []
   [crack_geometric]
     type = CrackGeometricFunction
     property_name = alpha
-    expression = 'd'
+    expression = '2*d - d*d'
     phase_field = d
-  []
-  [Gc_var]
-    type = ADParsedMaterial
-    property_name = Gc
-    coupled_variables = 'Gc_var'
-    expression = 'Gc_var'
   []
   [degradation]
-    type = RationalDegradationFunction
+    type = RationalDegradationFunctionCZM
     property_name = g
-    expression = (1-d),p/((1-d)^p+a1_aux*d*(1+a2*d+a2*a3*d^2))*(1-_eta)+_eta
+    expression = (1-d)^p/((1-d)^p+a1*d*(1+a2*d+a2*a3*d^2))*(1-eta)+eta
     phase_field = d
-    coupled_variables = 'a1_aux'
-    parameter_names = 'p a2 a3 eta '
-    parameter_values = '2 -0.5 0 1e-6'
+    material_property_names = 'a1 a2 a3 p eta'
   []
   [psi]
     type = ADDerivativeParsedMaterial
     property_name = psi
-    expression = 'alpha*Gc/c0/l+g*psie_active'
+    expression = 'alpha*Gc/c_alpha/l+g*psie_active'
     coupled_variables = 'd psie_active'
-    material_property_names = 'alpha(d) g(d) Gc c0 l'
+    material_property_names = 'alpha(d) g(d) Gc c_alpha l'
     derivative_order = 1
   []
 []
