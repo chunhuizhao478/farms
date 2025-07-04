@@ -94,7 +94,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture_notch.i
     cli_args = 'Gc=${Gc};l=${l};dx_min=${dx_min};a1=${a1};a2=${a2};a3=${a3};p=${p};ft=${ft};eta=${eta};c_alpha=${c_alpha}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -133,25 +133,23 @@ hht_alpha = 0
     input = msh
     use_closest_node=true
   []
-  # [./subdomain_id]
-  #   type = SubdomainPerElementGenerator
-  #   input = extranodeset1
-  #   element_ids = '915 517 95 246 780 953 550 269 956'
-  #   subdomain_ids = '1 1 1 1 1 1 1 1 1'
-  # []
-  # [./subdomain_id2]
-  #   type = SubdomainPerElementGenerator
-  #   input = subdomain_id
-  #   element_ids = '1569 88 86 691 1110 1095 1091 605 260 364 485 910 986 192 316 565 1090 1546 1404 293 279 1301 1503'
-  #   subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
-  # []
   [./subdomain_id]
-    type = SubdomainBoundingBoxGenerator
-    bottom_left = '-0.03 -0.002 0'
-    top_right = '0.03 0.002 0'
-    location = INSIDE
-    block_id = 1
+    type = SubdomainPerElementGenerator
     input = extranodeset1
+    element_ids = '915 517 95 246 780 953 550 269 956'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1'
+  []
+  [ed0]
+    type = BlockDeletionGenerator
+    input = subdomain_id
+    block = '1'
+  []
+  [build_new_borehole_sideset]
+    type = SideSetsAroundSubdomainGenerator
+    input = ed0
+    block = '4'
+    new_boundary = borehole_sideset
+    include_only_external_sides = true
   []
   displacements = 'disp_x disp_y'
 []
@@ -396,7 +394,7 @@ hht_alpha = 0
   [./Pressure]
     #assign pressure on inner surface
     [pressure_inner]
-      boundary = 3
+      boundary = borehole_sideset
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
@@ -613,7 +611,7 @@ hht_alpha = 0
 [UserObjects]
   [dictator]
     type = PorousFlowDictator
-    porous_flow_vars = 'pp'
+    porous_flow_vars = 'pp disp_x disp_y'
     number_fluid_phases = 1
     number_fluid_components = 1
   []

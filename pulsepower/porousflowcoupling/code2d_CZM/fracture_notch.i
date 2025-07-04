@@ -10,25 +10,23 @@
     input = msh
     use_closest_node=true
   []
-  # [./subdomain_id]
-  #   type = SubdomainPerElementGenerator
-  #   input = extranodeset1
-  #   element_ids = '915 517 95 246 780 953 550 269 956'
-  #   subdomain_ids = '1 1 1 1 1 1 1 1 1'
-  # []
-  # [./subdomain_id2]
-  #   type = SubdomainPerElementGenerator
-  #   input = subdomain_id
-  #   element_ids = '1569 88 86 691 1110 1095 1091 605 260 364 485 910 986 192 316 565 1090 1546 1404 293 279 1301 1503'
-  #   subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
-  # []
   [./subdomain_id]
-    type = SubdomainBoundingBoxGenerator
-    bottom_left = '-0.003 -0.002 0'
-    top_right = '0.03 0.002 0'
-    location = INSIDE
-    block_id = 1
+    type = SubdomainPerElementGenerator
     input = extranodeset1
+    element_ids = '915 517 95 246 780 953 550 269 956'
+    subdomain_ids = '1 1 1 1 1 1 1 1 1'
+  []
+  [ed0]
+    type = BlockDeletionGenerator
+    input = subdomain_id
+    block = '1'
+  []
+  [build_new_borehole_sideset]
+    type = SideSetsAroundSubdomainGenerator
+    input = ed0
+    block = '4'
+    new_boundary = borehole_sideset
+    include_only_external_sides = true
   []
 []
 
@@ -95,35 +93,35 @@
   []
 []
 
-[AuxKernels]
-  [define_initial_damage_block1]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 0.9
-    block = 1
-  []
-  [define_initial_damage_block0]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 0
-    block = '4 5'
-  []
-[]
+# [AuxKernels]
+#   [define_initial_damage_block1]
+#     type = ConstantAux
+#     variable = initial_damage_aux
+#     value = 0.9
+#     block = 1
+#   []
+#   [define_initial_damage_block0]
+#     type = ConstantAux
+#     variable = initial_damage_aux
+#     value = 0
+#     block = '4 5'
+#   []
+# []
 
 [Bounds]
-  [irreversibility_first_step]
-    type = VariableConstantIrreversibleBounds
-    variable = bounds_dummy
-    bounded_variable = d
-    bound_type = lower
-    bound_value = initial_damage_aux
-  []
-  # [irreversibility]
-  #   type = VariableOldValueBounds
+  # [irreversibility_first_step]
+  #   type = VariableConstantIrreversibleBounds
   #   variable = bounds_dummy
   #   bounded_variable = d
   #   bound_type = lower
+  #   bound_value = initial_damage_aux
   # []
+  [irreversibility]
+    type = VariableOldValueBounds
+    variable = bounds_dummy
+    bounded_variable = d
+    bound_type = lower
+  []
   [upper]
     type = ConstantBounds
     variable = bounds_dummy

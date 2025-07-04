@@ -133,17 +133,25 @@ hht_alpha = 0
     input = msh
     use_closest_node=true
   []
+  # [./subdomain_id]
+  #   type = SubdomainPerElementGenerator
+  #   input = extranodeset1
+  #   element_ids = '915 517 95 246 780 953 550 269 956'
+  #   subdomain_ids = '1 1 1 1 1 1 1 1 1'
+  # []
+  # [./subdomain_id2]
+  #   type = SubdomainPerElementGenerator
+  #   input = subdomain_id
+  #   element_ids = '1569 88 86 691 1110 1095 1091 605 260 364 485 910 986 192 316 565 1090 1546 1404 293 279 1301 1503'
+  #   subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+  # []
   [./subdomain_id]
-    type = SubdomainPerElementGenerator
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = '-0.03 -0.002 0'
+    top_right = '0.03 0.002 0'
+    location = INSIDE
+    block_id = 1
     input = extranodeset1
-    element_ids = '915 517 95 246 780 953 550 269 956'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1'
-  []
-  [./subdomain_id2]
-    type = SubdomainPerElementGenerator
-    input = subdomain_id
-    element_ids = '1569 88 86 691 1110 1095 1091 605 260 364 485 910 986 192 316 565 1090 1546 1404 293 279 1301 1503'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
   []
   displacements = 'disp_x disp_y'
 []
@@ -319,7 +327,7 @@ hht_alpha = 0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 30e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 40e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
