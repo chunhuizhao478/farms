@@ -613,7 +613,7 @@ hht_alpha = 0
 [UserObjects]
   [dictator]
     type = PorousFlowDictator
-    porous_flow_vars = 'pp'
+    porous_flow_vars = 'pp disp_x disp_y'
     number_fluid_phases = 1
     number_fluid_components = 1
   []
@@ -680,7 +680,7 @@ hht_alpha = 0
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
   [checkpoint]
