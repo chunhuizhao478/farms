@@ -12,10 +12,12 @@
     use_closest_node=true
   []
   [./subdomain_id]
-    type = SubdomainPerElementGenerator
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = '-0.03 -0.002 0'
+    top_right = '0.03 0.002 0'
+    location = INSIDE
+    block_id = 1
     input = extranodeset1
-    element_ids = '989 467 550 956 524 981 316 940 987 537 424 932 1079 681 1291 1494 658 629 449 540 317 526 933 982'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
   []
 []
 
@@ -84,7 +86,7 @@
   [define_initial_damage_block1]
     type = ConstantAux
     variable = initial_damage_aux
-    value = 1
+    value = 0.9
     block = 1
   []
   [define_initial_damage_block0]
@@ -168,13 +170,13 @@
   type = Transient
 
   solve_type = NEWTON
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
+  petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
 
-  automatic_scaling = true
+  # automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10

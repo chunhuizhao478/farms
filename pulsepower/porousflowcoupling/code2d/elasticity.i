@@ -3,7 +3,7 @@
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
-ft = 5e6 # tensile strength, Pa
+ft = 25.5e6 # tensile strength, Pa
 solid_density = 2600 # kg/m^3 
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
@@ -121,10 +121,12 @@ hht_alpha = 0
     use_closest_node=true
   []
   [./subdomain_id]
-    type = SubdomainPerElementGenerator
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = '-0.03 -0.002 0'
+    top_right = '0.03 0.002 0'
+    location = INSIDE
+    block_id = 1
     input = extranodeset1
-    element_ids = '915 517 95 246 780 953 550 269 956'
-    subdomain_ids = '1 1 1 1 1 1 1 1 1'
   []
   displacements = 'disp_x disp_y'
 []
@@ -285,7 +287,7 @@ hht_alpha = 0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 20e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 40e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -367,11 +369,11 @@ hht_alpha = 0
       use_displaced_mesh = false
     []              
   []   
-  [./fix_pressure]
-    type = DirichletBC
+  [./pressure_inner_pp]
+    type = FunctionDirichletBC
     variable = pp
     boundary = 3
-    value = ${initial_pore_pressure}
+    function = func_tri_pulse
   []
   # fix ptr
   [./fix_cptr1_x]
@@ -584,7 +586,7 @@ hht_alpha = 0
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
+    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner */pressure_inner_pp'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
   []
