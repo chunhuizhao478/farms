@@ -395,21 +395,21 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     vector_tag = 'restore_tag'
     v = 'disp_x'
     variable = 'resid_x'
-    execute_on = 'TIMESTEP_END'
+    # execute_on = 'TIMESTEP_END'
   []
   [restore_y]
     type = TagVectorAux
     vector_tag = 'restore_tag'
     v = 'disp_y'
     variable = 'resid_y'
-    execute_on = 'TIMESTEP_END'
+    # execute_on = 'TIMESTEP_END'
   []
   [restore_z]
     type = TagVectorAux
     vector_tag = 'restore_tag'
     v = 'disp_z'
     variable = 'resid_z'
-    execute_on = 'TIMESTEP_END'
+    # execute_on = 'TIMESTEP_END'
   []
   ### slip weakening cohesion
   [get_cohesion_aux]
