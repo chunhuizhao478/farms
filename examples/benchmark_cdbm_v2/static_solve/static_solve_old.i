@@ -100,60 +100,6 @@ t0 = 0.5 #nucleation time (s)
 
 [GlobalParams]
   displacements = 'disp_x disp_y disp_z'
-
-  ##----continuum damage breakage model----##
-  #initial lambda value (first lame constant) [Pa]
-  lambda_o = ${lambda_o}
-  
-  #initial shear modulus value (second lame constant) [Pa]
-  shear_modulus_o = ${shear_modulus_o}
-
-  #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
-  xi_0 = ${xi_0}
-
-  #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
-  xi_d = ${xi_d}
-
-  #<strain invariants ratio: maximum allowable value>: set boundary
-  #Xu_etal_P15-2D
-  #may need a bit space, use 1.5 as boundary
-  xi_max = 1.8
-
-  #<strain invariants ratio: minimum allowable value>: set boundary
-  #Xu_etal_P15-2D
-  xi_min = -1.8
-
-  #if option 2, use Cd_constant
-  Cd_constant = ${Cd_constant}
-
-  #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-  CdCb_multiplier = ${CdCb_multiplier}
-
-  #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-  # CBCBH_multiplier = 0.0
-  CBH_constant = ${CBH_constant}
-
-  #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-  C_1 = ${C_1}
-
-  #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-  C_2 = ${C_2}
-
-  #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  beta_width = ${beta_width}
-
-  #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  C_g = ${C_g}
-
-  #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-  m1 = ${m1}
-
-  #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
-  m2 = ${m2}
-
-  # energy ratio
-  chi = ${chi}
 []
 
 [Variables]
@@ -200,14 +146,14 @@ t0 = 0.5 #nucleation time (s)
     outputs = exodus
   []
   [stress_medium]
-    type = ComputeDamageBreakageStress3DStatic
-    output_properties = 'B alpha_damagedvar xi I1 I2 stress elastic_strain'
+    type = ComputeLinearElasticStress
+    output_properties = 'stress elastic_strain'
     outputs = exodus
   []
   [dummy_material]
       type = GenericConstantMaterial
-      prop_names = 'initial_damage initial_breakage damage_perturbation density'
-      prop_values = '0 0 0 ${density}'
+      prop_names = 'density'
+      prop_values = '${density}'
   []
   [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
     type = ComputeEigenstrainFromInitialStress

@@ -12,16 +12,16 @@
 #include "ComputeDamageBreakageStressBase3D.h"
 
 /**
- * ComputeDamageBreakageStress3Doverstress put everything inside the computeQpstress without defining
+ * ComputeDamageBreakageStress3DStatic put everything inside the computeQpstress without defining
  * additional functions
  
  */
-class ComputeDamageBreakageStress3Doverstress : public ComputeDamageBreakageStressBase3D
+class ComputeDamageBreakageStress3DStatic : public ComputeDamageBreakageStressBase3D
 {
 public:
   static InputParameters validParams();
 
-  ComputeDamageBreakageStress3Doverstress(const InputParameters & parameters);
+  ComputeDamageBreakageStress3DStatic(const InputParameters & parameters);
 
   virtual void initialSetup() override;
 
@@ -29,19 +29,37 @@ protected:
   virtual void initQpStatefulProperties() override;
   virtual void computeQpStress() override;
 
-  /// Function: Compute initial strain based on initial stress
-  void setupInitial();
+  /// @brief Compute gamma_r
+  /// @return gamma_r
+  Real computegammar();
 
-  /// Name of the elasticity tensor material property
-  //const std::string _elasticity_tensor_name;
-  /// Elasticity tensor material property
-  //const MaterialProperty<RankFourTensor> & _elasticity_tensor;
+  /// @brief Compute breakage coefficients
+  /// @param gamma_damaged_r
+  /// @return a0 a1 a2 a3 in a vector
+  std::vector<Real> computecoefficients(Real gamma_damaged_r);
 
-  //initial stress tensor
-  // const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
+  /// @brief Compute first root of hessian matrix
+  /// @param xi 
+  /// @return the first root of critical alpha_cr
+  Real alphacr_root1(Real xi, Real gamma_damaged_r);
 
-  //initial strain tensor
-  //const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;  
+  /// @brief Compute second root of hessian matrix
+  /// @param xi 
+  /// @return the second root of critical alpha_cr
+  Real alphacr_root2(Real xi, Real gamma_damaged_r);
+
+  /// @brief Compute elasticity tensor for small strain
+  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee, 
+                                       Real a0, Real a1, Real a2, Real a3, Real gamma_damaged_r);
+
+  /// @brief Setup initial values for the first step
+  // void setupInitial();
+
+  /// @brief Compute deviatoric stress tensor
+  void computeDeviatroicStrainRateTensor();
+
+  /// @brief Compute strain rate dependent Cd
+  void computeStrainRateCd();
 
   /// additional variables
   /// strain invariants ratio: onset of damage evolution
@@ -50,23 +68,14 @@ protected:
   /// strain invariants ratio: onset of breakage healing
   Real _xi_d;
 
-  /// critical point of three phases
-  Real _xi_1;
-
   /// strain invariants ratio: minimum allowable value
   Real _xi_min;
 
   /// strain invariants ratio: maximum allowable value
   Real _xi_max;
 
-  /// parameters in granular states
-  Real _a0;
-  Real _a1;
-  Real _a2;
-  Real _a3;
-
-  /// coefficient of damage solid modulus
-  Real _gamma_damaged_r;
+  /// energy ratio
+  Real _chi;
 
   /// material parameter: compliance or fluidity of the fine grain granular material
   Real _C_g;
@@ -92,24 +101,19 @@ protected:
   const MaterialProperty<RankTwoTensor> & _eps_e_old;
   const MaterialProperty<RankTwoTensor> & _sigma_d_old;
 
-  //add grad term
-  const VariableValue & _alpha_grad_x;
-  const VariableValue & _alpha_grad_y;
-  const VariableValue & _alpha_grad_z;
-
-  /// density
-  const MaterialProperty<Real> & _density_old;
-
-  /// diffusion coefficient
-  Real _D;
-
   /// Get initial values
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
-  // const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
+  //const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
   // const MaterialProperty<Real> & _I1_initial;
   // const MaterialProperty<Real> & _I2_initial;
   // const MaterialProperty<Real> & _xi_initial;
   const MaterialProperty<Real> & _initial_damage;
+  const MaterialProperty<Real> & _initial_breakage;
+
+  /// perturbation (damage)
+  const MaterialProperty<Real> & _damage_perturbation;
+  /// perturbation (shear stress)
+  // const MaterialProperty<Real> & _shear_stress_perturbation;
 
   /// coefficient of positive damage evolution
   Real _Cd_constant;
@@ -129,43 +133,23 @@ protected:
   /// coefficient of CBH constant
   Real _CBH_constant;
 
+  /// dimension
+  const unsigned int _dim;
+
   int & _step;
 
-  /// Function: deltaij
-  Real deltaij(int i, int j);
+  /// matprop : deviatoric stress tensor
+  MaterialProperty<Real> & _deviatroic_strain_rate;
+  const MaterialProperty<Real> & _deviatroic_strain_rate_old;
 
-  /// Function: epsilonij - take component of elastic strain
-  Real epsilonij(int i, 
-                 int j,
-                 Real eps11e_in,
-                 Real eps22e_in,
-                 Real eps12e_in,
-                 Real eps33e_in,
-                 Real eps13e_in,
-                 Real eps23e_in);
+  /// matprop : Cd
+  MaterialProperty<Real> & _Cd_mat;
+  const MaterialProperty<Real> & _Cd_mat_old;
 
-  Real grad_alpha(int i, 
-                  Real alpha_grad_x,
-                  Real alpha_grad_y,
-                  Real alpha_grad_z);
+  /// strain rate dependent Cd parameters
+  bool _use_strain_rate_dependent_Cd;
+  Real _m_exponent;
+  Real _strain_rate_hat;
+  Real _cd_hat;
 
-  /// Function: compute stress components
-  Real computeStressComps(int i, 
-                          int j,
-                          Real xi_in,
-                          Real I1_in,
-                          Real B_in,
-                          Real lambda_in,
-                          Real gamma_damaged_in,
-                          Real shear_modulus_in,
-                          Real eps11e_in,
-                          Real eps22e_in,
-                          Real eps12e_in,
-                          Real eps33e_in,
-                          Real eps13e_in,
-                          Real eps23e_in,
-                          Real alpha_grad_x,
-                          Real alpha_grad_y,
-                          Real alpha_grad_z,
-                          Real D);
 };
