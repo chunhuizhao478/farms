@@ -171,6 +171,11 @@ t0 = 0.5 #nucleation time (s)
       output_properties = 'static_initial_stress_tensor'
       outputs = exodus
   [../]    
+  [./comp_xi]
+    type = ComputeXi
+    output_properties = 'strain_invariant_ratio'
+    outputs = exodus
+  []
 []
 
 [BCs]
@@ -180,31 +185,48 @@ t0 = 0.5 #nucleation time (s)
       boundary = bottom
       value = 0
   []
-  [fix_leftright_x]
-      type = DirichletBC
+  [static_pressure_left]
+      type = FunctionNeumannBC
       variable = disp_x
-      boundary = 'left right'
-      value = 0
-  []
-  [fix_frontback_y]
-      type = DirichletBC
+      boundary = left
+      function = func_pos_xx_stress
+      displacements = 'disp_x disp_y disp_z'
+  []  
+  [static_pressure_right]
+      type = FunctionNeumannBC
+      variable = disp_x
+      boundary = right
+      function = func_neg_xx_stress
+      displacements = 'disp_x disp_y disp_z'
+  [] 
+  #
+  [static_pressure_front]
+      type = FunctionNeumannBC
       variable = disp_y
-      boundary = 'front back'
-      value = 0
-  []
+      boundary = front
+      function = func_neg_yy_stress
+      displacements = 'disp_x disp_y disp_z'
+  []  
+  [static_pressure_back]
+      type = FunctionNeumannBC
+      variable = disp_y
+      boundary = back
+      function = func_pos_yy_stress
+      displacements = 'disp_x disp_y disp_z'
+  [] 
   #
   [static_pressure_front_shear]
       type = FunctionNeumannBC
       variable = disp_x
       boundary = front
-      function = func_neg_xy_stress
+      function = func_pos_xy_stress
       displacements = 'disp_x disp_y disp_z'
   []  
   [static_pressure_back_shear]
       type = FunctionNeumannBC
       variable = disp_x
       boundary = back
-      function = func_pos_xy_stress
+      function = func_neg_xy_stress
       displacements = 'disp_x disp_y disp_z'
   [] 
   [static_pressure_left_shear]
@@ -221,25 +243,25 @@ t0 = 0.5 #nucleation time (s)
       function = func_pos_xy_stress
       displacements = 'disp_x disp_y disp_z'
   []   
-  # #
-  # [fix_node_x]
-  #   type = DirichletBC
-  #   variable = disp_x
-  #   boundary = 'corner_ptr'
-  #   value = 0
-  # [../]
-  # [fix_node_y]
-  #   type = DirichletBC
-  #   variable = disp_y
-  #   boundary = 'corner_ptr'
-  #   value = 0
-  # [../]
-  # [fix_node_z]
-  #   type = DirichletBC
-  #   variable = disp_z
-  #   boundary = 'corner_ptr'
-  #   value = 0
-  # [../]
+  #
+  [fix_node_x]
+    type = DirichletBC
+    variable = disp_x
+    boundary = 'corner_ptr'
+    value = 0
+  [../]
+  [fix_node_y]
+    type = DirichletBC
+    variable = disp_y
+    boundary = 'corner_ptr'
+    value = 0
+  [../]
+  [fix_node_z]
+    type = DirichletBC
+    variable = disp_z
+    boundary = 'corner_ptr'
+    value = 0
+  [../]
 []
 
 [Functions]
@@ -262,12 +284,12 @@ t0 = 0.5 #nucleation time (s)
   [./func_pos_xx_stress]
     type = CompositeFunction
     functions = 'func_initial_stress_xx'
-    scale_factor = '1'
+    scale_factor = '-1'
   [../]
   [./func_neg_xx_stress]
     type = CompositeFunction
     functions = 'func_initial_stress_xx'
-    scale_factor = '-1'
+    scale_factor = '1'
   [../]
   ##
   [./func_initial_stress_xy]
@@ -330,12 +352,12 @@ t0 = 0.5 #nucleation time (s)
   [./func_pos_yy_stress]
     type = CompositeFunction
     functions = 'func_initial_stress_yy'
-    scale_factor = '1'
+    scale_factor = '-1'
   [../]
   [./func_neg_yy_stress]
     type = CompositeFunction
     functions = 'func_initial_stress_yy'
-    scale_factor = '-1'
+    scale_factor = '1'
   [../]
   ##
   [./func_initial_stress_yz]

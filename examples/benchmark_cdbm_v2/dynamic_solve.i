@@ -612,185 +612,65 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Functions]
   ###strain field###
   [./func_initial_strain_xx]
-    type = InitialStressStrainCDBMv2
-    get_initial_strain = true
-    i = 1
-    j = 1
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'elastic_strain_00'
   []
   [./func_initial_strain_xy]
-    type = InitialStressStrainCDBMv2
-    get_initial_strain = true
-    i = 1
-    j = 2
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'elastic_strain_01'
   []
   [./func_initial_strain_xz]
-    type = InitialStressStrainCDBMv2
-    get_initial_strain = true
-    i = 1
-    j = 3
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'elastic_strain_02'
   []
   [./func_initial_strain_yy]
-    type = InitialStressStrainCDBMv2
-    get_initial_strain = true
-    i = 2
-    j = 2
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'elastic_strain_11'
   []
   [./func_initial_strain_yz]
-    type = InitialStressStrainCDBMv2
-    get_initial_strain = true
-    i = 2
-    j = 3
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'elastic_strain_12'
   []
   [./func_initial_strain_zz]
-    type = InitialStressStrainCDBMv2
-    get_initial_strain = true
-    i = 3
-    j = 3
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'elastic_strain_22'
   []
   ###stress field###
   [./func_initial_stress_xx]
-    type = InitialStressStrainCDBMv2
-    get_initial_stress = true
-    i = 1
-    j = 1
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'stress_00'
   []
   [./func_initial_stress_xy]
-    type = InitialStressStrainCDBMv2
-    get_initial_stress = true
-    i = 1
-    j = 2
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'stress_01'
   []
   [./func_initial_stress_xz]
-    type = InitialStressStrainCDBMv2
-    get_initial_stress = true
-    i = 1
-    j = 3
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'stress_02'
   []
   [./func_initial_stress_yy]
-    type = InitialStressStrainCDBMv2
-    get_initial_stress = true
-    i = 2
-    j = 2
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'stress_11'
   []
   [./func_initial_stress_yz]
-    type = InitialStressStrainCDBMv2
-    get_initial_stress = true
-    i = 2
-    j = 3
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'stress_12'
   []
   [./func_initial_stress_zz]
-    type = InitialStressStrainCDBMv2
-    get_initial_stress = true
-    i = 3
-    j = 3
-    lambda_o = ${lambda_o}
-    shear_modulus_o = ${shear_modulus_o}
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'stress_22'
   []
   ###fluid pressure###
   [./func_fluid_pressure]
@@ -831,6 +711,16 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       force_preaux = true
       execute_on = 'TIMESTEP_END'
   []
+  [./init_sol_components]
+    type = SolutionUserObject
+    mesh = './static_solve/static_solve_out.e'
+    system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
+                        elastic_strain_11 elastic_strain_12 elastic_strain_22
+                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
+    timestep = LATEST
+    force_preaux = true
+    execute_on = 'INITIAL'
+  [../]
 []
 
 [Executioner]
