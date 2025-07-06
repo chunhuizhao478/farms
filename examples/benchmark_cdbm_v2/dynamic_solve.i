@@ -61,7 +61,7 @@ fluid_density = 1000
 gravity = 9.8
 bxx = 0.926793
 byy = 1.073206
-bxy = -0.8
+bxy = -0.85
 cutoff_distance = 15600 #cutoff distance for the depth varying stress
 ##------------------------------------------------------------------##
 
@@ -80,7 +80,7 @@ dt = 0.0025 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 40 #time step interval for output
+exodus_time_step_interval = 1 #time step interval for output
 csv_time_step_interval = 20 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
@@ -89,7 +89,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../meshgenerator/tpv205/tpv2053d_100m.msh'
+    file = '../../meshgenerator/tpv205/tpv2053d_400m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator

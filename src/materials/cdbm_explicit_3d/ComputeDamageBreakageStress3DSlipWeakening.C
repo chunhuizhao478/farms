@@ -72,6 +72,7 @@ ComputeDamageBreakageStress3DSlipWeakening::ComputeDamageBreakageStress3DSlipWea
     _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
     _sigma_d_old(getMaterialPropertyOldByName<RankTwoTensor>("sigma_d")),
+    _sts_total_old(getMaterialPropertyOldByName<RankTwoTensor>("sts_total")),
     _static_initial_stress_tensor(getMaterialProperty<RankTwoTensor>("static_initial_stress_tensor")),
     _static_initial_strain_tensor(getMaterialProperty<RankTwoTensor>("static_initial_strain_tensor")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
@@ -140,6 +141,7 @@ ComputeDamageBreakageStress3DSlipWeakening::computeQpStress()
 
   if (_step == 1){
     setupInitial();
+    _stress[_qp].zero();
   }
   else{
     
@@ -265,7 +267,7 @@ ComputeDamageBreakageStress3DSlipWeakening::computeQpStress()
 
     // Rotate the stress state to the current configuration
     // Here the stress increments are feed into the stress tensor
-    _stress[_qp] = sigma_total - _static_initial_stress_tensor[_qp];
+    _stress[_qp] = sigma_total - _sts_total_old[_qp];
 
     // Also save the total stress tensor
     _sts_total[_qp] = sigma_total;
@@ -504,7 +506,65 @@ void
 ComputeDamageBreakageStress3DSlipWeakening::setupInitial()
 {
 
+  // Real gamma_damaged_r = computegammar();
+
+  // /// lambda (first lame const)
+  // _lambda[_qp] = _lambda_o;
+  // /// mu (shear modulus)
+  // _shear_modulus[_qp] = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * gamma_damaged_r;
+  // /// gamma_damaged (damage modulus)
+  // _gamma_damaged[_qp] = _initial_damage[_qp] * gamma_damaged_r;
+
+  // //allpha, B
+  // _alpha_damagedvar[_qp] = _initial_damage[_qp];
+  // _B[_qp] = _initial_breakage[_qp];
+
+  // //Get stress components
+  // RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
+  // RankTwoTensor strain_initial = _static_initial_strain_tensor[_qp];
+
+  // //Compute strain components using Hooke's Law
+  // Real eps11_init = strain_initial(0,0);
+  // Real eps22_init = strain_initial(1,1);
+  // Real eps12_init = strain_initial(0,1);
+  // Real eps13_init = strain_initial(0,2);
+  // Real eps23_init = strain_initial(1,2);
+  // Real eps33_init = strain_initial(2,2);
+  
+  // //Compute xi, I1, I2
+  // Real I1_init = eps11_init + eps22_init + eps33_init;
+  // Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + eps33_init * eps33_init + 2 * eps12_init * eps12_init + 2 * eps13_init * eps13_init + 2 * eps23_init * eps23_init;
+  // Real xi_init = I1_init / sqrt( I2_init );
+
+  // //Compute eps
+  // //eps_p
+  // _eps_p[_qp](0,0) = 0.0; _eps_p[_qp](0,1) = 0.0; _eps_p[_qp](0,2) = 0.0;
+  // _eps_p[_qp](1,0) = 0.0; _eps_p[_qp](1,1) = 0.0; _eps_p[_qp](1,2) = 0.0;
+  // _eps_p[_qp](2,0) = 0.0; _eps_p[_qp](2,1) = 0.0; _eps_p[_qp](2,2) = 0.0;
+  // //eps_e
+  // _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; _eps_e[_qp](0,2) = eps13_init;
+  // _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init; _eps_e[_qp](1,2) = eps23_init;
+  // _eps_e[_qp](2,0) = eps13_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
+  // //eps_total
+  // _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
+  // _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
+  // _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](2,1) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
+  // //sts_total
+  // _sts_total[_qp] = stress_initial;
+
+  // //I1
+  // _I1[_qp] = I1_init;
+  // //I2
+  // _I2[_qp] = I2_init;
+  // //xi
+  // _xi[_qp] = xi_init;
+
   Real gamma_damaged_r = computegammar();
+  std::vector<Real> avec = computecoefficients(gamma_damaged_r);
+  Real a0 = avec[0];
+  Real a1 = avec[1];
+  Real a2 = avec[2];
+  Real a3 = avec[3];
 
   /// lambda (first lame const)
   _lambda[_qp] = _lambda_o;
@@ -513,49 +573,45 @@ ComputeDamageBreakageStress3DSlipWeakening::setupInitial()
   /// gamma_damaged (damage modulus)
   _gamma_damaged[_qp] = _initial_damage[_qp] * gamma_damaged_r;
 
-  //allpha, B
-  _alpha_damagedvar[_qp] = _initial_damage[_qp];
-  _B[_qp] = _initial_breakage[_qp];
+  RankTwoTensor eps_e = _static_initial_stress_tensor[_qp];
 
-  //Get stress components
-  RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
-  RankTwoTensor strain_initial = _static_initial_strain_tensor[_qp];
+  const Real epsilon = 1e-12;
+  Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
+  Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
+  Real xi = I1/std::sqrt(I2);
 
-  //Compute strain components using Hooke's Law
-  Real eps11_init = strain_initial(0,0);
-  Real eps22_init = strain_initial(1,1);
-  Real eps12_init = strain_initial(0,1);
-  Real eps13_init = strain_initial(0,2);
-  Real eps23_init = strain_initial(1,2);
-  Real eps33_init = strain_initial(2,2);
-  
-  //Compute xi, I1, I2
-  Real I1_init = eps11_init + eps22_init + eps33_init;
-  Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + eps33_init * eps33_init + 2 * eps12_init * eps12_init + 2 * eps13_init * eps13_init + 2 * eps23_init * eps23_init;
-  Real xi_init = I1_init / sqrt( I2_init );
+  //Represent sigma (solid(s) + granular(b))
+  RankTwoTensor sigma_s;
+  RankTwoTensor sigma_b;
+  RankTwoTensor sigma_total;
+  RankTwoTensor sigma_d;
+  const auto I = RankTwoTensor::Identity();
 
-  //Compute eps
-  //eps_p
-  _eps_p[_qp](0,0) = 0.0; _eps_p[_qp](0,1) = 0.0; _eps_p[_qp](0,2) = 0.0;
-  _eps_p[_qp](1,0) = 0.0; _eps_p[_qp](1,1) = 0.0; _eps_p[_qp](1,2) = 0.0;
-  _eps_p[_qp](2,0) = 0.0; _eps_p[_qp](2,1) = 0.0; _eps_p[_qp](2,2) = 0.0;
-  //eps_e
-  _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; _eps_e[_qp](0,2) = eps13_init;
-  _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init; _eps_e[_qp](1,2) = eps23_init;
-  _eps_e[_qp](2,0) = eps13_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
-  //eps_total
-  _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
-  _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
-  _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](2,1) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
-  //sts_total
-  _sts_total[_qp] = stress_initial;
+  /* Compute stress */
+  sigma_s = (_lambda[_qp] - _gamma_damaged[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi) * eps_e;
+  sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
+  sigma_total = (1 - _B[_qp]) * sigma_s + _B[_qp] * sigma_b;
 
-  //I1
-  _I1[_qp] = I1_init;
-  //I2
-  _I2[_qp] = I2_init;
-  //xi
-  _xi[_qp] = xi_init;
+  sigma_d = sigma_total - 0.3333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
+
+  _eps_total[_qp] = eps_e;
+  _eps_p[_qp].zero(); // Initialize plastic strain to zero
+  _eps_e[_qp] = eps_e;
+  _I1[_qp] = I1;
+  _I2[_qp] = I2;
+  _xi[_qp] = xi;
+  _sigma_d[_qp] = sigma_d;
+
+  // Rotate the stress state to the current configuration
+  // Here the stress increments are feed into the stress tensor
+  //_stress[_qp] = sigma_total - _static_initial_stress_tensor[_qp];
+
+  // Also save the total stress tensor
+  _sts_total[_qp] = sigma_total;
+
+  // Assign value for elastic strain, which is equal to the mechanical strain
+  _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
+
 }
 
 void

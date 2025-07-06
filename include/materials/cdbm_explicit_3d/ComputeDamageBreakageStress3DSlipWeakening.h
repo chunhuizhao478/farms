@@ -100,6 +100,7 @@ protected:
   const MaterialProperty<RankTwoTensor> & _eps_p_old;
   const MaterialProperty<RankTwoTensor> & _eps_e_old;
   const MaterialProperty<RankTwoTensor> & _sigma_d_old;
+  const MaterialProperty<RankTwoTensor> & _sts_total_old;
 
   /// Get initial values
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
