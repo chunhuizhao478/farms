@@ -61,7 +61,7 @@ fluid_density = 1000
 gravity = 9.8
 bxx = 0.926793
 byy = 1.073206
-bxy = -0.85
+bxy = -0.8
 cutoff_distance = 15600 #cutoff distance for the depth varying stress
 ##------------------------------------------------------------------##
 

@@ -20,7 +20,7 @@ sigma_zz = -rho * g * depths
 # Coefficients for horizontal and shear stresses
 b_xx = 0.926793
 b_yy = 1.073206
-b_xy = -0.85
+b_xy = -0.8
 
 # Piecewise definitions
 mask = depths <= 15600
