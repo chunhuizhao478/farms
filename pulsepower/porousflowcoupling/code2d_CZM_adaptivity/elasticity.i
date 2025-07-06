@@ -1,15 +1,24 @@
+pi = 3.14159265358979323846
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
-Gc_const = 100  # critical energy release rate, N * m
-ft = 25.5e6 # tensile strength, Pa
+ft = 25.5e6 # tensile strength, N/m^2
+Gc = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3 
 dx_min = 1e-4 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  4e-4 # length scale, m
-#'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
+l = 4e-4 # length scale, m
+#----------------------------------------------------#
+##linear softening parameters
+c_alpha = ${pi}
+p = 2.0
+lch = '${fparse E*Gc/(ft*ft)}'
+a1 = '${fparse 4.0/pi*lch/l}'
+a2 = -0.5
+a3 = 0.0
+eta = 1e-6
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
 confinement_pressure  = 1e6
@@ -24,14 +33,19 @@ fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = 1.524e-11
+
+#----------------------------------------------------#
+porous_flow_coupling = true # enable porous flow coupling
+
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
 
 ##exponential permeability model
+# exponential_permeability_model = true # use an exponential function for the effective permeability
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 2 * Gc_const / ft } # m
+wc = ${fparse 2 * Gc / ft } # m
 perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
@@ -68,7 +82,7 @@ top_right = '0.0025 6e-5 0'
       [strain_energy_marker]
         type = ValueThresholdMarker
         variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc_const/l}'
+        refine = '${fparse 1.0*3/8*Gc/l}'
       []   
       # if mesh_size > dxmin, refine
       # if mesh_size < dxmin/100, coarsen (which never happens)
@@ -94,7 +108,7 @@ top_right = '0.0025 6e-5 0'
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc=${Gc};l=${l};dx_min=${dx_min};a1=${a1};a2=${a2};a3=${a3};p=${p};eta=${eta};c_alpha=${c_alpha}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -110,8 +124,8 @@ top_right = '0.0025 6e-5 0'
   [to_psie_active]
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
-    variable = 'psie_active mesh_size'
-    source_variable = 'psie_active mesh_size'
+    variable = 'psie_active mesh_size a1_aux'
+    source_variable = 'psie_active mesh_size a1_aux'
   []
 []
 
@@ -124,7 +138,6 @@ top_right = '0.0025 6e-5 0'
   [./msh]
     type = FileMeshGenerator
     file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -213,6 +226,15 @@ top_right = '0.0025 6e-5 0'
     family = MONOMIAL
     order = FIRST
   []
+  #
+  [a1_aux]
+    family = MONOMIAL
+    order = FIRST
+  []
+  [ft_var]
+    family = MONOMIAL
+    order = FIRST
+  []
 []
 
 [AuxKernels]
@@ -284,6 +306,13 @@ top_right = '0.0025 6e-5 0'
     row = 0
     column = 1
     variable = effective_perm01_aux
+  []
+  #get a1_aux
+  [a1_aux]
+    type = MaterialRealAux
+    property = a1
+    variable = a1_aux
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
 []
 
@@ -382,6 +411,7 @@ top_right = '0.0025 6e-5 0'
       use_displaced_mesh = false
     []              
   []   
+  # pressure
   [./pressure_inner_pp]
     type = FunctionDirichletBC
     variable = pp
@@ -445,13 +475,14 @@ top_right = '0.0025 6e-5 0'
   []
   [bulk]
     type = GenericConstantMaterial
-    prop_names = 'K G'
-    prop_values = '${K} ${G}'
+    prop_names = 'K G l a1 a2 a3 p ft'
+    prop_values = '${K} ${G} ${l} ${a1} ${a2} ${a3} ${p} ${ft}'
   []
+  ##
   [elasticity]
     type = NDSmallDeformationIsotropicElasticity
     # material property names
-    ##---------------------------------------------##
+    #----------------------------------------------#
     bulk_modulus = K
     shear_modulus = G
     phase_field = d
@@ -461,24 +492,25 @@ top_right = '0.0025 6e-5 0'
     degradation_function = g
     degradation_function_derivative = dg_dd
     degradation_function_second_derivative = d2g_dd2
-    ##---------------------------------------------##
     # decomposition type
-    ##---------------------------------------------##
+    #----------------------------------------------#
     decomposition = SPECTRAL
-    ##---------------------------------------------##
+    #----------------------------------------------#
     # model type
-    ##---------------------------------------------##
-    model_type = AT1
-    ##---------------------------------------------##
-    # constants
-    ##---------------------------------------------##
-    eta = 1e-6
+    #----------------------------------------------#
+    model_type = PF_CZM
+    a1 = a1
+    a2 = a2
+    a3 = a3
+    p = p 
+    eta = ${eta}
+    #----------------------------------------------#
     output_properties = 'elastic_strain psie_active'
     outputs = exodus
     ##---------------------------------------------##
     # porous flow coupling
     ##---------------------------------------------##
-    porous_flow_coupling = true
+    porous_flow_coupling = ${porous_flow_coupling}
     ##-----darcy_poiseuille_permeability_model-----##
     darcy_poiseuille_permeability_model = true
     intrinsic_permeability = ${intrinsic_permeability}
@@ -657,7 +689,7 @@ top_right = '0.0025 6e-5 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 100
+  time_step_interval = 1
   print_linear_residuals = false
   csv = true
   [checkpoint]

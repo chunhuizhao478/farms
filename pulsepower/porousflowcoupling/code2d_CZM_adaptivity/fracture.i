@@ -1,4 +1,3 @@
-#initial damage box
 bottom_left = '-0.0025 -6e-5 0'
 top_right = '0.0025 6e-5 0'
 
@@ -44,7 +43,7 @@ top_right = '0.0025 6e-5 0'
       [strain_energy_marker]
         type = ValueThresholdMarker
         variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc_const/l}'
+        refine = '${fparse 1.0*3/8*Gc/l}'
       []   
       # if mesh_size > dxmin, refine
       # if mesh_size < dxmin/100, coarsen (which never happens)
@@ -68,8 +67,6 @@ top_right = '0.0025 6e-5 0'
 
 [Variables]
   [d]
-    family = LAGRANGE
-    order = FIRST
   []
 []
 
@@ -87,6 +84,10 @@ top_right = '0.0025 6e-5 0'
   [mesh_size]
     order = CONSTANT
     family = MONOMIAL
+  []
+  [a1_aux]
+    family = MONOMIAL
+    order = FIRST
   []
   [initial_damage_aux]
     family = LAGRANGE
@@ -117,6 +118,12 @@ top_right = '0.0025 6e-5 0'
     bound_type = lower
     bound_value = initial_damage_aux
   []
+  # [irreversibility]
+  #   type = VariableOldValueBounds
+  #   variable = bounds_dummy
+  #   bounded_variable = d
+  #   bound_type = lower
+  # []
   [upper]
     type = ConstantBounds
     variable = bounds_dummy
@@ -128,11 +135,11 @@ top_right = '0.0025 6e-5 0'
 
 [Kernels]
   [diff]
-    type = ADPFFDiffusion #
+    type = ADPFFDiffusion
     variable = d
     fracture_toughness = Gc
     regularization_length = l
-    normalization_constant = c0
+    normalization_constant = c_alpha
   []
   [source]
     type = ADPFFSource
@@ -144,36 +151,28 @@ top_right = '0.0025 6e-5 0'
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l Gc'
-    prop_values = '${l} ${Gc_const}'
+    prop_names =  'l Gc a1 a2 a3 p eta c_alpha'
+    prop_values = '${l} ${Gc} ${a1} ${a2} ${a3} ${p} ${eta} ${c_alpha}'
   []
-  # [Gc_var]
-  #   type = ADParsedMaterial
-  #   property_name = Gc
-  #   coupled_variables = 'Gc_var'
-  #   expression = 'Gc_var'
-  #   # outputs = exodus
-  # []
-  [degradation]
-    type = PowerDegradationFunction
-    property_name = g
-    expression = (1-d)^p*(1-eta)+eta
-    phase_field = d
-    parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
-  []
-  [crack_geometric] #AT1 model
+  [crack_geometric]
     type = CrackGeometricFunction
     property_name = alpha
-    expression = 'd'
+    expression = '2*d - d*d'
     phase_field = d
+  []
+  [degradation]
+    type = RationalDegradationFunctionCZM
+    property_name = g
+    expression = (1-d)^p/((1-d)^p+a1*d*(1+a2*d+a2*a3*d^2))*(1-eta)+eta
+    phase_field = d
+    material_property_names = 'a1 a2 a3 p eta'
   []
   [psi]
     type = ADDerivativeParsedMaterial
     property_name = psi
-    expression = 'alpha*Gc/c0/l+g*psie_active'
+    expression = 'alpha*Gc/c_alpha/l+g*psie_active'
     coupled_variables = 'd psie_active'
-    material_property_names = 'alpha(d) g(d) Gc c0 l'
+    material_property_names = 'alpha(d) g(d) Gc c_alpha l'
     derivative_order = 1
   []
 []
@@ -195,27 +194,7 @@ top_right = '0.0025 6e-5 0'
 []
 
 [Outputs]
-  exodus = false
+  exodus = true
   # time_step_interval = 40
   print_linear_residuals = false
 []
-
-# [Distributions]
-#   #typically for granite
-#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-#   [weibull]
-#     type = Weibull
-#     shape = 15.0 #k
-#     scale = ${Gc_const} #lambda
-#     location = 0 
-#   []
-# [] 
-
-# [ICs]
-#   [./gc_var]
-#     type =  RandomIC
-#     variable = Gc_var
-#     distribution = weibull
-#   []
-# []
