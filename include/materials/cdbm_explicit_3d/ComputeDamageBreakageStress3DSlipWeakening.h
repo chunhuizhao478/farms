@@ -105,6 +105,7 @@ protected:
   /// Get initial values
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
   const MaterialProperty<RankTwoTensor> & _static_initial_strain_tensor;
+  const MaterialProperty<RankTwoTensor> & _sts_initial_tensor_old;
   // const MaterialProperty<Real> & _I1_initial;
   // const MaterialProperty<Real> & _I2_initial;
   // const MaterialProperty<Real> & _xi_initial;

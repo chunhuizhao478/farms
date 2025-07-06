@@ -94,4 +94,7 @@ protected:
   Real _lambda_o;
   /// mu (shear modulus)
   Real _shear_modulus_o;
+
+  /// initial stress tensor
+  MaterialProperty<RankTwoTensor> & _sts_initial_tensor;
 };

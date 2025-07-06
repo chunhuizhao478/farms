@@ -75,6 +75,7 @@ ComputeDamageBreakageStress3DSlipWeakening::ComputeDamageBreakageStress3DSlipWea
     _sts_total_old(getMaterialPropertyOldByName<RankTwoTensor>("sts_total")),
     _static_initial_stress_tensor(getMaterialProperty<RankTwoTensor>("static_initial_stress_tensor")),
     _static_initial_strain_tensor(getMaterialProperty<RankTwoTensor>("static_initial_strain_tensor")),
+    _sts_initial_tensor_old(getMaterialPropertyOldByName<RankTwoTensor>("sts_initial_tensor")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
     _initial_breakage(getMaterialPropertyByName<Real>("initial_breakage")),
     _damage_perturbation(getMaterialPropertyByName<Real>("damage_perturbation")),
@@ -267,10 +268,13 @@ ComputeDamageBreakageStress3DSlipWeakening::computeQpStress()
 
     // Rotate the stress state to the current configuration
     // Here the stress increments are feed into the stress tensor
-    _stress[_qp] = sigma_total - _sts_total_old[_qp];
+    _stress[_qp] = sigma_total - _sts_initial_tensor_old[_qp];
 
     // Also save the total stress tensor
     _sts_total[_qp] = sigma_total;
+
+    // Always take the old value of initial stress tensor
+    _sts_initial_tensor[_qp] = _sts_initial_tensor_old[_qp];
 
     // Assign value for elastic strain, which is equal to the mechanical strain
     _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
@@ -608,6 +612,9 @@ ComputeDamageBreakageStress3DSlipWeakening::setupInitial()
 
   // Also save the total stress tensor
   _sts_total[_qp] = sigma_total;
+
+  // Also save in the sts_initial_tensor
+  _sts_initial_tensor[_qp] = sigma_total;
 
   // Assign value for elastic strain, which is equal to the mechanical strain
   _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
