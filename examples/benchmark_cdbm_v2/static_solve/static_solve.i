@@ -77,7 +77,7 @@ t0 = 0.5 #nucleation time (s)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../../meshgenerator/tpv205/tpv2053d_400m.msh'
+    file = '../../../meshgenerator/tpv205/tpv2053d_100m.msh'
   []   
   [./sidesets]
     input = msh
