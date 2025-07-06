@@ -1,5 +1,5 @@
-bottom_left = '-0.0025 -6e-5 0'
-top_right = '0.0025 6e-5 0'
+bottom_left = '-0.0025 -2e-4 0'
+top_right = '0.0025 2e-4 0'
 
 [Mesh]
   [./msh]
@@ -23,47 +23,47 @@ top_right = '0.0025 6e-5 0'
   []
 []
 
-[Adaptivity]
-  initial_marker = initial_marker
-  initial_steps = 2
-  max_h_level = 5
-  marker = 'combo'
-  cycles_per_step = 1
-  [Markers]
-      [./combo]
-        type = FarmsComboMarker
-        markers = 'damage_marker strain_energy_marker'
-        meshsize_marker = 'meshsize_marker'
-      [../]
-      [damage_marker]
-        type = ValueThresholdMarker
-        variable = d
-        refine = 0.25
-      []
-      [strain_energy_marker]
-        type = ValueThresholdMarker
-        variable = psie_active
-        refine = '${fparse 1.0*3/8*Gc/l}'
-      []   
-      # if mesh_size > dxmin, refine
-      # if mesh_size < dxmin/100, coarsen (which never happens)
-      # otherwise, do nothing
-      [meshsize_marker]
-        type = ValueThresholdMarker
-        variable = mesh_size
-        refine = '${dx_min}'
-        coarsen = '${fparse dx_min/100}'
-        third_state = DO_NOTHING
-      [] 
-      [initial_marker]
-        type = BoxMarker
-        bottom_left = ${bottom_left}
-        top_right = ${top_right}
-        outside = DO_NOTHING
-        inside = REFINE
-      []
-  []
-[]
+# [Adaptivity]
+#   initial_marker = initial_marker
+#   initial_steps = 2
+#   max_h_level = 5
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.25
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc/l}'
+#       []   
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#       [] 
+#       [initial_marker]
+#         type = BoxMarker
+#         bottom_left = ${bottom_left}
+#         top_right = ${top_right}
+#         outside = DO_NOTHING
+#         inside = REFINE
+#       []
+#   []
+# []
 
 [Variables]
   [d]
