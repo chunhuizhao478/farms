@@ -577,7 +577,7 @@ ComputeDamageBreakageStress3DSlipWeakening::setupInitial()
   /// gamma_damaged (damage modulus)
   _gamma_damaged[_qp] = _initial_damage[_qp] * gamma_damaged_r;
 
-  RankTwoTensor eps_e = _static_initial_stress_tensor[_qp];
+  RankTwoTensor eps_e = _static_initial_strain_tensor[_qp];
 
   const Real epsilon = 1e-12;
   Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
