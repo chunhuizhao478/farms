@@ -194,7 +194,7 @@ top_right = '0.0025 2e-4 0'
 []
 
 [Outputs]
-  exodus = true
+  exodus = false
   # time_step_interval = 40
   print_linear_residuals = false
 []
