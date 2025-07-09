@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -340,9 +340,9 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 150
+        length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 150
+        radius = 300
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -434,6 +434,10 @@
       type = Exodus
       time_step_interval = 5
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+    [../]
+    [./csv]
+        type = CSV
+        time_step_interval = 1
     [../]
 []
 

@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -147,12 +147,12 @@
         coupled = B_damagedvar_sub
         block = '1 3'
     []
-    [perturb_source_alpha]
-        type = PerturbationSource
-        variable = alpha_damagedvar_sub
-        damage_source = 'damage_perturbation'
-        block = '1 3'
-    []
+    # [perturb_source_alpha]
+    #     type = PerturbationSource
+    #     variable = alpha_damagedvar_sub
+    #     damage_source = 'damage_perturbation'
+    #     block = '1 3'
+    # []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
@@ -162,6 +162,12 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
+        block = '1 3'
+    []
+    [perturb_source_b]
+        type = PerturbationSource
+        variable = B_damagedvar_sub
+        damage_source = 'damage_perturbation'
         block = '1 3'
     []
 []
@@ -228,7 +234,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 0'
-        peak_value = 0.3
+        peak_value = 1.0
         thickness = 200
         length = 2000
         duration = 1.0
