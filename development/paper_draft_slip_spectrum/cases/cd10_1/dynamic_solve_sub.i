@@ -46,12 +46,12 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    #Cd_constant = -1
+    Cd_constant = -1
 
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-4
-    cd_hat = 1e2
+    cd_hat = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable

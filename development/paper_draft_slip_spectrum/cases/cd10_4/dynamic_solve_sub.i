@@ -50,7 +50,7 @@
 
     #strain rate dependent Cd options
     m_exponent = 0.8
-    strain_rate_hat = 1e-8
+    strain_rate_hat = 1e-4
     cd_hat = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -147,12 +147,12 @@
         coupled = B_damagedvar_sub
         block = '1 3'
     []
-    [perturb_source_alpha]
-        type = PerturbationSource
-        variable = alpha_damagedvar_sub
-        damage_source = 'damage_perturbation'
-        block = '1 3'
-    []
+    # [perturb_source_alpha]
+    #     type = PerturbationSource
+    #     variable = alpha_damagedvar_sub
+    #     damage_source = 'damage_perturbation'
+    #     block = '1 3'
+    # []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
@@ -162,6 +162,12 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
+        block = '1 3'
+    []
+    [perturb_source_b]
+        type = PerturbationSource
+        variable = B_damagedvar_sub
+        damage_source = 'damage_perturbation'
         block = '1 3'
     []
 []

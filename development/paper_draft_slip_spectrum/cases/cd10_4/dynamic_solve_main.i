@@ -387,7 +387,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 20
+    end_time = 100
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -432,8 +432,12 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 5
+      time_step_interval = 100
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+    [../]
+    [./csv]
+        type = CSV
+        time_step_interval = 1
     [../]
 []
 
