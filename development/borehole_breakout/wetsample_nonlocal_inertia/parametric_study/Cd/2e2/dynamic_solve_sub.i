@@ -28,7 +28,7 @@ damageable_block_ids = '3'
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  '../meshfile/mesh_adaptive.msh'
+        file =  '../../../meshfile/mesh_adaptive.msh'
     [] 
 []
 

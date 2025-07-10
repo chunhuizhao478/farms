@@ -14,7 +14,7 @@ shear_modulus_o = ${fparse youngs_modulus/(2*(1+poissons_ratio))}
 xi_o = -0.8073
 xi_d = -0.8073
 # Cg = 1e-12
-Cd_constant = 160
+Cd_constant = 200
 CdCb_multiplier = 100
 beta_width = 0.05
 #-------------------------------------------------#
