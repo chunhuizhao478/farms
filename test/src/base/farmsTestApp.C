@@ -20,7 +20,7 @@ farmsTestApp::validParams()
   return params;
 }
 
-farmsTestApp::farmsTestApp(InputParameters parameters) : MooseApp(parameters)
+farmsTestApp::farmsTestApp(const InputParameters & parameters) : MooseApp(parameters)
 {
   farmsTestApp::registerAll(
       _factory, _action_factory, _syntax, getParam<bool>("allow_test_objects"));
