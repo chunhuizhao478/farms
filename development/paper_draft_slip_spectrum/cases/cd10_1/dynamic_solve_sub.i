@@ -234,7 +234,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 0'
-        peak_value = 0.3
+        peak_value = 1.0
         thickness = 200
         length = 2000
         duration = 1.0
@@ -242,7 +242,7 @@
         sigma_divisor = 2.0
         # output_properties = 'shear_stress_perturbation damage_perturbation'
         # outputs = exodus
-    [] 
+    []
 [] 
 
 [Preconditioning]
