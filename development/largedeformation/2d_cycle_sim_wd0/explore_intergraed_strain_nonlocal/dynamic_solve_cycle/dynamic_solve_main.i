@@ -292,8 +292,8 @@
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
+        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation'
+        prop_values = '0.0 0.0 0.0'
     []
     #elastic material
     [elastic_tensor]
@@ -320,19 +320,6 @@
         type = ElkNonlocalEqstrain
         average_UO = eqstrain_averaging
         output_properties = 'eqstrain_nonlocal'
-        outputs = exodus
-    []
-    #shear stress perturbation
-    [damage_perturbation]
-        type = PerturbationRadial
-        nucl_center = '0 0 0'
-        peak_value = 0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
         outputs = exodus
     []
 [] 
@@ -610,7 +597,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_newbc/static_solve_out.e'
+      mesh = '../static_solve/static_solve_out.e'
       system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true

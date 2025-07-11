@@ -152,12 +152,12 @@
         coupled = B_damagedvar_sub
         block = '1 3'
     []
-    [perturb_source_alpha]
-        type = PerturbationSource
-        variable = alpha_damagedvar_sub
-        damage_source = 'damage_perturbation'
-        block = '1 3'
-    []
+    # [perturb_source_alpha]
+    #     type = PerturbationSource
+    #     variable = alpha_damagedvar_sub
+    #     damage_source = 'damage_perturbation'
+    #     block = '1 3'
+    # []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
@@ -167,6 +167,12 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
+        block = '1 3'
+    []
+    [perturb_source_b]
+        type = PerturbationSource
+        variable = B_damagedvar_sub
+        damage_source = 'damage_perturbation'
         block = '1 3'
     []
 []
@@ -227,10 +233,10 @@
 [Functions]
     [func_spatial_cd]
         type = SpatialDamageBreakageParameters
-        W = 10e3 #half the total width
+        W = 5e3 #half the total width
         w = 5e3
-        max_val = 1e6
-        min_val = 1e-1
+        max_val = 1e2
+        min_val = 1e-3
     []
 []
 
@@ -252,7 +258,7 @@
     [damage_perturbation]
         type = PerturbationRadialSource
         nucl_center = '0 0 0'
-        peak_value = 0.3
+        peak_value = 1.0
         thickness = 200
         length = 2000
         duration = 1.0
@@ -296,7 +302,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve_newbc/static_solve_out.e'
+      mesh = '../static_solve/static_solve_out.e'
       system_variables = 'alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true
@@ -322,7 +328,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 50
         show = 'Cd_aux'
     [../]
 []

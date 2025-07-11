@@ -12,7 +12,7 @@ farmsApp::validParams()
   return params;
 }
 
-farmsApp::farmsApp(InputParameters parameters) : MooseApp(parameters)
+farmsApp::farmsApp(const InputParameters & parameters) : MooseApp(parameters)
 {
   farmsApp::registerAll(_factory, _action_factory, _syntax);
 }
