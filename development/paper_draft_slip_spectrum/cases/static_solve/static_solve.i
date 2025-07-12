@@ -16,7 +16,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -480000 0'
+        coord = '-480000 -480000 0;
+                 480000 -480000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -236,12 +237,12 @@
 
 [BCs]
     # fix bottom boundary
-    [fix_bottom_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = bottom
-        value = 0
-    []
+    # [fix_bottom_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = bottom
+    #     value = 0
+    # []
     #add initial shear stress
     [initial_shear_stress_top]
         type = NeumannBC
@@ -256,7 +257,14 @@
         boundary = top
         value = -50e6
         displacements = 'disp_x disp_y'
-    []   
+    []
+    [static_pressure_bottom]
+        type = NeumannBC
+        variable = disp_y
+        boundary = bottom
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []       
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
