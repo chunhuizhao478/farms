@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 lc_min = 0.0005;
-lc_max = 0.001; // Maximum mesh size
+// lc_max = 0.001; // Maximum mesh size
 
 // Define main cylinder
 // Point(1) = {0, 0, 0, lc};
@@ -36,7 +36,7 @@ EndFor
 // Add physical groups for surfaces
 // You must determine these surface tags (e.g., by using the gmsh GUI)
 // Example:
-Physical Surface("Outer")  = {8};
+Physical Surface("Outer")  = {4,6,8};
 Physical Surface("Inner")  = {9};
 Physical Surface("Top")    = {5};
 Physical Surface("Bottom") = {7};

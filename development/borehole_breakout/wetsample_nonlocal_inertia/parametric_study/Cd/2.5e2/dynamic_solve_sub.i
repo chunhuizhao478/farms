@@ -240,7 +240,7 @@ damageable_block_ids = '3'
     verbose = true
     [TimeStepper]
         type = IterationAdaptiveDT
-        dt = 1
+        dt = 1e-3
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
