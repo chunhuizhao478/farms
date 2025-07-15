@@ -1,2 +1,2 @@
-Constant-gradient stress profile
-Created By Chunhui Zhao, Jul 1, 2025
+Setup similar as TPV26
+Created By Chunhui Zhao, Jul 15th, 2025

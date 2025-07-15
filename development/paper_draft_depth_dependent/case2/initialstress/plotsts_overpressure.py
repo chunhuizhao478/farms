@@ -23,10 +23,10 @@ import matplotlib.pyplot as plt
 # -------------------------------------------------------------------
 # USER‑PARAMETERS
 # -------------------------------------------------------------------
-A = 8_000.0      # (m) depth where the transition *begins*
-B = 10_000.0     # (m) depth where the transition *ends*
-z_max = 15_000.0 # (m) modelling depth
-n_pts = 300      # number of depth samples
+A = 6_000.0      # (m) depth where the transition *begins*
+B = 8_000.0     # (m) depth where the transition *ends*
+z_max = 20_000.0 # (m) modelling depth
+n_pts = 600      # number of depth samples
 
 density_fluid = 1_000.0   # (kg/m³) pore‑fluid density
 rho           = 2_670.0   # (kg/m³) bulk rock density (lithostatic)
@@ -35,13 +35,13 @@ g             = 9.8       # (m/s²) gravitational acceleration
 # Stress coefficients (unchanged)
 b_xx = 0.926793
 b_yy = 1.073206
-b_xy = -0.9
+b_xy = -0.169029
 
 # Friction & cohesion parameters (unchanged)
-mu_s = 0.85           # static friction coefficient
-mu_d = 0.6            # dynamic / residual friction coefficient
-c0   = 0.3e6          # Pa, cohesion at 0–4 km
-dc_dz = 0.000675e6    # Pa/m, cohesion gradient up to 4 km
+mu_s = 0.18           # static friction coefficient
+mu_d = 0.12            # dynamic / residual friction coefficient
+c0   = 0.4e6          # Pa, cohesion at 0–4 km
+dc_dz = 0.00072e6    # Pa/m, cohesion gradient up to 4 km
 
 # -------------------------------------------------------------------
 # DEPTH GRID
@@ -82,25 +82,23 @@ sigma_zz = -rho * g * depths
 # -------------------------------------------------------------------
 # HORIZONTAL & SHEAR STRESSES (same empirical relations)
 # -------------------------------------------------------------------
-mask_coeff = depths <= 15_600.0  # coefficient domain from original file
-sigma_xx = np.where(mask_coeff,
-                    b_xx * (sigma_zz + Pf) - Pf,
-                    sigma_zz)
+# Piecewise definitions
+# Define tapering coefficient Omega(depth)
+Omega = np.ones_like(depths)
+Omega[(depths > 15000) & (depths <= 20000)] = (20000 - depths[(depths > 15000) & (depths <= 20000)]) / 5000
+Omega[depths > 20000] = 0.0
 
-sigma_yy = np.where(mask_coeff,
-                    b_yy * (sigma_zz + Pf) - Pf,
-                    sigma_zz)
-
-sigma_xy = np.where(mask_coeff,
-                    b_xy * (sigma_zz + Pf),
-                    0.0)
+# Piecewise definitions with tapering applied to deviatoric stress
+sigma_xx = np.where(depths <= 15600, Omega * (b_xx * (sigma_zz + Pf) - Pf) + (1 - Omega) * sigma_zz, sigma_zz)
+sigma_yy = np.where(depths <= 15600, Omega * (b_yy * (sigma_zz + Pf) - Pf) + (1 - Omega) * sigma_zz, sigma_zz)
+sigma_xy = np.where(depths <= 15600, Omega * (b_xy * (sigma_zz + Pf)), 0.0)
 
 # -------------------------------------------------------------------
 # COHESION (piecewise as before)
 # -------------------------------------------------------------------
-mask_cohesion = depths <= 4_000.0
+mask_cohesion = depths <= 5_000.0
 c = np.where(mask_cohesion,
-             c0 + dc_dz * (4_000.0 - depths),
+             c0 + dc_dz * (5_000.0 - depths),
              c0)
 
 # -------------------------------------------------------------------

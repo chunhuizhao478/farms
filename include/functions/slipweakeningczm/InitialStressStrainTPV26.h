@@ -34,5 +34,8 @@ public:
   bool _use_tapering; //flag to use tapering in the stress calculation to reduce deviatroic stress components start at a certain depth, default is false
   Real _tapering_depth_A; //depth at which tapering starts to be applied
   Real _tapering_depth_B; //depth at which tapering stops to be applied
+  bool _use_overpressure; //flag to use overpressure in the stress calculation
+  Real _overpressure_depth_A; //depth at which overpressure starts to transition from hydrostatic to lithostatic
+  Real _overpressure_depth_B; //depth at which overpressure stops to transition from hydrostatic to lithostatic
 
 };

@@ -7,9 +7,9 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                       60000 60000  -60000;
                      -60000 60000  -60000'
 
-xmin_fault = -15000 #xmin of fault
-xmax_fault = 15000 #xmax of fault
-zmin_fault = -15000 #zmin of fault
+xmin_fault = -20000 #xmin of fault
+xmax_fault = 20000 #xmax of fault
+zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 ##-------------------------##
@@ -23,16 +23,16 @@ shear_modulus_o = 3.204e10 #second lame constant
 ##-------------------------##
 
 ##Slip weakening parameters##
-Dc = 0.8 #0.4 #characteristic length (m)
+Dc = 0.3 #0.4 #characteristic length (m)
 q = 0.4 #damping ratio
-mu_s = 0.85 #static friction coefficient
-mu_d = 0.6  #dynamic friction coefficient
+mu_s = 0.18 #static friction coefficient
+mu_d = 0.12  #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
-cohesion_depth = 4000 #cohesion depth (m)
-cohesion_slope = 0.000675 #cohesion slope (MPa/m)
-cohesion_min = 0.3 #minimum cohesion value (MPa)
+cohesion_depth = 5000 #cohesion depth (m)
+cohesion_slope = 0.00072 #cohesion slope (MPa/m)
+cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
@@ -40,7 +40,7 @@ xi_0 = -1.1 #strain invariants ratio: onset of damage evolution
 xi_d = -1.1 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = 4e6 #coefficient gives positive damage evolution
+Cd_constant = 0 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
@@ -61,14 +61,19 @@ fluid_density = 1000
 gravity = 9.8
 bxx = 0.926793
 byy = 1.073206
-bxy = -0.85
-cutoff_distance = 15600 #cutoff distance for the depth varying stress
+bxy = -0.169029
+##------------------------------------------------------------------##
+
+##tapering parameters##
+use_tapering = true #use tapering to reduce deviatoric stress components at shallow depth
+tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
+tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = 0 #nucleation center x coordinate
+nucl_center_x = -5000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
-nucl_center_z = -7500 #nucleation center y coordinate
+nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 4000 #critical distance to hypocenter (m)
 Vs = 3464 #shear wave speed (m/s)
 t0 = 0.5 #nucleation time (s)
@@ -77,7 +82,7 @@ t0 = 0.5 #nucleation time (s)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv2053d_100m.msh'
+    file = '../../mesh/tpv26_100m.msh'
   []   
   [./sidesets]
     input = msh
@@ -321,7 +326,7 @@ t0 = 0.5 #nucleation time (s)
 [Functions]
   ###stress field###
   [./func_initial_stress_xx]
-    type = InitialStressStrainCDBMv2
+    type = InitialStressStrainTPV26
     get_initial_stress = true
     i = 1
     j = 1
@@ -333,7 +338,9 @@ t0 = 0.5 #nucleation time (s)
     bxx = ${bxx}
     byy = ${byy}
     bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
   []
   [./func_pos_xx_stress]
     type = CompositeFunction
@@ -347,7 +354,7 @@ t0 = 0.5 #nucleation time (s)
   [../]
   ##
   [./func_initial_stress_xy]
-    type = InitialStressStrainCDBMv2
+    type = InitialStressStrainTPV26
     get_initial_stress = true
     i = 1
     j = 2
@@ -359,7 +366,9 @@ t0 = 0.5 #nucleation time (s)
     bxx = ${bxx}
     byy = ${byy}
     bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
   []
   [./func_pos_xy_stress]
     type = CompositeFunction
@@ -373,7 +382,7 @@ t0 = 0.5 #nucleation time (s)
   [../]
   ##
   [./func_initial_stress_xz]
-    type = InitialStressStrainCDBMv2
+    type = InitialStressStrainTPV26
     get_initial_stress = true
     i = 1
     j = 3
@@ -385,11 +394,13 @@ t0 = 0.5 #nucleation time (s)
     bxx = ${bxx}
     byy = ${byy}
     bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
   []
   ##
   [./func_initial_stress_yy]
-    type = InitialStressStrainCDBMv2
+    type = InitialStressStrainTPV26
     get_initial_stress = true
     i = 2
     j = 2
@@ -401,7 +412,9 @@ t0 = 0.5 #nucleation time (s)
     bxx = ${bxx}
     byy = ${byy}
     bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
   []
   [./func_pos_yy_stress]
     type = CompositeFunction
@@ -415,7 +428,7 @@ t0 = 0.5 #nucleation time (s)
   [../]
   ##
   [./func_initial_stress_yz]
-    type = InitialStressStrainCDBMv2
+    type = InitialStressStrainTPV26
     get_initial_stress = true
     i = 2
     j = 3
@@ -427,10 +440,12 @@ t0 = 0.5 #nucleation time (s)
     bxx = ${bxx}
     byy = ${byy}
     bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
   []
   [./func_initial_stress_zz]
-    type = InitialStressStrainCDBMv2
+    type = InitialStressStrainTPV26
     get_initial_stress = true
     i = 3
     j = 3
@@ -442,7 +457,9 @@ t0 = 0.5 #nucleation time (s)
     bxx = ${bxx}
     byy = ${byy}
     bxy = ${bxy}
-    cutoff_distance = ${cutoff_distance}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
   []
   [./func_pos_zz_stress]
     type = CompositeFunction
@@ -467,7 +484,7 @@ t0 = 0.5 #nucleation time (s)
   solve_type = NEWTON
   type = Steady
 
-  nl_abs_tol = 1E-20
+  nl_abs_tol = 1E-12
   nl_rel_tol = 1E-12
   l_tol = 1E-7
   l_max_its = 200
