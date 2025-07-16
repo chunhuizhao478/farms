@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
 lc_min = 0.0005;
-// lc_max = 0.001; // Maximum mesh size
+lc_max = 0.001; // Maximum mesh size
 
 // Define main cylinder
 // Point(1) = {0, 0, 0, lc};
@@ -60,7 +60,7 @@ Field[1].YAxis   = 0;
 Field[1].ZAxis   = 0;
 Field[1].Radius  = 0.015;         // Same radius as Cylinder(5)
 Field[1].VIn     = lc_min;             // Fine mesh size inside the cylinder field
-Field[1].VOut    = lc_min;           // Coarser mesh size outside the cylinder field
+Field[1].VOut    = lc_max;           // Coarser mesh size outside the cylinder field
 // Field[1].Thickness = 0.01;       // Thickness of the transition region
 
 // Set the background field to use the cylinder field

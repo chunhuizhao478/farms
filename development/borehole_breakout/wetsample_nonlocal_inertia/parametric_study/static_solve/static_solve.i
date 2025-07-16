@@ -160,18 +160,18 @@ damageable_block_ids = '3'
         boundary = 6
         function = applied_load_top
     []
-    [fix_top_x]
-        type = DirichletBC
-        variable = disp_x
-        boundary = 6
-        value = 0
-    []
-    [fix_top_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = 6
-        value = 0
-    []
+    # [fix_top_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     boundary = 6
+    #     value = 0
+    # []
+    # [fix_top_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = 6
+    #     value = 0
+    # []
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]

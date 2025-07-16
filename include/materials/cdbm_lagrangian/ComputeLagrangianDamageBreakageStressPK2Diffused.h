@@ -45,7 +45,7 @@ protected:
   /// @brief Compute D matrix
   virtual void computeDmatrix();
   /// @brief Compute rate dependent Dp
-  virtual void computestatedependentDp();
+  // virtual void computestatedependentDp();
 
   // /// @brief Compute dilatancy function beta
   // virtual void computedilatancyfunction();

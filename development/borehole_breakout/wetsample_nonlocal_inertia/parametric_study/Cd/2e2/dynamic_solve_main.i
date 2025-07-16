@@ -602,18 +602,18 @@ damageable_block_ids = '3'
         boundary = 6
         function = applied_load_top
     [] 
-    [fix_top_x]
-        type = DirichletBC
-        variable = disp_x
-        boundary = 6
-        value = 0
-    []
-    [fix_top_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = 6
-        value = 0
-    []
+    # [fix_top_x]
+    #     type = DirichletBC
+    #     variable = disp_x
+    #     boundary = 6
+    #     value = 0
+    # []
+    # [fix_top_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = 6
+    #     value = 0
+    # []
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]
@@ -635,6 +635,7 @@ damageable_block_ids = '3'
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_BEGIN'
+        sub_cycling = true
         clone_parent_mesh = true
     [../]
 []
@@ -662,7 +663,7 @@ damageable_block_ids = '3'
 [UserObjects]
     [dictator]
         type = PorousFlowDictator
-        porous_flow_vars = 'pp'
+        porous_flow_vars = 'pp disp_x disp_y'
         number_fluid_phases = 1
         number_fluid_components = 1
     []
@@ -672,6 +673,7 @@ damageable_block_ids = '3'
         system_variables = 'disp_x disp_y disp_z pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22 initial_I2_aux initial_xi_aux'
         timestep = LATEST
         force_preaux = true
+        execute_on = 'INITIAL'
     [../]
 []
 
