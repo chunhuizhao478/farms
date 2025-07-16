@@ -7,7 +7,7 @@ dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2e-4 
+l =  1e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -59,7 +59,7 @@ hht_alpha = 0.11
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture_l2em4.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -85,6 +85,14 @@ hht_alpha = 0.11
   displacements = 'disp_x disp_y'
 []
 
+#initial damage box 1
+bottom_left1 = '-0.0025 -2e-4 0'
+top_right1 = '0.0025 2e-4 0'
+
+#initial damage box 2
+bottom_left2 = '-2e-4 -0.0025 0'
+top_right2 = '2e-4 0.0025 0'
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
@@ -96,6 +104,22 @@ hht_alpha = 0.11
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 1
+    input = extranodeset1
+  []
+  [./subdomain_id2]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left2}
+    top_right = ${top_right2}
+    location = INSIDE
+    block_id = 1
+    input = subdomain_id
   []
   displacements = 'disp_x disp_y'
 []
@@ -229,7 +253,7 @@ hht_alpha = 0.11
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -371,7 +395,7 @@ hht_alpha = 0.11
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
   [checkpoint]

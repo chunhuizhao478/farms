@@ -229,7 +229,7 @@ hht_alpha = 0.11
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -371,7 +371,7 @@ hht_alpha = 0.11
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
   [checkpoint]

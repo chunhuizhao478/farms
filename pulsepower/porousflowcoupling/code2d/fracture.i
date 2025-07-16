@@ -1,8 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d_coarse.msh'
-    # file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -10,14 +9,6 @@
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
-  []
-  [./subdomain_id]
-    type = SubdomainBoundingBoxGenerator
-    bottom_left = '-0.03 -0.002 0'
-    top_right = '0.03 0.002 0'
-    location = INSIDE
-    block_id = 1
-    input = extranodeset1
   []
 []
 
@@ -76,34 +67,14 @@
     order = CONSTANT
     family = MONOMIAL
   []
-  [initial_damage_aux]
-    family = LAGRANGE
-    order = FIRST
-  []
-[]
-
-[AuxKernels]
-  [define_initial_damage_block1]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 0.9
-    block = 1
-  []
-  [define_initial_damage_block0]
-    type = ConstantAux
-    variable = initial_damage_aux
-    value = 0
-    block = '4 5'
-  []
 []
 
 [Bounds]
-  [irreversibility_first_step]
-    type = VariableConstantIrreversibleBounds
+  [irreversibility]
+    type = VariableOldValueBounds
     variable = bounds_dummy
     bounded_variable = d
     bound_type = lower
-    bound_value = initial_damage_aux
   []
   [upper]
     type = ConstantBounds
@@ -132,16 +103,16 @@
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l Gc'
-    prop_values = '${l} ${Gc_const}'
+    prop_names = 'l'
+    prop_values = '${l}'
   []
-  # [Gc_var]
-  #   type = ADParsedMaterial
-  #   property_name = Gc
-  #   coupled_variables = 'Gc_var'
-  #   expression = 'Gc_var'
-  #   # outputs = exodus
-  # []
+  [Gc_var]
+    type = ADParsedMaterial
+    property_name = Gc
+    coupled_variables = 'Gc_var'
+    expression = 'Gc_var'
+    # outputs = exodus
+  []
   [degradation]
     type = PowerDegradationFunction
     property_name = g
@@ -188,22 +159,22 @@
   print_linear_residuals = false
 []
 
-# [Distributions]
-#   #typically for granite
-#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-#   [weibull]
-#     type = Weibull
-#     shape = 15.0 #k
-#     scale = ${Gc_const} #lambda
-#     location = 0 
-#   []
-# [] 
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 15.0 #k
+    scale = ${Gc_const} #lambda
+    location = 0 
+  []
+[] 
 
-# [ICs]
-#   [./gc_var]
-#     type =  RandomIC
-#     variable = Gc_var
-#     distribution = weibull
-#   []
-# []
+[ICs]
+  [./gc_var]
+    type =  RandomIC
+    variable = Gc_var
+    distribution = weibull
+  []
+[]

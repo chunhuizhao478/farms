@@ -3,7 +3,7 @@
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
-ft = 25.5e6 # tensile strength, Pa
+ft = 68.46e6 # tensile strength, Pa
 solid_density = 2600 # kg/m^3 
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
@@ -77,31 +77,6 @@ hht_alpha = 0
 #   []
 # []
 
-[MultiApps]
-  [fracture]
-    type = TransientMultiApp
-    input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
-    execute_on = 'TIMESTEP_END'
-    clone_parent_mesh = true
-  []
-[]
-
-[Transfers]
-  [from_d]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'fracture'
-    variable = d
-    source_variable = d
-  []
-  [to_psie_active]
-    type = MultiAppCopyTransfer
-    to_multi_app = 'fracture'
-    variable = 'psie_active mesh_size'
-    source_variable = 'psie_active mesh_size'
-  []
-[]
-
 [GlobalParams]
   displacements = 'disp_x disp_y'
   PorousFlowDictator = dictator #All porous modules must contain
@@ -137,13 +112,17 @@ hht_alpha = 0
     order = FIRST
     family = LAGRANGE  
   []
+  [nonlocal_eqstrain]
+    order = FIRST
+    family = LAGRANGE
+  []
 []
 
 [AuxVariables]
   [fy]
   []
   [d]
-    family = LAGRANGE
+    family = MONOMIAL
     order = FIRST
   []
   #err measurement of active strain energy
@@ -190,6 +169,11 @@ hht_alpha = 0
     family = MONOMIAL
     order = FIRST
   []
+  #
+  [./strength]
+    order = CONSTANT
+    family = MONOMIAL
+  [../]  
 []
 
 [AuxKernels]
@@ -261,6 +245,13 @@ hht_alpha = 0
     row = 0
     column = 1
     variable = effective_perm01_aux
+  []
+  #damage
+  [get_damage_aux]
+    type = MaterialRealAux
+    property = crack_damage
+    variable = d
+    execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
@@ -338,7 +329,22 @@ hht_alpha = 0
       variable = pp
       multiply_by_density = false
       gravity = '0 0 0'
-  []  
+  [] 
+  # gradient based nonlocal averaging
+  [react_nonlocal]
+    type = Reaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+  []
+  [diffusion_nonlocal]
+    type = CoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = 16e-8 #1e-4
+  []
+  [reaction_local]
+    type = ElkLocalEqstrainForce
+    variable = nonlocal_eqstrain
+  [] 
 []
 
 [BCs]
@@ -419,32 +425,13 @@ hht_alpha = 0
     prop_names = 'K G'
     prop_values = '${K} ${G}'
   []
-  [elasticity]
-    type = NDSmallDeformationIsotropicElasticity
-    # material property names
-    ##---------------------------------------------##
-    bulk_modulus = K
-    shear_modulus = G
-    phase_field = d
-    strain_energy_density = psie
-    strain_energy_density_active = psie_active
-    strain_energy_density_derivative = dpsie_dd
-    degradation_function = g
-    degradation_function_derivative = dg_dd
-    degradation_function_second_derivative = d2g_dd2
-    ##---------------------------------------------##
-    # decomposition type
-    ##---------------------------------------------##
-    decomposition = SPECTRAL
-    ##---------------------------------------------##
-    # model type
-    ##---------------------------------------------##
-    model_type = AT1
-    ##---------------------------------------------##
-    # constants
-    ##---------------------------------------------##
-    eta = 1e-6
-    output_properties = 'elastic_strain psie_active'
+  [stress]
+    type = FarmsComputeSmearedCrackingStressGrads
+    paramA = 0.99
+    paramB = 100
+    eqstrain_nonlocal = nonlocal_eqstrain
+    cracking_stress = strength
+    output_properties = 'crack_damage stress'
     outputs = exodus
     ##---------------------------------------------##
     # porous flow coupling
@@ -456,12 +443,6 @@ hht_alpha = 0
     wc = ${wc}
     perm_exponent = ${perm_exponent}
     ##---------------------------------------------##
-  []
-  [stress]
-    type = NDComputeSmallDeformationStress ###
-    elasticity_model = elasticity
-    output_properties = 'stress'
-    outputs = exodus
   []
   #solid properties
   ##-------------------------------------------------------------------------##
@@ -555,16 +536,6 @@ hht_alpha = 0
     thermal_expansion = 0
     viscosity = ${viscosity}
   []
-[]
-
-#this user object must contain for porous flow
-[UserObjects]
-  [dictator]
-    type = PorousFlowDictator
-    porous_flow_vars = 'pp disp_x disp_y'
-    number_fluid_phases = 1
-    number_fluid_components = 1
-  []
   [./init_sol_components]
     type = SolutionUserObject
     mesh = ./static_solve_out.e
@@ -574,24 +545,13 @@ hht_alpha = 0
   [../]
 []
 
-[ICs]
-  [disp_x_ic]
-    type = SolutionIC
-    variable = disp_x
-    solution_uo = init_sol_components
-    from_variable = disp_x
-  []
-  [disp_y_ic]
-    type = SolutionIC
-    variable = disp_y
-    solution_uo = init_sol_components
-    from_variable = disp_y
-  []
-  [pp_ic]
-    type = SolutionIC
-    variable = pp
-    solution_uo = init_sol_components
-    from_variable = pp
+#this user object must contain for porous flow
+[UserObjects]
+  [dictator]
+    type = PorousFlowDictator
+    porous_flow_vars = 'pp disp_x disp_y'
+    number_fluid_phases = 1
+    number_fluid_components = 1
   []
 []
 
@@ -664,5 +624,43 @@ hht_alpha = 0
       type = Checkpoint
       time_step_interval = 100
       num_files = 2
+  []
+[]
+
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 15.0 #k
+    scale = ${ft} #lambda
+    location = 0 
+  []
+[] 
+
+[ICs]
+  [./strength_var]
+    type =  RandomIC
+    variable = strength
+    distribution = weibull
+  []
+  [disp_x_ic]
+    type = SolutionIC
+    variable = disp_x
+    solution_uo = init_sol_components
+    from_variable = disp_x
+  []
+  [disp_y_ic]
+    type = SolutionIC
+    variable = disp_y
+    solution_uo = init_sol_components
+    from_variable = disp_y
+  []
+  [pp_ic]
+    type = SolutionIC
+    variable = pp
+    solution_uo = init_sol_components
+    from_variable = pp
   []
 []
