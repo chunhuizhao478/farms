@@ -59,7 +59,7 @@ hht_alpha = 0.11
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture3.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -96,7 +96,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -377,7 +377,7 @@ top_right2 = '2e-4 0.0025 0'
   end_time = 10e-5
 
   fixed_point_max_its = 10
-  accept_on_max_fixed_point_iteration = false
+  accept_on_max_fixed_point_iteration = true
   fixed_point_rel_tol = 1e-6
   fixed_point_abs_tol = 1e-8
 

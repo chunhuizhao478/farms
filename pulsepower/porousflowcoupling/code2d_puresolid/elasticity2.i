@@ -365,17 +365,21 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
+  line_search = 'basic'
 
-  nl_rel_tol = 1e-8
-  nl_abs_tol = 1e-10
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-8
+
+  # Add more iterations before failure
+  nl_max_its = 30
 
   # dt = 0.5e-7
   end_time = 10e-5
 
   fixed_point_max_its = 10
-  accept_on_max_fixed_point_iteration = false
-  fixed_point_rel_tol = 1e-8
-  fixed_point_abs_tol = 1e-10
+  accept_on_max_fixed_point_iteration = true
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
@@ -395,7 +399,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 100
+  time_step_interval = 20
   print_linear_residuals = false
   csv = true
   [checkpoint]
