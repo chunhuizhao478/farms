@@ -7,8 +7,8 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                       60000 60000  -60000;
                      -60000 60000  -60000'
 
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -15000 #xmin of fault
+xmax_fault = 15000 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
@@ -71,7 +71,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -5000 #nucleation center x coordinate
+nucl_center_x = -10000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 4000 #critical distance to hypocenter (m)
@@ -82,7 +82,7 @@ t0 = 0.5 #nucleation time (s)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m.msh'
+    file = '../../mesh/tpv26_100m_cutstrike.msh'
   []   
   [./sidesets]
     input = msh
