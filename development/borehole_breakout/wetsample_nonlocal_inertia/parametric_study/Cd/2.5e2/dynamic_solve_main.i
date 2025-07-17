@@ -663,7 +663,7 @@ damageable_block_ids = '3'
 [UserObjects]
     [dictator]
         type = PorousFlowDictator
-        porous_flow_vars = 'pp disp_x disp_y'
+        porous_flow_vars = 'pp disp_x disp_y disp_z'
         number_fluid_phases = 1
         number_fluid_components = 1
     []
