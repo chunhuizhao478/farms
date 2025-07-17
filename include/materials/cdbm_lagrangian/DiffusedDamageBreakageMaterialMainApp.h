@@ -31,6 +31,8 @@ public:
   virtual void computegammar(); //compute gamma_r
   virtual void updatedamagebreakage(); //update damage variable and breakage variable
   virtual void updatemodulus(); //update modulus
+  virtual void updateporosolid(); //update poroelastic proeperties for solid material
+  virtual void updateporogranular(); //update poroelastic proeperties for granular material
   virtual void computecoefficients(); //compute coefficients: a0 a1 a2 a3
   virtual Real alphacr_root1(Real xi); //compute alpha_cr
   virtual void buildLmatrix(); //build L matrix
@@ -50,6 +52,19 @@ protected:
   MaterialProperty<Real> & _a1; //a1
   MaterialProperty<Real> & _a2; //a2
   MaterialProperty<Real> & _a3; //a3
+  MaterialProperty<Real> & _Biot_coeff_s; //Biot_coefficient_solid
+  MaterialProperty<Real> & _Biot_coeff_g; //Biot_coefficient_granular
+  MaterialProperty<Real> & _Biot_modulus_s; //Biot_modulus_solid
+  MaterialProperty<Real> & _Biot_modulus_g; //Biot_modulus_granular
+  MaterialProperty<Real> & _biot_coeff_eff; //_biot_coeff_eff
+  MaterialProperty<Real> & _Biot_modulus_eff; //Biot_modulus_eff
+  MaterialProperty<Real> & _fluid_solid_coupling; //Fluid_solid_coupling term
+  MaterialProperty<Real> & _perm_s; //permeability_solid
+  MaterialProperty<Real> & _perm_g; //permeability_granular
+  MaterialProperty<Real> & _perm_cr; //permeability_critical
+  MaterialProperty<Real> & _phi_cr; //critical porosity
+  MaterialProperty<Real> & _phi_p; // plastic porosity
+  MaterialProperty<Real> & _fluid_viscosity; // fluid_viscosity
   MaterialProperty<Real> & _C_g; //Cg
   MaterialProperty<Real> & _m1; //m1
   MaterialProperty<Real> & _m2; //m2
@@ -68,6 +83,15 @@ protected:
   Real _C_g_value; //Cg
   Real _m1_value; //m1
   Real _m2_value; //m2
+  Real _permeability_solid_o; //permeability_solid_o
+  Real _solid_bulk_modulus_s; //solid_bulk_modulus_solid_o
+  Real _solid_bulk_modulus_g; //solid_bulk_modulus_granular_o
+  Real _fluid_bulk_modulus; //fluid_bulk_modulus
+  Real _porosity_solid_o; //initial prosoity of solid phase
+  Real _initial_viscosity_fluid; //initial _initial_viscosity_fluid
+  Real _b; //permeability evolution with damage
+  Real _DHo; //initial grain size
+  Real _DHu; //ultimate grain size
 
   //input coupled variables from main app
   const VariableValue & _alpha_damagedvar_aux; //alpha_damagedvar
@@ -81,6 +105,19 @@ protected:
   const VariableGradient & _grad_vel_x;
   const VariableGradient & _grad_vel_y;
   const VariableGradient & _grad_vel_z;
+
+  /// First Elastic Strain Invariant
+  const MaterialProperty<Real> & _I1;
+  /// Second Elastic Strain Invariant
+  const MaterialProperty<Real> & _xi;
+  /// Plastic Jacobian
+  const MaterialProperty<Real> & _Jp;
+  /// Plastic strain rate tensor
+  const MaterialProperty<RankTwoTensor> & _Dp;
+  /// Plastic strain rate old tensor
+  const MaterialProperty<RankTwoTensor> & _Dp_old;
+  /// Plastic porosity old
+  const MaterialProperty<Real> & _phi_p_old;
 
   //use spatial cg
   bool _use_spatial_cg; //use spatial cg

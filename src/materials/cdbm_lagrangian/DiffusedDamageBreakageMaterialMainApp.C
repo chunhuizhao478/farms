@@ -21,22 +21,32 @@ DiffusedDamageBreakageMaterialMainApp::validParams()
   InputParameters params = Material::validParams();
   params.addClassDescription("Material used in three field poro dynamics simulations");
   //input parameters
-  params.addRequiredParam<Real>(        "lambda_o", "initial lambda constant value");
-  params.addRequiredParam<Real>( "shear_modulus_o", "initial shear modulus value");
-  params.addRequiredParam<Real>(            "xi_0", "strain invariants ratio: onset of damage evolution");
-  params.addRequiredParam<Real>(            "xi_d", "strain invariants ratio: onset of breakage healing");
-  params.addRequiredParam<Real>(             "chi", "coefficient of energy ratio Fb/Fs = chi < 1");
-  params.addRequiredParam<Real>(             "C_g", "compliance or fluidity of the fine grain granular material");
-  params.addRequiredParam<Real>(              "m1", "coefficient of power law indexes");
-  params.addRequiredParam<Real>(              "m2", "coefficient of power law indexes");  
+  params.addParam<Real>(                   "lambda_o", "initial lambda constant value");
+  params.addParam<Real>(            "shear_modulus_o", "initial shear modulus value");
+  params.addParam<Real>(                       "xi_0", "strain invariants ratio: onset of damage evolution");
+  params.addParam<Real>(                       "xi_d", "strain invariants ratio: onset of breakage healing");
+  params.addParam<Real>(                        "chi", "coefficient of energy ratio Fb/Fs = chi < 1");
+  params.addParam<Real>(                        "C_g", "compliance or fluidity of the fine grain granular material");
+  params.addParam<Real>(                         "m1", "coefficient of power law indexes");
+  params.addParam<Real>(                         "m2", "coefficient of power law indexes");
+  //input for poroelastic material evolution  
+  params.addParam<Real>(         "permeability_solid_o", "permeability of solid meterial");
+  params.addParam<Real>(         "initial_viscosity_fluid", "fluid viscosity");
+  params.addParam<Real>(         "solid_bulk_modulus_s", "solid bulk modulus of solid grains");
+  params.addParam<Real>(         "solid_bulk_modulus_g", "solid bulk modulus of granular material");
+  params.addParam<Real>(         "fluid_bulk_modulus", "fluid bulk modulus"); 
+  params.addParam<Real>(         "porosity_solid_o", "initial prosoity of solid phase"); 
+  params.addParam<Real>(         "permeability_evolution_with_damage", "parameter for permeability evolution with damage"); 
+  params.addParam<Real>(         "initial_grain_size", "initial harmonic mean grain size"); 
+  params.addParam<Real>(         "ultimate_grain_size", "ultimate harmonic mean grain size"); 
   //input coupled variables from main app
-  params.addRequiredCoupledVar("structural_stress_coefficient", "structral_stress_coefficient");
-  params.addRequiredCoupledVar("alpha_damagedvar_aux", "second_elastic_strain_invariant");
-  params.addRequiredCoupledVar("B_damagedvar_aux", "strain_invariant_ratio");
+  params.addCoupledVar("structural_stress_coefficient", "structral_stress_coefficient");
+  params.addCoupledVar("alpha_damagedvar_aux", "second_elastic_strain_invariant");
+  params.addCoupledVar("B_damagedvar_aux", "strain_invariant_ratio");
   //build L matrix
-  params.addRequiredCoupledVar(           "vel_x", "velocity in x direction"); //to build L matrix
-  params.addRequiredCoupledVar(           "vel_y", "velocity in y direction"); //to build L matrix
-  params.addRequiredCoupledVar(           "vel_z", "velocity in z direction"); //to build L matrix  
+  params.addCoupledVar(           "vel_x", "velocity in x direction"); //to build L matrix
+  params.addCoupledVar(           "vel_y", "velocity in y direction"); //to build L matrix
+  params.addCoupledVar(           "vel_z", "velocity in z direction"); //to build L matrix  
   //use spatial cg
   params.addParam<bool>("use_spatial_cg", false, "use spatial cg");
   params.addCoupledVar("cg_aux", "cg_aux");
@@ -46,9 +56,9 @@ DiffusedDamageBreakageMaterialMainApp::validParams()
   params.addParam<Real>("const_B", -1.0,"Constant B value, B = b * sigma_N");
   params.addParam<Real>("const_theta_o", -1.0,"Constant theta_o value");
   params.addParam<Real>("initial_theta0", -1.0,"Initial theta0 value");
+  params.addParam<std::string>("base_name", "", "Optional parameter for multiple material systems");
   return params;
 }
-
 DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(const InputParameters & parameters)
   : Material(parameters),
   //declare properties
@@ -63,6 +73,19 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   _a1(declareProperty<Real>("a1")),
   _a2(declareProperty<Real>("a2")),
   _a3(declareProperty<Real>("a3")),
+  _Biot_coeff_s(declareProperty<Real>("Biot_coefficient_solid")),
+  _Biot_coeff_g(declareProperty<Real>("Biot_coefficient_granular")),
+  _Biot_modulus_s(declareProperty<Real>("Biot_modulus_solid")),
+  _Biot_modulus_g(declareProperty<Real>("Biot_modulus_granular")),
+  _biot_coeff_eff(declareProperty<Real>("biot_coefficient_effective")),
+  _Biot_modulus_eff(declareProperty<Real>("Biot_modulus_effective")),
+  _fluid_solid_coupling(declareProperty<Real>("fluid_solid_coupling")),
+  _perm_s(declareProperty<Real>("permeability_solid")),
+  _perm_g(declareProperty<Real>("permeability_granular")),
+  _perm_cr(declareProperty<Real>("permeability_critical")),
+  _phi_cr(declareProperty<Real>("porosity_critical")),
+  _phi_p(declareProperty<Real>("plastic_porosity")),
+  _fluid_viscosity(declareProperty<Real>("viscosity_fluid")),
   _C_g(declareProperty<Real>("C_g")),
   _m1(declareProperty<Real>("m1")),
   _m2(declareProperty<Real>("m2")), 
@@ -81,6 +104,15 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   _C_g_value(getParam<Real>("C_g")),
   _m1_value(getParam<Real>("m1")),
   _m2_value(getParam<Real>("m2")),
+  _permeability_solid_o(getParam<Real>("permeability_solid_o")),
+  _solid_bulk_modulus_s(getParam<Real>("solid_bulk_modulus_s")),
+  _solid_bulk_modulus_g(getParam<Real>("solid_bulk_modulus_g")),
+  _fluid_bulk_modulus(getParam<Real>("fluid_bulk_modulus")),
+  _porosity_solid_o(getParam<Real>("porosity_solid_o")),
+  _initial_viscosity_fluid(getParam<Real>("initial_viscosity_fluid")),
+  _b(getParam<Real>("permeability_evolution_with_damage")),
+  _DHo(getParam<Real>("initial_grain_size")),
+  _DHu(getParam<Real>("ultimate_grain_size")),
   _alpha_damagedvar_aux(coupledValue("alpha_damagedvar_aux")),
   _B_damagedvar_aux(coupledValue("B_damagedvar_aux")),
   _structural_stress_coefficient_aux(coupledValue("structural_stress_coefficient")),
@@ -89,6 +121,14 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   _grad_vel_x(coupledGradient("vel_x")),
   _grad_vel_y(coupledGradient("vel_y")),
   _grad_vel_z(coupledGradient("vel_z")),
+  //---------------------------------------------------------------//
+  //Invariants, Jp and Dp - USE OLD VALUES TO BREAK CYCLIC DEPENDENCY
+  _I1(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "first_elastic_strain_invariant")),
+  _xi(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "strain_invariant_ratio")),
+  _Jp(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "plastic_deformation_gradient_det")),
+  _Dp(getMaterialPropertyOldByName<RankTwoTensor>(getParam<std::string>("base_name") + "plastic_strain_rate")),
+  _Dp_old(getMaterialPropertyOlderByName<RankTwoTensor>(getParam<std::string>("base_name") + "plastic_strain_rate")),
+  _phi_p_old(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "plastic_porosity")),
   //---------------------------------------------------------------//
   //use spatial cg
   _use_spatial_cg(getParam<bool>("use_spatial_cg")),
@@ -130,6 +170,10 @@ DiffusedDamageBreakageMaterialMainApp::initQpStatefulProperties()
   /* compute coefficients: a0 a1 a2 a3 */
   computecoefficients();
 
+  /* compute: biot moduli and coefficients and permeabilities */
+  updateporosolid();
+  updateporogranular();
+
   /* compute L matrix */
   buildLmatrix();
 
@@ -146,6 +190,8 @@ DiffusedDamageBreakageMaterialMainApp::initQpStatefulProperties()
 
   _m1[_qp] = _m1_value;
   _m2[_qp] = _m2_value;
+
+  _phi_p[_qp] = 0.0;
 }
 
 void
@@ -162,6 +208,10 @@ DiffusedDamageBreakageMaterialMainApp::computeQpProperties()
 
   /* compute coefficients: a0 a1 a2 a3 */
   computecoefficients();
+
+  /* compute: biot moduli and coefficients and permeabilities */
+  updateporosolid();
+  updateporogranular();
 
   /* compute L matrix */
   buildLmatrix();
@@ -264,6 +314,132 @@ DiffusedDamageBreakageMaterialMainApp::computecoefficients()
   _a3[_qp] = a3;
 
 }
+
+
+void
+DiffusedDamageBreakageMaterialMainApp::updateporosolid()
+{
+  // Get strain invariants
+  Real I1 = _I1[_qp];
+  Real xi = _xi[_qp];
+
+  // Get damage/breakage variables
+  Real alpha_damage = _alpha_damagedvar[_qp];
+  Real B_breakage = _B_damagedvar[_qp];
+
+  // Solid bulk modulus (constant for solid grains)
+  Real K_s = _solid_bulk_modulus_s;
+  
+  // Fluid bulk modulus
+  Real K_f = _fluid_bulk_modulus;
+  
+  // Compute drained bulk modulus K_d
+  Real K_d = _lambda[_qp] + (2.0/3.0) * _shear_modulus[_qp] - (2.0/3.0) * _damaged_modulus[_qp] * xi;
+  
+  // Compute Biot coefficient for solid phase
+  Real alpha_s = 1.0 - K_d/K_s;
+  
+  // Compute porosity evolution for solid phase
+  Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1);
+  
+   // Compute Biot modulus for solid phase
+  Real one_over_Storage = (K_s*K_f)/(porosity_s * K_f + (alpha_s - porosity_s) * K_s);
+  
+  // Compute permeability for solid phase
+  Real perm_s = _permeability_solid_o * pow(porosity_s/_porosity_solid_o, 3.0) * exp(_b * alpha_damage);
+  
+  // Save solid phase properties
+  _Biot_coeff_s[_qp] = alpha_s;
+  _Biot_modulus_s[_qp] = one_over_Storage;
+  _perm_s[_qp] = (1 - B_breakage) * perm_s;
+
+  // Compute critical damage value
+  Real alpha_cr = alphacr_root1(xi);
+
+  // Determine critical porosity and permeability based on damage state
+  const Real tolerance = 1e-10;  // Small tolerance for floating point comparison
+
+  if (std::abs(_alpha_damagedvar[_qp] - alpha_cr) < tolerance) {
+    // At critical damage: use current solid phase properties
+    _phi_cr[_qp] = porosity_s;
+    _perm_cr[_qp] = perm_s;
+  } else {
+    // Below critical damage: use initial solid properties
+    _phi_cr[_qp] = _porosity_solid_o;
+    _perm_cr[_qp] = _permeability_solid_o;
+  }
+  
+}
+
+void
+DiffusedDamageBreakageMaterialMainApp::updateporogranular()
+{
+  // Get strain invariants 
+  Real I1 = _I1[_qp];
+  Real xi = _xi[_qp];
+
+  // Get damage/breakage variables
+  Real alpha_damage = _alpha_damagedvar[_qp];
+  Real B_breakage = _B_damagedvar[_qp];
+
+  // Fluid bulk modulus
+  Real K_f = _fluid_bulk_modulus;
+
+  // Solid bulk modulus (constant for solid grains)
+  Real K_s_solid = _solid_bulk_modulus_s;
+
+  // Solid bulk modulus after crushing
+  Real K_s_crushed = _solid_bulk_modulus_g;
+  
+  // Compute damaged bulk modulus for granular phase
+  // K_d^granular includes damage effects
+  Real K_d_granular = 2 * _a2[_qp] + _a3[_qp] * (6.0 - (4.0/3.0) *  pow(xi, 2.0)) * xi 
+               + (2.0/3.0) * _a0[_qp] - (2.0/3.0) * _a1[_qp] * xi;
+
+  // Solid bulk modulus for granular material 
+  Real K_s_granular = (1 - B_breakage) * K_s_solid + B_breakage * K_s_crushed;
+
+  // Compute Biot coefficient for granular phase
+  Real alpha_g = 1.0 - K_d_granular/K_s_granular;
+
+  // Compute elastic porosity evolution 
+  Real porosity_e = 1 - (1 - _porosity_solid_o) * exp(-I1);
+
+  // Compute plastic porosity evolution 
+  Real dporosity_pdt_new = (1 - _phi_p[_qp]) * _Dp[_qp].trace();
+  Real dporosity_pdt_old = (1 - _phi_p_old[_qp]) * _Dp_old[_qp].trace();
+
+  Real porosity_p = _phi_p_old[_qp] + 0.5 * _dt * (dporosity_pdt_old + dporosity_pdt_new);
+
+  // Compute total porosity
+  Real porosity = porosity_e + porosity_e;
+
+  // Compute Biot modulus for solid phase
+  Real one_over_Storage = (K_s_granular*K_f)/(porosity * K_f + (alpha_g - porosity) * K_s_granular);
+
+  // Compute harmonic mean grain size for current distribution
+  Real DH = (1 - B_breakage) * _DHo + B_breakage * _DHu;
+
+ // Compute permeability for solid phase
+  // k = k_cr * (φ/φ_0)^n * (DH/DH_0)^2  where n is typically 3
+  Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0) * pow(DH/_DHo, 2.0);
+
+  // Save granular phase properties
+  _Biot_coeff_g[_qp] = alpha_g;
+  _Biot_modulus_g[_qp] = one_over_Storage;
+  _phi_p[_qp] = porosity_p;
+  _perm_g[_qp] = B_breakage * perm_g;
+
+  Real term22 = (1 - B_breakage) * _Biot_coeff_s[_qp] * _Biot_modulus_s[_qp] + B_breakage * _Biot_coeff_g[_qp] * _Biot_modulus_g[_qp];
+  Real term33 = (1 - B_breakage) * _Biot_modulus_s[_qp] + B_breakage * _Biot_modulus_g[_qp];
+
+  _Biot_modulus_eff[_qp] = term33;
+  _fluid_solid_coupling[_qp] = term22 / term33;
+  _biot_coeff_eff[_qp] = term22 / term33;
+  _fluid_viscosity[_qp] = _initial_viscosity_fluid;
+
+}
+
 
 // Function for alpha_func_root1
 Real 

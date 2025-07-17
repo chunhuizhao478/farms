@@ -3,12 +3,15 @@
     [./msh]
         type = FileMeshGenerator
         file = '../meshfile/mesh_adaptive.msh'
+        show_info = true
     [] 
+
 []
 
 [GlobalParams]
 
     displacements = 'disp_x disp_y disp_z'
+    porepressure = 'porepressure'
       
     ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
@@ -35,6 +38,27 @@
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
 
+    # Water bulk modulus (2.2 GPa)
+    fluid_bulk_modulus = 2.2e9      
+
+     # Initial permeability (1 milli-darcy) 
+    permeability_solid_o = 1e-20 
+
+     # Initial porosity (15%)
+    porosity_solid_o = 0.008   
+     
+     # Granular bulk modulus (15 GPa)      
+    solid_bulk_modulus_g = 50.38e9 
+
+    # Solid grains bulk modulus (36 GPa - typical for quartz)  
+    solid_bulk_modulus_s = 50.00e9 
+
+    permeability_evolution_with_damage = 3
+    initial_grain_size = 1.3
+    ultimate_grain_size = 0.25
+    initial_viscosity_fluid = 1e-3
+    
+
 []
 
 
@@ -51,6 +75,11 @@
         order = FIRST
         family = LAGRANGE
     []
+    [porepressure]
+        order = FIRST
+        family = LAGRANGE
+    []
+    
 []
 
 [AuxVariables]
@@ -200,25 +229,37 @@
 []
 
 [Kernels]
-    [dispkernel_x]
-        type = TotalLagrangianStressDivergence
+    [grad_stress_x]
+        type = TotalLagrangianTotalStressDivergence
         variable = disp_x
         component = 0
         large_kinematics = true
     []
-    [dispkernel_y]
-        type = TotalLagrangianStressDivergence
+    [grad_stress_y]
+        type = TotalLagrangianTotalStressDivergence
         variable = disp_y
         component = 1
         large_kinematics = true
     []
-    [dispkernel_z]
-        type = TotalLagrangianStressDivergence
+    [grad_stress_z]
+        type = TotalLagrangianTotalStressDivergence
         variable = disp_z
         component = 2
         large_kinematics = true
     []
-    #
+    [./mass1]
+        type = FluidSolidCoupling
+        variable = porepressure
+    [../]
+    [./mass2]
+        type = PorePressureTimeDerivative
+        variable = porepressure
+    [../]
+    [./darcy_flow]
+        type = FluidDiffusion
+        variable = porepressure
+        large_kinematics = false
+    []
     [./inertia_x]
         type = InertialForce
         variable = disp_x
@@ -284,8 +325,12 @@
         youngs_modulus = 48.5e9
         poissons_ratio = 0.22
     []
+    [porous_prop]
+        type =   IntactPorousSolidProperties
+        block = '1 2'
+    []
     [compute_stress]
-        type = ComputeStVenantKirchhoffStress
+        type = ComputePoroStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
         outputs = exodus
@@ -324,13 +369,6 @@
     []
 []
 
-#18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
-[Functions]
-    [applied_load_top]
-        type = ParsedFunction
-        expression = '-2.6477e-5 - 3.3e-7 * t'
-    []
-[]
 
 [Preconditioning]
     [smp]
@@ -394,6 +432,15 @@
     []
 []
 
+#18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
+[Functions]
+    [applied_load_top]
+        type = ParsedFunction
+        expression = '-2.6477e-5 - 3.3e-7 * t'
+    []
+[]
+
+
 [BCs]
     #fix bottom boundary
     [fix_bottom_x]
@@ -425,8 +472,17 @@
     [./Pressure]
         [./outer_boundary]
           boundary = 4
-          factor = 17.2e6
+          #factor = 17.2e6
+          factor = 20.6e6
           displacements = 'disp_x disp_y'
+        [../]
+    []
+    [./PorePressure]
+        [./inner_boundary]
+          type = FunctionDirichletBC
+          boundary = 5
+          variable = porepressure
+          function = 3.4e6
         [../]
     []
 []
@@ -463,7 +519,7 @@
     [./init_sol_components]
       type = SolutionUserObject
       mesh = '../static_solve/static_solve_out.e'
-      system_variables = 'disp_x disp_y disp_z initial_xi_aux initial_I2_aux'
+      system_variables = 'disp_x disp_y disp_z porepressure initial_xi_aux initial_I2_aux'
       timestep = LATEST
       force_preaux = true
       execute_on = 'INITIAL'
@@ -500,6 +556,12 @@
       variable = I2_aux
       solution_uo = init_sol_components
       from_variable = initial_I2_aux
+    []  
+    [pore_pressure_aux_ic]
+      type = SolutionIC
+      variable = porepressure
+      solution_uo = init_sol_components
+      from_variable = porepressure
     []  
 []
 

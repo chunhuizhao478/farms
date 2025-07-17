@@ -54,6 +54,22 @@ protected:
 
 protected:
   /* Declare Material Properties */
+  /// Pore pressure value
+  const VariableValue & _pore_pressure;
+  /// Pore pressure value old
+  const VariableValue & _pore_pressure_old;
+  /// off diagnoal jacobian of PK1 with respect to pore pressure
+  MaterialProperty<RankTwoTensor> & _pk1_off_diag_jacobian;
+  /// derivative of the lagrarangian strain with respect to deformation gradient
+  MaterialProperty<RankTwoTensor> & _dI1dF;
+  /// derivative of the plastic jacobian with respect to deformation gradient
+  MaterialProperty<RankTwoTensor> & _dJpdF;
+  /// derivative of the plastic jacobian with respect to pore pressure
+  MaterialProperty<Real> & _dJpdp;
+  /// derivative of the plastic deformation rate with respect to deformation gradient
+  MaterialProperty<RankFourTensor> & _dDpdF;
+  /// derivative of the plastic deformation rate with respect to pores pressure
+  MaterialProperty<RankTwoTensor> & _dDpdp;
   /// Plastic Deformation Gradient
   MaterialProperty<RankTwoTensor> & _Fp;
   /// Determinant of Plastic Deformation Gradient
@@ -88,12 +104,21 @@ protected:
   MaterialProperty<RankTwoTensor> & _F_dot;
   /// Total Strain (Total Strain Rate)
   MaterialProperty<RankTwoTensor> & _D;
+  /// Boolean flag to enable dilatancy effects
+  const bool _use_dilatancy;
   // Plastic Volume Change
   MaterialProperty<Real> & _eta;
+  /// Plastic Volume Change old
+  const MaterialProperty<Real> & _eta_old;
   // Dilatancy Function
   MaterialProperty<Real> & _dilatancy_function_beta;
   // Shear-rate 
-  MaterialProperty<Real> & _shear_rate_nu;
+  MaterialProperty<RankTwoTensor> & _shear_rate_nu;
+  /// Anand model parameters
+  Real _anand_param_go_mat;
+  Real _anand_param_eta_cv_mat;
+  Real _anand_param_p_mat;
+
   // Deviatroic Strain Rate
   MaterialProperty<Real> & _deviatroic_strain_rate;
 
@@ -118,8 +143,6 @@ protected:
   const MaterialProperty<RankTwoTensor> & _F_old;
   /// Plastic Strain
   const MaterialProperty<RankTwoTensor> & _Ep_old;
-  /// Plastic Volume Change
-  const MaterialProperty<Real> & _eta_old;
   
   /* Get Constant Parameters */
   /// material parameter: compliance or fluidity of the fine grain granular material
@@ -133,6 +156,11 @@ protected:
   const MaterialProperty<Real> & _a1;
   const MaterialProperty<Real> & _a2;
   const MaterialProperty<Real> & _a3;  
+  /// poroelastic parameters 
+  const MaterialProperty<Real> & _Biot_coeff_s;
+  const MaterialProperty<Real> & _Biot_coeff_g;
+  const MaterialProperty<Real> & _Biot_modulus_s;  
+  const MaterialProperty<Real> & _Biot_modulus_g;
   /// dimension of the problem
   //const unsigned int _dim;
 

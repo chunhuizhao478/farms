@@ -1,21 +1,27 @@
-#implicit continuum damage-breakage model dynamics
 [Mesh]
-    [./msh]
-        type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
-    [] 
+  type = GeneratedMesh
+  dim = 3
+  nx = 10 
+  ny = 1
+  nz = 1
+  xmin = 0
+  xmax = 1
+  ymin = 0
+  ymax = 0.1
+  zmin = 0
+  zmax = 1
 []
 
 [GlobalParams]
-    
-    ##----continuum damage breakage model----##
-    #initial lambda value (first lame constant) [Pa]
-    lambda_o = 15.62e9
-        
-    #initial shear modulus value (second lame constant) [Pa]
-    shear_modulus_o = 19.92e9
-    
-    #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
+
+  ##----continuum damage breakage model----##
+  #initial lambda value (first lame constant) [Pa]
+  lambda_o = 0.5
+      
+  #initial shear modulus value (second lame constant) [Pa]
+  shear_modulus_o = 0.75
+  
+   #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8073
     
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
@@ -31,12 +37,12 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 80
+    Cd_constant = -1
 
     #strain rate dependent Cd options
-    # m_exponent = 0.8
-    # strain_rate_hat = 1e-4
-    # cd_hat = 10
+    m_exponent = 0.8
+    strain_rate_hat = 1e-4
+    cd_hat = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -56,8 +62,8 @@
 
     #diffusion parameter #close the gradient
     D_diffusion = 0
-
 []
+
 
 #this sub-app solves damage/breakage evolution equations
 [Variables]
@@ -124,13 +130,11 @@
         type = DamageEvolutionDiffusion
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
-        block = '3'
     []
     [forcing_term_alpha]
         type = DamageEvolutionConditionalForcing
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
-        block = '3'
     []
     #breakagevar
     [time_derivative_B]
@@ -141,7 +145,6 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
-        block = '3'
     []
 []
 
@@ -183,7 +186,7 @@
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
-        use_cd_strain_dependent = false
+        use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
@@ -194,44 +197,47 @@
     []
 [] 
 
-[Preconditioning]
-    [smp]
-      type = SMP
-      full = true
-    []
+[Postprocessors]
+  [dt]
+    type = FunctionValuePostprocessor
+    outputs = console
+    function = if(0.15*t<0.01,0.15*t,0.01)
+  []
 []
-  
+
+
+[Preconditioning]
+  [andy]
+    type = SMP
+    full = true
+  []
+[]
+
 [Executioner]
-    type = Transient
-    solve_type = 'NEWTON'
+  type = Transient
+  solve_type = PJFNK
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-8
     nl_max_its = 10
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-    petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+    petsc_options_iname = '-snes_type'
+    petsc_options_value = 'vinewtonrsls'
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 10
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
-        growth_factor = 1.25
-        max_time_step_bound = 100
-    []
-    [./TimeIntegrator]
+  end_time = 0.001
+  [TimeStepper]
+    type = PostprocessorDT
+    postprocessor = dt
+    dt = 0.001
+  []
+  [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
         # type = CrankNicolson
-    [../]
+  [../]
 []
 
 [Outputs]
-    [./exodus]
-        type = Exodus
-        time_step_interval = 50
-        # show = 'Cd_aux'
-    [../]
+  exodus = true
 []
