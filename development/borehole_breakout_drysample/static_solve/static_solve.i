@@ -57,29 +57,29 @@
     
 []
 
-#[AuxVariables]
- #   [initial_I2_aux]
-  #      order = FIRST
-   #     family = MONOMIAL
-    #[]
-    #[initial_xi_aux]
-   #     order = FIRST
-  #      family = MONOMIAL
- #   []
-#[]
+[AuxVariables]
+    [initial_I2_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [initial_xi_aux]
+        order = FIRST
+        family = MONOMIAL
+   []
+[]
 
-#[AuxKernels]
-  #  [get_initial_I2]
-  #      type = MaterialRealAux
-  #      variable = initial_I2_aux
-  #      property = I2_initial
-  #  []
- #   [get_initial_xi]
- #       type = MaterialRealAux
- #       variable = initial_xi_aux
- #       property = xi_initial
- #   []
-#[]
+[AuxKernels]
+    [get_initial_I2]
+        type = MaterialRealAux
+        variable = initial_I2_aux
+        property = I2_initial
+    []
+    [get_initial_xi]
+        type = MaterialRealAux
+        variable = initial_xi_aux
+        property = xi_initial
+    []
+[]
 
 [Kernels]
     [grad_stress_x]
