@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -242,7 +242,7 @@
         sigma_divisor = 2.0
         # output_properties = 'shear_stress_perturbation damage_perturbation'
         # outputs = exodus
-    []
+    [] 
 [] 
 
 [Preconditioning]

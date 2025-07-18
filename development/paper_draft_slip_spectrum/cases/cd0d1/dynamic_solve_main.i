@@ -233,7 +233,19 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []      
+    []
+    [./damping_x]
+        type = LagrangianStiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.1 # ratio factor for stiffness proportional damping 
+    []
+    [./damping_y]
+        type = LagrangianStiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.1 # ratio factor for stiffness proportional damping
+    []
 []
 
 [Functions]

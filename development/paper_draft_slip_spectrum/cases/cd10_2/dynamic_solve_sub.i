@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -46,7 +46,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    #Cd_constant = -1
+    Cd_constant = -1
 
     #strain rate dependent Cd options
     m_exponent = 0.8
@@ -242,7 +242,7 @@
         sigma_divisor = 2.0
         # output_properties = 'shear_stress_perturbation damage_perturbation'
         # outputs = exodus
-    []
+    [] 
 [] 
 
 [Preconditioning]

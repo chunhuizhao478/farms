@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -15,7 +15,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -480000 0'
+        coord = '-480000 -480000 0;
+                 480000 -480000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -232,6 +233,18 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
+    []
+    [./damping_x]
+        type = LagrangianStiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.1 # ratio factor for stiffness proportional damping 
+    []
+    [./damping_y]
+        type = LagrangianStiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.1 # ratio factor for stiffness proportional damping
     []      
 []
 
@@ -340,9 +353,9 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 150
+        length_scale = 300
         prop_name = strain_invariant_ratio
-        radius = 150
+        radius = 300
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -358,7 +371,7 @@
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y'
+    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y'
     start_time = -1e-12
     end_time = 1e-2 # dt used in the simulation
   []
@@ -387,7 +400,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 100
+    end_time = 1e5
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -413,7 +426,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
-        max_time_step_bound = 1e7
+        max_time_step_bound = 100
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
@@ -432,7 +445,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 100
+      time_step_interval = 1000
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
@@ -443,12 +456,12 @@
 
 [BCs]
     # fix bottom boundary
-    [fix_bottom_y]
-        type = DirichletBC
-        variable = disp_y
-        boundary = bottom
-        value = 0
-    []
+    # [fix_bottom_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = bottom
+    #     value = 0
+    # []
     #add initial shear stress
     [initial_shear_stress_top]
         type = NeumannBC
@@ -463,7 +476,14 @@
         boundary = top
         value = -50e6
         displacements = 'disp_x disp_y'
-    []   
+    []
+    [static_pressure_bottom]
+        type = NeumannBC
+        variable = disp_y
+        boundary = bottom
+        value = 50e6
+        displacements = 'disp_x disp_y'
+    []       
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
@@ -514,6 +534,34 @@
         accelerations = 'accel_x accel_y'
         component = 1
         boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+   [damp_bottom_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = bottom
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_bottom_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = bottom
         beta = 0.25
         gamma = 0.5
         shear_wave_speed = 3464
