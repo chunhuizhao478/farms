@@ -8,7 +8,7 @@ solid_density = 2600 # kg/m^3
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  4e-4 # length scale, m
+l =  1e-4 # length scale, m
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -107,10 +107,18 @@ hht_alpha = 0
   PorousFlowDictator = dictator #All porous modules must contain
 []
 
+#initial damage box 1
+bottom_left1 = '-0.0025 -2e-4 0'
+top_right1 = '0.0025 2e-4 0'
+
+#initial damage box 2
+bottom_left2 = '-2e-4 -0.0025 0'
+top_right2 = '2e-4 0.0025 0'
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -118,6 +126,22 @@ hht_alpha = 0
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 1
+    input = extranodeset1
+  []
+  [./subdomain_id2]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left2}
+    top_right = ${top_right2}
+    location = INSIDE
+    block_id = 1
+    input = subdomain_id
   []
   displacements = 'disp_x disp_y'
 []
@@ -277,7 +301,7 @@ hht_alpha = 0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 80e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -568,7 +592,7 @@ hht_alpha = 0
   [./init_sol_components]
     type = SolutionUserObject
     mesh = ./static_solve_out.e
-    system_variables = 'disp_x disp_y disp_z pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
     timestep = LATEST
     force_preaux = true
   [../]
@@ -626,9 +650,10 @@ hht_alpha = 0
   # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
+  line_search = 'basic'
 
-  nl_rel_tol = 1e-8
-  nl_abs_tol = 1e-10
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-8
   nl_max_its = 50
 
   # dt = 0.5e-7
@@ -636,8 +661,8 @@ hht_alpha = 0
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
-  fixed_point_rel_tol = 1e-8
-  fixed_point_abs_tol = 1e-10
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
