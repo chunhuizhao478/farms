@@ -396,6 +396,14 @@ top_right2 = '2e-4 0.0025 0'
     boundary = corner_ptr
     value = 0
   []
+  #fix pressure
+  [./fix_pressure]
+    type = DirichletBC
+    variable = pp
+    boundary = 3
+    value = ${initial_pore_pressure}
+    use_displaced_mesh = false
+  []
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
