@@ -57,29 +57,29 @@
     
 []
 
-[AuxVariables]
-    [initial_I2_aux]
-        order = FIRST
-        family = MONOMIAL
-    []
-    [initial_xi_aux]
-        order = FIRST
-        family = MONOMIAL
-   []
-[]
+#[AuxVariables]
+ #   [initial_I2_aux]
+  #      order = FIRST
+   #     family = MONOMIAL
+   # []
+   # [initial_xi_aux]
+   #     order = FIRST
+   #     family = MONOMIAL
+   #[]
+#[]
 
-[AuxKernels]
-    [get_initial_I2]
-        type = MaterialRealAux
-        variable = initial_I2_aux
-        property = I2_initial
-    []
-    [get_initial_xi]
-        type = MaterialRealAux
-        variable = initial_xi_aux
-        property = xi_initial
-    []
-[]
+#[AuxKernels]
+ #   [get_initial_I2]
+  #      type = MaterialRealAux
+   #     variable = initial_I2_aux
+    #    property = I2_initial
+  #  []
+   # [get_initial_xi]
+    #    type = MaterialRealAux
+    #    variable = initial_xi_aux
+    #    property = xi_initial
+   # []
+#[]
 
 [Kernels]
     [grad_stress_x]
@@ -129,14 +129,9 @@
     [compute_stress]
         type = ComputePoroStVenantKirchhoffStress
         large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
-
     []
     [comp_strain_invariant_ratio]
         type = ComputeXi 
-        output_properties = 'strain_invariant_ratio'
-        outputs = exodus
     []
     [porous_prop]
         type =   IntactPorousSolidProperties
@@ -161,7 +156,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 40
     nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -172,39 +167,39 @@
   #  automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
-    # dt = 10
+     dt = 4.048
     verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 6
-        growth_factor = 1.25
-        max_time_step_bound = 6
-    []
+   # [TimeStepper]
+   #     type = FarmsIterationAdaptiveDT
+   #     dt = 1
+   #     cutback_factor_at_failure = 0.5
+   #     optimal_iterations = 6
+   #     growth_factor = 1.25
+   #     max_time_step_bound = 6
+   # []
 []
 
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1 ###
-    [../]
-    [./csv]
-        type = CSV
         time_step_interval = 1
     [../]
-    [checkpoint]
-        type = Checkpoint
-        time_step_interval = 20
-        num_files = 2
-    []
+ #   [./csv]
+ #       type = CSV
+  #      time_step_interval = 1
+  #  [../]
+  #  [checkpoint]
+  #      type = Checkpoint
+ #       time_step_interval = 20
+#        num_files = 2
+  #  []
 []
 
 [Functions]
   # 1. Axial Stress Function
   [axial_stress_function]
     type = ParsedFunction
-    expression = 'if(t <= 1236, 1e6 + 16666.667*t, 21.6e6)'
+    expression = 'if(t <= 1236, - 1e6 - 16666.667*t, -21.6e6)'
   []
 
   # 2. Confining Stress Function
@@ -216,7 +211,7 @@
   # 3. Pore Pressure Function
   [pore_pressure_function]
     type = ParsedFunction
-    expression = 'if(t < 408, 0, if(t <= 1236, 4106.28*t, 3.4e6))'
+    expression = 'if(t < 408, 0, if(t <= 1236, 4106.28*(t-408), 3.4e6))'
   []
 []
 
