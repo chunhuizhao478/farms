@@ -351,7 +351,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporosolid()
   // Save solid phase properties
   _Biot_coeff_s[_qp] = alpha_s;
   _Biot_modulus_s[_qp] = one_over_Storage;
-  _perm_s[_qp] = (1 - B_breakage) * perm_s;
+  _perm_s[_qp] = (1 - B_breakage) * perm_s/_initial_viscosity_fluid;
 
   // Compute critical damage value
   Real alpha_cr = alphacr_root1(xi);
@@ -428,7 +428,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporogranular()
   _Biot_coeff_g[_qp] = alpha_g;
   _Biot_modulus_g[_qp] = one_over_Storage;
   _phi_p[_qp] = porosity_p;
-  _perm_g[_qp] = B_breakage * perm_g;
+  _perm_g[_qp] = B_breakage * perm_g /_initial_viscosity_fluid;
 
   Real term22 = (1 - B_breakage) * _Biot_coeff_s[_qp] * _Biot_modulus_s[_qp] + B_breakage * _Biot_coeff_g[_qp] * _Biot_modulus_g[_qp];
   Real term33 = (1 - B_breakage) * _Biot_modulus_s[_qp] + B_breakage * _Biot_modulus_g[_qp];

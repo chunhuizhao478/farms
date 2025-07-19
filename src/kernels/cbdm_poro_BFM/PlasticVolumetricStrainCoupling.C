@@ -31,7 +31,7 @@ PlasticVolumetricStrainCoupling::PlasticVolumetricStrainCoupling(const InputPara
     _Dp(getMaterialProperty<RankTwoTensor>(getParam<std::string>("base_name") + "plastic_strain_rate")),
     _dJp_dF(getMaterialProperty<RankTwoTensor>(getParam<std::string>("base_name") + "plastic_jacobian_derivative")),
     _dJp_dp(getMaterialProperty<Real>(getParam<std::string>("base_name") + "plastic_jacobian_derivative_pressure")),
-    _dDp_dF(getMaterialProperty<RankFourTensor>(getParam<std::string>("base_name") + "plastic_strain_rate_derivative")),
+    _dDp_dF(getMaterialProperty<RankFourTensor>(getParam<std::string>("base_name") + "plastic_deformation_rate_derivative")),
     _dDp_dp(getMaterialProperty<RankTwoTensor>(getParam<std::string>("base_name") + "plastic_deformation_rate_derivative_pressure"))
 {
   // Get displacement variable numbers for off-diagonal Jacobian

@@ -166,7 +166,7 @@
   #  automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
-     dt = 4.048
+     dt = 2.024
     verbose = true
    # [TimeStepper]
    #     type = FarmsIterationAdaptiveDT
