@@ -156,51 +156,6 @@
 []
 
 [AuxKernels]
-    [accel_x]
-        type = NewmarkAccelAux
-        variable = accel_x
-        displacement = disp_x
-        velocity = vel_x
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
-    [vel_x]
-        type = NewmarkVelAux
-        variable = vel_x
-        acceleration = accel_x
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_y]
-        type = NewmarkAccelAux
-        variable = accel_y
-        displacement = disp_y
-        velocity = vel_y
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
-    [vel_y]
-        type = NewmarkVelAux
-        variable = vel_y
-        acceleration = accel_y
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []
-    [accel_z]
-        type = NewmarkAccelAux
-        variable = accel_z
-        displacement = disp_z
-        velocity = vel_z
-        beta = 0.25
-        execute_on = 'TIMESTEP_END'
-    []
-    [vel_z]
-        type = NewmarkVelAux
-        variable = vel_z
-        acceleration = accel_z
-        gamma = 0.5
-        execute_on = 'TIMESTEP_END'
-    []  
     #
     [get_xi]
         type = MaterialRealAux
@@ -260,51 +215,9 @@
         variable = porepressure
         large_kinematics = false
     []
-    [./darcy_flow_granular]
-        type = FluidDiffusionGranular
-        variable = porepressure
-        block = '3'
-    []
-    [./plastic_volumetric]
-        type = PlasticVolumetricStrainCoupling
-        variable = porepressure
-        block = '3'
-    []
-    [./inertia_x]
-        type = InertialForce
-        variable = disp_x
-        acceleration = accel_x
-        velocity = vel_x
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
-    [./inertia_y]
-        type = InertialForce
-        variable = disp_y
-        acceleration = accel_y
-        velocity = vel_y
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []    
-    [./inertia_z]
-        type = InertialForce
-        variable = disp_z
-        acceleration = accel_z
-        velocity = vel_z
-        beta = 0.25
-        gamma = 0.5
-        eta = 0
-    []
 []
 
 [Materials]
-    [density]
-        type = GenericConstantMaterial
-        prop_names = 'density'
-        prop_values = '2640'
-    []
     [strain]
         type = ComputeLagrangianStrain
         large_kinematics = true
@@ -419,9 +332,7 @@
         max_time_step_bound = 10
     []
     [./TimeIntegrator]
-        type = NewmarkBeta
-        beta = 0.25
-        gamma = 0.5
+        type = ImplicitEuler
     [../]
 []
 
