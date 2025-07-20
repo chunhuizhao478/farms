@@ -525,7 +525,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_out.e'
+      mesh = '../static_solve/static_solve_exodus.e'
       system_variables = 'disp_x disp_y disp_z porepressure initial_xi_aux initial_I2_aux'
       timestep = LATEST
       force_preaux = true
