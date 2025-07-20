@@ -260,6 +260,16 @@
         variable = porepressure
         large_kinematics = false
     []
+    [./darcy_flow_granular]
+        type = FluidDiffusionGranular
+        variable = porepressure
+        block = '3'
+    []
+    [./plastic_volumetric]
+        type = PlasticVolumetricStrainCoupling
+        variable = porepressure
+        block = '3'
+    []
     [./inertia_x]
         type = InertialForce
         variable = disp_x
@@ -419,7 +429,7 @@
     [./exodus]
         type = Exodus
         time_step_interval = 1 ###
-        show = 'vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
+        show = 'disp_x disp_y disp_z porepressure vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
         type = CSV
@@ -436,7 +446,7 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-2.6477e-5 - 3.3e-7 * t'
+        expression = '-3.3e-5 - 3.3e-7 * t'
     []
 []
 
@@ -472,18 +482,15 @@
     [./Pressure]
         [./outer_boundary]
           boundary = 4
-          #factor = 17.2e6
           factor = 20.6e6
           displacements = 'disp_x disp_y'
         [../]
     []
     [./PorePressure]
-        [./inner_boundary]
           type = FunctionDirichletBC
           boundary = 5
           variable = porepressure
           function = 3.4e6
-        [../]
     []
 []
 
