@@ -81,7 +81,7 @@ BreakageEvolutionConditionalForcing::computebreakageevolutionforcingterm()
   if ( _xi[_qp] < _xi_0[_qp] && _xi[_qp] >= _xi_min[_qp] ){ alphacr = 1.0;} 
   else if ( _xi[_qp] > _xi_0[_qp] && _xi[_qp] <= _xi_1[_qp] ){ alphacr = alphacr_root1(_xi[_qp]);}
   else if ( _xi[_qp] > _xi_1[_qp] && _xi[_qp] <= _xi_max[_qp] ){ alphacr = alphacr_root2(_xi[_qp]);}
-  else{std::cout<<"xi: "<<_xi[_qp]<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
+  // else{std::cout<<"xi: "<<_xi[_qp]<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
 
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha[_qp]) / _beta_width[_qp] ) + 1.0 );
@@ -111,7 +111,7 @@ BreakageEvolutionConditionalForcing::computebreakageevolutionforcingterm_derivat
   if ( _xi[_qp] < _xi_0[_qp] && _xi[_qp] >= _xi_min[_qp] ){ alphacr = 1.0;} 
   else if ( _xi[_qp] > _xi_0[_qp] && _xi[_qp] <= _xi_1[_qp] ){ alphacr = alphacr_root1(_xi[_qp]);}
   else if ( _xi[_qp] > _xi_1[_qp] && _xi[_qp] <= _xi_max[_qp] ){ alphacr = alphacr_root2(_xi[_qp]);}
-  else{std::cout<<"xi: "<<_xi[_qp]<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
+  // else{std::cout<<"xi: "<<_xi[_qp]<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
 
   //compute forcing func
   Real Prob = 1.0 / ( std::exp( (alphacr - _alpha[_qp]) / _beta_width[_qp] ) + 1.0 );
@@ -141,7 +141,7 @@ BreakageEvolutionConditionalForcing::computebreakageevolutionforcingterm_derivat
   if ( _xi[_qp] < _xi_0[_qp] && _xi[_qp] >= _xi_min[_qp] ){ alphacr = 1.0;} 
   else if ( _xi[_qp] > _xi_0[_qp] && _xi[_qp] <= _xi_1[_qp] ){ alphacr = alphacr_root1(_xi[_qp]);}
   else if ( _xi[_qp] > _xi_1[_qp] && _xi[_qp] <= _xi_max[_qp] ){ alphacr = alphacr_root2(_xi[_qp]);}
-  else{std::cout<<"xi: "<<_xi[_qp]<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
+  // else{std::cout<<"xi: "<<_xi[_qp]<<std::endl; mooseError("xi exceeds the maximum allowable range!");}
 
   // Here we assume that the derivative of the logistic function is the only α-dependence.
   // The derivative of 1/(exp((alphacr-α)/β)+1) with respect to α is
