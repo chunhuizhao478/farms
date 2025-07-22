@@ -215,6 +215,16 @@
         variable = porepressure
         large_kinematics = false
     []
+    [./darcy_flow_granular]
+        type = FluidDiffusionGranular
+        variable = porepressure
+        block = '3'
+    []
+    [./plastic_volumetric]
+        type = PlasticVolumetricStrainCoupling
+        variable = porepressure
+        block = '3'
+    []
 []
 
 [Materials]
@@ -357,7 +367,7 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = '-3.3e-5 - 3.3e-7 * t'
+        expression = ' -3.3e-7 * t'
     []
 []
 
