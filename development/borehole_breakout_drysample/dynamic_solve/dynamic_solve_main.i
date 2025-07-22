@@ -367,7 +367,7 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        expression = ' -3.3e-7 * t'
+        expression = '-3.3e-5 - 3.3e-7 * t'
     []
 []
 
