@@ -62,6 +62,19 @@ protected:
   const VariableValue & _disp_slipweakening_z_old;
   const VariableValue & _disp_slipweakening_neighbor_z_old;
 
+  // Define material properties for slip/slip rate
+  MaterialProperty<Real> & _displacement_jump_strike; 
+  MaterialProperty<Real> & _displacement_jump_dip;
+  MaterialProperty<Real> & _displacement_jump_normal;
+  MaterialProperty<Real> & _displacement_jump_rate_strike;
+  MaterialProperty<Real> & _displacement_jump_rate_dip;
+  MaterialProperty<Real> & _displacement_jump_rate_normal;
+
+  // Define material properties for collecting total shear/normal traction
+  MaterialProperty<Real> & _traction_strike;
+  MaterialProperty<Real> & _traction_dip;
+  MaterialProperty<Real> & _traction_normal;
+
   // Initial shear stress tensor
   const MaterialProperty<RankTwoTensor> & _static_initial_stress_tensor;
 

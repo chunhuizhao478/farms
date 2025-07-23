@@ -76,6 +76,15 @@ SlipWeakeningFrictionczm3dCDBM::SlipWeakeningFrictionczm3dCDBM(const InputParame
     _disp_slipweakening_neighbor_y_old(coupledNeighborValueOld("disp_slipweakening_y")),
     _disp_slipweakening_z_old(coupledValueOld("disp_slipweakening_z")),
     _disp_slipweakening_neighbor_z_old(coupledNeighborValueOld("disp_slipweakening_z")),
+    _displacement_jump_strike(declareProperty<Real>("displacement_jump_strike")),
+    _displacement_jump_dip(declareProperty<Real>("displacement_jump_dip")),
+    _displacement_jump_normal(declareProperty<Real>("displacement_jump_normal")),
+    _displacement_jump_rate_strike(declareProperty<Real>("displacement_jump_rate_strike")),
+    _displacement_jump_rate_dip(declareProperty<Real>("displacement_jump_rate_dip")),
+    _displacement_jump_rate_normal(declareProperty<Real>("displacement_jump_rate_normal")),
+    _traction_strike(declareProperty<Real>("traction_strike")),
+    _traction_dip(declareProperty<Real>("traction_dip")),
+    _traction_normal(declareProperty<Real>("traction_normal")),
     _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>(_base_name + "static_initial_stress_tensor")),
     _use_forced_rupture(getParam<bool>("use_forced_rupture")),
     _t0(getParam<Real>("t0")),
@@ -245,6 +254,22 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     T1 = tau_f * T1 / std::sqrt(T1 * T1 + T3 * T3);
     T3 = tau_f * T3 / std::sqrt(T1 * T1 + T3 * T3);
   }
+
+
+  // Save displacement jump in local coordinate
+  _displacement_jump_strike[_qp] = displacement_jump_t; // strike direction
+  _displacement_jump_dip[_qp] = displacement_jump_d; // dip direction
+  _displacement_jump_normal[_qp] = displacement_jump_n; // normal direction
+
+  // Save displacement jump rate in local coordinate
+  _displacement_jump_rate_strike[_qp] = displacement_jump_rate_t; // strike direction
+  _displacement_jump_rate_dip[_qp] = displacement_jump_rate_d; // dip direction
+  _displacement_jump_rate_normal[_qp] = displacement_jump_rate_n; // normal direction
+
+  // Save traction in local coordinate
+  _traction_strike[_qp] = T1; // strike direction
+  _traction_normal[_qp] = T2; // normal direction
+  _traction_dip[_qp] = T3;  // dip direction  
 
   // Assign back traction in CZM
   RealVectorValue traction(T2 + T2_o, -T1 + T1_o, -T3 + T3_o);
