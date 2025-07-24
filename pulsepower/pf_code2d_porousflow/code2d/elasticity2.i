@@ -80,7 +80,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -294,7 +294,7 @@ top_right2 = '2e-4 0.0025 0'
     shape_param_alpha = 4.658e5
     shape_param_beta = 4.661e5
     rise_time = 3e-6
-    single_pulse_duration = 1e-5
+    single_pulse_duration = 2e-5 #double the duration
     EM = 0.03
     gap = 0.001
     convert_efficiency = 1.0
@@ -665,7 +665,7 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 10e-5
+  end_time = 20e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
