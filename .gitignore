@@ -454,3 +454,7 @@ pulsepower/porousflowcoupling/code2d/elasticity_checkpoint_cp/0220-mesh.cpa.gz/1
 pulsepower/porousflowcoupling/code2d/elasticity_checkpoint_cp/0220-mesh.cpa.gz/1/split-1-0.gz
 pulsepower/porousflowcoupling/code2d/elasticity_checkpoint_cp/0240-mesh.cpa.gz/1/header.gz
 pulsepower/porousflowcoupling/code2d/elasticity_checkpoint_cp/0240-mesh.cpa.gz/1/split-1-0.gz
+pulsepower/smeared_code2d_puresolid/gbased/elasticity_checkpoint_cp/0100-mesh.cpa.gz/1/header.gz
+pulsepower/smeared_code2d_puresolid/gbased/elasticity_checkpoint_cp/0100-mesh.cpa.gz/1/split-1-0.gz
+pulsepower/smeared_code2d_puresolid/gbased/elasticity_checkpoint_cp/0200-mesh.cpa.gz/1/header.gz
+pulsepower/smeared_code2d_puresolid/gbased/elasticity_checkpoint_cp/0200-mesh.cpa.gz/1/split-1-0.gz
