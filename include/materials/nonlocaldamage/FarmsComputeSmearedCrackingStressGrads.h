@@ -48,11 +48,9 @@ protected:
    */
   void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
 
-  /**
-   * Update the local elasticity tensor (_local_elasticity_tensor)
-   * due to the effects of cracking.
-   */
-  // void updateLocalElasticityTensor();
+  // @{ add additional functions for porous flow coupling
+  virtual void updatePermeabilityForCracking();
+  // @}
 
   ///@{ Input parameters for smeared crack models
 
@@ -88,5 +86,25 @@ protected:
   Real _paramA;
   Real _paramB;
   ///@}
+
+  ///initial damage for crack_damage material property
+  const VariableValue & _initial_crack_damage;
+
+  //porous flow coupling related parameters
+  const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
+  const Real _intrinsic_permeability;
+
+  /// @brief define the effective permeability
+  MaterialProperty<RealTensorValue> & _effective_perm;
+  const MaterialProperty<RealTensorValue> & _effective_perm_old; 
+
+  // Exponential permeability model
+  const bool _exponential_permeability_model; // flag to indicate if exponential permeability model is used
+  const Real _coeff_b; // coefficient for the exponential function in the effective permeability
+
+  // Darcy-Poiseuille permeability model
+  const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
+  const Real _wc; // characteristic width for the Darcy-Poiseuille model
+  const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
 
 };

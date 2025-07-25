@@ -268,7 +268,7 @@ hht_alpha = 0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 80e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -356,14 +356,7 @@ hht_alpha = 0
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
-    []
-    #assign pressure on outer surface
-    [static_pressure_outer]
-      boundary = 1
-      factor = ${confinement_pressure}
-      displacements = 'disp_x disp_y'
-      use_displaced_mesh = false
-    []              
+    []             
   []   
   # fix ptr
   [./fix_cptr1_x]
@@ -392,7 +385,7 @@ hht_alpha = 0
     alpha = ${hht_alpha}
     shear_wave_speed = ${Cs}
     p_wave_speed = ${Cp}
-    density = ${solid_density}
+    density = ${density}
   []
   [damp_outer_y]
     type = FarmsNonReflectDashpotBC
@@ -407,7 +400,7 @@ hht_alpha = 0
     alpha = ${hht_alpha}
     shear_wave_speed = ${Cs}
     p_wave_speed = ${Cp}
-    density = ${solid_density}
+    density = ${density}
   []
 []
 

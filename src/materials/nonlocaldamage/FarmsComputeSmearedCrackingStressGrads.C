@@ -39,6 +39,27 @@ FarmsComputeSmearedCrackingStressGrads::validParams()
   params.addRequiredParam<Real>("paramA", "parameter used in the damage evolution law");
   params.addRequiredParam<Real>("paramB", "parameter used in the damage evolution law");
   params.set<std::vector<MaterialName>>("inelastic_models") = {};
+
+  //add initial damage
+  params.addRequiredCoupledVar(
+      "initial_crack_damage",
+      "Initial damage for crack_damage material property");
+  
+  params.addParam<bool>("porous_flow_coupling", false, "Enable porous flow coupling");
+  params.addParam<Real>("intrinsic_permeability", 5e-19, "Intrinsic permeability in m^2");
+  //Permeability models
+  //Exponential permeability model
+  params.addParam<bool>("exponential_permeability_model", false,
+                        "Use an exponential function for the effective permeability");
+  params.addParam<Real>("coeff_b", -1.0,
+                        "Coefficient for the exponential function in the effective permeability");
+  //Darcy-Poiseuille permeability model
+  params.addParam<bool>("darcy_poiseuille_permeability_model",
+                        false,
+                        "Use Darcy-Poiseuille model for the effective permeability");
+  params.addParam<Real>("wc", -1.0, "ultimate crack width for Darcy-Poiseuille model");
+  params.addParam<Real>("perm_exponent", -1.0,
+                        "Exponent for the Darcy-Poiseuille model for the effective permeability");
   return params;
 }
 
@@ -55,14 +76,28 @@ FarmsComputeSmearedCrackingStressGrads::FarmsComputeSmearedCrackingStressGrads(c
     _crack_rotation(declareProperty<RankTwoTensor>(_base_name + "crack_rotation")),
     _crack_rotation_old(getMaterialPropertyOld<RankTwoTensor>(_base_name + "crack_rotation")),
     _paramA(getParam<Real>("paramA")),
-    _paramB(getParam<Real>("paramB"))
+    _paramB(getParam<Real>("paramB")),
+    _initial_crack_damage(coupledValue("initial_crack_damage")),
+    //porous flow coupling
+    _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
+    _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
+    // define effective permeability
+    _effective_perm(declareProperty<RealTensorValue>("effective_perm")),
+    _effective_perm_old(getMaterialPropertyOldByName<RealTensorValue>("effective_perm")),
+    // Exponential permeability model
+    _exponential_permeability_model(getParam<bool>("exponential_permeability_model")),
+    _coeff_b(getParam<Real>("coeff_b")),
+    // Darcy-Poiseuille permeability model
+    _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
+    _wc(getParam<Real>("wc")),
+    _perm_exponent(getParam<Real>("perm_exponent"))
 {
 }
 
 void
 FarmsComputeSmearedCrackingStressGrads::initQpStatefulProperties()
 {
-  _crack_damage[_qp] = 0.0;
+  _crack_damage[_qp] = _initial_crack_damage[_qp];
   _eqstrain_local[_qp] = 0.0;
   _kappa[_qp] = 0.0;
   _crack_rotation[_qp] = RankTwoTensor::Identity();
@@ -99,6 +134,20 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
     Real arg2 = 1 - _paramA + _paramA * arg1;
     omega = 1.0 - eps0 / kappa * arg2;
   }
+
+  // irreversible crack damage, set to initial damage if it is smaller
+  if (omega < _initial_crack_damage[_qp])
+  {
+    omega = _initial_crack_damage[_qp];
+  }
+
+  // Ensure damage is non-decreasing (enforce irreversibility)
+  if (omega < _crack_damage_old[_qp])
+  {
+    omega = _crack_damage_old[_qp];
+  }
+
+  //save the damage
   _crack_damage[_qp] = omega;
 
   // (5) Build consistent tangent and stress
@@ -106,39 +155,49 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
   const RankTwoTensor  & eps = _elastic_strain[_qp];
   RankTwoTensor De_eps = De * eps;
 
-  // // (6a) dω/dκ from exponential law
-  // Real domega_dk = 0.0;
-  // if (kappa > eps0 + 1e-12)    // tiny epsilon to avoid exact-zero division
-  // {}
+ // (6a) dω/dκ from exponential law
+  Real domega_dk = 0.0;
+  if (kappa > eps0 + 1e-12)    // tiny epsilon to avoid exact-zero division
+  {
+    Real arg1 = std::exp(-_paramB * (kappa - eps0));
+    Real arg2 = 1.0 - _paramA + _paramA * arg1;
+    Real darg1_dk = -_paramB * arg1;
+    Real darg2_dk = _paramA * darg1_dk;
+    domega_dk = eps0 / (kappa * kappa) * arg2 - eps0 / kappa * darg2_dk;
+  }
 
-  // // (6b) Loading flag: only active when ε̃ > κ_old
-  // Real loading = (_eqstrain_nonlocal[_qp] > _kappa_old[_qp] ? 1.0 : 0.0);
+  // (6b) Loading flag: only active when nonlocal strain > kappa_old (history variable)
+  Real loading = (_eqstrain_nonlocal[_qp] > _kappa_old[_qp] ? 1.0 : 0.0);
 
-  // // (6c) ∂ε̃/∂ε via Mazars
-  // RankTwoTensor depsde; 
-  // depsde.zero();
-  // if (_eqstrain_nonlocal[_qp] > 0.0)
-  // {
-  //   for (unsigned i = 0; i < 3; ++i)
-  //   {
-  //     Real eps_i_pos = std::max(eps_dir(i), 0.0);
-  //     if (eps_i_pos > 0.0)
-  //     {
-  //       const RealVectorValue ni = _crack_rotation[_qp].column(i);
-  //       depsde += (eps_i_pos/_eqstrain_nonlocal[_qp]) * RankTwoTensor::outerProduct(ni, ni);
-  //     }
-  //   }
-  // }
-  // RankTwoTensor domega_de = domega_dk * loading * depsde;
+  // (6c) ∂ε̃/∂ε via Mazars equivalent strain derivative
+  RankTwoTensor depsde; 
+  depsde.zero();
+  if (eqstrain_local > 0.0)
+  {
+    for (unsigned i = 0; i < 3; ++i)
+    {
+      Real eps_i_pos = std::max(eps_dir(i), 0.0);
+      if (eps_i_pos > 0.0)
+      {
+        const RealVectorValue ni = _crack_rotation[_qp].column(i);
+        depsde += (eps_i_pos/eqstrain_local) * RankTwoTensor::outerProduct(ni, ni);
+      }
+    }
+  }
+  RankTwoTensor domega_de = domega_dk * loading * depsde;
 
-  // usingTensorIndices(i,j,k,l);  // bring i,j,k,l into scope
-  // RankFourTensor soft = De_eps.template times<0,1,2,3>(domega_de);
-
-  // (6d) Consistent tangent: (1-ω)De  −  (De:ε) ⊗ (∂ω/∂ε)
-  RankFourTensor tangent = (1.0 - omega)*De;
+  // (6d) Consistent tangent: (1-ω)De - (De:ε) ⊗ (∂ω/∂ε)
+  RankFourTensor tangent = (1.0 - omega) * De;
+  
+  // Add softening contribution from damage evolution
+  // for (unsigned i = 0; i < 3; ++i)
+  //   for (unsigned j = 0; j < 3; ++j)
+  //     for (unsigned k = 0; k < 3; ++k)
+  //       for (unsigned l = 0; l < 3; ++l)
+  //         tangent(i, j, k, l) -= De_eps(i, j) * domega_de(k, l);
 
   // (6e) Assign stress and Jacobian multiplier
-  _stress[_qp]        = (1.0 - omega)*De_eps;
+  _stress[_qp] = (1.0 - omega) * De_eps;
   _Jacobian_mult[_qp] = tangent;
 
   // (7) Finite‐strain rotation if needed
@@ -147,6 +206,9 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
     finiteStrainRotation(true);
     _crack_rotation[_qp] = _rotation_increment[_qp] * _crack_rotation[_qp];
   }
+
+  // Compute effective permeability
+  updatePermeabilityForCracking();
 }
 
 void
@@ -172,4 +234,50 @@ FarmsComputeSmearedCrackingStressGrads::computeCrackStrainAndOrientation(
   strain_in_crack_dir(0) = eigval[2];
   strain_in_crack_dir(1) = eigval[1];
   strain_in_crack_dir(2) = eigval[0];
+}
+
+void
+FarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
+{
+
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+    return;
+
+  // Get transformation matrix
+  const RankTwoTensor & R = _crack_rotation[_qp];
+
+  // Initialize effective permeability new
+  RankTwoTensor effective_perm_new;
+
+  //Compute the intrinsic permeability
+  RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
+
+  // Initialize effective permeability new
+  // exponential permeability model 
+  if (_exponential_permeability_model){
+    effective_perm_new = perm_intrinsic * std::exp( _crack_damage[_qp] * _coeff_b );
+  }
+  // darcy-poiseuille permeability model
+  else if (_darcy_poiseuille_permeability_model){
+    //Compute crack opening
+    //wc is the ultimate crack opening
+    Real w = _crack_damage[_qp] * _wc; 
+
+    //Compute permeability in the damage zone
+    RankTwoTensor kf = std::pow(w, 2) / (12.0) * RankTwoTensor::Identity();
+
+    //Compute permeability
+    effective_perm_new = perm_intrinsic + std::pow(_crack_damage[_qp], _perm_exponent) * (kf - perm_intrinsic);
+  }
+  else {
+    mooseError("Unknown permeability model type.");
+  }
+
+  // Rotate back to global frame
+  effective_perm_new.rotate(R);
+
+  // Update effective perm
+  _effective_perm[_qp] = effective_perm_new;
+
 }

@@ -1,5 +1,5 @@
 //* This file is part of the MOOSE framework
-//* https://www.mooseframework.org
+//* https://mooseframework.inl.gov
 //*
 //* All rights reserved, see COPYRIGHT for full restrictions
 //* https://github.com/idaholab/moose/blob/master/COPYRIGHT
@@ -7,15 +7,19 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "CoupledElkLocalEqstrainForce.h"
+#include "CoupledReaction.h"
 
-registerMooseObject("farmsApp", CoupledElkLocalEqstrainForce);
+registerMooseObject("farmsApp", CoupledReaction);
 
 InputParameters
-CoupledElkLocalEqstrainForce::validParams()
+CoupledReaction::validParams()
 {
   InputParameters params = Kernel::validParams();
-  params.addClassDescription("Kernel for implement local equivalent strain force");
+  params.addClassDescription(
+      "Implements a simple consuming reaction term with weak form $(\\psi_i, \\lambda u_h)$.");
+  params.addParam<Real>(
+      "rate", 1.0, "The $(\\lambda)$ multiplier, the relative amount consumed per unit time.");
+  params.declareControllable("rate");
   params.addRequiredCoupledVar(
       "eqstrain_local",
       "The local equivalent strain used in the damage evolution law");
@@ -31,8 +35,9 @@ CoupledElkLocalEqstrainForce::validParams()
   return params;
 }
 
-CoupledElkLocalEqstrainForce::CoupledElkLocalEqstrainForce(const InputParameters & parameters)
-  : Kernel(parameters),
+CoupledReaction::CoupledReaction(const InputParameters & parameters)
+  : Kernel(parameters), 
+    _rate(getParam<Real>("rate")), 
     _eqstrain_local(coupledValue("eqstrain_local")),
     _length_scale(getParam<Real>("length_scale")),
     _kappa_i(getParam<Real>("kappa_i")),
@@ -41,7 +46,7 @@ CoupledElkLocalEqstrainForce::CoupledElkLocalEqstrainForce(const InputParameters
 }
 
 Real
-CoupledElkLocalEqstrainForce::computeQpResidual()
+CoupledReaction::computeQpResidual()
 {
   //test gradient activity parameter
   Real xi = 0.0;
@@ -57,11 +62,11 @@ CoupledElkLocalEqstrainForce::computeQpResidual()
     xi = c;
   }
 
-  return -1.0 * _test[_i][_qp] * _eqstrain_local[_qp] / xi;
+  return _test[_i][_qp] * _rate * _u[_qp] / xi;
 }
 
 Real
-CoupledElkLocalEqstrainForce::computeQpJacobian()
+CoupledReaction::computeQpJacobian()
 {
-  return 0.0;
+  return _test[_i][_qp] * _rate * _phi[_j][_qp];
 }
