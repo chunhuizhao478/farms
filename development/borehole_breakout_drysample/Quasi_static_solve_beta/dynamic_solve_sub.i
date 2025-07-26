@@ -52,7 +52,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.075 #1e-3
+    beta_width = 0.01 #1e-3
 
     #diffusion parameter #close the gradient
     D_diffusion = 0
