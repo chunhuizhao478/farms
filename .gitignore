@@ -473,3 +473,6 @@ development/paper_draft_depth_dependent/mesh/tpv26_400m.msh
 development/paper_draft_depth_dependent/mesh/tpv26_100m.msh
 examples/benchmark_tpv26/mesh/tpv26_100m.msh
 examples/benchmark_tpv26/mesh/tpv26_400m.msh
+development/paper_draft_depth_dependent/mesh/tpv26_50m_cutstrike.msh
+development/paper_draft_depth_dependent/mesh/tpv26_100m_cutstrike.msh
+development/paper_draft_depth_dependent/mesh/tpv26_400m_cutstrike.msh

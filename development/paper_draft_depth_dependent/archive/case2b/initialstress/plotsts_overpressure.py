@@ -33,13 +33,13 @@ rho           = 2_670.0   # (kg/m³) bulk rock density (lithostatic)
 g             = 9.8       # (m/s²) gravitational acceleration
 
 # Stress coefficients (unchanged)
-b_xx = 0.4
+b_xx = 0.926793
 b_yy = 1.073206
 b_xy = -0.8
 
 # Friction & cohesion parameters (unchanged)
 mu_s = 0.8           # static friction coefficient
-mu_d = 0.6            # dynamic / residual friction coefficient
+mu_d = 0.4            # dynamic / residual friction coefficient
 c0   = 0.4e6          # Pa, cohesion at 0–4 km
 dc_dz = 0.00072e6    # Pa/m, cohesion gradient up to 4 km
 
