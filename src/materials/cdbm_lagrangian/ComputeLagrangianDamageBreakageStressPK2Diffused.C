@@ -23,9 +23,9 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::validParams()
   
   //use dilatancy dependent variables
   params.addParam<bool>("use_dilatancy", false, "Flag to use dilatancy variable evolution");
-  params.addParam<Real>("anand_param_go_mat",1,"Dilatancy parameter go");
-  params.addParam<Real>("anand_param_eta_cv_mat",1,"Dilatancy parameter eta_cv");
-  params.addParam<Real>("anand_param_p_mat",1,"Dilatancy parameter p");
+  params.addParam<Real>("anand_param_go_mat",0.2,"Dilatancy parameter go");
+  params.addParam<Real>("anand_param_eta_cv_mat",0.006,"Dilatancy parameter eta_cv");
+  params.addParam<Real>("anand_param_p_mat",2,"Dilatancy parameter p");
 
   return params;
 }
