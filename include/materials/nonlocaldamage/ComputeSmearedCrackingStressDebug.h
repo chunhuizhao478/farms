@@ -73,6 +73,12 @@ protected:
    */
   bool previouslyCracked();
 
+  /**
+   * Update the effective permeability based on the current crack damage
+   * and the specified permeability model.
+   */
+  void updatePermeabilityForCracking();
+
   ///@{ Input parameters for smeared crack models
 
   /// Threshold at which cracking initiates if tensile stress exceeds it
@@ -158,5 +164,22 @@ protected:
 
   /// @brief initial crack damage
   const VariableValue & _crack_damage_initial;
+
+  //porous flow coupling related parameters
+  const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
+  const Real _intrinsic_permeability;
+
+  /// @brief define the effective permeability
+  MaterialProperty<RealTensorValue> & _effective_perm;
+  const MaterialProperty<RealTensorValue> & _effective_perm_old; 
+
+  // Exponential permeability model
+  const bool _exponential_permeability_model; // flag to indicate if exponential permeability model is used
+  const Real _coeff_b; // coefficient for the exponential function in the effective permeability
+
+  // Darcy-Poiseuille permeability model
+  const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
+  const Real _wc; // characteristic width for the Darcy-Poiseuille model
+  const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
 
 };

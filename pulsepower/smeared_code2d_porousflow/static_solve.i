@@ -18,20 +18,44 @@ solid_bulk_modulus_compliance = 1.524e-11
 permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 #----------------------------------------------------#
 
+#initial damage box 1
+bottom_left1 = '-0.0025 -2e-4 0'
+top_right1 = '0.0025 2e-4 0'
+
+#initial damage box 2
+bottom_left2 = '-2e-4 -0.0025 0'
+top_right2 = '2e-4 0.0025 0'
+
 [Mesh]
-    [./msh]
-      type = FileMeshGenerator
-      file =  '../2dmeshfile/fieldscale_test1_2d.msh'
-    []
-    [./extranodeset1]
-      type = ExtraNodesetGenerator
-      coord = '0.1 0.1 0'
-      new_boundary = corner_ptr
-      input = msh
-      use_closest_node=true
-    []
-    displacements = 'disp_x disp_y'
+  [./msh]
+    type = FileMeshGenerator
+    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
   []
+  [./extranodeset1]
+    type = ExtraNodesetGenerator
+    coord = '0.1 0.1 0'
+    new_boundary = corner_ptr
+    input = msh
+    use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 1
+    input = extranodeset1
+  []
+  [./subdomain_id2]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left2}
+    top_right = ${top_right2}
+    location = INSIDE
+    block_id = 1
+    input = subdomain_id
+  []
+  displacements = 'disp_x disp_y'
+[]
   
   [GlobalParams]
     displacements = 'disp_x disp_y'

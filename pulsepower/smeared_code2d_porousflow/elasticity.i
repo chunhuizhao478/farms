@@ -3,12 +3,12 @@
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
-ft = 68.46e6 # tensile strength, Pa
+ft = 150e6 # tensile strength, Pa
 solid_density = 2600 # kg/m^3 
-dx_min = 2.5e-5 # minimum mesh size, m
+# dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  4e-4 # length scale, m
+l =  2e-4 # length scale, m
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -40,6 +40,12 @@ perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective p
 newmark_beta = 0.25
 newmark_gamma = 0.5
 hht_alpha = 0
+#----------------------------------------------------#
+
+#gradient activity parameters
+#----------------------------------------------------#
+kappa_i = ${fparse ft / E}
+c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent str
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
@@ -77,10 +83,43 @@ hht_alpha = 0
 #   []
 # []
 
+[MultiApps]
+  [fracture]
+    type = TransientMultiApp
+    input_files = nonlocal_subapp.i
+    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+    execute_on = 'TIMESTEP_END'
+    clone_parent_mesh = true
+  []
+[]
+
+[Transfers]
+  [from_d]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'fracture'
+    variable = nonlocal_eqstrain
+    source_variable = nonlocal_eqstrain
+  []
+  [to_psie_active]
+    type = MultiAppCopyTransfer
+    to_multi_app = 'fracture'
+    variable = eqstrain_local
+    source_variable = eqstrain_local
+  []
+[]
+
 [GlobalParams]
   displacements = 'disp_x disp_y'
   PorousFlowDictator = dictator #All porous modules must contain
 []
+
+#initial damage box 1
+bottom_left1 = '-0.0025 -2e-4 0'
+top_right1 = '0.0025 2e-4 0'
+
+#initial damage box 2
+bottom_left2 = '-2e-4 -0.0025 0'
+top_right2 = '2e-4 0.0025 0'
 
 [Mesh]
   [./msh]
@@ -94,67 +133,79 @@ hht_alpha = 0
     input = msh
     use_closest_node=true
   []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 1
+    input = extranodeset1
+  []
+  [./subdomain_id2]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left2}
+    top_right = ${top_right2}
+    location = INSIDE
+    block_id = 1
+    input = subdomain_id
+  []
   displacements = 'disp_x disp_y'
 []
 
 [Variables]
   [disp_x]
+    family = LAGRANGE
     order = FIRST
-    family = LAGRANGE  
     scaling = 1e-6
   []
   [disp_y]
+    family = LAGRANGE
     order = FIRST
-    family = LAGRANGE  
     scaling = 1e-6
   []
   [pp]
     order = FIRST
     family = LAGRANGE  
-  []
-  [nonlocal_eqstrain]
-    order = FIRST
-    family = LAGRANGE
-  []
+  [] 
 []
 
 [AuxVariables]
-  [fy]
-  []
-  [d]
-    family = MONOMIAL
-    order = FIRST
-  []
-  #err measurement of active strain energy
-  [eng_err]
-    family = MONOMIAL
+  [./strength]
     order = CONSTANT
-  []
-  [vel_x]
-    family = LAGRANGE
+    family = MONOMIAL
+    initial_condition = ${fparse ft}
+  [../]
+  [crack_damage_aux]
     order = FIRST
+    family = MONOMIAL
   []
-  [vel_y]
-    family = LAGRANGE
-    order = FIRST
-  []
-  [accel_x]
-    family = LAGRANGE
-    order = FIRST
-  []
-  [accel_y]
-    family = LAGRANGE
-    order = FIRST
-  []
-  #
   [pulse_load_aux]
     order = CONSTANT
     family = MONOMIAL
   []
-  #
   [mesh_size]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [crack_damage_initial]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [nonlocal_eqstrain]
+      order = FIRST
+      family = LAGRANGE
+  [] 
+  [eqstrain_local]
     family = MONOMIAL
     order = CONSTANT
+  []
+  [accel_x]
+  []
+  [accel_y]
+  []
+  [vel_x]
+  []
+  [vel_y]
   []
   #
   [effective_perm00_aux]
@@ -168,12 +219,7 @@ hht_alpha = 0
   [effective_perm01_aux]
     family = MONOMIAL
     order = FIRST
-  []
-  #
-  [./strength]
-    order = CONSTANT
-    family = MONOMIAL
-  [../]  
+  []  
 []
 
 [AuxKernels]
@@ -223,6 +269,36 @@ hht_alpha = 0
     method = max
     execute_on = TIMESTEP_BEGIN
   [../]
+  #damage
+  [define_initial_damage_block1]
+    type = ConstantAux
+    variable = crack_damage_initial
+    value = 0.9
+    block = 1
+    execute_on = INITIAL
+  []
+  [define_initial_damage_block0]
+    type = ConstantAux
+    variable = crack_damage_initial
+    value = 0
+    block = '4 5'
+    execute_on = INITIAL
+  []
+  #get eqstrain_local
+  [eqstrain_local_aux]
+    type = MaterialRealAux
+    variable = eqstrain_local
+    property = eqstrain_local
+    execute_on = 'TIMESTEP_END'
+  []
+  #get crack damage aux
+  [crack_damage_aux]
+    type = MaterialRealVectorValueAux
+    variable = crack_damage_aux
+    property = crack_damage
+    component = 0
+    execute_on = 'TIMESTEP_END'
+  []
   ### PorousFlow Aux ###
   #effective permeability
   [effective_permeability_00]
@@ -245,13 +321,6 @@ hht_alpha = 0
     row = 0
     column = 1
     variable = effective_perm01_aux
-  []
-  #damage
-  [get_damage_aux]
-    type = MaterialRealAux
-    property = crack_damage
-    variable = d
-    execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
@@ -329,22 +398,7 @@ hht_alpha = 0
       variable = pp
       multiply_by_density = false
       gravity = '0 0 0'
-  [] 
-  # gradient based nonlocal averaging
-  [react_nonlocal]
-    type = Reaction
-    variable = nonlocal_eqstrain
-    rate = 1.0
   []
-  [diffusion_nonlocal]
-    type = CoefDiffusion
-    variable = nonlocal_eqstrain
-    coef = 16e-8 #1e-4
-  []
-  [reaction_local]
-    type = ElkLocalEqstrainForce
-    variable = nonlocal_eqstrain
-  [] 
 []
 
 [BCs]
@@ -356,7 +410,14 @@ hht_alpha = 0
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
-    []             
+    []
+    #assign pressure on outer surface
+    [static_pressure_outer]
+      boundary = 1
+      factor = ${confinement_pressure}
+      displacements = 'disp_x disp_y'
+      use_displaced_mesh = false
+    []              
   []   
   # fix ptr
   [./fix_cptr1_x]
@@ -370,6 +431,14 @@ hht_alpha = 0
     variable = disp_y
     boundary = corner_ptr
     value = 0
+  []
+  #fix pressure
+  [./fix_pressure]
+    type = DirichletBC
+    variable = pp
+    boundary = 3
+    value = ${initial_pore_pressure}
+    use_displaced_mesh = false
   []
   #add dampers
   [damp_outer_x]
@@ -385,7 +454,7 @@ hht_alpha = 0
     alpha = ${hht_alpha}
     shear_wave_speed = ${Cs}
     p_wave_speed = ${Cp}
-    density = ${density}
+    density = ${solid_density}
   []
   [damp_outer_y]
     type = FarmsNonReflectDashpotBC
@@ -400,7 +469,7 @@ hht_alpha = 0
     alpha = ${hht_alpha}
     shear_wave_speed = ${Cs}
     p_wave_speed = ${Cp}
-    density = ${density}
+    density = ${solid_density}
   []
 []
 
@@ -410,21 +479,16 @@ hht_alpha = 0
     youngs_modulus = ${E}
     poissons_ratio = ${nu}
   [../]
-  [strain]
-    type = ComputeSmallStrain
-  []
-  [bulk]
-    type = GenericConstantMaterial
-    prop_names = 'K G'
-    prop_values = '${K} ${G}'
-  []
-  [stress]
-    type = FarmsComputeSmearedCrackingStressGrads
-    paramA = 0.99
-    paramB = 100
-    eqstrain_nonlocal = nonlocal_eqstrain
+  [./elastic_stress]
+    type = ComputeSmearedCrackingStressDebug
+    nonlocal_eqstrain = nonlocal_eqstrain
+    damage_evolution_law_span = 0.5
+    model = NONLOCAL
     cracking_stress = strength
-    output_properties = 'crack_damage stress'
+    initial_crack_damage = crack_damage_initial
+    output_properties = 'stress'
+    softening_models = abrupt_softening
+    cracked_elasticity_type = FULL
     outputs = exodus
     ##---------------------------------------------##
     # porous flow coupling
@@ -436,21 +500,22 @@ hht_alpha = 0
     wc = ${wc}
     perm_exponent = ${perm_exponent}
     ##---------------------------------------------##
+  [../]
+  [strain]
+    type = ComputeFiniteStrain
+    displacements = 'disp_x disp_y'
   []
-  #solid properties
-  ##-------------------------------------------------------------------------##
   [density]
     type = GenericConstantMaterial
     prop_names = 'density'
     prop_values = ${solid_density}
-  []
-  #define initial bulk modulus material property
-  #check with youngs_modulus = 50e9, poissons_ratio = 0.373
-  [solid_bulk_modulus_compliance]
-    type = GenericConstantMaterial
-    prop_names = solid_bulk_modulus_compliance
-    prop_values = ${solid_bulk_modulus_compliance}
-  []
+  [] 
+  [./abrupt_softening]
+  type = AbruptSoftening
+  [../]
+  [./exponential_softening]
+  type = ExponentialSoftening
+  [../] 
   ##-------------------------------------------------------------------------##
   #porous flow related properties
   ##-------------------------------------------------------------------------##
@@ -517,7 +582,7 @@ hht_alpha = 0
     type = PorousFlowRelativePermeabilityConst
     phase = 0
     kr = 1
-  []
+  [] 
 []
 
 #provide fluid properties for porous flow 
@@ -529,13 +594,6 @@ hht_alpha = 0
     thermal_expansion = 0
     viscosity = ${viscosity}
   []
-  [./init_sol_components]
-    type = SolutionUserObject
-    mesh = ./static_solve_out.e
-    system_variables = 'disp_x disp_y disp_z pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
-    timestep = LATEST
-    force_preaux = true
-  [../]
 []
 
 #this user object must contain for porous flow
@@ -546,6 +604,13 @@ hht_alpha = 0
     number_fluid_phases = 1
     number_fluid_components = 1
   []
+  [./init_sol_components]
+    type = SolutionUserObject
+    mesh = ./static_solve_out.e
+    system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    timestep = LATEST
+    force_preaux = true
+  [../]
 []
 
 [Controls] # turns off inertial terms for the SECOND time step
@@ -567,30 +632,33 @@ hht_alpha = 0
 [Executioner]
   type = Transient
 
-  solve_type = NEWTON
+  solve_type = 'NEWTON'
 
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  petsc_options_value = ' lu       mumps       100'
+  # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
+  # petsc_options_value = '101                asm      lu'
 
-  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  # petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  # petsc_options_value = ' lu       mumps       100'
+
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
 
-  nl_rel_tol = 1e-8
-  nl_abs_tol = 1e-10
-  nl_max_its = 50
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-8
+  nl_max_its = 30
 
   # dt = 0.5e-7
   end_time = 10e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
-  fixed_point_rel_tol = 1e-8
-  fixed_point_abs_tol = 1e-10
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
@@ -620,24 +688,7 @@ hht_alpha = 0
   []
 []
 
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${ft} #lambda
-    location = 0 
-  []
-[] 
-
 [ICs]
-  [./strength_var]
-    type =  RandomIC
-    variable = strength
-    distribution = weibull
-  []
   [disp_x_ic]
     type = SolutionIC
     variable = disp_x

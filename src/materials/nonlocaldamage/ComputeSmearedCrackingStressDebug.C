@@ -72,6 +72,21 @@ ComputeSmearedCrackingStressDebug::validParams()
       "initial_crack_damage",
       "Initial damage for crack_damage material property");
   
+  params.addParam<bool>("porous_flow_coupling", false, "Enable porous flow coupling");
+  params.addParam<Real>("intrinsic_permeability", 5e-19, "Intrinsic permeability in m^2");
+  //Permeability models
+  //Exponential permeability model
+  params.addParam<bool>("exponential_permeability_model", false,
+                        "Use an exponential function for the effective permeability");
+  params.addParam<Real>("coeff_b", -1.0,
+                        "Coefficient for the exponential function in the effective permeability");
+  //Darcy-Poiseuille permeability model
+  params.addParam<bool>("darcy_poiseuille_permeability_model",
+                        false,
+                        "Use Darcy-Poiseuille model for the effective permeability");
+  params.addParam<Real>("wc", -1.0, "ultimate crack width for Darcy-Poiseuille model");
+  params.addParam<Real>("perm_exponent", -1.0,
+                        "Exponent for the Darcy-Poiseuille model for the effective permeability");  
   return params;
 }
 
@@ -103,7 +118,21 @@ ComputeSmearedCrackingStressDebug::ComputeSmearedCrackingStressDebug(const Input
     _model_type(getParam<MooseEnum>("model").getEnum<ModelType>()),
     //------------------------------------------------------------------------------//
     _cracking_strain(declareProperty<Real>(_base_name + "cracking_strain")),
-    _crack_damage_initial(coupledValue("initial_crack_damage"))
+    _crack_damage_initial(coupledValue("initial_crack_damage")),
+    //-----------------------------------------------------------------------//
+    //porous flow coupling
+    _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
+    _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
+    // define effective permeability
+    _effective_perm(declareProperty<RealTensorValue>("effective_perm")),
+    _effective_perm_old(getMaterialPropertyOldByName<RealTensorValue>("effective_perm")),
+    // Exponential permeability model
+    _exponential_permeability_model(getParam<bool>("exponential_permeability_model")),
+    _coeff_b(getParam<Real>("coeff_b")),
+    // Darcy-Poiseuille permeability model
+    _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
+    _wc(getParam<Real>("wc")),
+    _perm_exponent(getParam<Real>("perm_exponent"))
 {
   MultiMooseEnum prescribed_crack_directions =
       getParam<MultiMooseEnum>("prescribed_crack_directions");
@@ -277,6 +306,9 @@ ComputeSmearedCrackingStressDebug::computeQpStress()
 
   // compute crack status and adjust stress
   updateCrackingStateAndStress();
+
+  // Update the effective permeability if porous flow coupling is enabled
+  updatePermeabilityForCracking();
 
   if (_perform_finite_strain_rotations)
   {
@@ -687,4 +719,50 @@ ComputeSmearedCrackingStressDebug::previouslyCracked()
     if (_crack_damage_old[_qp](i) > 0.0)
       return true;
   return false;
+}
+
+void
+ComputeSmearedCrackingStressDebug::updatePermeabilityForCracking()
+{
+
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+    return;
+
+  // Get transformation matrix
+  const RankTwoTensor & R = _crack_rotation[_qp];
+
+  // Initialize effective permeability new
+  RankTwoTensor effective_perm_new;
+
+  //Compute the intrinsic permeability
+  RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
+
+  // Initialize effective permeability new
+  // exponential permeability model 
+  if (_exponential_permeability_model){
+    effective_perm_new = perm_intrinsic * std::exp( _crack_damage[_qp](0) * _coeff_b );
+  }
+  // darcy-poiseuille permeability model
+  else if (_darcy_poiseuille_permeability_model){
+    //Compute crack opening
+    //wc is the ultimate crack opening
+    Real w = _crack_damage[_qp](0) * _wc; 
+
+    //Compute permeability in the damage zone
+    RankTwoTensor kf = std::pow(w, 2) / (12.0) * RankTwoTensor::Identity();
+
+    //Compute permeability
+    effective_perm_new = perm_intrinsic + std::pow(_crack_damage[_qp](0), _perm_exponent) * (kf - perm_intrinsic);
+  }
+  else {
+    mooseError("Unknown permeability model type.");
+  }
+
+  // Rotate back to global frame
+  effective_perm_new.rotate(R);
+
+  // Update effective perm
+  _effective_perm[_qp] = effective_perm_new;
+
 }
