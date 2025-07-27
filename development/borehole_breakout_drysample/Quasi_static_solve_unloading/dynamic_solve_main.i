@@ -364,25 +364,9 @@
 #18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 # Exact implementation using PiecewiseFunction for mathematical accuracy
 [Functions]
-  [loading_phase]
-    type = ParsedFunction
-    expression = '-3.3e-5 - 3.3e-7 * t'
-  []
-  
-  [unloading_phase]
-    type = ParsedFunction
-    expression = '-4.818e-4 + 3.3e-7 * (t - 1360.0)'
-  []
-  
-  [constant_phase]
-    type = ConstantFunction
-    value = -4.3e-5
-  []
-  
   [applied_load_top]
-    type = PiecewiseFunction
-    functions = 'loading_phase unloading_phase constant_phase'
-    axis_coordinates = '1360.0 2699.0'
+    type = ParsedFunction
+    expression = 'if(t <= 1360, -3.3e-5 - 3.3e-7 * t, if(t <= 2699, -4.818e-4 + 3.3e-7 * (t - 1360.0), -4.3e-5))'
   []
 []
 
