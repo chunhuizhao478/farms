@@ -268,47 +268,61 @@ top_right2 = '2e-4 0.0025 0'
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
-    number_of_pulses = 10
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    number_of_pulses = 1
+    peak_pressure = 130e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
-[Kernels]
-  [dispkernel_x]
-    type = DynamicStressDivergenceTensors
-    displacements = 'disp_x disp_y'
-    variable = disp_x
-    component = 0
-    zeta = 1e-8
-    use_displaced_mesh = true
-  []
-  [dispkernel_y]
-    type = DynamicStressDivergenceTensors
-    displacements = 'disp_x disp_y'
-    variable = disp_y
-    component = 1
-    zeta = 1e-8
-    use_displaced_mesh = true
-  []
-  [inertia_x]
-    type = InertialForce
-    variable = disp_x
-    velocity = vel_x
-    acceleration = accel_x
-    beta = 0.25
-    gamma = 0.5
-    use_displaced_mesh = true
-  []
-  [inertia_y]
-    type = InertialForce
-    variable = disp_y
-    velocity = vel_y
-    acceleration = accel_y
-    beta = 0.25
-    gamma = 0.5
-    use_displaced_mesh = true
+[Physics/SolidMechanics/Dynamic]
+  [all]
+    add_variables = true
+    hht_alpha = ${hht_alpha}
+    newmark_beta = ${newmark_beta}
+    newmark_gamma = ${newmark_gamma}
+    use_automatic_differentiation = false
+    # mass_damping_coefficient = 0.1
+    # stiffness_damping_coefficient = 0.1
+    density = ${density}
+    strain = FINITE
   []
 []
+
+# [Kernels]
+#   [dispkernel_x]
+#     type = DynamicStressDivergenceTensors
+#     displacements = 'disp_x disp_y'
+#     variable = disp_x
+#     component = 0
+#     zeta = 1e-8
+#     use_displaced_mesh = true
+#   []
+#   [dispkernel_y]
+#     type = DynamicStressDivergenceTensors
+#     displacements = 'disp_x disp_y'
+#     variable = disp_y
+#     component = 1
+#     zeta = 1e-8
+#     use_displaced_mesh = true
+#   []
+#   [inertia_x]
+#     type = InertialForce
+#     variable = disp_x
+#     velocity = vel_x
+#     acceleration = accel_x
+#     beta = 0.25
+#     gamma = 0.5
+#     use_displaced_mesh = true
+#   []
+#   [inertia_y]
+#     type = InertialForce
+#     variable = disp_y
+#     velocity = vel_y
+#     acceleration = accel_y
+#     beta = 0.25
+#     gamma = 0.5
+#     use_displaced_mesh = true
+#   []
+# []
 
 [BCs]
   #confinement
@@ -385,10 +399,10 @@ top_right2 = '2e-4 0.0025 0'
     cracked_elasticity_type = FULL
     outputs = exodus
   [../]
-  [strain]
-    type = ComputeFiniteStrain
-    displacements = 'disp_x disp_y'
-  []
+  # [strain]
+  #   type = ComputeFiniteStrain
+  #   displacements = 'disp_x disp_y'
+  # []
   [density]
     type = GenericConstantMaterial
     prop_names = 'density'
@@ -433,7 +447,7 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 20
 
   # dt = 0.5e-7
-  end_time = 10e-5
+  end_time = 1e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
