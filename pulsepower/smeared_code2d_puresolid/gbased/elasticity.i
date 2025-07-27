@@ -268,7 +268,7 @@ top_right2 = '2e-4 0.0025 0'
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
-    number_of_pulses = 10
+    number_of_pulses = 100
     peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
@@ -447,7 +447,7 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 20
 
   # dt = 0.5e-7
-  end_time = 10e-5
+  end_time = 100e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -472,7 +472,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 200
   print_linear_residuals = false
   csv = true
   [checkpoint]
