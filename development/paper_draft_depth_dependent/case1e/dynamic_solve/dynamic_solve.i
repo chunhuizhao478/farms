@@ -46,13 +46,13 @@ xi_d = -1.1 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
 CBH_constant = 1e4 #coefficient of healing for breakage evolution
-C_1 = 1e-4 #coefficient of healing for damage evolution
+C_1 = 300 #coefficient of healing for damage evolution
 C_2 = 0.05 #coefficient of healing for damage evolution
 beta_width = 0.05 #coefficient gives width of transitional region
 C_g = 1e-10 #material parameter: compliance or fluidity of the fine grain granular material
