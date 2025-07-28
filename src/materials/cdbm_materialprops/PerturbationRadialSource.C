@@ -94,11 +94,13 @@ PerturbationRadialSource::computeQpProperties()
   Real source = 0.0;
   if (_t <= _duration)
   {
-    source = gaussian_value / _duration;
+    // Apply constant value during duration
+    source = gaussian_value;
   }
   else
   {
-    source = gaussian_value;
+    // After duration, no more perturbation
+    source = 0.0;
   }
 
   // Apply the perturbation only if the current y-coordinate is within the specified thickness

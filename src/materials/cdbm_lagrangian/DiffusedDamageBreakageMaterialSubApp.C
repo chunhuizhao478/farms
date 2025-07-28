@@ -302,7 +302,12 @@ DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
   //_strain_rate_hat: constant value - default value = 1e-4
   //_cd_hat: constant value - default value = 1
   //_strain_rate: deviatoric strain rate, variable value passed from main app
-  _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate[_qp]/_strain_rate_hat)) * _cd_hat;
+  if (_strain_rate[_qp] < _strain_rate_hat){
+    _Cd_mat[_qp] = _cd_hat; //if deviatoric strain rate is less than strain_rate_hat, Cd = Cd_hat
+  }
+  else{
+    _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate[_qp]/_strain_rate_hat)) * _cd_hat;
+  }
 }
 
 void 
