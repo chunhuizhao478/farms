@@ -23,9 +23,9 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::validParams()
   
   //use dilatancy dependent variables
   params.addParam<bool>("use_dilatancy", false, "Flag to use dilatancy variable evolution");
-  params.addParam<Real>("anand_param_go_mat",0.2,"Dilatancy parameter go");
-  params.addParam<Real>("anand_param_eta_cv_mat",0.006,"Dilatancy parameter eta_cv");
-  params.addParam<Real>("anand_param_p_mat",2,"Dilatancy parameter p");
+  params.addParam<Real>("anand_param_go_mat",0,"Dilatancy parameter go");
+  params.addParam<Real>("anand_param_eta_cv_mat",0,"Dilatancy parameter eta_cv");
+  params.addParam<Real>("anand_param_p_mat",0,"Dilatancy parameter p");
 
   return params;
 }
@@ -158,7 +158,14 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
   // PK2 update
   computeQpPK2Stress();
 
-  _Jp[_qp] = _Fp[_qp].det();
+  if (_use_dilatancy)
+  {
+    _Jp[_qp] = std::exp(_eta[_qp]);
+  }
+  else
+  {
+    _Jp[_qp] = _Fp[_qp].det();
+  }
   
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
 
@@ -694,7 +701,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
 
     _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * _dt;
     
-    _dilatancy_function_beta[_qp] = _anand_param_go_mat * std::pow( 1 - _eta[_qp] / _anand_param_eta_cv_mat, _anand_param_p_mat );   
+    _dilatancy_function_beta[_qp] = _anand_param_go_mat * std::pow( 1 - _eta[_qp] / _anand_param_eta_cv_mat, _anand_param_p_mat );  
   }
   else
   {
