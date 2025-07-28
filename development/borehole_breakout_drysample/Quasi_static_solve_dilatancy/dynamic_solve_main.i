@@ -59,9 +59,8 @@
     initial_viscosity_fluid = 1e-3
 
     anand_param_go_mat = 0.2
-    anand_param_eta_cv_mat = 0.006
-    anand_param_p_mat = 2
-    
+    anand_param_eta_cv_mat = 0.008
+    anand_param_p_mat = 1
 
 []
 
@@ -155,6 +154,14 @@
         order = FIRST
         family = MONOMIAL
     []
+    [eta]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [dilatancy]
+        order = FIRST
+        family = MONOMIAL
+    []
     
 []
 
@@ -183,6 +190,18 @@
         type = MaterialRealAux
         variable = nonlocal_xi
         property = eqstrain_nonlocal
+    []
+    [get_eta]
+        type = MaterialRealAux
+        variable = eta
+        property = plastic_volume_change
+        block = '3'
+    []
+    [get_dilatancy]
+        type = MaterialRealAux
+        variable = dilatancy
+        property = dilatancy_function_beta
+        block = '3'
     []
 []
 
@@ -354,7 +373,7 @@
     [./exodus]
         type = Exodus
         time_step_interval = 3 ###
-        show = 'disp_z porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
+        show = 'dilatancy eta porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
         type = CSV
@@ -446,7 +465,6 @@
         execute_on = 'TIMESTEP_BEGIN'
     []
 []
-
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
@@ -496,6 +514,7 @@
       from_variable = porepressure
     []  
 []
+
 
 #compute the reaction force on the top boundary
 [Postprocessors]

@@ -366,7 +366,7 @@
 [Functions]
   [applied_load_top]
     type = ParsedFunction
-    expression = 'if(t <= 1360, -3.3e-5 - 3.3e-7 * t, if(t <= 2699, -4.818e-4 + 3.3e-7 * (t - 1360.0), -4.3e-5))'
+    expression = 'if(t <= 1250, -3.3e-5 - 3.3e-7 * t, if(t <= 2699, -4.4554e-4 + 3.3e-7 * (t - 1250), -4.3e-5))'
   []
 []
 
