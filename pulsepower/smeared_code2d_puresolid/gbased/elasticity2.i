@@ -1,13 +1,13 @@
 E = 50e9
 nu = 0.373
-ft = 150e6 ##computed from pf
+ft = 130e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2e-4 
+l =  4e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -61,7 +61,7 @@ hht_alpha = 0.11
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = nonlocal_subapp.i
+    input_files = nonlocal_subapp2.i
     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -156,7 +156,7 @@ top_right2 = '2e-4 0.0025 0'
     family = MONOMIAL
   []
   [crack_damage_initial]
-    family = MONOMIAL
+    family = LAGRANGE
     order = FIRST
   []
   [nonlocal_eqstrain]
@@ -225,20 +225,20 @@ top_right2 = '2e-4 0.0025 0'
     execute_on = TIMESTEP_BEGIN
   [../]
   #damage
-  # [define_initial_damage_block1]
-  #   type = ConstantAux
-  #   variable = crack_damage_initial
-  #   value = 0.9
-  #   block = 1
-  #   execute_on = INITIAL
-  # []
-  # [define_initial_damage_block0]
-  #   type = ConstantAux
-  #   variable = crack_damage_initial
-  #   value = 0
-  #   block = '4 5'
-  #   execute_on = INITIAL
-  # []
+  [define_initial_damage_block1]
+    type = ConstantAux
+    variable = crack_damage_initial
+    value = 0.9
+    block = 1
+    execute_on = INITIAL
+  []
+  [define_initial_damage_block0]
+    type = ConstantAux
+    variable = crack_damage_initial
+    value = 0
+    block = '4 5'
+    execute_on = INITIAL
+  []
   #get eqstrain_local
   [eqstrain_local_aux]
     type = MaterialRealAux
@@ -268,8 +268,8 @@ top_right2 = '2e-4 0.0025 0'
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
-    number_of_pulses = 1
-    peak_pressure = 130e6 #if peak pressure is specified, the depth variation is ignored
+    number_of_pulses = 100
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -447,7 +447,7 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 20
 
   # dt = 0.5e-7
-  end_time = 1e-5
+  end_time = 100e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -472,7 +472,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 200
   print_linear_residuals = false
   csv = true
   [checkpoint]
@@ -501,34 +501,3 @@ top_right2 = '2e-4 0.0025 0'
 #     distribution = weibull
 #   []
 # []
-
-[UserObjects]
-  [./init_sol_components]
-    type = SolutionUserObject
-    mesh = ./elasticity_out.e
-    system_variables = 'disp_x disp_y crack_damage_aux'
-    timestep = LATEST
-    force_preaux = true
-  [../]
-[]
-
-[ICs]
-  [disp_x_ic]
-    type = SolutionIC
-    variable = disp_x
-    solution_uo = init_sol_components
-    from_variable = disp_x
-  []
-  [disp_y_ic]
-    type = SolutionIC
-    variable = disp_y
-    solution_uo = init_sol_components
-    from_variable = disp_y
-  []
-  [crack_damage_ic]
-    type = SolutionIC
-    variable = crack_damage_initial
-    solution_uo = init_sol_components
-    from_variable = crack_damage_aux
-  []
-[]
