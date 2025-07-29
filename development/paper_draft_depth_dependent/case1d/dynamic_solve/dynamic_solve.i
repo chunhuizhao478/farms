@@ -321,6 +321,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       order = FIRST
       family = MONOMIAL
   [] 
+  ###
+  [deviatoric_strain_rate_aux]
+    order = FIRST
+    family = MONOMIAL
+  []  
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -528,6 +533,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
   ###
+  [get_deviatoric_strain_rate]
+    type = MaterialRealAux
+    variable = deviatoric_strain_rate_aux
+    property = deviatoric_strain_rate
+    execute_on = 'TIMESTEP_END'
+  []
 []
 
 [Kernels]
@@ -755,7 +766,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
@@ -771,7 +782,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [sample_snapshots]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
     time_step_interval = ${sample_snapshots_time_step_interval}
   []
 []    
