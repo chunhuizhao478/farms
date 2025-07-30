@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive.msh'
+        file = '../meshfile/mesh_adaptive_refined.msh'
         show_info = true
     [] 
 
@@ -57,8 +57,10 @@
     initial_grain_size = 1.3
     ultimate_grain_size = 0.25
     initial_viscosity_fluid = 1e-3
+    
 
 []
+
 
 [Variables]
     [disp_x]
@@ -362,12 +364,11 @@
 []
 
 #18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
-# Exact implementation using PiecewiseFunction for mathematical accuracy
 [Functions]
-  [applied_load_top]
-    type = ParsedFunction
-    expression = 'if(t <= 1500, -3.3e-5 - 3.3e-7 * t, if(t <= 2699, -5.28e-4 + 3.3e-7 * (t - 1500), -4.3e-5))'
-  []
+    [applied_load_top]
+        type = ParsedFunction
+        expression = '-3.3e-5 - 3.3e-7 * t'
+    []
 []
 
 

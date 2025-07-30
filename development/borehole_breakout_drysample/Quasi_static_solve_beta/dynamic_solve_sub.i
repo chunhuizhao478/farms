@@ -31,7 +31,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 80
+    Cd_constant = 70
 
     #strain rate dependent Cd options
     # m_exponent = 0.8
@@ -52,7 +52,7 @@
     C_2 = 0.05
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.08 #1e-3
+    beta_width = 0.1 #1e-3
 
     #diffusion parameter #close the gradient
     D_diffusion = 0
