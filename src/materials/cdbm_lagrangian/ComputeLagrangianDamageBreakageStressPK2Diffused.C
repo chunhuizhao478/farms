@@ -661,34 +661,30 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
 
   // PowTau = Q * diag * Q.transpose();
 
-  // //Get old Tau
-  // RankTwoTensor Tau_old = PowTau;
+  //Get old Tau
+  RankTwoTensor Tau_old = _Tau_old[_qp];
 
-  // //Get equvialent deviatroic stress scalar
-  // Real Tau_eq = 0.0;
-  // for (unsigned int p = 0; p < 3; p++){
-  //   for (unsigned int q = 0; q < 3; q++){
-  //     Tau_eq += 2.0/3.0 * Tau_old(p,q) * Tau_old(p,q);
-  //   }
-  // }
+  //Get the norm deviatroic stress scalar
+  Real Tau_norm = 0.0;
+  for (unsigned int p = 0; p < 3; p++){
+    for (unsigned int q = 0; q < 3; q++){
+      Tau_norm += Tau_old(p,q) * Tau_old(p,q);
+    }
+  }
 
-  // Tau_eq = std::sqrt(Tau_eq); 
+  Tau_norm = std::sqrt( 0.5 * Tau_norm); 
 
-  // //Get deviatroic stress direction
-  // RankTwoTensor N; N.zero();
-  // // Epsilon to avoid division by zero
-  // if (Tau_eq != 0.0){
-  //   //Compute deviatroic stress direction
-  //   for (unsigned int p = 0; p < 3; p++){
-  //     for (unsigned int q = 0; q < 3; q++){
-  //       N(p,q) = Tau_old(p,q) / Tau_eq;
-  //     }
-  //   }
-  // }
-
-  //Apply power operation on every element of Tau
-  //let's assume m2 = 1, and not apply pow on its elements
-  RankTwoTensor Tau_old_power_m2 = _Tau_old[_qp];
+  //Get deviatroic stress direction
+  RankTwoTensor N; N.zero();
+  // Epsilon to avoid division by zero
+  if (Tau_norm != 0.0){
+    //Compute deviatroic stress direction
+    for (unsigned int p = 0; p < 3; p++){
+      for (unsigned int q = 0; q < 3; q++){
+        N(p,q) = Tau_old(p,q) / Tau_norm / 2;
+      }
+    }
+  }
 
   // Define equivalent shear rate nu
   if (_use_state_var_evolution_mat[_qp])
@@ -697,15 +693,15 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
   }
   else if (_use_dilatancy)
   {
-    _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * Tau_old_power_m2;
+    _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * std::pow(Tau_norm, _m2[_qp]) * N; 
 
-    _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * _dt;
+    _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * std::pow(Tau_norm, _m2[_qp]) * _dt;
     
     _dilatancy_function_beta[_qp] = _anand_param_go_mat * std::pow( 1 - _eta[_qp] / _anand_param_eta_cv_mat, _anand_param_p_mat );  
   }
   else
   {
-    _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * Tau_old_power_m2;
+    _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * std::pow(Tau_norm, _m2[_qp]) * N; 
   }
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
@@ -713,7 +709,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
 
   if (_use_dilatancy)
   {
-    Dp += _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * _dilatancy_function_beta[_qp] / 3 * RankTwoTensor::Identity(); 
+    Dp += _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * std::pow(Tau_norm, _m2[_qp]) * _dilatancy_function_beta[_qp] / 3 * RankTwoTensor::Identity(); 
   }
  
   //Compute Cp = I - Dp dt
