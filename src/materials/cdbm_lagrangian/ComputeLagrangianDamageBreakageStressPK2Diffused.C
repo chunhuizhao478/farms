@@ -672,7 +672,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
     }
   }
 
-  Tau_norm = std::sqrt( 0.5 * Tau_norm); 
+  Tau_norm = std::sqrt(Tau_norm); 
 
   //Get deviatroic stress direction
   RankTwoTensor N; N.zero();
@@ -681,7 +681,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
     //Compute deviatroic stress direction
     for (unsigned int p = 0; p < 3; p++){
       for (unsigned int q = 0; q < 3; q++){
-        N(p,q) = Tau_old(p,q) / Tau_norm / 2;
+        N(p,q) = Tau_old(p,q) / Tau_norm;
       }
     }
   }
