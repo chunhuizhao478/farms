@@ -356,7 +356,8 @@ ComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
         }
         else
         {
-          stiffness_ratio_local(i) = (1.0 - _crack_damage_old[_qp](i));
+          Real residual_stress_fraction = 1e-2; // Set a default residual stress fraction
+          stiffness_ratio_local(i) = (1.0 - _crack_damage_old[_qp](i)) * (1.0 - residual_stress_fraction) + residual_stress_fraction;
           cracking_locally_active = true;
         }
       }
@@ -570,6 +571,16 @@ ComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
           // If the damage is less than the initial value, reset it to the initial value
           _crack_damage[_qp](i) = _crack_damage_initial[_qp];
         }
+
+        // Update the stress in the crack direction
+        Real residual_stress_fraction = 1e-2;
+   
+        // Calculate effective stiffness with residual stress
+        Real effective_stiffness_ratio = (1.0 - _crack_damage[_qp](i)) * (1.0 - residual_stress_fraction) + residual_stress_fraction;
+        
+        // Calculate stress with residual component
+        sigma(0) = effective_stiffness_ratio * youngs_modulus * _crack_initiation_strain[_qp](i);
+
       }
 
       else if (cracked && _cracking_neg_fraction > 0 &&

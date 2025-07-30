@@ -34,7 +34,7 @@ FarmsComputeSmearedCrackingStressGrads::validParams()
       "cracking_stress",
       "The stress threshold beyond which cracking occurs. Negative values prevent cracking.");
   params.addRequiredCoupledVar(
-      "eqstrain_nonlocal",
+      "nonlocal_eqstrain",
       "The nonlocal equivalent strain used in the damage evolution law");
   params.addRequiredParam<Real>("paramA", "parameter used in the damage evolution law");
   params.addRequiredParam<Real>("paramB", "parameter used in the damage evolution law");
@@ -70,7 +70,7 @@ FarmsComputeSmearedCrackingStressGrads::FarmsComputeSmearedCrackingStressGrads(c
     _crack_damage_old(getMaterialPropertyOld<Real>(_base_name + "crack_damage")),
     _eqstrain_local(declareProperty<Real>("eqstrain_local")),
     _eqstrain_local_old(getMaterialPropertyOld<Real>("eqstrain_local")),
-    _eqstrain_nonlocal(coupledValue("eqstrain_nonlocal")),
+    _eqstrain_nonlocal(coupledValue("nonlocal_eqstrain")),
     _kappa(declareProperty<Real>("eqstrain_max")),
     _kappa_old(getMaterialPropertyOld<Real>("eqstrain_max")),
     _crack_rotation(declareProperty<RankTwoTensor>(_base_name + "crack_rotation")),
@@ -166,38 +166,31 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
     domega_dk = eps0 / (kappa * kappa) * arg2 - eps0 / kappa * darg2_dk;
   }
 
-  // (6b) Loading flag: only active when nonlocal strain > kappa_old (history variable)
-  Real loading = (_eqstrain_nonlocal[_qp] > _kappa_old[_qp] ? 1.0 : 0.0);
+  // // (6b) Loading flag: only active when nonlocal strain > kappa_old (history variable)
+  // Real loading = (_eqstrain_nonlocal[_qp] > _kappa_old[_qp] ? 1.0 : 0.0);
 
-  // (6c) ∂ε̃/∂ε via Mazars equivalent strain derivative
-  RankTwoTensor depsde; 
-  depsde.zero();
-  if (eqstrain_local > 0.0)
-  {
-    for (unsigned i = 0; i < 3; ++i)
-    {
-      Real eps_i_pos = std::max(eps_dir(i), 0.0);
-      if (eps_i_pos > 0.0)
-      {
-        const RealVectorValue ni = _crack_rotation[_qp].column(i);
-        depsde += (eps_i_pos/eqstrain_local) * RankTwoTensor::outerProduct(ni, ni);
-      }
-    }
-  }
-  RankTwoTensor domega_de = domega_dk * loading * depsde;
+  // // (6c) ∂ε̃/∂ε via Mazars equivalent strain derivative
+  // RankTwoTensor depsde; 
+  // depsde.zero();
+  // if (eqstrain_local > 0.0)
+  // {
+  //   for (unsigned i = 0; i < 3; ++i)
+  //   {
+  //     Real eps_i_pos = std::max(eps_dir(i), 0.0);
+  //     if (eps_i_pos > 0.0)
+  //     {
+  //       const RealVectorValue ni = _crack_rotation[_qp].column(i);
+  //       depsde += (eps_i_pos/eqstrain_local) * RankTwoTensor::outerProduct(ni, ni);
+  //     }
+  //   }
+  // }
+  // RankTwoTensor domega_de = domega_dk * loading * depsde;
 
   // (6d) Consistent tangent: (1-ω)De - (De:ε) ⊗ (∂ω/∂ε)
-  RankFourTensor tangent = (1.0 - omega) * De;
-  
-  // Add softening contribution from damage evolution
-  // for (unsigned i = 0; i < 3; ++i)
-  //   for (unsigned j = 0; j < 3; ++j)
-  //     for (unsigned k = 0; k < 3; ++k)
-  //       for (unsigned l = 0; l < 3; ++l)
-  //         tangent(i, j, k, l) -= De_eps(i, j) * domega_de(k, l);
+  RankFourTensor tangent = (1.0 - omega + 0.01) * De;
 
   // (6e) Assign stress and Jacobian multiplier
-  _stress[_qp] = (1.0 - omega) * De_eps;
+  _stress[_qp] = (1.0 - omega + 0.01) * De_eps;
   _Jacobian_mult[_qp] = tangent;
 
   // (7) Finite‐strain rotation if needed

@@ -228,7 +228,7 @@ top_right2 = '2e-4 0.0025 0'
   [define_initial_damage_block1]
     type = ConstantAux
     variable = crack_damage_initial
-    value = 0.9
+    value = 0.1
     block = 1
     execute_on = INITIAL
   []
@@ -248,10 +248,9 @@ top_right2 = '2e-4 0.0025 0'
   []
   #get crack damage aux
   [crack_damage_aux]
-    type = MaterialRealVectorValueAux
+    type = MaterialRealAux
     variable = crack_damage_aux
     property = crack_damage
-    component = 0
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -387,22 +386,32 @@ top_right2 = '2e-4 0.0025 0'
     youngs_modulus = ${E}
     poissons_ratio = ${nu}
   [../]
-  [./elastic_stress]
-    type = ComputeSmearedCrackingStressDebug
-    nonlocal_eqstrain = nonlocal_eqstrain
-    damage_evolution_law_span = 0.5
-    model = NONLOCAL
-    cracking_stress = strength
-    initial_crack_damage = crack_damage_initial
-    output_properties = 'stress'
-    softening_models = abrupt_softening
-    cracked_elasticity_type = FULL
-    outputs = exodus
-  [../]
+  # [./elastic_stress]
+  #   type = ComputeSmearedCrackingStressDebug
+  #   nonlocal_eqstrain = nonlocal_eqstrain
+  #   damage_evolution_law_span = 0.5
+  #   model = NONLOCAL
+  #   cracking_stress = strength
+  #   initial_crack_damage = crack_damage_initial
+  #   output_properties = 'stress'
+  #   softening_models = abrupt_softening
+  #   cracked_elasticity_type = FULL
+  #   outputs = exodus
+  # [../]
   # [strain]
   #   type = ComputeFiniteStrain
   #   displacements = 'disp_x disp_y'
   # []
+  [./elastic_stress]
+    type = FarmsComputeSmearedCrackingStressGrads
+    nonlocal_eqstrain = nonlocal_eqstrain
+    paramA = 0.99
+    paramB = 50
+    cracking_stress = strength
+    initial_crack_damage = crack_damage_initial
+    output_properties = 'stress'
+    outputs = exodus
+  [../]
   [density]
     type = GenericConstantMaterial
     prop_names = 'density'
@@ -444,7 +453,7 @@ top_right2 = '2e-4 0.0025 0'
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
-  nl_max_its = 20
+  nl_max_its = 40
 
   # dt = 0.5e-7
   end_time = 100e-5
@@ -472,7 +481,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 200
+  time_step_interval = 20
   print_linear_residuals = false
   csv = true
   [checkpoint]
