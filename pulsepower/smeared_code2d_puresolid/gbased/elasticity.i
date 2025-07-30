@@ -228,7 +228,7 @@ top_right2 = '2e-4 0.0025 0'
   [define_initial_damage_block1]
     type = ConstantAux
     variable = crack_damage_initial
-    value = 0.1
+    value = 0.9
     block = 1
     execute_on = INITIAL
   []
