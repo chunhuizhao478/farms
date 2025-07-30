@@ -59,7 +59,7 @@ chi = 0.8 #energy ratio
 #background stress 
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.75
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
