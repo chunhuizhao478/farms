@@ -41,7 +41,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-12
+    C_g = 1e-14
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -300,13 +300,13 @@
         type = LagrangianStiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 0.1 # ratio factor for stiffness proportional damping 
+        zeta = 0.3 # ratio factor for stiffness proportional damping 
     []
     [./damping_y]
         type = LagrangianStiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 0.1 # ratio factor for stiffness proportional damping
+        zeta = 0.3 # ratio factor for stiffness proportional damping
     []     
 []
 
@@ -518,6 +518,11 @@
         type = CSV
         time_step_interval = 1
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 200
+        num_files = 2
+    []
 []
 
 [BCs]

@@ -285,7 +285,7 @@
         velocity = vel_x
         beta = 0.25
         gamma = 0.5
-        eta = 0
+        eta = 0.05
     []
     [./inertia_y]
         type = InertialForce
@@ -294,7 +294,7 @@
         velocity = vel_y
         beta = 0.25
         gamma = 0.5
-        eta = 0
+        eta = 0.05
     [] 
     [./damping_x]
         type = LagrangianStiffPropDampingImplicit
@@ -518,6 +518,11 @@
         type = CSV
         time_step_interval = 1
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 200
+        num_files = 2
+    []
 []
 
 [BCs]
