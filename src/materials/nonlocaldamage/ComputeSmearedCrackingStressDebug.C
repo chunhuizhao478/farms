@@ -576,10 +576,10 @@ ComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
         Real residual_stress_fraction = 1e-2;
    
         // Calculate effective stiffness with residual stress
-        Real effective_stiffness_ratio = (1.0 - _crack_damage[_qp](i)) * (1.0 - residual_stress_fraction) + residual_stress_fraction;
+        // Real effective_stiffness_ratio = (1.0 - _crack_damage[_qp](i)) * (1.0 - residual_stress_fraction) + residual_stress_fraction;
         
         // Calculate stress with residual component
-        sigma(0) = effective_stiffness_ratio * youngs_modulus * _crack_initiation_strain[_qp](i);
+        // sigma(i) = effective_stiffness_ratio * youngs_modulus * _crack_initiation_strain[_qp](i);
 
       }
 
@@ -597,8 +597,8 @@ ComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
       }
     }
 
-    if (cracked)
-      updateStressTensorForCracking(_stress[_qp], sigma);
+    // if (cracked)
+    //   updateStressTensorForCracking(_stress[_qp], sigma);
   }
 
   _crack_flags[_qp](0) = 1.0 - _crack_damage[_qp](2);
