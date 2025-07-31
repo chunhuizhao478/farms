@@ -130,9 +130,12 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
   Real omega = 0.0;
   if (kappa > eps0)
   {
-    Real arg1 = std::exp(-_paramB * (kappa - eps0));
-    Real arg2 = 1 - _paramA + _paramA * arg1;
-    omega = 1.0 - eps0 / kappa * arg2;
+    // Real arg1 = std::exp(-_paramB * (kappa - eps0));
+    // Real arg2 = 1 - _paramA + _paramA * arg1;
+    // omega = 1.0 - eps0 / kappa * arg2;
+
+    omega = 1.0 - eps0 / kappa * (1.0 - _paramA) - _paramA / std::exp(_paramB * (kappa - eps0));
+
   }
 
   // irreversible crack damage, set to initial damage if it is smaller
@@ -154,37 +157,6 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
   const RankFourTensor & De  = _elasticity_tensor[_qp];
   const RankTwoTensor  & eps = _elastic_strain[_qp];
   RankTwoTensor De_eps = De * eps;
-
- // (6a) dω/dκ from exponential law
-  Real domega_dk = 0.0;
-  if (kappa > eps0 + 1e-12)    // tiny epsilon to avoid exact-zero division
-  {
-    Real arg1 = std::exp(-_paramB * (kappa - eps0));
-    Real arg2 = 1.0 - _paramA + _paramA * arg1;
-    Real darg1_dk = -_paramB * arg1;
-    Real darg2_dk = _paramA * darg1_dk;
-    domega_dk = eps0 / (kappa * kappa) * arg2 - eps0 / kappa * darg2_dk;
-  }
-
-  // // (6b) Loading flag: only active when nonlocal strain > kappa_old (history variable)
-  // Real loading = (_eqstrain_nonlocal[_qp] > _kappa_old[_qp] ? 1.0 : 0.0);
-
-  // // (6c) ∂ε̃/∂ε via Mazars equivalent strain derivative
-  // RankTwoTensor depsde; 
-  // depsde.zero();
-  // if (eqstrain_local > 0.0)
-  // {
-  //   for (unsigned i = 0; i < 3; ++i)
-  //   {
-  //     Real eps_i_pos = std::max(eps_dir(i), 0.0);
-  //     if (eps_i_pos > 0.0)
-  //     {
-  //       const RealVectorValue ni = _crack_rotation[_qp].column(i);
-  //       depsde += (eps_i_pos/eqstrain_local) * RankTwoTensor::outerProduct(ni, ni);
-  //     }
-  //   }
-  // }
-  // RankTwoTensor domega_de = domega_dk * loading * depsde;
 
   // (6d) Consistent tangent: (1-ω)De - (De:ε) ⊗ (∂ω/∂ε)
   RankFourTensor tangent = (1.0 - omega + 0.01) * De;

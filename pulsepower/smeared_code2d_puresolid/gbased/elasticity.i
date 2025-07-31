@@ -268,7 +268,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 160e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -285,43 +285,6 @@ top_right2 = '2e-4 0.0025 0'
     strain = FINITE
   []
 []
-
-# [Kernels]
-#   [dispkernel_x]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_x
-#     component = 0
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [dispkernel_y]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_y
-#     component = 1
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [inertia_x]
-#     type = InertialForce
-#     variable = disp_x
-#     velocity = vel_x
-#     acceleration = accel_x
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-#   [inertia_y]
-#     type = InertialForce
-#     variable = disp_y
-#     velocity = vel_y
-#     acceleration = accel_y
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-# []
 
 [BCs]
   #confinement
@@ -406,7 +369,7 @@ top_right2 = '2e-4 0.0025 0'
     type = FarmsComputeSmearedCrackingStressGrads
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
-    paramB = 50
+    paramB = 5000
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
