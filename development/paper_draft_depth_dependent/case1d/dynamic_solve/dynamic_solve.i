@@ -40,13 +40,13 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 
 ##CDB model parameters##
 xi_0 = -1.1 #strain invariants ratio: onset of damage evolution
-xi_d = -1.1 #strain invariants ratio: onset of breakage healing
+xi_d = -1.2 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-5 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -66,7 +66,7 @@ chi = 0.8 #energy ratio
 #background stress 
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.75
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
