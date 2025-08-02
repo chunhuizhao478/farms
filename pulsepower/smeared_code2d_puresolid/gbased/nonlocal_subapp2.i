@@ -50,48 +50,48 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
+[Kernels]
+  [react_nonlocal]
+    type = Reaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+  []
+  [diffusion_nonlocal]
+    type = CoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = ${fparse 0.5*l*l}
+  []
+  [reaction_local]
+    type = CoupledElkFixedLocalEqstrainForce
+    variable = nonlocal_eqstrain
+    eqstrain_local = eqstrain_local
+  []    
+[]
+
 # [Kernels]
 #   [react_nonlocal]
-#     type = Reaction
+#     type = CoupledReaction
 #     variable = nonlocal_eqstrain
 #     rate = 1.0
+#     eqstrain_local = eqstrain_local
+#     length_scale = ${fparse l}
+#     kappa_i = ${fparse kappa_i}
+#     c0 = ${fparse c0}
 #   []
 #   [diffusion_nonlocal]
 #     type = CoefDiffusion
 #     variable = nonlocal_eqstrain
-#     coef = ${fparse 0.5*l*l}
+#     coef = ${fparse 1.0}
 #   []
 #   [reaction_local]
 #     type = CoupledElkLocalEqstrainForce
 #     variable = nonlocal_eqstrain
 #     eqstrain_local = eqstrain_local
+#     length_scale = ${fparse l}
+#     kappa_i = ${fparse kappa_i}
+#     c0 = ${fparse c0}
 #   []    
 # []
-
-[Kernels]
-  [react_nonlocal]
-    type = CoupledReaction
-    variable = nonlocal_eqstrain
-    rate = 1.0
-    eqstrain_local = eqstrain_local
-    length_scale = ${fparse l}
-    kappa_i = ${fparse kappa_i}
-    c0 = ${fparse c0}
-  []
-  [diffusion_nonlocal]
-    type = CoefDiffusion
-    variable = nonlocal_eqstrain
-    coef = ${fparse 1.0}
-  []
-  [reaction_local]
-    type = CoupledElkLocalEqstrainForce
-    variable = nonlocal_eqstrain
-    eqstrain_local = eqstrain_local
-    length_scale = ${fparse l}
-    kappa_i = ${fparse kappa_i}
-    c0 = ${fparse c0}
-  []    
-[]
 
 # [Preconditioning]
 #     [smp]

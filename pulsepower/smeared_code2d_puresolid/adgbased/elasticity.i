@@ -58,30 +58,30 @@ hht_alpha = 0.11
 #   []
 # []
 
-[MultiApps]
-  [fracture]
-    type = TransientMultiApp
-    input_files = nonlocal_subapp2.i
-    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-    execute_on = 'TIMESTEP_END'
-    clone_parent_mesh = true
-  []
-[]
+# [MultiApps]
+#   [fracture]
+#     type = TransientMultiApp
+#     input_files = nonlocal_subapp2.i
+#     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+#     execute_on = 'TIMESTEP_END'
+#     clone_parent_mesh = true
+#   []
+# []
 
-[Transfers]
-  [from_d]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'fracture'
-    variable = nonlocal_eqstrain
-    source_variable = nonlocal_eqstrain
-  []
-  [to_psie_active]
-    type = MultiAppCopyTransfer
-    to_multi_app = 'fracture'
-    variable = eqstrain_local
-    source_variable = eqstrain_local
-  []
-[]
+# [Transfers]
+#   [from_d]
+#     type = MultiAppCopyTransfer
+#     from_multi_app = 'fracture'
+#     variable = nonlocal_eqstrain
+#     source_variable = nonlocal_eqstrain
+#   []
+#   [to_psie_active]
+#     type = MultiAppCopyTransfer
+#     to_multi_app = 'fracture'
+#     variable = eqstrain_local
+#     source_variable = eqstrain_local
+#   []
+# []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -135,6 +135,10 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   [] 
+  [nonlocal_eqstrain]
+      order = FIRST
+      family = LAGRANGE
+  [] 
 []
 
 [AuxVariables]
@@ -159,10 +163,6 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   []
-  [nonlocal_eqstrain]
-      order = FIRST
-      family = LAGRANGE
-  [] 
   [eqstrain_local]
     family = MONOMIAL
     order = CONSTANT
@@ -228,7 +228,7 @@ top_right2 = '2e-4 0.0025 0'
   [define_initial_damage_block1]
     type = ConstantAux
     variable = crack_damage_initial
-    value = 0.9
+    value = 0.5
     block = 1
     execute_on = INITIAL
   []
@@ -241,14 +241,14 @@ top_right2 = '2e-4 0.0025 0'
   []
   #get eqstrain_local
   [eqstrain_local_aux]
-    type = MaterialRealAux
+    type = ADMaterialRealAux
     variable = eqstrain_local
     property = eqstrain_local
     execute_on = 'TIMESTEP_END'
   []
   #get crack damage aux
   [crack_damage_aux]
-    type = MaterialRealVectorValueAux
+    type = ADMaterialRealVectorValueAux
     variable = crack_damage_aux
     property = crack_damage
     component = 0
@@ -279,7 +279,7 @@ top_right2 = '2e-4 0.0025 0'
     hht_alpha = ${hht_alpha}
     newmark_beta = ${newmark_beta}
     newmark_gamma = ${newmark_gamma}
-    use_automatic_differentiation = false
+    use_automatic_differentiation = true
     # mass_damping_coefficient = 0.1
     # stiffness_damping_coefficient = 0.1
     density = ${density}
@@ -287,42 +287,30 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-# [Kernels]
-#   [dispkernel_x]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_x
-#     component = 0
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [dispkernel_y]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_y
-#     component = 1
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [inertia_x]
-#     type = InertialForce
-#     variable = disp_x
-#     velocity = vel_x
-#     acceleration = accel_x
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-#   [inertia_y]
-#     type = InertialForce
-#     variable = disp_y
-#     velocity = vel_y
-#     acceleration = accel_y
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-# []
+[Kernels]
+  [react_nonlocal]
+    type = ADCoupledReaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []
+  [diffusion_nonlocal]
+    type = ADCoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = ${fparse 1.0}
+  []
+  [reaction_local]
+    type = ADCoupledElkLocalEqstrainForce
+    variable = nonlocal_eqstrain
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []    
+[]
 
 [BCs]
   #confinement
@@ -337,20 +325,20 @@ top_right2 = '2e-4 0.0025 0'
   []   
   # fix ptr
   [./fix_cptr1_x]
-    type = DirichletBC
+    type = ADDirichletBC
     variable = disp_x
     boundary = corner_ptr
     value = 0
   []
   [./fix_cptr2_y]
-    type = DirichletBC
+    type = ADDirichletBC
     variable = disp_y
     boundary = corner_ptr
     value = 0
   []
   #add dampers
   [damp_outer_x]
-    type = FarmsNonReflectDashpotBC
+    type = ADFarmsNonReflectDashpotBC
     variable = disp_x
     displacements = 'disp_x disp_y'
     velocities = 'vel_x vel_y'
@@ -365,7 +353,7 @@ top_right2 = '2e-4 0.0025 0'
     density = ${density}
   []
   [damp_outer_y]
-    type = FarmsNonReflectDashpotBC
+    type = ADFarmsNonReflectDashpotBC
     variable = disp_y
     displacements = 'disp_x disp_y'
     velocities = 'vel_x vel_y'
@@ -383,12 +371,22 @@ top_right2 = '2e-4 0.0025 0'
 
 [Materials]
   [./elasticity_tensor]
-    type = ComputeIsotropicElasticityTensor
+    type = ADComputeIsotropicElasticityTensor
     youngs_modulus = ${E}
     poissons_ratio = ${nu}
   [../]
+  # [./elastic_stress]
+  #   type = ADFarmsComputeSmearedCrackingStressGrads
+  #   nonlocal_eqstrain = nonlocal_eqstrain
+  #   paramA = 0.99
+  #   paramB = 1000
+  #   cracking_stress = strength
+  #   initial_crack_damage = crack_damage_initial
+  #   output_properties = 'stress'
+  #   outputs = exodus
+  # [../]
   [./elastic_stress]
-    type = ComputeSmearedCrackingStressDebug
+    type = ADComputeSmearedCrackingStressDebug
     nonlocal_eqstrain = nonlocal_eqstrain
     damage_evolution_law_span = 0.5
     model = NONLOCAL
@@ -399,21 +397,17 @@ top_right2 = '2e-4 0.0025 0'
     cracked_elasticity_type = FULL
     outputs = exodus
   [../]
-  # [strain]
-  #   type = ComputeFiniteStrain
-  #   displacements = 'disp_x disp_y'
-  # []
   [density]
-    type = GenericConstantMaterial
+    type = ADGenericConstantMaterial
     prop_names = 'density'
     prop_values = ${density}
-  [] 
+  []  
   [./abrupt_softening]
   type = AbruptSoftening
   [../]
   [./exponential_softening]
   type = ExponentialSoftening
-  [../]  
+  [../] 
 []
 
 [Preconditioning]
@@ -449,10 +443,10 @@ top_right2 = '2e-4 0.0025 0'
   # dt = 0.5e-7
   end_time = 100e-5
 
-  fixed_point_max_its = 10
-  accept_on_max_fixed_point_iteration = false
-  fixed_point_rel_tol = 1e-6
-  fixed_point_abs_tol = 1e-8
+  # fixed_point_max_its = 10
+  # accept_on_max_fixed_point_iteration = false
+  # fixed_point_rel_tol = 1e-6
+  # fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
@@ -472,7 +466,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 10
   print_linear_residuals = false
   csv = true
   [checkpoint]

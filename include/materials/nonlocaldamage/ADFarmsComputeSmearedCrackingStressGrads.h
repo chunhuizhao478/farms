@@ -11,14 +11,15 @@
 
 #include "ColumnMajorMatrix.h"
 #include "ADComputeMultipleInelasticStress.h"
-#include "ADSmearedCrackSofteningBase.h"
+#include "SmearedCrackSofteningBase.h"
 #include "Function.h"
 
 /*
-Farms Compute Smeared Cracking Stress Model
+AD Farms Compute Smeared Cracking Stress Model
 Created by Chunhui Zhao, Apr 20th, 2025
 Rewrite the smeared crack model, add energy regularization
 Regularization takes place on equivalent strain
+Uses automatic differentiation
 
 - Pure Solid Mechanics
 - Take regularizated equivalent strain as input
@@ -27,7 +28,7 @@ Regularization takes place on equivalent strain
 
 /**
  * ADFarmsComputeSmearedCrackingStressGrads computes the stress for a finite strain
- * material with smeared cracking
+ * material with smeared cracking using automatic differentiation
  */
 class ADFarmsComputeSmearedCrackingStressGrads : public ADComputeMultipleInelasticStress
 {
@@ -46,13 +47,11 @@ protected:
    * computes the crack orientations, and stores in _crack_rotation.
    * @param strain_in_crack_dir Computed strains in crack directions
    */
-  void computeCrackStrainAndOrientation(ADRealVectorValue & strain_in_crack_dir);
+  void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
 
-  /**
-   * Update the local elasticity tensor (_local_elasticity_tensor)
-   * due to the effects of cracking.
-   */
-  // void updateLocalElasticityTensor();
+  // @{ add additional functions for porous flow coupling
+  virtual void updatePermeabilityForCracking();
+  // @}
 
   ///@{ Input parameters for smeared crack models
 
@@ -85,8 +84,27 @@ protected:
   ///@}
 
   ///@{ Parameters for the damage evolution law
-  ADReal _paramA;
-  ADReal _paramB; 
+  const Real _paramA;
+  const Real _paramB;
   ///@}
 
+  ///initial damage for crack_damage material property
+  const ADVariableValue & _initial_crack_damage;
+
+  //porous flow coupling related parameters
+  const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
+  const Real _intrinsic_permeability;
+
+  /// @brief define the effective permeability
+  ADMaterialProperty<RealTensorValue> & _effective_perm;
+  const MaterialProperty<RealTensorValue> & _effective_perm_old; 
+
+  // Exponential permeability model
+  const bool _exponential_permeability_model; // flag to indicate if exponential permeability model is used
+  const Real _coeff_b; // coefficient for the exponential function in the effective permeability
+
+  // Darcy-Poiseuille permeability model
+  const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
+  const Real _wc; // characteristic width for the Darcy-Poiseuille model
+  const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
 };
