@@ -27,7 +27,7 @@
     xi_d = -0.8073
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-12 #
+    C_g = 1e-14 #
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -51,16 +51,16 @@
     solid_bulk_modulus_g = 50.38e9 
 
     # Solid grains bulk modulus (36 GPa - typical for quartz)  
-    solid_bulk_modulus_s = 50.00e9 
+    solid_bulk_modulus_s = 50.38e9 
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
     ultimate_grain_size = 0.25
     initial_viscosity_fluid = 1e-3
 
-    anand_param_go_mat = 0.2
-    anand_param_eta_cv_mat = 0.008
-    anand_param_p_mat = 1
+    anand_param_go_mat = 0.25
+    anand_param_eta_cv_mat = 0.01
+    anand_param_p_mat = 2
 
 []
 
@@ -162,6 +162,36 @@
         order = FIRST
         family = MONOMIAL
     []
+
+#######
+    [biot_coeff_s]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [biot_mod_s]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [perm_s]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [biot_coeff_g]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [biot_mod_g]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [perm_g]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [Plastic_porosity]
+        order = FIRST
+        family = MONOMIAL
+    []
     
 []
 
@@ -201,6 +231,48 @@
         type = MaterialRealAux
         variable = dilatancy
         property = dilatancy_function_beta
+        block = '3'
+    []
+    [biot_coeff_s]
+        type = MaterialRealAux
+        variable = biot_coeff_s
+        property = Biot_coefficient_solid
+        block = '3'
+    []
+    [biot_mod_s]
+        type = MaterialRealAux
+        variable = biot_mod_s
+        property = Biot_modulus_solid
+        block = '3'
+    []
+    [perm_s]
+        type = MaterialRealAux
+        variable = perm_s
+        property = permeability_solid
+        block = '3'
+    []
+    [porosity_plastic]
+        type = MaterialRealAux
+        variable = Plastic_porosity
+        property = plastic_porosity
+        block = '3'
+    []
+    [biot_coeff_g]
+        type = MaterialRealAux
+        variable = biot_coeff_g
+        property = Biot_coefficient_granular
+        block = '3'
+    []
+    [biot_mod_g]
+        type = MaterialRealAux
+        variable = biot_mod_g
+        property = Biot_modulus_granular
+        block = '3'
+    []
+    [perm_g]
+        type = MaterialRealAux
+        variable = perm_g
+        property = permeability_granular
         block = '3'
     []
 []
@@ -372,8 +444,8 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 3 ###
-        show = 'dilatancy eta porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
+        time_step_interval = 5 ###
+        show = 'biot_coeff_s biot_mod_s perm_s biot_coeff_g biot_mod_g perm_g Plastic_porosity dilatancy eta porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
         type = CSV

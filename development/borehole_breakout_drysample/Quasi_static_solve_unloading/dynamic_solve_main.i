@@ -348,7 +348,7 @@
     [./exodus]
         type = Exodus
         time_step_interval = 3 ###
-        show = 'disp_z porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
+        show = 'disp_z porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
         type = CSV
@@ -366,7 +366,7 @@
 [Functions]
   [applied_load_top]
     type = ParsedFunction
-    expression = 'if(t <= 1500, -3.3e-5 - 3.3e-7 * t, if(t <= 2699, -5.28e-4 + 3.3e-7 * (t - 1500), -4.3e-5))'
+    expression = 'if(t <= 1500, -3.3e-5 - 3.3e-7 * t, -5.28e-4 )'
   []
 []
 

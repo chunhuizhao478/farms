@@ -51,7 +51,7 @@
     solid_bulk_modulus_g = 50.38e9 
 
     # Solid grains bulk modulus (36 GPa - typical for quartz)  
-    solid_bulk_modulus_s = 50.00e9 
+    solid_bulk_modulus_s = 50.38e9 
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
