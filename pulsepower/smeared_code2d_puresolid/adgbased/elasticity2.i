@@ -145,7 +145,7 @@ top_right2 = '2e-4 0.0025 0'
   [./strength]
     order = CONSTANT
     family = MONOMIAL
-    initial_condition = ${fparse ft}
+    # initial_condition = ${fparse ft}
   [../]
   [crack_damage_aux]
     order = FIRST
@@ -476,22 +476,22 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-# [Distributions]
-#   #typically for granite
-#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-#   [weibull]
-#     type = Weibull
-#     shape = 8.0 #k
-#     scale = ${ft} #lambda
-#     location = 0 
-#   []
-# [] 
+[Distributions]
+  #typically for granite
+  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+  [weibull]
+    type = Weibull
+    shape = 15.0 #k
+    scale = ${ft} #lambda
+    location = 0 
+  []
+[] 
 
-# [ICs]
-#   [./strength_var]
-#     type =  RandomIC
-#     variable = strength
-#     distribution = weibull
-#   []
-# []
+[ICs]
+  [./strength_var]
+    type =  RandomIC
+    variable = strength
+    distribution = weibull
+  []
+[]
