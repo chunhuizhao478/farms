@@ -1,6 +1,6 @@
 Setup similar as TPV26
-Created By Chunhui Zhao, Jul 27th, 2025
+Created By Chunhui Zhao, Aug 2nd, 2025
 
-With initial damage zone 
+Setup Default Problem
 
-(2) Hetergeneoity initial damage profile
+(1) close damage/breakage healing: C_1 = 0, CBH_constant = 0, Cg = 1e-12

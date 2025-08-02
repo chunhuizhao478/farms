@@ -784,7 +784,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     time_step_interval = ${csv_time_step_interval}
   []
   [out]
-    type = Checkpoint
+    type = Checkpoint 
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
   []

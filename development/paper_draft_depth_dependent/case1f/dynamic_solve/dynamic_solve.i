@@ -40,7 +40,7 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 
 ##CDB model parameters##
 xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.0 #strain invariants ratio: onset of breakage healing
+xi_d = -1.2 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
