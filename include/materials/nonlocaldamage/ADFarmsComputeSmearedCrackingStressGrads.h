@@ -47,7 +47,7 @@ protected:
    * computes the crack orientations, and stores in _crack_rotation.
    * @param strain_in_crack_dir Computed strains in crack directions
    */
-  void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
+  void computeCrackStrainAndOrientation(ADRealVectorValue & strain_in_crack_dir);
 
   // @{ add additional functions for porous flow coupling
   virtual void updatePermeabilityForCracking();

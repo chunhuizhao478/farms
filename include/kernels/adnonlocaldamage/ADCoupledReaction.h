@@ -18,7 +18,7 @@ protected:
   const Real & _rate;
   
   /// Coupled local equivalent strain
-  const ADVariableValue & _eqstrain_local;
+  const ADMaterialProperty<Real> & _eqstrain_local;
   /// Length scale for gradient activity parameter
   const Real _length_scale;
   /// Equivalent strain at which the gradient activity starts

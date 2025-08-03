@@ -24,7 +24,7 @@ protected:
   virtual ADReal computeQpResidual() override;
 
 private:
-  const ADVariableValue & _eqstrain_local;
+  const ADMaterialProperty<Real> & _eqstrain_local;
   const Real _length_scale;
   const Real _kappa_i;
   const Real _c0; // Minimum value of the gradient activity parameter for the equivalent strain

@@ -114,12 +114,14 @@ ADFarmsComputeSmearedCrackingStressGrads::computeQpStress()
   const ADReal eps0 = _cracking_stress[_qp] / E;
 
   // (2) Compute Mazars‐type equivalent strain ε̃ and principal directions
-  RealVectorValue eps_dir;
+  ADRealVectorValue eps_dir;
   computeCrackStrainAndOrientation(eps_dir);
-  ADReal eps_dir0 = std::max(eps_dir(0), 0.0);
-  ADReal eps_dir1 = std::max(eps_dir(1), 0.0);
-  ADReal eps_dir2 = std::max(eps_dir(2), 0.0);
-  ADReal eqstrain_local = std::sqrt(eps_dir0*eps_dir0 + eps_dir1*eps_dir1 + eps_dir2*eps_dir2);
+  Real strain_dir0_positive = std::max(MetaPhysicL::raw_value(eps_dir(0)), 0.0);
+  Real strain_dir1_positive = std::max(MetaPhysicL::raw_value(eps_dir(1)), 0.0);
+  Real strain_dir2_positive = std::max(MetaPhysicL::raw_value(eps_dir(2)), 0.0);
+  ADReal eqstrain_local = std::sqrt(strain_dir0_positive * strain_dir0_positive +
+                                  strain_dir1_positive * strain_dir1_positive +
+                                  strain_dir2_positive * strain_dir2_positive);
   _eqstrain_local[_qp] = eqstrain_local;
 
   // (3) Update history κ = max(κ_old, ε̃)
@@ -169,23 +171,23 @@ ADFarmsComputeSmearedCrackingStressGrads::computeQpStress()
 
 void
 ADFarmsComputeSmearedCrackingStressGrads::computeCrackStrainAndOrientation(
-    RealVectorValue & strain_in_crack_dir)
+    ADRealVectorValue & strain_in_crack_dir)
 {
   // The rotation tensor is ordered such that directions for pre-existing cracks appear first
   // in the list of columns.  For example, if there is one existing crack, its direction is in the
   // first column in the rotation tensor.
 
-  std::vector<Real> eigval(3, 0.0);
-  RankTwoTensor eigvec;
+  std::vector<ADReal> eigval(3, 0.0);
+  ADRankTwoTensor eigvec;
 
   // Extract regular tensor from AD tensor for eigenvalue calculation
-  RankTwoTensor elastic_strain_nonad = MetaPhysicL::raw_value(_elastic_strain[_qp]);
+  ADRankTwoTensor elastic_strain_nonad = MetaPhysicL::raw_value(_elastic_strain[_qp]);
   elastic_strain_nonad.symmetricEigenvaluesEigenvectors(eigval, eigvec);
 
   // If the elastic strain is beyond the cracking strain, save the eigen vectors as
   // the rotation tensor. Reverse their order so that the third principal strain
   // (most tensile) will correspond to the first crack.
-  RankTwoTensor crack_rotation;
+  ADRankTwoTensor crack_rotation;
   crack_rotation.fillColumn(0, eigvec.column(2));
   crack_rotation.fillColumn(1, eigvec.column(1));
   crack_rotation.fillColumn(2, eigvec.column(0));

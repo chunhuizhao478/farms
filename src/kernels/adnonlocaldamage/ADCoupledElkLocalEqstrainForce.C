@@ -16,9 +16,9 @@ ADCoupledElkLocalEqstrainForce::validParams()
 {
   InputParameters params = ADKernel::validParams();
   params.addClassDescription("AD Kernel for implement local equivalent strain force");
-  params.addRequiredCoupledVar(
-      "eqstrain_local",
-      "The local equivalent strain used in the damage evolution law");
+  // params.addRequiredCoupledVar(
+  //     "eqstrain_local",
+  //     "The local equivalent strain used in the damage evolution law");
   params.addRequiredParam<Real>(
       "length_scale",
       "The length scale used in the gradient activity parameter for the equivalent strain");
@@ -33,7 +33,7 @@ ADCoupledElkLocalEqstrainForce::validParams()
 
 ADCoupledElkLocalEqstrainForce::ADCoupledElkLocalEqstrainForce(const InputParameters & parameters)
   : ADKernel(parameters),
-    _eqstrain_local(adCoupledValue("eqstrain_local")),
+    _eqstrain_local(getADMaterialProperty<Real>("eqstrain_local")),
     _length_scale(getParam<Real>("length_scale")),
     _kappa_i(getParam<Real>("kappa_i")),
     _c0(getParam<Real>("c0"))

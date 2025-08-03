@@ -1,13 +1,13 @@
 E = 50e9
 nu = 0.373
-ft = 137e6 ##computed from pf
+ft = 50e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 
+l =  3e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -88,12 +88,12 @@ hht_alpha = 0.11
 []
 
 #initial damage box 1
-bottom_left1 = '-0.0025 -2e-4 0'
-top_right1 = '0.0025 2e-4 0'
+bottom_left1 = '-0.0025 -3e-4 0'
+top_right1 = '0.0025 3e-4 0'
 
 #initial damage box 2
-bottom_left2 = '-2e-4 -0.0025 0'
-top_right2 = '2e-4 0.0025 0'
+bottom_left2 = '-3e-4 -0.0025 0'
+top_right2 = '3e-4 0.0025 0'
 
 [Mesh]
   [./msh]
@@ -136,8 +136,8 @@ top_right2 = '2e-4 0.0025 0'
     order = FIRST
   [] 
   [nonlocal_eqstrain]
-      order = FIRST
-      family = LAGRANGE
+    order = FIRST
+    family = LAGRANGE
   [] 
 []
 
@@ -145,7 +145,7 @@ top_right2 = '2e-4 0.0025 0'
   [./strength]
     order = CONSTANT
     family = MONOMIAL
-    # initial_condition = ${fparse ft}
+    initial_condition = ${fparse ft}
   [../]
   [crack_damage_aux]
     order = FIRST
@@ -247,11 +247,17 @@ top_right2 = '2e-4 0.0025 0'
     execute_on = 'TIMESTEP_END'
   []
   #get crack damage aux
+  # [crack_damage_aux]
+  #   type = ADMaterialRealVectorValueAux
+  #   variable = crack_damage_aux
+  #   property = crack_damage
+  #   component = 0
+  #   execute_on = 'TIMESTEP_END'
+  # []
   [crack_damage_aux]
-    type = ADMaterialRealVectorValueAux
+    type = ADMaterialRealAux
     variable = crack_damage_aux
     property = crack_damage
-    component = 0
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -269,7 +275,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 40e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -289,26 +295,18 @@ top_right2 = '2e-4 0.0025 0'
 
 [Kernels]
   [react_nonlocal]
-    type = ADCoupledReaction
+    type = ADReaction
     variable = nonlocal_eqstrain
     rate = 1.0
-    eqstrain_local = eqstrain_local
-    length_scale = ${fparse l}
-    kappa_i = ${fparse kappa_i}
-    c0 = ${fparse c0}
   []
   [diffusion_nonlocal]
     type = ADCoefDiffusion
     variable = nonlocal_eqstrain
-    coef = ${fparse 1.0}
+    coef = ${fparse 0.5*l*l}
   []
   [reaction_local]
-    type = ADCoupledElkLocalEqstrainForce
+    type = ADElkLocalEqstrainForce
     variable = nonlocal_eqstrain
-    eqstrain_local = eqstrain_local
-    length_scale = ${fparse l}
-    kappa_i = ${fparse kappa_i}
-    c0 = ${fparse c0}
   []    
 []
 
@@ -375,38 +373,39 @@ top_right2 = '2e-4 0.0025 0'
     youngs_modulus = ${E}
     poissons_ratio = ${nu}
   [../]
-  # [./elastic_stress]
-  #   type = ADFarmsComputeSmearedCrackingStressGrads
-  #   nonlocal_eqstrain = nonlocal_eqstrain
-  #   paramA = 0.99
-  #   paramB = 1000
-  #   cracking_stress = strength
-  #   initial_crack_damage = crack_damage_initial
-  #   output_properties = 'stress'
-  #   outputs = exodus
-  # [../]
   [./elastic_stress]
-    type = ADComputeSmearedCrackingStressDebug
+    type = ADFarmsComputeSmearedCrackingStressGrads
     nonlocal_eqstrain = nonlocal_eqstrain
-    damage_evolution_law_span = 0.5
-    model = NONLOCAL
+    paramA = 0.99
+    paramB = 1000
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
-    softening_models = abrupt_softening
-    cracked_elasticity_type = FULL
     outputs = exodus
   [../]
+  # [./elastic_stress]
+  #   type = ADComputeSmearedCrackingStressDebug
+  #   nonlocal_eqstrain = nonlocal_eqstrain
+  #   damage_evolution_law_span = 1.0
+  #   model = NONLOCAL
+  #   max_cracks = 1
+  #   cracking_stress = strength
+  #   initial_crack_damage = crack_damage_initial
+  #   output_properties = 'stress'
+  #   softening_models = abrupt_softening
+  #   cracked_elasticity_type = FULL
+  #   outputs = exodus
+  # [../]
   [density]
     type = ADGenericConstantMaterial
     prop_names = 'density'
     prop_values = ${density}
   []  
   [./abrupt_softening]
-  type = AbruptSoftening
+  type = ADAbruptSoftening
   [../]
   [./exponential_softening]
-  type = ExponentialSoftening
+  type = ADExponentialSoftening
   [../] 
 []
 
@@ -476,22 +475,22 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${ft} #lambda
-    location = 0 
-  []
-[] 
+# [Distributions]
+#   #typically for granite
+#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+#   [weibull]
+#     type = Weibull
+#     shape = 15.0 #k
+#     scale = ${ft} #lambda
+#     location = 0 
+#   []
+# [] 
 
-[ICs]
-  [./strength_var]
-    type =  RandomIC
-    variable = strength
-    distribution = weibull
-  []
-[]
+# [ICs]
+#   [./strength_var]
+#     type =  RandomIC
+#     variable = strength
+#     distribution = weibull
+#   []
+# []

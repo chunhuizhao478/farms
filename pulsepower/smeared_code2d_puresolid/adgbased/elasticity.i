@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 150e6 ##computed from pf
+ft = 50e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -145,7 +145,7 @@ top_right2 = '2e-4 0.0025 0'
   [./strength]
     order = CONSTANT
     family = MONOMIAL
-    # initial_condition = ${fparse ft}
+    initial_condition = ${fparse ft}
   [../]
   [crack_damage_aux]
     order = FIRST
@@ -247,11 +247,17 @@ top_right2 = '2e-4 0.0025 0'
     execute_on = 'TIMESTEP_END'
   []
   #get crack damage aux
+  # [crack_damage_aux]
+  #   type = ADMaterialRealVectorValueAux
+  #   variable = crack_damage_aux
+  #   property = crack_damage
+  #   component = 0
+  #   execute_on = 'TIMESTEP_END'
+  # []
   [crack_damage_aux]
-    type = ADMaterialRealVectorValueAux
+    type = ADMaterialRealAux
     variable = crack_damage_aux
     property = crack_damage
-    component = 0
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -269,7 +275,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 40e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -292,7 +298,6 @@ top_right2 = '2e-4 0.0025 0'
     type = ADCoupledReaction
     variable = nonlocal_eqstrain
     rate = 1.0
-    eqstrain_local = eqstrain_local
     length_scale = ${fparse l}
     kappa_i = ${fparse kappa_i}
     c0 = ${fparse c0}
@@ -305,7 +310,6 @@ top_right2 = '2e-4 0.0025 0'
   [reaction_local]
     type = ADCoupledElkLocalEqstrainForce
     variable = nonlocal_eqstrain
-    eqstrain_local = eqstrain_local
     length_scale = ${fparse l}
     kappa_i = ${fparse kappa_i}
     c0 = ${fparse c0}
@@ -375,28 +379,28 @@ top_right2 = '2e-4 0.0025 0'
     youngs_modulus = ${E}
     poissons_ratio = ${nu}
   [../]
-  # [./elastic_stress]
-  #   type = ADFarmsComputeSmearedCrackingStressGrads
-  #   nonlocal_eqstrain = nonlocal_eqstrain
-  #   paramA = 0.99
-  #   paramB = 1000
-  #   cracking_stress = strength
-  #   initial_crack_damage = crack_damage_initial
-  #   output_properties = 'stress'
-  #   outputs = exodus
-  # [../]
   [./elastic_stress]
-    type = ADComputeSmearedCrackingStressDebug
+    type = ADFarmsComputeSmearedCrackingStressGrads
     nonlocal_eqstrain = nonlocal_eqstrain
-    damage_evolution_law_span = 0.5
-    model = NONLOCAL
+    paramA = 0.99
+    paramB = 1000
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
-    softening_models = abrupt_softening
-    cracked_elasticity_type = FULL
     outputs = exodus
   [../]
+  # [./elastic_stress]
+  #   type = ADComputeSmearedCrackingStressDebug
+  #   nonlocal_eqstrain = nonlocal_eqstrain
+  #   damage_evolution_law_span = 1.0
+  #   model = NONLOCAL
+  #   cracking_stress = strength
+  #   initial_crack_damage = crack_damage_initial
+  #   output_properties = 'stress'
+  #   softening_models = abrupt_softening
+  #   cracked_elasticity_type = FULL
+  #   outputs = exodus
+  # [../]
   [density]
     type = ADGenericConstantMaterial
     prop_names = 'density'
@@ -476,22 +480,22 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${ft} #lambda
-    location = 0 
-  []
-[] 
+# [Distributions]
+#   #typically for granite
+#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+#   [weibull]
+#     type = Weibull
+#     shape = 15.0 #k
+#     scale = ${ft} #lambda
+#     location = 0 
+#   []
+# [] 
 
-[ICs]
-  [./strength_var]
-    type =  RandomIC
-    variable = strength
-    distribution = weibull
-  []
-[]
+# [ICs]
+#   [./strength_var]
+#     type =  RandomIC
+#     variable = strength
+#     distribution = weibull
+#   []
+# []
