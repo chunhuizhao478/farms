@@ -41,7 +41,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-14
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -492,7 +492,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
-        max_time_step_bound = 100
+        max_time_step_bound = 1e-2
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
@@ -518,6 +518,11 @@
         type = CSV
         time_step_interval = 1
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 200
+        num_files = 2
+    []
 []
 
 [BCs]

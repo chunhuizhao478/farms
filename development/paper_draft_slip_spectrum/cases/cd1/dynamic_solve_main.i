@@ -300,13 +300,13 @@
         type = LagrangianStiffPropDampingImplicit
         variable = disp_x
         component = 0
-        zeta = 0.3 # ratio factor for stiffness proportional damping 
+        zeta = 0.1 # ratio factor for stiffness proportional damping 
     []
     [./damping_y]
         type = LagrangianStiffPropDampingImplicit
         variable = disp_y
         component = 1
-        zeta = 0.3 # ratio factor for stiffness proportional damping
+        zeta = 0.1 # ratio factor for stiffness proportional damping
     []     
 []
 
@@ -492,7 +492,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
-        max_time_step_bound = 100
+        max_time_step_bound = 1e-2
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2

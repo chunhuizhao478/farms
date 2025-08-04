@@ -61,7 +61,7 @@
     CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    C_1 = 300
+    C_1 = 1e-4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -237,7 +237,7 @@
         peak_value = 1.0
         thickness = 200
         length = 2000
-        duration = 1.0
+        duration = 20.0
         perturbation_type = 'damage'
         sigma_divisor = 2.0
         # output_properties = 'shear_stress_perturbation damage_perturbation'

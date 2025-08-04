@@ -41,7 +41,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-14
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -92,6 +92,19 @@
         family = LAGRANGE
     []
     #
+    [vel_finitediff_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [vel_finitediff_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [vel_finitediff_z]
+        order = FIRST
+        family = LAGRANGE
+    []
+    #
     [alpha_damagedvar_aux]
         order = FIRST
         family = LAGRANGE
@@ -136,7 +149,23 @@
         order = FIRST
         family = MONOMIAL
     []
-    
+    #outputs
+    [pk2_stress_01]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [green_lagrange_elastic_strain_01]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [plastic_strain_01]
+        order = FIRST
+        family = MONOMIAL       
+    []
+    [total_lagrange_strain_01]
+        order = FIRST
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -201,6 +230,39 @@
         variable = nonlocal_xi
         property = eqstrain_nonlocal
     []
+    #get outputs
+    [get_pk2_stress_01]
+        type = MaterialRankTwoTensorAux
+        variable = pk2_stress_01
+        property = pk2_stress
+        i = 0
+        j = 1
+        block = '1 3'
+    []
+    [get_green_lagrange_elastic_strain_01]
+        type = MaterialRankTwoTensorAux
+        variable = green_lagrange_elastic_strain_01
+        property = green_lagrange_elastic_strain
+        i = 0
+        j = 1
+        block = '1 3'
+    []
+    [get_plastic_strain_01]
+        type = MaterialRankTwoTensorAux
+        variable = plastic_strain_01
+        property = plastic_strain
+        i = 0
+        j = 1
+        block = '1 3'   
+    []
+    [get_total_lagrange_strain_01]
+        type = MaterialRankTwoTensorAux
+        variable = total_lagrange_strain_01
+        property = total_lagrange_strain
+        i = 0
+        j = 1
+        block = '1 3'
+    []
 []
 
 [Kernels]
@@ -233,7 +295,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []
+    [] 
     [./damping_x]
         type = LagrangianStiffPropDampingImplicit
         variable = disp_x
@@ -245,7 +307,7 @@
         variable = disp_y
         component = 1
         zeta = 0.1 # ratio factor for stiffness proportional damping
-    []      
+    []     
 []
 
 [Functions]
@@ -299,8 +361,8 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
         large_kinematics = true
-        output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
-        outputs = exodus
+        # output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
+        # outputs = exodus
         block = '1 3'
     []
     [dummy_initial_damage]
@@ -317,8 +379,8 @@
     [compute_stress]
         type = ComputeStVenantKirchhoffStress
         large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
+        # output_properties = 'green_lagrange_strain pk2_stress'
+        # outputs = exodus
         block = '2'
     []
     #strain invariant ratio
@@ -420,13 +482,17 @@
     # line_search = 'bt'
     # dt = 1e-2
     verbose = true
+    fixed_point_max_its = 10
+    accept_on_max_fixed_point_iteration = false
+    fixed_point_rel_tol = 1e-6
+    fixed_point_abs_tol = 1e-8
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
         dt = 1e-2
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
-        max_time_step_bound = 100
+        max_time_step_bound = 1e-2
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
@@ -445,13 +511,18 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 1000
+      time_step_interval = 20
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
     [../]
     [./csv]
         type = CSV
         time_step_interval = 1
     [../]
+    [out]
+        type = Checkpoint
+        time_step_interval = 200
+        num_files = 2
+    []
 []
 
 [BCs]
@@ -631,7 +702,7 @@
         type = TransientMultiApp
         positions = '0 0 0'
         input_files = 'dynamic_solve_sub.i'
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
     [../]
@@ -643,14 +714,14 @@
         from_multi_app = sub_app
         source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub'
         variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
     [push_disp]
         type = MultiAppCopyTransfer
         to_multi_app = sub_app
         source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
         variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
-        execute_on = 'TIMESTEP_BEGIN'
+        execute_on = 'TIMESTEP_END'
     []
 []
 
@@ -701,5 +772,5 @@
         variable = B_damagedvar_aux
         solution_uo = init_sol_components
         from_variable = B_damagedvar_output
-    []    
+    [] 
 []
