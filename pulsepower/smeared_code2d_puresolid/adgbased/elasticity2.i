@@ -275,7 +275,7 @@ top_right2 = '3e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 40e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 50e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -465,7 +465,7 @@ top_right2 = '3e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 200
   print_linear_residuals = false
   csv = true
   [checkpoint]
