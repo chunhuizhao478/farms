@@ -295,18 +295,6 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    [] 
-    [./damping_x]
-        type = LagrangianStiffPropDampingImplicit
-        variable = disp_x
-        component = 0
-        zeta = 0.1 # ratio factor for stiffness proportional damping 
-    []
-    [./damping_y]
-        type = LagrangianStiffPropDampingImplicit
-        variable = disp_y
-        component = 1
-        zeta = 0.1 # ratio factor for stiffness proportional damping
     []     
 []
 
@@ -367,8 +355,8 @@
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage'
-        prop_values = '0.0'
+        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation'
+        prop_values = '0.0 0.0 0.0'
     []
     #elastic material
     [elastic_tensor]
@@ -397,29 +385,16 @@
         output_properties = 'eqstrain_nonlocal'
         outputs = exodus
     []
-    #shear stress perturbation
-    [damage_perturbation]
-        type = PerturbationRadial
-        nucl_center = '0 0 0'
-        peak_value = 0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'shear_stress'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
-    []
 [] 
 
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 300
+        length_scale = 200
         prop_name = strain_invariant_ratio
-        radius = 300
+        radius = 200
         weights = BAZANT
-        execute_on = LINEAR
+        execute_on = TIMESTEP_END
     []
 []
 

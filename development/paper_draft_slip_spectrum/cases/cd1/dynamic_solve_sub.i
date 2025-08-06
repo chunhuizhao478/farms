@@ -46,7 +46,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = -1
+    Cd_constant = 1 #constant Cd option
 
     #strain rate dependent Cd options
     m_exponent = 0.8
@@ -227,7 +227,7 @@
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
         #use strain rate dependent Cd
-        use_cd_strain_dependent = true
+        use_cd_strain_dependent = false
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
