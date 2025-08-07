@@ -94,7 +94,7 @@ end_time = 12.0 #end time for simulation
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 40 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
-csv_time_step_interval = 40 #time step interval for csv output
+csv_time_step_interval = 4 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
@@ -788,10 +788,49 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []    
 
 [VectorPostprocessors]
-  [main_fault]
+  [on_fault]
     type = SideValueSampler
     variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux jump_y_aux jump_z_aux jump_x_rate_aux jump_y_rate_aux jump_z_rate_aux traction_x_aux traction_y_aux traction_z_aux alpha_damagedvar_aux B_aux xi_aux' 
     boundary = 'Block100_Block200'
     sort_by = x
+  []
+  [off_fault]
+    type = PositionsFunctorValueSampler
+    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
+    positions = 'pos'
+    sort_by = x
+    execute_on = TIMESTEP_END
+  []
+[]
+
+[Positions]
+  [pos]
+    type = InputPositions
+    positions = '-24000 4000 0
+                 -20000 4000 0
+                 -16000 4000 0
+                 -12000 4000 0
+                 -8000 4000 0
+                 -4000 4000 0
+                 0 4000 0
+                 4000 4000 0
+                 8000 4000 0
+                 12000 4000 0
+                 16000 4000 0
+                 20000 4000 0
+                 24000 4000 0
+                 -24000 4000 -10000
+                 -20000 -4000 -10000
+                 -16000 -4000 -10000
+                 -12000 -4000 -10000
+                 -8000 -4000 -10000
+                 -4000 -4000 -10000
+                 0 -4000 -10000
+                 4000 -4000 -10000
+                 8000 -4000 -10000
+                 12000 -4000 -10000
+                 16000 -4000 -10000
+                 20000 -4000 -10000
+                 24000 -4000 -10000'
   []
 []

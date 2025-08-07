@@ -46,7 +46,7 @@ xi_d = -1.0 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-6 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -77,11 +77,17 @@ tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
 tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
+##overpressure parameters##
+use_overpressure = true #use overpressure for initial stress
+overpressure_depth_A = 6000 #overpressure depth A (m)
+overpressure_depth_B = 8000 #overpressure depth B (m)
+##------------------------------------------------------------------##
+
 #nucleation parameters
 nucl_center_x = -16000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
-r_crit = 3000 #critical distance to hypocenter (m)
+r_crit = 4000 #critical distance to hypocenter (m)
 Vs = 3464 #shear wave speed (m/s)
 t0 = 0.5 #nucleation time (s)
 ##------------------------------------------------------------------##
@@ -94,7 +100,7 @@ end_time = 12.0 #end time for simulation
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 40 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
-csv_time_step_interval = 40 #time step interval for csv output
+csv_time_step_interval = 4 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
@@ -325,7 +331,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [deviatoric_strain_rate_aux]
     order = FIRST
     family = MONOMIAL
-  []  
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -712,6 +718,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}    
   []
   ###cohesion###
   [./func_cohesion]
@@ -775,7 +784,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     time_step_interval = ${csv_time_step_interval}
   []
   [out]
-    type = Checkpoint
+    type = Checkpoint 
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
   []
@@ -793,5 +802,43 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux jump_y_aux jump_z_aux jump_x_rate_aux jump_y_rate_aux jump_z_rate_aux traction_x_aux traction_y_aux traction_z_aux alpha_damagedvar_aux B_aux xi_aux' 
     boundary = 'Block100_Block200'
     sort_by = x
+  [off_fault]
+    type = PositionsFunctorValueSampler
+    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
+    positions = 'pos'
+    sort_by = x
+    execute_on = TIMESTEP_END
+  []
+[]
+
+[Positions]
+  [pos]
+    type = InputPositions
+    positions = '-24000 4000 0
+                 -20000 4000 0
+                 -16000 4000 0
+                 -12000 4000 0
+                 -8000 4000 0
+                 -4000 4000 0
+                 0 4000 0
+                 4000 4000 0
+                 8000 4000 0
+                 12000 4000 0
+                 16000 4000 0
+                 20000 4000 0
+                 24000 4000 0
+                 -24000 4000 -10000
+                 -20000 -4000 -10000
+                 -16000 -4000 -10000
+                 -12000 -4000 -10000
+                 -8000 -4000 -10000
+                 -4000 -4000 -10000
+                 0 -4000 -10000
+                 4000 -4000 -10000
+                 8000 -4000 -10000
+                 12000 -4000 -10000
+                 16000 -4000 -10000
+                 20000 -4000 -10000
+                 24000 -4000 -10000'
   []
 []
