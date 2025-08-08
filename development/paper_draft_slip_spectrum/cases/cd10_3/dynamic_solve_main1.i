@@ -487,7 +487,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 20
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
         type = CSV
@@ -676,7 +676,7 @@
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub.i'
+        input_files = 'dynamic_solve_sub1.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true

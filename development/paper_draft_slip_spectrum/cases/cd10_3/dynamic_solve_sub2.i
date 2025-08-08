@@ -46,7 +46,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 1e3 #constant Cd option
+    Cd_constant = -1
 
     #strain rate dependent Cd options
     m_exponent = 0.8
@@ -227,7 +227,7 @@
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
         #use strain rate dependent Cd
-        use_cd_strain_dependent = false
+        use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
@@ -237,7 +237,7 @@
         peak_value = 1.0
         thickness = 200
         length = 2000
-        duration = 20.0
+        duration = 1e10
         perturbation_type = 'damage'
         sigma_divisor = 2.0
         # output_properties = 'shear_stress_perturbation damage_perturbation'
