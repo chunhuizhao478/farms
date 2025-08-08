@@ -393,8 +393,8 @@ DiffusedDamageBreakageMaterialMainApp::updateporogranular()
   
   // Compute damaged bulk modulus for granular phase
   // K_d^granular includes damage effects
-  Real K_d_granular = 2 * _a2[_qp] + _a3[_qp] * (6.0 - (4.0/3.0) *  pow(xi, 2.0)) * xi 
-               + (2.0/3.0) * _a0[_qp] - (2.0/3.0) * _a1[_qp] * xi;
+  Real K_d_granular = 2 * _a2[_qp] + _a3[_qp] * (6.0 - (4.0/3.0) *  xi * xi ) * xi 
+               + (2.0/3.0) * _a0[_qp] + (2.0/3.0) * _a1[_qp] * xi;
 
   // Solid bulk modulus for granular material 
   Real K_s_granular = (1 - B_breakage) * K_s_solid + B_breakage * K_s_crushed;
