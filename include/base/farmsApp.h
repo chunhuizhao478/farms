@@ -16,7 +16,7 @@ class farmsApp : public MooseApp
 public:
   static InputParameters validParams();
 
-  farmsApp(const InputParameters & parameters);
+  farmsApp(InputParameters parameters);
   virtual ~farmsApp();
 
   static void registerApps();
