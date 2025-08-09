@@ -7,30 +7,15 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "farmsTestApp.h"
-#include "MooseInit.h"
-#include "Moose.h"
-#include "MooseApp.h"
-#include "AppFactory.h"
+// Modern MOOSE main using moose::main<TApp>.
+// This avoids printing anything to stdout before the Language Server
+// establishes the LSP connection, and it handles initialization/teardown.
 
-// Create a performance log
-PerfLog Moose::perf_log("farms");
+#include "MooseMain.h"
+#include "farmsApp.h"   // Your app class header (defines farmsTestApp)
 
-// Begin the main program.
-int
-main(int argc, char * argv[])
+int main(int argc, char * argv[])
 {
-  // Initialize MPI, solvers and MOOSE
-  MooseInit init(argc, argv);
-
-  // Register this application's MooseApp and any it depends on
-  farmsTestApp::registerApps();
-
-  // Create an instance of the application and store it in a smart pointer for easy cleanup
-  std::shared_ptr<MooseApp> app = AppFactory::createAppShared("farmsTestApp", argc, argv);
-
-  // Execute the application
-  app->run();
-
-  return 0;
+  // moose::main<T>() performs MPI/init, registers apps, builds the MooseApp, and runs it.
+  return Moose::main<farmsApp>(argc, argv);
 }
