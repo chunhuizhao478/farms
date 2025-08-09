@@ -802,6 +802,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux jump_y_aux jump_z_aux jump_x_rate_aux jump_y_rate_aux jump_z_rate_aux traction_x_aux traction_y_aux traction_z_aux alpha_damagedvar_aux B_aux xi_aux' 
     boundary = 'Block100_Block200'
     sort_by = x
+  []
   [off_fault]
     type = PositionsFunctorValueSampler
     functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
