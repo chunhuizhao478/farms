@@ -7,18 +7,30 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ADComputeSmearedCrackingStressDebug.h"
+/*
+Elk Compute Smeared Cracking Stress Model (AD-version)
+Created by Chunhui Zhao, Jul 15th, 2024
+
+- Add biot modulus degradation
+- Add permeability change
+
+- Add comments/explanations to the original model
+- Couple with three-field poro-dynamics code
+*/
+
+#include "ElkADComputeSmearedCrackingStress.h"
 #include "ElasticityTensorTools.h"
 #include "StressUpdateBase.h"
 #include "Conversion.h"
 
-registerADMooseObject("farmsApp", ADComputeSmearedCrackingStressDebug);
+registerMooseObject("farmsApp", ElkADComputeSmearedCrackingStress);
 
 InputParameters
-ADComputeSmearedCrackingStressDebug::validParams()
+ElkADComputeSmearedCrackingStress::validParams()
 {
   InputParameters params = ADComputeMultipleInelasticStress::validParams();
-  params.addClassDescription("Compute stress using a fixed smeared cracking model with AD");
+  params.addClassDescription(
+      "Compute stress using a fixed smeared cracking model. Uses automatic differentiation");
   params.addRequiredParam<std::vector<MaterialName>>(
       "softening_models",
       "The material objects used to compute softening behavior for loading a crack."
@@ -62,35 +74,12 @@ ADComputeSmearedCrackingStressDebug::validParams()
       "cracked_elasticity_type",
       crackedElasticityType,
       "Method to modify the local elasticity tensor to account for cracking");
-  params.addRequiredCoupledVar("nonlocal_eqstrain", "nonlocal eqstrain");
-  params.addRequiredParam<Real>("damage_evolution_law_span","the span of strain for damage increase from 0 to 1");
-  MooseEnum model_type("local nonlocal");
-  params.addRequiredParam<MooseEnum>("model", model_type, "Model type: LOCAL or NONLOCAL");
-  
-  //add initial damage
-  params.addRequiredCoupledVar(
-      "initial_crack_damage",
-      "Initial damage for crack_damage material property");
-  
-  params.addParam<bool>("porous_flow_coupling", false, "Enable porous flow coupling");
-  params.addParam<Real>("intrinsic_permeability", 5e-19, "Intrinsic permeability in m^2");
-  //Permeability models
-  //Exponential permeability model
-  params.addParam<bool>("exponential_permeability_model", false,
-                        "Use an exponential function for the effective permeability");
-  params.addParam<Real>("coeff_b", -1.0,
-                        "Coefficient for the exponential function in the effective permeability");
-  //Darcy-Poiseuille permeability model
-  params.addParam<bool>("darcy_poiseuille_permeability_model",
-                        false,
-                        "Use Darcy-Poiseuille model for the effective permeability");
-  params.addParam<Real>("wc", -1.0, "ultimate crack width for Darcy-Poiseuille model");
-  params.addParam<Real>("perm_exponent", -1.0,
-                        "Exponent for the Darcy-Poiseuille model for the effective permeability");  
+  params.addRequiredParam<Real>("solid_bulk_modulus_compliance_intact", "intact solid bulk modulus compliance value");
+  params.addRequiredParam<RealTensorValue>("permeability_intact", "intact permeability value");
   return params;
 }
 
-ADComputeSmearedCrackingStressDebug::ADComputeSmearedCrackingStressDebug(const InputParameters & parameters)
+ElkADComputeSmearedCrackingStress::ElkADComputeSmearedCrackingStress(const InputParameters & parameters)
   : ADComputeMultipleInelasticStress(parameters),
     _cracking_stress(adCoupledValue("cracking_stress")),
     _max_cracks(getParam<unsigned int>("max_cracks")),
@@ -110,29 +99,10 @@ ADComputeSmearedCrackingStressDebug::ADComputeSmearedCrackingStressDebug(const I
         getMaterialPropertyOld<RealVectorValue>(_base_name + "crack_initiation_strain")),
     _crack_max_strain(declareADProperty<RealVectorValue>(_base_name + "crack_max_strain")),
     _crack_max_strain_old(getMaterialPropertyOld<RealVectorValue>(_base_name + "crack_max_strain")),
-    _eqstrain_local(declareADProperty<Real>("eqstrain_local")),
-    _eqstrain_local_old(getMaterialPropertyOld<Real>("eqstrain_local")),
-    _eqstrain_nonlocal(adCoupledValue("nonlocal_eqstrain")),
-    _eqstrain_nonlocal_old(coupledValueOld("nonlocal_eqstrain")),
-    _damage_evolution_law_span(getParam<Real>("damage_evolution_law_span")),
-    _model_type(getParam<MooseEnum>("model").getEnum<ModelType>()),
-    //------------------------------------------------------------------------------//
-    _cracking_strain(declareADProperty<Real>(_base_name + "cracking_strain")),
-    _crack_damage_initial(adCoupledValue("initial_crack_damage")),
-    //-----------------------------------------------------------------------//
-    //porous flow coupling
-    _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
-    _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
-    // define effective permeability
-    _effective_perm(declareADProperty<RealTensorValue>("effective_perm")),
-    _effective_perm_old(getMaterialPropertyOldByName<RealTensorValue>("effective_perm")),
-    // Exponential permeability model
-    _exponential_permeability_model(getParam<bool>("exponential_permeability_model")),
-    _coeff_b(getParam<Real>("coeff_b")),
-    // Darcy-Poiseuille permeability model
-    _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
-    _wc(getParam<Real>("wc")),
-    _perm_exponent(getParam<Real>("perm_exponent"))
+    _solid_bulk_compliance_damaged(declareADProperty<Real>(_base_name + "solid_bulk_compliance_damaged")),
+    _solid_bulk_modulus_compliance_intact(getParam<Real>("solid_bulk_modulus_compliance_intact")),
+    _effective_perm(declareADProperty<RealTensorValue>("effective_perm_smeared_crack")),
+    _permeablity_intact(getParam<RealTensorValue>("permeability_intact"))
 {
   MultiMooseEnum prescribed_crack_directions =
       getParam<MultiMooseEnum>("prescribed_crack_directions");
@@ -170,22 +140,25 @@ ADComputeSmearedCrackingStressDebug::ADComputeSmearedCrackingStressDebug(const I
 }
 
 void
-ADComputeSmearedCrackingStressDebug::initQpStatefulProperties()
+ElkADComputeSmearedCrackingStress::initQpStatefulProperties()
 {
   ADComputeMultipleInelasticStress::initQpStatefulProperties();
 
-  _crack_damage[_qp](0) = _crack_damage_initial[_qp];
-  _crack_damage[_qp](1) = _crack_damage_initial[_qp];
-  _crack_damage[_qp](2) = _crack_damage_initial[_qp];
+  _crack_damage[_qp] = 0.0;
 
   _crack_initiation_strain[_qp] = 0.0;
   _crack_max_strain[_qp](0) = 0.0;
+
+  // ------------------------------------------------------------------------------- //
+  // Assign effective permeability with initial permeability value
+  _effective_perm[_qp] = _permeablity_intact;
+  // ------------------------------------------------------------------------------- //
 
   switch (_prescribed_crack_directions.size())
   {
     case 0:
     {
-      _crack_rotation[_qp] = RankTwoTensor::Identity();
+      _crack_rotation[_qp] = ADRankTwoTensor::Identity();
       break;
     }
     case 1:
@@ -226,7 +199,7 @@ ADComputeSmearedCrackingStressDebug::initQpStatefulProperties()
     {
       for (unsigned int i = 0; i < _prescribed_crack_directions.size(); ++i)
       {
-        RealVectorValue crack_dir_vec;
+        ADRealVectorValue crack_dir_vec;
         crack_dir_vec(_prescribed_crack_directions[i]) = 1.0;
         _crack_rotation[_qp].fillColumn(i, crack_dir_vec);
       }
@@ -235,19 +208,19 @@ ADComputeSmearedCrackingStressDebug::initQpStatefulProperties()
 }
 
 void
-ADComputeSmearedCrackingStressDebug::initialSetup()
+ElkADComputeSmearedCrackingStress::initialSetup()
 {
   ADComputeMultipleInelasticStress::initialSetup();
 
   if (!hasGuaranteedMaterialProperty(_elasticity_tensor_name, Guarantee::ISOTROPIC))
-    mooseError("ADComputeSmearedCrackingStressDebug requires that the elasticity tensor be "
+    mooseError("ElkADComputeSmearedCrackingStress requires that the elasticity tensor be "
                "guaranteed isotropic");
 
   std::vector<MaterialName> soft_matls = getParam<std::vector<MaterialName>>("softening_models");
   for (auto soft_matl : soft_matls)
   {
-    SmearedCrackSofteningBase * scsb =
-        dynamic_cast<SmearedCrackSofteningBase *>(&getMaterialByName(soft_matl));
+    ADSmearedCrackSofteningBase * scsb =
+        dynamic_cast<ADSmearedCrackSofteningBase *>(&getMaterialByName(soft_matl));
     if (scsb)
       _softening_models.push_back(scsb);
     else
@@ -264,20 +237,22 @@ ADComputeSmearedCrackingStressDebug::initialSetup()
 }
 
 void
-ADComputeSmearedCrackingStressDebug::computeQpStress()
+ElkADComputeSmearedCrackingStress::computeQpStress()
 {
-  bool force_elasticity_rotation = false;
 
   if (!previouslyCracked()){
     computeQpStressIntermediateConfiguration();
-    for (unsigned int i = 0; i < 3; ++i)
-    {
-      if (_crack_damage[_qp](i) < _crack_damage_initial[_qp])
-      {
-        // If the damage is less than the initial value, reset it to the initial value
-        _crack_damage[_qp](i) = _crack_damage_initial[_qp];
-      }
-    }    
+
+    // ------------------------------------------------------------------------------- //
+    // There is no damage, set the initial compliance value 
+    // Update solid bulk compliance
+    _solid_bulk_compliance_damaged[_qp] = _solid_bulk_modulus_compliance_intact;
+    // ------------------------------------------------------------------------------- //
+
+    // ------------------------------------------------------------------------------- //
+    // Assign the effective permeability with initial perm value
+    _effective_perm[_qp] = _permeablity_intact;
+    // ------------------------------------------------------------------------------- //    
   }
   else
   {
@@ -300,14 +275,30 @@ ADComputeSmearedCrackingStressDebug::computeQpStress()
     // Calculate stress in intermediate configuration
     _stress[_qp] = _local_elasticity_tensor * _elastic_strain[_qp];
 
-    force_elasticity_rotation = true;
+    // ------------------------------------------------------------------------------- //
+    // Update solid bulk compliance
+    // bulk modulus 
+    // solid bulk moduls is a measure of a material's resistance to uniform compression
+    // solid bulk modulus = (1/9) * sum_i(1,2,3) * sum_j(1,2,3) C_iijj
+    ADReal solid_bulk_modulus = 0.0;
+    for (int i = 0; i < 3; i++){
+      for (int j = 0; j < 3; j++){
+        solid_bulk_modulus += _local_elasticity_tensor(i,i,j,j);
+      }
+    }
+
+    solid_bulk_modulus = 1.0/9.0 * solid_bulk_modulus;
+
+    //compute compliance
+    _solid_bulk_compliance_damaged[_qp] = 1.0 / solid_bulk_modulus;
+    // ------------------------------------------------------------------------------- //
   }
 
   // compute crack status and adjust stress
+  // ------------------------------------------------------------------------------- //
+  // updatePermeabilityForCracking
+  // ------------------------------------------------------------------------------- //
   updateCrackingStateAndStress();
-
-  // Update the effective permeability if porous flow coupling is enabled
-  updatePermeabilityForCracking();
 
   if (_perform_finite_strain_rotations)
   {
@@ -317,7 +308,7 @@ ADComputeSmearedCrackingStressDebug::computeQpStress()
 }
 
 void
-ADComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
+ElkADComputeSmearedCrackingStress::updateLocalElasticityTensor()
 {
   const ADReal youngs_modulus =
       ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
@@ -328,8 +319,8 @@ ADComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
 
   if (cracking_stress > 0)
   {
-    RealVectorValue stiffness_ratio_local(1.0, 1.0, 1.0);
-    const RankTwoTensor & R = _crack_rotation_old[_qp];
+    ADRealVectorValue stiffness_ratio_local(1.0, 1.0, 1.0);
+    const ADRankTwoTensor & R = _crack_rotation_old[_qp];
     ADRankTwoTensor ePrime(_elastic_strain_old[_qp]);
     ePrime.rotate(R.transpose());
 
@@ -338,25 +329,24 @@ ADComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
       // Update elasticity tensor based on crack status of the end of last time step
       if (_crack_damage_old[_qp](i) > 0.0)
       {
-        if (_cracking_neg_fraction == 0.0 && MooseUtils::absoluteFuzzyLessThan(MetaPhysicL::raw_value(ePrime(i, i)), 0.0))
+        if (_cracking_neg_fraction == 0.0 && MooseUtils::absoluteFuzzyLessThan(ePrime(i, i), 0.0))
           stiffness_ratio_local(i) = 1.0;
         else if (_cracking_neg_fraction > 0.0 &&
-                 MetaPhysicL::raw_value(ePrime(i, i)) < _crack_initiation_strain_old[_qp](i) * _cracking_neg_fraction &&
-                 MetaPhysicL::raw_value(ePrime(i, i)) > -_crack_initiation_strain_old[_qp](i) * _cracking_neg_fraction)
+                 ePrime(i, i) < _crack_initiation_strain_old[_qp](i) * _cracking_neg_fraction &&
+                 ePrime(i, i) > -_crack_initiation_strain_old[_qp](i) * _cracking_neg_fraction)
         {
-          const Real etr = _cracking_neg_fraction * _crack_initiation_strain_old[_qp](i);
-          const Real Eo = MetaPhysicL::raw_value(cracking_stress) / _crack_initiation_strain_old[_qp](i);
-          const Real Ec = Eo * (1.0 - _crack_damage_old[_qp](i));
-          const Real a = (Ec - Eo) / (4 * etr);
-          const Real b = (Ec + Eo) / 2;
+          const ADReal etr = _cracking_neg_fraction * _crack_initiation_strain_old[_qp](i);
+          const ADReal Eo = cracking_stress / _crack_initiation_strain_old[_qp](i);
+          const ADReal Ec = Eo * (1.0 - _crack_damage_old[_qp](i));
+          const ADReal a = (Ec - Eo) / (4 * etr);
+          const ADReal b = (Ec + Eo) / 2;
           // Compute the ratio of the current transition stiffness to the original stiffness
           stiffness_ratio_local(i) = (2.0 * a * etr + b) / Eo;
           cracking_locally_active = true;
         }
         else
         {
-          Real residual_stress_fraction = 1e-2; // Set a default residual stress fraction
-          stiffness_ratio_local(i) = (1.0 - _crack_damage_old[_qp](i)) * (1.0 - residual_stress_fraction) + residual_stress_fraction;
+          stiffness_ratio_local(i) = (1.0 - _crack_damage_old[_qp](i));
           cracking_locally_active = true;
         }
       }
@@ -371,13 +361,16 @@ ADComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
         const bool c1_coupled = MooseUtils::absoluteFuzzyEqual(stiffness_ratio_local(1), 1.0);
         const bool c2_coupled = MooseUtils::absoluteFuzzyEqual(stiffness_ratio_local(2), 1.0);
 
-        const Real c01 = (c0_coupled && c1_coupled ? 1.0 : 0.0);
-        const Real c02 = (c0_coupled && c2_coupled ? 1.0 : 0.0);
-        const Real c12 = (c1_coupled && c2_coupled ? 1.0 : 0.0);
+        const ADReal c01 = (c0_coupled && c1_coupled ? 1.0 : 0.0);
+        const ADReal c02 = (c0_coupled && c2_coupled ? 1.0 : 0.0);
+        const ADReal c12 = (c1_coupled && c2_coupled ? 1.0 : 0.0);
 
-        const Real c01_shear_retention = (c0_coupled && c1_coupled ? 1.0 : _shear_retention_factor);
-        const Real c02_shear_retention = (c0_coupled && c2_coupled ? 1.0 : _shear_retention_factor);
-        const Real c12_shear_retention = (c1_coupled && c2_coupled ? 1.0 : _shear_retention_factor);
+        const ADReal c01_shear_retention =
+            (c0_coupled && c1_coupled ? 1.0 : _shear_retention_factor);
+        const ADReal c02_shear_retention =
+            (c0_coupled && c2_coupled ? 1.0 : _shear_retention_factor);
+        const ADReal c12_shear_retention =
+            (c1_coupled && c2_coupled ? 1.0 : _shear_retention_factor);
 
         _local_elastic_vector[0] = (c0_coupled ? _elasticity_tensor[_qp](0, 0, 0, 0)
                                                : stiffness_ratio_local(0) * youngs_modulus);
@@ -394,17 +387,17 @@ ADComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
       }
       else // _cracked_elasticity_type == CrackedElasticityType::FULL
       {
-        const Real & c0 = stiffness_ratio_local(0);
-        const Real & c1 = stiffness_ratio_local(1);
-        const Real & c2 = stiffness_ratio_local(2);
+        const ADReal & c0 = stiffness_ratio_local(0);
+        const ADReal & c1 = stiffness_ratio_local(1);
+        const ADReal & c2 = stiffness_ratio_local(2);
 
-        const Real c01 = c0 * c1;
-        const Real c02 = c0 * c2;
-        const Real c12 = c1 * c2;
+        const ADReal c01 = c0 * c1;
+        const ADReal c02 = c0 * c2;
+        const ADReal c12 = c1 * c2;
 
-        const Real c01_shear_retention = std::max(c01, _shear_retention_factor);
-        const Real c02_shear_retention = std::max(c02, _shear_retention_factor);
-        const Real c12_shear_retention = std::max(c12, _shear_retention_factor);
+        const ADReal c01_shear_retention = std::max(c01, _shear_retention_factor);
+        const ADReal c02_shear_retention = std::max(c02, _shear_retention_factor);
+        const ADReal c12_shear_retention = std::max(c12, _shear_retention_factor);
 
         _local_elastic_vector[0] = _elasticity_tensor[_qp](0, 0, 0, 0) * c0;
         _local_elastic_vector[1] = _elasticity_tensor[_qp](0, 0, 1, 1) * c01;
@@ -426,19 +419,17 @@ ADComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
       _local_elasticity_tensor.rotate(R);
     }
   }
-  if (!cracking_locally_active)
-    _local_elasticity_tensor = _elasticity_tensor[_qp];
+  //There is none of tensile strain in the principal direction, crack closure, restore the full elasticity
+  //Here we should treat the restoration of elasticity is direction-dependent, disable the !cracking_locally_active flag
+  // if (!cracking_locally_active)
+  //   _local_elasticity_tensor = _elasticity_tensor[_qp];
 }
 
 void
-ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
+ElkADComputeSmearedCrackingStress::updateCrackingStateAndStress()
 {
   const ADReal youngs_modulus =
       ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
-  
-  //** get strain at onset of strength criterion  */
-  ADReal cracking_strain = _cracking_stress[_qp] / youngs_modulus;
-  _cracking_strain[_qp] = cracking_strain;
 
   ADReal cracking_stress = _cracking_stress[_qp];
 
@@ -458,46 +449,15 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
     ADRealVectorValue strain_in_crack_dir;
     computeCrackStrainAndOrientation(strain_in_crack_dir);
 
-    //**update equivalent strain**//
-    ADReal strain_dir0_positive = MetaPhysicL::raw_value(strain_in_crack_dir(0)) > 0.0 ? 
-                              strain_in_crack_dir(0) : 0.0;
-    ADReal strain_dir1_positive = MetaPhysicL::raw_value(strain_in_crack_dir(1)) > 0.0 ? 
-                              strain_in_crack_dir(1) : 0.0;
-    ADReal strain_dir2_positive = MetaPhysicL::raw_value(strain_in_crack_dir(2)) > 0.0 ? 
-                              strain_in_crack_dir(2) : 0.0;
-    
-    ADReal eqstrain_local = std::sqrt(strain_dir0_positive * strain_dir0_positive +
-                                    strain_dir1_positive * strain_dir1_positive +
-                                    strain_dir2_positive * strain_dir2_positive);
-    
-    //**save eqstrain local**/
-    _eqstrain_local[_qp] = eqstrain_local; 
-
-    //**get equivalent strain (nonlocal or local)**//
-    ADReal eqstrain = 0.0; 
-
-    //**Switch between local or nonlocal model**//
-    switch (_model_type)
-    {
-        case ModelType::LOCAL:
-        eqstrain = std::max(_eqstrain_local[_qp], 0.0);
-        break;
-
-        case ModelType::NONLOCAL:
-        eqstrain = std::max(_eqstrain_nonlocal[_qp], 0.0);
-        break;
-    }
-
     for (unsigned i = 0; i < 3; ++i)
     {
-      /** update max strain with eqstrain **/
-      if (MetaPhysicL::raw_value(eqstrain) > MetaPhysicL::raw_value(_crack_max_strain[_qp](i)))
-        _crack_max_strain[_qp](i) = eqstrain;
+      if (strain_in_crack_dir(i) > _crack_max_strain[_qp](i))
+        _crack_max_strain[_qp](i) = strain_in_crack_dir(i);
     }
 
     // Check for new cracks.
     // Rotate stress to cracked orientation.
-    const RankTwoTensor & R = MetaPhysicL::raw_value(_crack_rotation[_qp]);
+    const ADRankTwoTensor & R = _crack_rotation[_qp];
     ADRankTwoTensor sigmaPrime(_stress[_qp]);
     sigmaPrime.rotate(R.transpose()); // stress in crack coordinates
 
@@ -509,15 +469,17 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
     }
 
     bool cracked(false);
-    RealVectorValue sigma;
+    ADRealVectorValue sigma;
     mooseAssert(_softening_models.size() == 3, "Must have 3 softening models");
     for (unsigned int i = 0; i < 3; ++i)
     {
-      sigma(i) = MetaPhysicL::raw_value(sigmaPrime(i, i));
+      sigma(i) = sigmaPrime(i, i);
+
+      ADReal stiffness_ratio = 1.0 - _crack_damage[_qp](i);
 
       const bool pre_existing_crack = (_crack_damage_old[_qp](i) > 0.0);
-      const bool met_stress_criterion = (MetaPhysicL::raw_value(eqstrain) >= MetaPhysicL::raw_value(cracking_strain));
-      const bool loading_existing_crack = (MetaPhysicL::raw_value(eqstrain) >= MetaPhysicL::raw_value(_crack_max_strain[_qp](i)));
+      const bool met_stress_criterion = (sigma(i) > cracking_stress);
+      const bool loading_existing_crack = (strain_in_crack_dir(i) >= _crack_max_strain[_qp](i));
       const bool allowed_to_crack = (pre_existing_crack || num_cracks < _max_cracks);
       bool new_crack = false;
 
@@ -533,7 +495,7 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
         // modulus.
         _crack_initiation_strain[_qp](i) = cracking_stress / youngs_modulus;
 
-        if (MetaPhysicL::raw_value(_crack_max_strain[_qp](i)) < MetaPhysicL::raw_value(_crack_initiation_strain[_qp](i)))
+        if (_crack_max_strain[_qp](i) < _crack_initiation_strain[_qp](i))
           _crack_max_strain[_qp](i) = _crack_initiation_strain[_qp](i);
       }
 
@@ -541,37 +503,37 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
       if (new_crack || (pre_existing_crack && loading_existing_crack))
       {
         cracked = true;
-        //** crack damage and principal stress **/
-        /** update crack damage **/
-        _crack_damage[_qp](i) = 1.0 - cracking_strain / _crack_max_strain[_qp](i) * std::exp(-(_crack_max_strain[_qp](i) - cracking_strain)/(_damage_evolution_law_span*cracking_strain));
-      
-        if (_crack_damage[_qp](i) > 1.0)
-          _crack_damage[_qp](i) = 1.0;
-        if (_crack_damage[_qp](i) < 0.0)
-          _crack_damage[_qp](i) = 0.0;
-
-        if (_crack_damage[_qp](i) < _crack_damage_initial[_qp])
-        {
-          // If the damage is less than the initial value, reset it to the initial value
-          _crack_damage[_qp](i) = _crack_damage_initial[_qp];
-        }
-
-        // Update the stress in the crack direction
-        Real residual_stress_fraction = 1e-2;
+        _softening_models[i]->computeCrackingRelease(sigma(i),
+                                                     stiffness_ratio,
+                                                     strain_in_crack_dir(i),
+                                                     _crack_initiation_strain[_qp](i),
+                                                     _crack_max_strain[_qp](i),
+                                                     cracking_stress,
+                                                     youngs_modulus);
+        _crack_damage[_qp](i) = 1.0 - stiffness_ratio;
       }
 
       else if (cracked && _cracking_neg_fraction > 0 &&
-               MetaPhysicL::raw_value(_crack_initiation_strain[_qp](i)) * _cracking_neg_fraction > strain_in_crack_dir(i) &&
-               -MetaPhysicL::raw_value(_crack_initiation_strain[_qp](i)) * _cracking_neg_fraction < strain_in_crack_dir(i))
+               _crack_initiation_strain[_qp](i) * _cracking_neg_fraction > strain_in_crack_dir(i) &&
+               -_crack_initiation_strain[_qp](i) * _cracking_neg_fraction < strain_in_crack_dir(i))
       {
-        const Real etr = _cracking_neg_fraction * MetaPhysicL::raw_value(_crack_initiation_strain[_qp](i));
-        const Real Eo = MetaPhysicL::raw_value(cracking_stress) / MetaPhysicL::raw_value(_crack_initiation_strain[_qp](i));
-        const Real Ec = Eo * (1.0 - _crack_damage_old[_qp](i));
-        const Real a = (Ec - Eo) / (4.0 * etr);
-        const Real b = 0.5 * (Ec + Eo);
-        const Real c = 0.25 * (Ec - Eo) * etr;
+        const ADReal etr = _cracking_neg_fraction * _crack_initiation_strain[_qp](i);
+        const ADReal Eo = cracking_stress / _crack_initiation_strain[_qp](i);
+        const ADReal Ec = Eo * (1.0 - _crack_damage_old[_qp](i));
+        const ADReal a = (Ec - Eo) / (4.0 * etr);
+        const ADReal b = 0.5 * (Ec + Eo);
+        const ADReal c = 0.25 * (Ec - Eo) * etr;
+        sigma(i) = (a * strain_in_crack_dir(i) + b) * strain_in_crack_dir(i) + c;
       }
     }
+
+    if (cracked){
+      updateStressTensorForCracking(_stress[_qp], sigma);
+    }
+    // ------------------------------------------------------------------------------- //
+    // Update effective permeability upon cracking
+    updatePermeabilityForCracking(strain_in_crack_dir);
+    // ------------------------------------------------------------------------------- //    
   }
 
   _crack_flags[_qp](0) = 1.0 - _crack_damage[_qp](2);
@@ -580,7 +542,7 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
 }
 
 void
-ADComputeSmearedCrackingStressDebug::computeCrackStrainAndOrientation(
+ElkADComputeSmearedCrackingStress::computeCrackStrainAndOrientation(
     ADRealVectorValue & strain_in_crack_dir)
 {
   // The rotation tensor is ordered such that directions for pre-existing cracks appear first
@@ -590,12 +552,10 @@ ADComputeSmearedCrackingStressDebug::computeCrackStrainAndOrientation(
 
   if (num_known_dirs == 0)
   {
-    std::vector<Real> eigval(3, 0.0);
-    RankTwoTensor eigvec;
+    std::vector<ADReal> eigval(3, 0.0);
+    ADRankTwoTensor eigvec;
 
-    // Extract raw values for eigenvalue calculation
-    RankTwoTensor elastic_strain_nonad = MetaPhysicL::raw_value(_elastic_strain[_qp]);
-    elastic_strain_nonad.symmetricEigenvaluesEigenvectors(eigval, eigvec);
+    _elastic_strain[_qp].symmetricEigenvaluesEigenvectors(eigval, eigvec);
 
     // If the elastic strain is beyond the cracking strain, save the eigen vectors as
     // the rotation tensor. Reverse their order so that the third principal strain
@@ -618,10 +578,9 @@ ADComputeSmearedCrackingStressDebug::computeCrackStrainAndOrientation(
     // 4.  Update the rotation tensor to reflect the effect of the 2 eigenvectors.
 
     // 1.
-    const RankTwoTensor & R = MetaPhysicL::raw_value(_crack_rotation[_qp]);
-    // Extract raw values for transformation
-    RankTwoTensor ePrime = MetaPhysicL::raw_value(_elastic_strain[_qp]);
-    ePrime.rotate(R.transpose()); // elastic strain in crack coordinates
+    const ADRankTwoTensor & R = _crack_rotation[_qp];
+    RankTwoTensor ePrime(raw_value(_elastic_strain[_qp]));
+    ePrime.rotate(raw_value(R.transpose())); // elastic strain in crack coordinates
 
     // 2.
     ColumnMajorMatrix e2x2(2, 2);
@@ -636,7 +595,7 @@ ADComputeSmearedCrackingStressDebug::computeCrackStrainAndOrientation(
     e2x2.eigen(e_val2x1, e_vec2x2);
 
     // 4.
-    RankTwoTensor eigvec(
+    ADRankTwoTensor eigvec(
         1.0, 0.0, 0.0, 0.0, e_vec2x2(0, 1), e_vec2x2(1, 1), 0.0, e_vec2x2(0, 0), e_vec2x2(1, 0));
 
     _crack_rotation[_qp] = _crack_rotation_old[_qp] * eigvec; // Roe implementation
@@ -649,9 +608,8 @@ ADComputeSmearedCrackingStressDebug::computeCrackStrainAndOrientation(
   {
     // Rotate to cracked orientation and pick off the strains in the rotated
     // coordinate directions.
-    const RankTwoTensor & R = MetaPhysicL::raw_value(_crack_rotation[_qp]);
-    // Extract raw values for transformation
-    RankTwoTensor ePrime = MetaPhysicL::raw_value(_elastic_strain[_qp]);
+    const ADRankTwoTensor & R = _crack_rotation[_qp];
+    ADRankTwoTensor ePrime(_elastic_strain[_qp]);
     ePrime.rotate(R.transpose()); // elastic strain in crack coordinates
 
     strain_in_crack_dir(0) = ePrime(0, 0);
@@ -663,7 +621,7 @@ ADComputeSmearedCrackingStressDebug::computeCrackStrainAndOrientation(
 }
 
 unsigned int
-ADComputeSmearedCrackingStressDebug::getNumKnownCrackDirs() const
+ElkADComputeSmearedCrackingStress::getNumKnownCrackDirs() const
 {
   unsigned int num_known_dirs = 0;
   for (unsigned int i = 0; i < 3; ++i)
@@ -675,11 +633,11 @@ ADComputeSmearedCrackingStressDebug::getNumKnownCrackDirs() const
 }
 
 void
-ADComputeSmearedCrackingStressDebug::updateStressTensorForCracking(ADRankTwoTensor & tensor,
-                                                            const RealVectorValue & sigma)
+ElkADComputeSmearedCrackingStress::updateStressTensorForCracking(ADRankTwoTensor & tensor,
+                                                              const ADRealVectorValue & sigma)
 {
   // Get transformation matrix
-  const RankTwoTensor & R = MetaPhysicL::raw_value(_crack_rotation[_qp]);
+  const ADRankTwoTensor & R = _crack_rotation[_qp];
   // Rotate to crack frame
   tensor.rotate(R.transpose());
 
@@ -687,7 +645,7 @@ ADComputeSmearedCrackingStressDebug::updateStressTensorForCracking(ADRankTwoTens
   for (unsigned int i = 0; i < 3; ++i)
     if (_crack_damage[_qp](i) > 0.0)
     {
-      const Real stress_correction_ratio = (MetaPhysicL::raw_value(tensor(i, i)) - sigma(i)) / MetaPhysicL::raw_value(tensor(i, i));
+      const ADReal stress_correction_ratio = (tensor(i, i) - sigma(i)) / tensor(i, i);
       if (stress_correction_ratio > _max_stress_correction)
         tensor(i, i) *= (1.0 - _max_stress_correction);
       else if (stress_correction_ratio < -_max_stress_correction)
@@ -701,7 +659,7 @@ ADComputeSmearedCrackingStressDebug::updateStressTensorForCracking(ADRankTwoTens
 }
 
 bool
-ADComputeSmearedCrackingStressDebug::previouslyCracked()
+ElkADComputeSmearedCrackingStress::previouslyCracked()
 {
   for (unsigned int i = 0; i < 3; ++i)
     if (_crack_damage_old[_qp](i) > 0.0)
@@ -709,46 +667,52 @@ ADComputeSmearedCrackingStressDebug::previouslyCracked()
   return false;
 }
 
+// ------------------------------------------------------------------------------- //
 void
-ADComputeSmearedCrackingStressDebug::updatePermeabilityForCracking()
+ElkADComputeSmearedCrackingStress::updatePermeabilityForCracking(ADRealVectorValue & strain_in_crack_dir)
 {
-  // If porous flow coupling is not enabled, return
-  if (!_porous_flow_coupling)
-    return;
-
   // Get transformation matrix
-  const RankTwoTensor & R = MetaPhysicL::raw_value(_crack_rotation[_qp]);
-
+  const ADRankTwoTensor & R = _crack_rotation[_qp];
+  
   // Initialize effective permeability new
   ADRankTwoTensor effective_perm_new;
 
-  //Compute the intrinsic permeability
-  ADRankTwoTensor perm_intrinsic = _intrinsic_permeability * ADRankTwoTensor::Identity();
+  // Get initial permeability tensor
+  ADRankTwoTensor initial_perm(_permeablity_intact(0,0),_permeablity_intact(0,1),_permeablity_intact(0,2),
+                               _permeablity_intact(1,0),_permeablity_intact(1,1),_permeablity_intact(1,2),
+                               _permeablity_intact(2,0),_permeablity_intact(2,1),_permeablity_intact(2,2));
 
-  // Initialize effective permeability new
-  // exponential permeability model 
-  if (_exponential_permeability_model){
-    effective_perm_new = perm_intrinsic * std::exp(_crack_damage[_qp](0) * _coeff_b);
-  }
-  // darcy-poiseuille permeability model
-  else if (_darcy_poiseuille_permeability_model){
-    //Compute crack opening
-    //wc is the ultimate crack opening
-    ADReal w = _crack_damage[_qp](0) * _wc; 
+  // Rotate to crack frame
+  effective_perm_new.rotate(R.transpose());
 
-    //Compute permeability in the damage zone
-    ADRankTwoTensor kf = std::pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
+  // Rotate to crack frame
+  initial_perm.rotate(R.transpose());
 
-    //Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(_crack_damage[_qp](0), _perm_exponent) * (kf - perm_intrinsic);
-  }
-  else {
-    mooseError("Unknown permeability model type.");
-  }
+  // Take min size of this element
+  ADReal elemsize = _current_elem->hmin();
+
+  // Compute aperture
+  // Here we make an assumption that aperture along the principal direction is positive
+  ADReal aperture_dir1 = std::max(strain_in_crack_dir(0) * elemsize, 0.0);
+  ADReal aperture_dir2 = std::max(strain_in_crack_dir(1) * elemsize, 0.0);
+  ADReal aperture_dir3 = std::max(strain_in_crack_dir(2) * elemsize, 0.0);
+  
+  // Compute effective permeability
+  // Here the initial permeability is the minimum value, so the permeability must be > 0
+  ADReal effperm_dir1 = initial_perm(0,0) + aperture_dir1 * aperture_dir1 / 12.0;
+  ADReal effperm_dir2 = initial_perm(1,1) + aperture_dir2 * aperture_dir2 / 12.0;
+  ADReal effperm_dir3 = initial_perm(2,2) + aperture_dir3 * aperture_dir3 / 12.0;
+
+  // Update permeability matrix
+  effective_perm_new(0,0) = effperm_dir1;
+  effective_perm_new(1,1) = effperm_dir2;
+  effective_perm_new(2,2) = effperm_dir3;
 
   // Rotate back to global frame
   effective_perm_new.rotate(R);
 
   // Update effective perm
   _effective_perm[_qp] = effective_perm_new;
+
 }
+// ------------------------------------------------------------------------------- //

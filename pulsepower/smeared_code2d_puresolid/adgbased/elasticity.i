@@ -7,7 +7,7 @@ density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 
+l =  2e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -22,66 +22,6 @@ newmark_beta = 0.25
 newmark_gamma = 0.5
 hht_alpha = 0.11
 #----------------------------------------------------#
-
-#fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
-
-# [Adaptivity]
-#   max_h_level = 5
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.01
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []   
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#       [] 
-#   []
-# []
-
-# [MultiApps]
-#   [fracture]
-#     type = TransientMultiApp
-#     input_files = nonlocal_subapp2.i
-#     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-#     execute_on = 'TIMESTEP_END'
-#     clone_parent_mesh = true
-#   []
-# []
-
-# [Transfers]
-#   [from_d]
-#     type = MultiAppCopyTransfer
-#     from_multi_app = 'fracture'
-#     variable = nonlocal_eqstrain
-#     source_variable = nonlocal_eqstrain
-#   []
-#   [to_psie_active]
-#     type = MultiAppCopyTransfer
-#     to_multi_app = 'fracture'
-#     variable = eqstrain_local
-#     source_variable = eqstrain_local
-#   []
-# []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -98,7 +38,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -295,26 +235,43 @@ top_right2 = '2e-4 0.0025 0'
 
 [Kernels]
   [react_nonlocal]
-    type = ADCoupledReaction
+    type = ADReaction
     variable = nonlocal_eqstrain
     rate = 1.0
-    length_scale = ${fparse l}
-    kappa_i = ${fparse kappa_i}
-    c0 = ${fparse c0}
   []
   [diffusion_nonlocal]
     type = ADCoefDiffusion
     variable = nonlocal_eqstrain
-    coef = ${fparse 1.0}
+    coef = ${fparse 0.5*l*l}
   []
   [reaction_local]
-    type = ADCoupledElkLocalEqstrainForce
+    type = ADElkLocalEqstrainForce
     variable = nonlocal_eqstrain
-    length_scale = ${fparse l}
-    kappa_i = ${fparse kappa_i}
-    c0 = ${fparse c0}
   []    
 []
+
+# [Kernels]
+#   [react_nonlocal]
+#     type = ADCoupledReaction
+#     variable = nonlocal_eqstrain
+#     rate = 1.0
+#     length_scale = ${fparse l}
+#     kappa_i = ${fparse kappa_i}
+#     c0 = ${fparse c0}
+#   []
+#   [diffusion_nonlocal]
+#     type = ADCoefDiffusion
+#     variable = nonlocal_eqstrain
+#     coef = ${fparse 1.0}
+#   []
+#   [reaction_local]
+#     type = ADCoupledElkLocalEqstrainForce
+#     variable = nonlocal_eqstrain
+#     length_scale = ${fparse l}
+#     kappa_i = ${fparse kappa_i}
+#     c0 = ${fparse c0}
+#   []    
+# []
 
 [BCs]
   #confinement
@@ -407,10 +364,10 @@ top_right2 = '2e-4 0.0025 0'
     prop_values = ${density}
   []  
   [./abrupt_softening]
-  type = AbruptSoftening
+  type = ADAbruptSoftening
   [../]
   [./exponential_softening]
-  type = ExponentialSoftening
+  type = ADExponentialSoftening
   [../] 
 []
 

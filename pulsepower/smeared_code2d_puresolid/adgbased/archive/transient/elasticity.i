@@ -98,7 +98,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -136,8 +136,8 @@ top_right2 = '2e-4 0.0025 0'
     order = FIRST
   [] 
   [nonlocal_eqstrain]
-    order = FIRST
-    family = LAGRANGE
+      order = FIRST
+      family = LAGRANGE
   [] 
 []
 
@@ -228,7 +228,7 @@ top_right2 = '2e-4 0.0025 0'
   [define_initial_damage_block1]
     type = ConstantAux
     variable = crack_damage_initial
-    value = 0.9
+    value = 0.5
     block = 1
     execute_on = INITIAL
   []
@@ -316,23 +316,6 @@ top_right2 = '2e-4 0.0025 0'
   []    
 []
 
-# [Kernels]
-#   [react_nonlocal]
-#     type = ADReaction
-#     variable = nonlocal_eqstrain
-#     rate = 1.0
-#   []
-#   [diffusion_nonlocal]
-#     type = ADCoefDiffusion
-#     variable = nonlocal_eqstrain
-#     coef = ${fparse 0.5*l*l}
-#   []
-#   [reaction_local]
-#     type = ADElkLocalEqstrainForce
-#     variable = nonlocal_eqstrain
-#   []    
-# []
-
 [BCs]
   #confinement
   [./Pressure]
@@ -409,9 +392,8 @@ top_right2 = '2e-4 0.0025 0'
   [./elastic_stress]
     type = ADComputeSmearedCrackingStressDebug
     nonlocal_eqstrain = nonlocal_eqstrain
-    damage_evolution_law_span = 0.1
+    damage_evolution_law_span = 0.25
     model = NONLOCAL
-    max_cracks = 1
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
@@ -425,10 +407,10 @@ top_right2 = '2e-4 0.0025 0'
     prop_values = ${density}
   []  
   [./abrupt_softening]
-  type = AbruptSoftening
+  type = ADAbruptSoftening
   [../]
   [./exponential_softening]
-  type = ExponentialSoftening
+  type = ADExponentialSoftening
   [../] 
 []
 

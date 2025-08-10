@@ -92,6 +92,7 @@ ADFarmsComputeSmearedCrackingStressGrads::ADFarmsComputeSmearedCrackingStressGra
     _wc(getParam<Real>("wc")),
     _perm_exponent(getParam<Real>("perm_exponent"))
 {
+  _local_elastic_vector.resize(9);
 }
 
 void
@@ -111,52 +112,41 @@ ADFarmsComputeSmearedCrackingStressGrads::computeQpStress()
 
   // (1) Retrieve material parameters and compute cracking strain ε₀
   const ADReal E = ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
-  const ADReal eps0 = _cracking_stress[_qp] / E;
+  const ADReal tiny = 1e-14;
+  const ADReal eps0 = _cracking_stress[_qp] / (E + tiny);
 
   // (2) Compute Mazars‐type equivalent strain ε̃ and principal directions
   ADRealVectorValue eps_dir;
   computeCrackStrainAndOrientation(eps_dir);
-  Real strain_dir0_positive = std::max(MetaPhysicL::raw_value(eps_dir(0)), 0.0);
-  Real strain_dir1_positive = std::max(MetaPhysicL::raw_value(eps_dir(1)), 0.0);
-  Real strain_dir2_positive = std::max(MetaPhysicL::raw_value(eps_dir(2)), 0.0);
-  ADReal eqstrain_local = std::sqrt(strain_dir0_positive * strain_dir0_positive +
-                                  strain_dir1_positive * strain_dir1_positive +
-                                  strain_dir2_positive * strain_dir2_positive);
+  ADReal p0 = Macaulay(eps_dir(0),false);
+  ADReal p1 = Macaulay(eps_dir(1),false);
+  ADReal p2 = Macaulay(eps_dir(2),false);
+  ADReal eqstrain_local = std::sqrt(p0 * p0 + p1 * p1 + p2 * p2);
   _eqstrain_local[_qp] = eqstrain_local;
 
-  // (3) Update history κ = max(κ_old, ε̃)
-  ADReal kappa = std::max(MetaPhysicL::raw_value(_kappa_old[_qp]), _eqstrain_nonlocal[_qp]);
-  _kappa[_qp] = kappa;
+  // History with nonlocal regularization (monotonic): kappa = max(kappa_old, nonlocal_eq)
+  _kappa[_qp] = std::fmax(_kappa_old[_qp], _eqstrain_nonlocal[_qp]);
+  ADReal kappa = _kappa[_qp];
 
-  //(4) Exponential damage law ω(κ)
-  ADReal omega = 0.0;
+  // Damage law (ensure safe when kappa ~ eps0)
+  ADReal omega = _initial_crack_damage[_qp];
   if (kappa > eps0)
   {
-    omega = 1.0 - eps0 / kappa * (1.0 - _paramA) - _paramA / std::exp(_paramB * (kappa - eps0));
+    ADReal term = 1.0 - eps0 / (kappa + tiny) * (1.0 - _paramA) - _paramA / std::exp(_paramB * (kappa - eps0));
+    omega = std::fmax(term, omega);
   }
 
-  // irreversible crack damage, set to initial damage if it is smaller
-  if (omega < _initial_crack_damage[_qp])
-  {
-    omega = _initial_crack_damage[_qp];
-  }
-
-  // Ensure damage is non-decreasing (enforce irreversibility)
-  if (omega < MetaPhysicL::raw_value(_crack_damage_old[_qp]))
-  {
-    omega = _crack_damage_old[_qp];
-  }
-
-  //save the damage
+  // Irreversibility
+  omega = std::fmax(omega, _crack_damage_old[_qp]);
+  // Clamp upper bound
+  omega = std::fmin(omega, 0.999999);
   _crack_damage[_qp] = omega;
 
-  // (5) Build consistent tangent and stress
-  const ADRankFourTensor & De = _elasticity_tensor[_qp];
-  const ADRankTwoTensor & eps = _elastic_strain[_qp];
-  ADRankTwoTensor De_eps = De * eps;
+  // update the local elasticity tensor
+  updateLocalElasticityTensor();
 
   // (6) Assign stress - the tangent is automatically computed by AD
-  _stress[_qp] = (1.0 - omega + 1e-6) * De_eps;
+  _stress[_qp] = _local_elasticity_tensor * _elastic_strain[_qp];
 
   // (7) Finite‐strain rotation if needed
   if (_perform_finite_strain_rotations)
@@ -241,4 +231,56 @@ ADFarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
 
   // Update effective perm
   _effective_perm[_qp] = effective_perm_new;
+}
+
+void
+ADFarmsComputeSmearedCrackingStressGrads::updateLocalElasticityTensor()
+{
+  
+  // ADRealVectorValue stiffness_ratio_local(1.0, 1.0, 1.0);
+  ADRealVectorValue stiffness_ratio_local(1.0 - _crack_damage[_qp], 1.0 - _crack_damage[_qp], 1.0 - _crack_damage[_qp]);
+  const ADRankTwoTensor & R = _crack_rotation[_qp];
+
+  const ADReal youngs_modulus =
+      ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
+
+  const ADReal cracking_stress = _cracking_stress[_qp];
+
+  const ADReal & c0 = stiffness_ratio_local(0);
+  const ADReal & c1 = stiffness_ratio_local(1);
+  const ADReal & c2 = stiffness_ratio_local(2); 
+
+  const ADReal c01 = c0 * c1;
+  const ADReal c02 = c0 * c2;
+  const ADReal c12 = c1 * c2;
+
+  const ADReal c01_shear_retention = c01;
+  const ADReal c02_shear_retention = c02;
+  const ADReal c12_shear_retention = c12;
+
+  _local_elastic_vector[0] = _elasticity_tensor[_qp](0, 0, 0, 0) * c0;
+  _local_elastic_vector[1] = _elasticity_tensor[_qp](0, 0, 1, 1) * c01;
+  _local_elastic_vector[2] = _elasticity_tensor[_qp](0, 0, 2, 2) * c02;
+  _local_elastic_vector[3] = _elasticity_tensor[_qp](1, 1, 1, 1) * c1;
+  _local_elastic_vector[4] = _elasticity_tensor[_qp](1, 1, 2, 2) * c12;
+  _local_elastic_vector[5] = _elasticity_tensor[_qp](2, 2, 2, 2) * c2;
+  _local_elastic_vector[6] = _elasticity_tensor[_qp](1, 2, 1, 2) * c12_shear_retention;
+  _local_elastic_vector[7] = _elasticity_tensor[_qp](0, 2, 0, 2) * c02_shear_retention;
+  _local_elastic_vector[8] = _elasticity_tensor[_qp](0, 1, 0, 1) * c01_shear_retention;
+
+  // Filling with 9 components is sufficient because these are the only nonzero entries
+  // for isotropic or orthotropic materials.
+  _local_elasticity_tensor.fillFromInputVector(_local_elastic_vector,
+                                              ADRankFourTensor::symmetric9);
+
+  // Rotate the modified elasticity tensor back into global coordinates
+  _local_elasticity_tensor.rotate(R);
+}
+
+ADReal
+ADFarmsComputeSmearedCrackingStressGrads::Macaulay(const ADReal x, const bool deriv)
+{
+  if (deriv)
+    return x > 0 ? 1 : 0;
+  return 0.5 * (x + std::abs(x));
 }

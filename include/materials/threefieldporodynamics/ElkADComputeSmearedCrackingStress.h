@@ -11,19 +11,25 @@
 
 #include "ColumnMajorMatrix.h"
 #include "ADComputeMultipleInelasticStress.h"
-#include "SmearedCrackSofteningBase.h"
+#include "ADSmearedCrackSofteningBase.h"
 #include "Function.h"
 
-/**
- * ADComputeSmearedCrackingStressDebug computes the stress for a finite strain
- * material with smeared cracking using automatic differentiation
- */
-class ADComputeSmearedCrackingStressDebug : public ADComputeMultipleInelasticStress
+/*
+Elk Compute Smeared Cracking Stress Model (AD-version)
+Created by Chunhui Zhao, Jul 15th, 2024
+
+- Add biot modulus degradation
+- Add permeability change
+
+- Add comments/explanations to the original model
+- Couple with three-field poro-dynamics code
+*/
+class ElkADComputeSmearedCrackingStress : public ADComputeMultipleInelasticStress
 {
 public:
   static InputParameters validParams();
 
-  ADComputeSmearedCrackingStressDebug(const InputParameters & parameters);
+  ElkADComputeSmearedCrackingStress(const InputParameters & parameters);
 
   virtual void initialSetup() override;
   virtual void initQpStatefulProperties() override;
@@ -64,7 +70,7 @@ protected:
    * @param tensor Stress tensor to be updated
    * @param sigma Vector of stresses in crack directions
    */
-  void updateStressTensorForCracking(ADRankTwoTensor & tensor, const RealVectorValue & sigma);
+  void updateStressTensorForCracking(ADRankTwoTensor & tensor, const ADRealVectorValue & sigma);
 
   /**
    * Check to see whether there was cracking in any diretion in the previous
@@ -73,11 +79,12 @@ protected:
    */
   bool previouslyCracked();
 
+  // ------------------------------------------------------------------------------- //
   /**
-   * Update the effective permeability based on the current crack damage
-   * and the specified permeability model.
+   *  Update the effective permeability tensor to account for the effect of cracking
    */
-  void updatePermeabilityForCracking();
+  void updatePermeabilityForCracking(ADRealVectorValue & strain_in_crack_dir);
+  // ------------------------------------------------------------------------------- //
 
   ///@{ Input parameters for smeared crack models
 
@@ -91,14 +98,14 @@ protected:
   const unsigned int _max_cracks;
 
   /// Defines transition to changed stiffness during unloading
-  const Real _cracking_neg_fraction;
+  const ADReal _cracking_neg_fraction;
 
   /// Controls the amount of shear retained
-  const Real _shear_retention_factor;
+  const ADReal _shear_retention_factor;
 
   /// Controls the maximum amount that the damaged elastic stress is corrected
   /// to folow the release model during a time step
-  const Real _max_stress_correction;
+  const ADReal _max_stress_correction;
   ///@}
 
   /// Enum defining the method used to adjust the elasticity tensor for cracking
@@ -128,57 +135,28 @@ protected:
   const MaterialProperty<RealVectorValue> & _crack_max_strain_old;
   ///@}
 
-  //@{ Variables used by multiple methods within the calculation for a single material point
+  /// Variables used by multiple methods within the calculation for a single material point
   ADRankFourTensor _local_elasticity_tensor;
-  ///@}
 
   /// The user-supplied list of softening models to be used in the 3 crack directions
-  std::vector<SmearedCrackSofteningBase *> _softening_models;
+  std::vector<ADSmearedCrackSofteningBase *> _softening_models;
 
   /// Vector helper to update local elasticity tensor
   std::vector<ADReal> _local_elastic_vector;
 
-  //**Additional Parameters for Non-local Model**/
-  ///@{local equivalent strain value
-  ADMaterialProperty<Real> & _eqstrain_local;
-  const MaterialProperty<Real> & _eqstrain_local_old;
-  ///@}
+  // ------------------------------------------------------------------------------- //
+  /// Bulk Modulus 
+  /// Solid bulk modulus compliance
+  ADMaterialProperty<Real> & _solid_bulk_compliance_damaged;
+  
+  /// Initial solid bulk modulus compliance
+  const Real & _solid_bulk_modulus_compliance_intact; 
 
-  ///@{define nonlocal eqstrain
-  const ADVariableValue & _eqstrain_nonlocal;
-  const VariableValue & _eqstrain_nonlocal_old;
-  ///@}
-
-  /// @brief define span of damage evolution law
-  const Real _damage_evolution_law_span; 
-
-  /// the model type
-  enum class ModelType
-  {
-    LOCAL,
-    NONLOCAL
-  } _model_type;
-
-  /// @brief crack strain at onset of strength criterion
-  ADMaterialProperty<Real> & _cracking_strain;
-
-  /// @brief initial crack damage
-  const ADVariableValue & _crack_damage_initial;
-
-  //porous flow coupling related parameters
-  const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
-  const Real _intrinsic_permeability;
-
-  /// @brief define the effective permeability
+  /// Effective Permeability
   ADMaterialProperty<RealTensorValue> & _effective_perm;
-  const MaterialProperty<RealTensorValue> & _effective_perm_old; 
 
-  // Exponential permeability model
-  const bool _exponential_permeability_model; // flag to indicate if exponential permeability model is used
-  const Real _coeff_b; // coefficient for the exponential function in the effective permeability
+  /// Initial Permeability
+  const RealTensorValue & _permeablity_intact;
 
-  // Darcy-Poiseuille permeability model
-  const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
-  const Real _wc; // characteristic width for the Darcy-Poiseuille model
-  const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
+  // ------------------------------------------------------------------------------- //
 };
