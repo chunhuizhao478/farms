@@ -31,15 +31,15 @@ mu_d = 0.525 #dynamic friction coefficient
 
 ##CDB model parameters##
 xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
-xi_d = -0.9 #strain invariants ratio: onset of breakage healing
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = 1e6 #coefficient gives positive damage evolution
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
-CBH_constant = 1e4 #coefficient of healing for breakage evolution
-C_1 = 300 #coefficient of healing for damage evolution
+CBH_constant = 0 #coefficient of healing for breakage evolution
+C_1 = 0 #coefficient of healing for damage evolution
 C_2 = 0.05 #coefficient of healing for damage evolution
 beta_width = 0.05 #coefficient gives width of transitional region
 C_g = 1e-10 #material parameter: compliance or fluidity of the fine grain granular material
@@ -87,6 +87,7 @@ end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 20 #time step interval for output
+sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 20 #time step interval for csv output
 checkpoint_time_step_interval = 80 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
@@ -732,7 +733,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
   []
-[]    
+  [sample_snapshots]
+    type = Exodus
+    execute_on = 'timestep_end'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux'
+    time_step_interval = ${sample_snapshots_time_step_interval}
+  []
+[]
 
 [VectorPostprocessors]
   [main_fault]
