@@ -41,16 +41,16 @@
     # Water bulk modulus (2.2 GPa)
     fluid_bulk_modulus = 2.2e9      
 
-     # Initial permeability (1 milli-darcy) 
+     # Initial permeability 
     permeability_solid_o = 1e-20 
 
-     # Initial porosity (15%)
+     # Initial porosity 
     porosity_solid_o = 0.008   
      
-     # Granular bulk modulus (15 GPa)      
+     # Granular bulk modulus    
     solid_bulk_modulus_g = 50.38e9 
 
-    # Solid grains bulk modulus (36 GPa - typical for quartz)  
+    # Solid grains bulk modulus 
     solid_bulk_modulus_s = 50.38e9 
 
     permeability_evolution_with_damage = 3
