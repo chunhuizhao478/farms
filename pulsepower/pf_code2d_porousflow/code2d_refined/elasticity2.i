@@ -32,7 +32,7 @@ intrinsic_permeability = 5e-19 # m^2
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
 wc = ${fparse 2 * Gc_const / ft } # m
-perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
+perm_exponent = 1 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
@@ -80,7 +80,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
