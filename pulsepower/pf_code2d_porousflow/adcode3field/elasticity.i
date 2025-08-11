@@ -251,6 +251,19 @@ top_right2 = '2e-4 0.0025 0'
     family = MONOMIAL
     order = CONSTANT
   []
+  #
+  [effective_perm00_aux]
+    family = MONOMIAL
+    order = FIRST
+  []
+  [effective_perm11_aux]
+    family = MONOMIAL
+    order = FIRST
+  []
+  [effective_perm01_aux]
+    family = MONOMIAL
+    order = FIRST
+  []
 []
 
 [AuxKernels]
@@ -362,6 +375,29 @@ top_right2 = '2e-4 0.0025 0'
     type = MeshSize
     variable = mesh_size
     execute_on = 'TIMESTEP_END'
+  []
+  ### PorousFlow Aux ###
+  #effective permeability
+  [effective_permeability_00]
+    type = ADMaterialRealTensorValueAux
+    property = effective_perm
+    row = 0
+    column = 0
+    variable = effective_perm00_aux
+  []
+  [effective_permeability_11]
+    type = ADMaterialRealTensorValueAux
+    property = effective_perm
+    row = 1
+    column = 1
+    variable = effective_perm11_aux
+  []
+  [effective_permeability_01]
+    type = ADMaterialRealTensorValueAux
+    property = effective_perm
+    row = 0
+    column = 1
+    variable = effective_perm01_aux
   []
 []
 
@@ -542,6 +578,8 @@ top_right2 = '2e-4 0.0025 0'
         beta = 0.25
         gamma = 0.5
         multiply_biot_coefficient = true
+        plane_strain_correction = true
+        poissons_ratio = ${nu}
     []
     #INS Mass (\nabla vf dp)
     [insmass]
@@ -559,6 +597,8 @@ top_right2 = '2e-4 0.0025 0'
         beta = 0.25
         gamma = 0.5
         multiply_biot_coefficient = false
+        plane_strain_correction = true
+        poissons_ratio = ${nu}
     []
 []
 
@@ -659,6 +699,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   [strain]
     type = ADComputeSmallStrain
+    displacement = 'disp_x disp_y'
   []
   [degradation]
     type = PowerDegradationFunction
@@ -763,7 +804,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 1
   print_linear_residuals = false
   csv = true
   [checkpoint]
@@ -802,5 +843,15 @@ top_right2 = '2e-4 0.0025 0'
     variable = p
     solution_uo = init_sol_components
     from_variable = pp
+  []
+  [wf_x_ic]
+    type = ConstantIC
+    variable = wf_x
+    value = 0
+  []
+  [wf_y_ic]
+    type = ConstantIC
+    variable = wf_y
+    value = 0
   []
 []

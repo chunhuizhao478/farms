@@ -45,4 +45,7 @@ private:
     /// whether or not multiply biot coefficient by weak form
     const bool _multiply_biot_coefficient;
     const ADMaterialProperty<Real> & _biot_modulus; //biot modulus
+    // Plane strain handling (2D): optional reconstruction of epsilon_zz
+    const bool _plane_strain_correction;
+    const Real _nu; // Poisson's ratio for plane strain correction
 };

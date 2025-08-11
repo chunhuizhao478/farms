@@ -26,4 +26,7 @@ public:
 
 protected:
   virtual ADReal precomputeQpResidual() override;
+
+  bool _divide_by_biot_modulus;
+  const ADMaterialProperty<Real> & _biot_modulus;
 };

@@ -83,8 +83,10 @@ ElkADPoroDynamicSmearedCrackingMaterials::initQpStatefulProperties()
   //biot modulus
   //Form adopted in (Mella, 2023)
   //_biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) + ( (biot_coefficient - _porosity_val)/( _bulk_modulus_solid_val ) ) );
-  //Form adopted in PorousFlowConstantBiotModulus in MOOSE
-  _biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) + ( (1 - biot_coefficient)*(biot_coefficient - _porosity_val)/( _bulk_modulus_solid_val ) ) );
+  //biot modulus
+  // Correct: 1/M = phi/Kf + (b - phi)/Ks
+  _biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) +
+                               ( (biot_coefficient - _porosity_val) / _bulk_modulus_solid_val ) );
 
   //biot coefficient
   _biot_coefficient[_qp] = biot_coefficient;
@@ -122,7 +124,12 @@ ElkADPoroDynamicSmearedCrackingMaterials::computeQpProperties()
   //Form adopted in (Mella, 2023)
   //_biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) + ( (biot_coefficient - _porosity_val) * _solid_bulk_compliance_damaged[_qp] ) );
   //Form adopted in PorousFlowConstantBiotModulus in MOOSE
-  _biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) + ( (1 - biot_coefficient)*(biot_coefficient - _porosity_val)*_bulk_modulus_solid_val ) );
+  //_biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) + ( (1 - biot_coefficient)*(biot_coefficient - _porosity_val)/_bulk_modulus_solid_val ) );
+
+  //biot modulus
+  // Correct: 1/M = phi/Kf + (b - phi)/Ks
+  _biot_modulus[_qp] = 1.0 / ( ( _porosity_val / _bulk_modulus_fluid_val ) +
+                               ( (biot_coefficient - _porosity_val) / _bulk_modulus_solid_val ) );
 
   //biot coefficient
   _biot_coefficient[_qp] = biot_coefficient;

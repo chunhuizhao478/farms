@@ -33,6 +33,9 @@ InputParameters ElkADMassConservationNewmark::validParams()
     params.addRequiredParam<Real>("beta","beta parameter");
     params.addRequiredParam<Real>("gamma","gamma parameter");
     params.addRequiredParam<bool>("multiply_biot_coefficient","whether or not multiply biot coefficient with the weak form");
+    // Plane strain correction (2D simulations): include out-of-plane strain contribution
+    params.addParam<bool>("plane_strain_correction", false, "If true (and mesh is 2D), apply epsilon_zz = -nu/(1-nu)*(epsilon_xx+epsilon_yy) to volumetric strain");
+    params.addParam<Real>("poissons_ratio", -1.0, "Poisson's ratio used for plane strain correction (required if plane_strain_correction=true)");
     return params;
 }
 
@@ -53,7 +56,9 @@ ElkADMassConservationNewmark::ElkADMassConservationNewmark(const InputParameters
     _beta(getParam<Real>("beta")),
     _gamma(getParam<Real>("gamma")),
     _multiply_biot_coefficient(getParam<bool>("multiply_biot_coefficient")),
-    _biot_modulus(getADMaterialProperty<Real>("biot_modulus"))
+    _biot_modulus(getADMaterialProperty<Real>("biot_modulus")),
+    _plane_strain_correction(getParam<bool>("plane_strain_correction")),
+    _nu(getParam<Real>("poissons_ratio"))
 {}
 
 ADReal
@@ -67,6 +72,24 @@ ElkADMassConservationNewmark::computeQpResidual()
     ADReal div_u_old = _grad_ux_old[_qp](0) + _grad_uy_old[_qp](1) + _grad_uz_old[_qp](2);
     ADReal div_v_old = _grad_vx_old[_qp](0) + _grad_vy_old[_qp](1) + _grad_vz_old[_qp](2);
     ADReal div_a_old = _grad_ax_old[_qp](0) + _grad_ay_old[_qp](1) + _grad_az_old[_qp](2);
+
+    // If running in 2D with plane strain correction requested, augment divergence
+    if (_plane_strain_correction && _mesh.dimension() == 2)
+    {
+        if (_nu < 0.0 || _nu >= 0.5)
+            mooseError("ElkADMassConservationNewmark: provide a valid poissons_ratio (0<=nu<0.5) when plane_strain_correction=true");
+        // epsilon_zz = -nu/(1-nu)*(epsilon_xx + epsilon_yy)
+        ADReal epszz = -_nu/(1.0 - _nu) * (_grad_ux[_qp](0) + _grad_uy[_qp](1));
+        ADReal epszz_old = -_nu/(1.0 - _nu) * (_grad_ux_old[_qp](0) + _grad_uy_old[_qp](1));
+        div_u += epszz;
+        div_u_old += epszz_old;
+        // The old velocity/acceleration divergences already represent time derivatives of divergence; for consistency we
+        // recompute their out-of-plane contributions assuming same proportionality (small-strain assumption)
+        ADReal div_v_zz_old = -_nu/(1.0 - _nu) * (_grad_vx_old[_qp](0) + _grad_vy_old[_qp](1));
+        ADReal div_a_zz_old = -_nu/(1.0 - _nu) * (_grad_ax_old[_qp](0) + _grad_ay_old[_qp](1));
+        div_v_old += div_v_zz_old;
+        div_a_old += div_a_zz_old;
+    }
     
     //compute divergence of current solid acceleration
     //take divergence of both sides of the solid skeleton definition a^s_{n+1} 
