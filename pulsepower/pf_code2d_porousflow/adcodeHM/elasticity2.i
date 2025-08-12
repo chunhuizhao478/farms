@@ -32,17 +32,17 @@ intrinsic_permeability = 5e-19 # m^2
 tortosity_value = 1.2
 
 ##exponential permeability model
-# coeff_b = 10 # coefficient for the exponential function in the effective permeability
+coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 2 * Gc_const / ft } # m
-perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
+# wc = ${fparse 2 * Gc_const / ft } # m
+# perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -443,7 +443,10 @@ top_right2 = '2e-4 0.0025 0'
     ##---------------------------------------------##
     # porous flow coupling
     ##---------------------------------------------##
-    porous_flow_coupling = false #close perm update
+    porous_flow_coupling = true
+    ##-----darcy_poiseuille_permeability_model-----##
+    exponential_permeability_model = true
+    coeff_b = ${coeff_b}
     ##---------------------------------------------##
   []
   [stress]

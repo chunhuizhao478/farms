@@ -219,18 +219,20 @@ void
 SmallDeformationIsotropicElasticityHM::updatePermeabilityForCracking()
 {
 
+  //Compute the intrinsic permeability
+  ADRankTwoTensor perm_intrinsic = _intrinsic_permeability * ADRankTwoTensor::Identity();
+
   // If porous flow coupling is not enabled, return
-  if (!_porous_flow_coupling)
+  if (!_porous_flow_coupling){
+    _effective_perm[_qp] = perm_intrinsic;
     return;
+  }
 
   // Get transformation matrix
   const ADRankTwoTensor & R = _crack_rotation[_qp];
 
   // Initialize effective permeability new
   ADRankTwoTensor effective_perm_new;
-
-  //Compute the intrinsic permeability
-  ADRankTwoTensor perm_intrinsic = _intrinsic_permeability * ADRankTwoTensor::Identity();
 
   // Initialize effective permeability new
   // exponential permeability model 
