@@ -166,22 +166,22 @@
   #  automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
-     dt = 2
+
     verbose = true
-   # [TimeStepper]
-   #     type = FarmsIterationAdaptiveDT
-   #     dt = 1
-   #     cutback_factor_at_failure = 0.5
-   #     optimal_iterations = 6
-   #     growth_factor = 1.25
-   #     max_time_step_bound = 6
-   # []
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 1
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 6
+        growth_factor = 1.25
+        max_time_step_bound = 6
+    []
 []
 
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 1
+        time_step_interval = 2
     [../]
  #   [./csv]
  #       type = CSV
