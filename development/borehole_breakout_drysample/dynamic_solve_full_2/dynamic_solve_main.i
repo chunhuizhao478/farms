@@ -371,9 +371,9 @@
 [UserObjects]
     [eqstrain_averaging] #length scale = radius = grain size 
         type = ElkRadialAverage
-        length_scale = 0.0013
+        length_scale = 0.0026
         prop_name = strain_invariant_ratio
-        radius = 0.0013
+        radius = 0.0026
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -396,9 +396,9 @@
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-5
+    nl_rel_tol = 1e-6
     nl_max_its = 30
-    nl_abs_tol = 1e-7
+    nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
