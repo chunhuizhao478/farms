@@ -146,39 +146,68 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
+# [Materials]
+#   [fracture_properties]
+#     type = ADGenericConstantMaterial
+#     prop_names = 'l'
+#     prop_values = '${l}'
+#   []
+#   [Gc_var]
+#     type = ADParsedMaterial
+#     property_name = Gc
+#     coupled_variables = 'Gc_var'
+#     expression = 'Gc_var'
+#     # outputs = exodus
+#   []
+#   [degradation]
+#     type = PowerDegradationFunction
+#     property_name = g
+#     expression = (1-d)^p*(1-eta)+eta
+#     phase_field = d
+#     parameter_names = 'p eta '
+#     parameter_values = '2 1e-6'
+#   []
+#   [crack_geometric] #AT1 model
+#     type = CrackGeometricFunction
+#     property_name = alpha
+#     expression = 'd'
+#     phase_field = d
+#   []
+#   [psi]
+#     type = ADDerivativeParsedMaterial
+#     property_name = psi
+#     expression = 'alpha*Gc/c0/l+g*psie_active'
+#     coupled_variables = 'd psie_active'
+#     material_property_names = 'alpha(d) g(d) Gc c0 l'
+#     derivative_order = 1
+#   []
+# []
+
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l'
-    prop_values = '${l}'
+    prop_names =  'l Gc a1 a2 a3 p eta c_alpha'
+    prop_values = '${l} ${Gc} ${a1} ${a2} ${a3} ${p} ${eta} ${c_alpha}'
   []
-  [Gc_var]
-    type = ADParsedMaterial
-    property_name = Gc
-    coupled_variables = 'Gc_var'
-    expression = 'Gc_var'
-    # outputs = exodus
-  []
-  [degradation]
-    type = PowerDegradationFunction
-    property_name = g
-    expression = (1-d)^p*(1-eta)+eta
-    phase_field = d
-    parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
-  []
-  [crack_geometric] #AT1 model
+  [crack_geometric]
     type = CrackGeometricFunction
     property_name = alpha
-    expression = 'd'
+    expression = '2*d - d*d'
     phase_field = d
+  []
+  [degradation]
+    type = RationalDegradationFunctionCZM
+    property_name = g
+    expression = (1-d)^p/((1-d)^p+a1*d*(1+a2*d+a2*a3*d^2))*(1-eta)+eta
+    phase_field = d
+    material_property_names = 'a1 a2 a3 p eta'
   []
   [psi]
     type = ADDerivativeParsedMaterial
     property_name = psi
-    expression = 'alpha*Gc/c0/l+g*psie_active'
+    expression = 'alpha*Gc/c_alpha/l+g*psie_active'
     coupled_variables = 'd psie_active'
-    material_property_names = 'alpha(d) g(d) Gc c0 l'
+    material_property_names = 'alpha(d) g(d) Gc c_alpha l'
     derivative_order = 1
   []
 []
@@ -205,22 +234,22 @@ top_right2 = '2e-4 0.0025 0'
   print_linear_residuals = false
 []
 
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${Gc_const} #lambda
-    location = 0 
-  []
-[] 
+# [Distributions]
+#   #typically for granite
+#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+#   [weibull]
+#     type = Weibull
+#     shape = 15.0 #k
+#     scale = ${Gc} #lambda
+#     location = 0 
+#   []
+# [] 
 
-[ICs]
-  [./gc_var]
-    type =  RandomIC
-    variable = Gc_var
-    distribution = weibull
-  []
-[]
+# [ICs]
+#   [./gc_var]
+#     type =  RandomIC
+#     variable = Gc_var
+#     distribution = weibull
+#   []
+# []

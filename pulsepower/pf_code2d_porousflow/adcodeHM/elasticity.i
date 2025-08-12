@@ -7,7 +7,7 @@ dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 
+l =  2e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -35,7 +35,7 @@ tortosity_value = 1.2
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 2 * Gc_const / ft } # m
+wc = ${fparse 4 * Gc_const / ft } # m
 perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
@@ -443,7 +443,12 @@ top_right2 = '2e-4 0.0025 0'
     ##---------------------------------------------##
     # porous flow coupling
     ##---------------------------------------------##
-    porous_flow_coupling = false #close perm update
+    porous_flow_coupling = true
+    ##-----darcy_poiseuille_permeability_model-----##
+    darcy_poiseuille_permeability_model = true
+    intrinsic_permeability = ${intrinsic_permeability}
+    wc = ${wc}
+    perm_exponent = ${perm_exponent}
     ##---------------------------------------------##
   []
   [stress]

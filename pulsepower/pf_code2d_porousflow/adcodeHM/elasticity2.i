@@ -1,3 +1,4 @@
+pi = 3.14159265358979323846
 E = 50e9
 nu = 0.373
 ft = 25.5e6
@@ -7,7 +8,7 @@ dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 
+l =  2e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -32,18 +33,27 @@ intrinsic_permeability = 5e-19 # m^2
 tortosity_value = 1.2
 
 ##exponential permeability model
-coeff_b = 10 # coefficient for the exponential function in the effective permeability
+# coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-# wc = ${fparse 2 * Gc_const / ft } # m
-# perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
+wc = ${fparse 2 * Gc_const / ft } # m
+perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
+#----------------------------------------------------#
+##linear softening parameters
+c_alpha = ${pi}
+p = 2.0
+lch = '${fparse E*Gc_const/(ft*ft)}'
+a1 = '${fparse 4.0/pi*lch/l}'
+a2 = -0.5
+a3 = 0.0
+eta = 1e-6
 #----------------------------------------------------#
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
     input_files = fracture2.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc=${Gc_const};l=${l};dx_min=${dx_min};a1=${a1};a2=${a2};a3=${a3};p=${p};ft=${ft};eta=${eta};c_alpha=${c_alpha}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -417,19 +427,26 @@ top_right2 = '2e-4 0.0025 0'
 [Materials]
   [bulk]
     type = ADGenericConstantMaterial
-    prop_names = 'K G'
-    prop_values = '${K} ${G}'
+    prop_names = 'K G eta a1 a2 a3 p'
+    prop_values = '${K} ${G} ${eta} ${a1} ${a2} ${a3} ${p}'
   []
   [strain]
     type = ADComputeSmallStrain
   []
+  # [degradation]
+  #   type = PowerDegradationFunction
+  #   property_name = g
+  #   expression = (1-d)^p*(1-eta)+eta
+  #   phase_field = d
+  #   parameter_names = 'p eta '
+  #   parameter_values = '2 1e-6'
+  # []
   [degradation]
-    type = PowerDegradationFunction
+    type = RationalDegradationFunctionCZM
     property_name = g
-    expression = (1-d)^p*(1-eta)+eta
+    expression = (1-d)^p/((1-d)^p+a1*d*(1+a2*d+a2*a3*d^2))*(1-eta)+eta
     phase_field = d
-    parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
+    material_property_names = 'a1 a2 a3 p eta'
   []
   [elasticity]
     type = SmallDeformationIsotropicElasticityHM
@@ -445,8 +462,10 @@ top_right2 = '2e-4 0.0025 0'
     ##---------------------------------------------##
     porous_flow_coupling = true
     ##-----darcy_poiseuille_permeability_model-----##
-    exponential_permeability_model = true
-    coeff_b = ${coeff_b}
+    darcy_poiseuille_permeability_model = true
+    intrinsic_permeability = ${intrinsic_permeability}
+    wc = ${wc}
+    perm_exponent = ${perm_exponent}
     ##---------------------------------------------##
   []
   [stress]
