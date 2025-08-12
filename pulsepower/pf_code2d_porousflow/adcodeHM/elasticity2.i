@@ -1,4 +1,3 @@
-pi = 3.14159265358979323846
 E = 50e9
 nu = 0.373
 ft = 25.5e6
@@ -36,24 +35,15 @@ tortosity_value = 1.2
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 2 * Gc_const / ft } # m
+wc = ${fparse 4 * Gc_const / ft } # m
 perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
-#----------------------------------------------------#
-##linear softening parameters
-c_alpha = ${pi}
-p = 2.0
-lch = '${fparse E*Gc_const/(ft*ft)}'
-a1 = '${fparse 4.0/pi*lch/l}'
-a2 = -0.5
-a3 = 0.0
-eta = 1e-6
 #----------------------------------------------------#
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
     input_files = fracture2.i
-    cli_args = 'Gc=${Gc_const};l=${l};dx_min=${dx_min};a1=${a1};a2=${a2};a3=${a3};p=${p};ft=${ft};eta=${eta};c_alpha=${c_alpha}'
+    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -348,7 +338,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -427,26 +417,19 @@ top_right2 = '2e-4 0.0025 0'
 [Materials]
   [bulk]
     type = ADGenericConstantMaterial
-    prop_names = 'K G eta a1 a2 a3 p'
-    prop_values = '${K} ${G} ${eta} ${a1} ${a2} ${a3} ${p}'
+    prop_names = 'K G'
+    prop_values = '${K} ${G}'
   []
   [strain]
     type = ADComputeSmallStrain
   []
-  # [degradation]
-  #   type = PowerDegradationFunction
-  #   property_name = g
-  #   expression = (1-d)^p*(1-eta)+eta
-  #   phase_field = d
-  #   parameter_names = 'p eta '
-  #   parameter_values = '2 1e-6'
-  # []
   [degradation]
-    type = RationalDegradationFunctionCZM
+    type = PowerDegradationFunction
     property_name = g
-    expression = (1-d)^p/((1-d)^p+a1*d*(1+a2*d+a2*a3*d^2))*(1-eta)+eta
+    expression = (1-d)^p*(1-eta)+eta
     phase_field = d
-    material_property_names = 'a1 a2 a3 p eta'
+    parameter_names = 'p eta '
+    parameter_values = '2 1e-6'
   []
   [elasticity]
     type = SmallDeformationIsotropicElasticityHM
