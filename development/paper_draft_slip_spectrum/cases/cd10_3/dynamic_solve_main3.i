@@ -486,7 +486,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
+      time_step_interval = 200
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
@@ -495,7 +495,7 @@
     [../]
     [out]
         type = Checkpoint
-        time_step_interval = 200
+        time_step_interval = 2000
         num_files = 2
     []
 []
