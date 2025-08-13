@@ -42,7 +42,7 @@ perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective p
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -338,7 +338,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 130e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -374,13 +374,13 @@ top_right2 = '2e-4 0.0025 0'
     value = 0
   []
   #fix pressure
-  [./fix_pressure]
-    type = ADDirichletBC
-    variable = p
-    boundary = 3
-    value = ${initial_pore_pressure}
-    use_displaced_mesh = false
-  []
+  # [./fix_pressure]
+  #   type = ADDirichletBC
+  #   variable = p
+  #   boundary = 3
+  #   value = ${initial_pore_pressure}
+  #   use_displaced_mesh = false
+  # []
   #add dampers
   [damp_outer_x]
     type = ADFarmsNonReflectDashpotBC
@@ -513,7 +513,7 @@ top_right2 = '2e-4 0.0025 0'
   end_time = 10e-5
 
   fixed_point_max_its = 10
-  accept_on_max_fixed_point_iteration = true
+  accept_on_max_fixed_point_iteration = false
   fixed_point_rel_tol = 1e-6
   fixed_point_abs_tol = 1e-8
 
