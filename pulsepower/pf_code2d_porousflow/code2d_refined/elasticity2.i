@@ -3,13 +3,12 @@
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
-ft = 25.5e6 # tensile strength, Pa
 solid_density = 2600 # kg/m^3 
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 # length scale, m
-#'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
+l =  2e-4 # length scale, m
+ft = '${fparse (3.0/8.0 * E*Gc_const/l)^0.5}'#137 MPa # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
 confinement_pressure  = 1e6
@@ -32,7 +31,7 @@ intrinsic_permeability = 5e-19 # m^2
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
 wc = ${fparse 2 * Gc_const / ft } # m
-perm_exponent = 1 # exponent for the Darcy-Poiseuille model for the effective permeability
+perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
@@ -301,7 +300,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
