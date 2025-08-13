@@ -1,6 +1,5 @@
 E = 50e9
 nu = 0.373
-ft = 25.5e6
 Gc_const = 100
 solid_density = 2600
 dx_min = 5e-5
@@ -8,6 +7,7 @@ dx_min = 5e-5
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  2e-4 
+ft = '${fparse (3.0/8.0 * E*Gc_const/l)^0.5}' #97 MPa
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -272,6 +272,7 @@ top_right2 = '2e-4 0.0025 0'
         acceleration = accel_x
         beta = 0.25
         gamma = 0.5
+        alpha = ${hht_alpha}
     []
     [inertia_y]
         type = ADInertialForce
@@ -280,6 +281,7 @@ top_right2 = '2e-4 0.0025 0'
         acceleration = accel_y
         beta = 0.25
         gamma = 0.5
+        alpha = ${hht_alpha}
     [] 
     #solid stress divergence (sigma * nabla u)
     [dispkernel_x]
@@ -374,13 +376,13 @@ top_right2 = '2e-4 0.0025 0'
     value = 0
   []
   #fix pressure
-  # [./fix_pressure]
-  #   type = ADDirichletBC
-  #   variable = p
-  #   boundary = 3
-  #   value = ${initial_pore_pressure}
-  #   use_displaced_mesh = false
-  # []
+  [./fix_pressure]
+    type = ADDirichletBC
+    variable = p
+    boundary = 3
+    value = ${initial_pore_pressure}
+    use_displaced_mesh = false
+  []
   #add dampers
   [damp_outer_x]
     type = ADFarmsNonReflectDashpotBC
