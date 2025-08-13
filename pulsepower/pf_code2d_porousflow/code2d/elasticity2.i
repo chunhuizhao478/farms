@@ -23,7 +23,7 @@ fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = ${fparse 1.0/K}
-# permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
+permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
 
 ##exponential permeability model
