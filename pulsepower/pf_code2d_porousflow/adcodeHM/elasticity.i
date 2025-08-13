@@ -473,14 +473,14 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-[Controls] # turns off inertial terms for the SECOND time step
-  [./period0]
-    type = TimePeriod
-    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y'
-    start_time = 0
-    end_time = 2e-8 # dt used in the simulation
-  []
-[../]
+# [Controls] # turns off inertial terms for the SECOND time step
+#   [./period0]
+#     type = TimePeriod
+#     disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y'
+#     start_time = 0
+#     end_time = 2e-8 # dt used in the simulation
+#   []
+# [../]
 
 [Preconditioning]
     [smp]
@@ -518,16 +518,16 @@ top_right2 = '2e-4 0.0025 0'
   accept_on_max_fixed_point_iteration = false
   fixed_point_rel_tol = 1e-6
   fixed_point_abs_tol = 1e-8
-
-  [TimeStepper]
-    type = FarmsIterationAdaptiveDT
-    dt = 1e-8
-    iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
-    cutback_factor_at_failure = 0.5
-    optimal_iterations = 20
-    growth_factor = 1.25
-    max_time_step_bound = 1e-7
-  []
+  dt = 1e-8
+  # [TimeStepper]
+  #   type = FarmsIterationAdaptiveDT
+  #   dt = 1e-8
+  #   iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
+  #   cutback_factor_at_failure = 0.5
+  #   optimal_iterations = 20
+  #   growth_factor = 1.25
+  #   max_time_step_bound = 1e-7
+  # []
   [./TimeIntegrator]
     type = NewmarkBeta
     beta = ${newmark_beta}
