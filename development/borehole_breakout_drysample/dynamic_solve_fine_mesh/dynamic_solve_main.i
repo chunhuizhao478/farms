@@ -65,22 +65,22 @@
     [disp_x]
         order = FIRST
         family = LAGRANGE  
-        scaling = 1e9   
+        scaling = 1e3   
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE   
-        scaling = 1e9 
+        scaling = 1e3
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
-        scaling = 1e9
+        scaling = 1e3
     []
     [porepressure]
         order = FIRST
         family = LAGRANGE
-        scaling = 1e-18
+        scaling = 1e-6
     []
     
 []
