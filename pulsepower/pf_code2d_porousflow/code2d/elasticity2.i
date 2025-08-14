@@ -18,19 +18,19 @@ confinement_pressure  = 1e6
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.3
+biot_coefficient = 0
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = ${fparse 1.0/K}
-# permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
+permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
 
 ##exponential permeability model
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 0.5 * Gc_const / ft } # m
+wc = ${fparse Gc_const / ft } # m
 perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
@@ -539,22 +539,24 @@ top_right2 = '2e-4 0.0025 0'
     porosity = ${porosity}
   []
   #comopute permeability
-  [permeability] #take effective_perm
-    type = ElkPorousFlowPermeabilityDamaged
-  []
+  # [permeability] #take effective_perm
+  #   type = ElkPorousFlowPermeabilityDamaged
+  # []
   # #compute biot modulus #include damaged solid compliance
   # [biot_modulus]
   #   type = ElkPorousFlowDamagedBiotModulus
   #   biot_coefficient = ${biot_coefficient}
   #   solid_bulk_compliance = ${solid_bulk_modulus_compliance}
   #   fluid_bulk_modulus = ${fluid_bulk_modulus}
+  #   output_properties = 'PorousFlow_constant_biot_modulus_qp'
+  #   outputs = exodus
   # []
   ##----------------------------------------------------------##
   #compute permeability
-  # [permeability_constant]
-  #     type = PorousFlowPermeabilityConst
-  #     permeability = ${permeability}
-  # []
+  [permeability_constant]
+      type = PorousFlowPermeabilityConst
+      permeability = ${permeability}
+  []
   #compute biot modulus
   [biot_modulus_constant]
       type = PorousFlowConstantBiotModulus
