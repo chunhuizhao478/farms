@@ -7,7 +7,7 @@ solid_density = 2600 # kg/m^3
 dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2e-4 # length scale, m
+l =  1e-4 # length scale, m
 ft = '${fparse sqrt(3.0/8.0 * E*Gc_const/l)}'#137 MPa # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -18,8 +18,8 @@ confinement_pressure  = 1e6
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.7
-fluid_bulk_modulus = 2.24e+9
+biot_coefficient = 0.3
+fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = ${fparse 1.0/K}
@@ -30,15 +30,15 @@ intrinsic_permeability = 5e-19 # m^2
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse 2 * Gc_const / ft } # m
-perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
+wc = ${fparse Gc_const / ft } # m
+perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0
+hht_alpha = 0.11
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
@@ -117,7 +117,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -300,7 +300,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    peak_pressure = 120e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -373,14 +373,14 @@ top_right2 = '2e-4 0.0025 0'
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
-    []
+    []          
     #assign pressure on outer surface
     [static_pressure_outer]
       boundary = 1
       factor = ${confinement_pressure}
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
-    []              
+    []     
   []   
   # fix ptr
   [./fix_cptr1_x]
@@ -396,13 +396,13 @@ top_right2 = '2e-4 0.0025 0'
     value = 0
   []
   #fix pressure
-  [./fix_pressure]
-    type = DirichletBC
-    variable = pp
-    boundary = 3
-    value = ${initial_pore_pressure}
-    use_displaced_mesh = false
-  []
+  # [./fix_pressure]
+  #   type = DirichletBC
+  #   variable = pp
+  #   boundary = 3
+  #   value = ${initial_pore_pressure}
+  #   use_displaced_mesh = false
+  # []
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
