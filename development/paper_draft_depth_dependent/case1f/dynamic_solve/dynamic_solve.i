@@ -16,6 +16,13 @@ xmax_fault = 20000 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
+#nonlocal length applied region along ydir
+ymin_fault = -2000
+ymax_fault = 2000
+nonlocal_eqstrain_blocks = '100 200'
+nonlocal_averaging_length_scale = 200
+nonlocal_averaging_radius = 200
+
 ##-------------------------##
 ##material properties##
 density = 2670 #density
@@ -40,7 +47,7 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 
 ##CDB model parameters##
 xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.2 #strain invariants ratio: onset of breakage healing
+xi_d = -1.0 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
@@ -102,18 +109,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m.msh'
+    file = '../../mesh/tpv26_100m_localrefine.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
     block_id = 100
   []
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
   []       
   [./split_1]
@@ -326,6 +333,16 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []  
+  ##
+  [eqstrain_nonlocal_aux]
+    order = FIRST
+    family = MONOMIAL    
+  []
+  ##
+  [eqstrain_nonlocal_initial_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -539,6 +556,22 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     property = deviatoric_strain_rate
     execute_on = 'TIMESTEP_END'
   []
+  ###
+  [get_eqstrain_nonlocal_aux]
+    type = MaterialRealAux
+    variable = eqstrain_nonlocal_aux
+    property = eqstrain_nonlocal
+    execute_on = 'TIMESTEP_END'
+    # block = ${nonlocal_eqstrain_blocks}
+  []
+  ###
+  [get_eqstrain_nonlocal_initial]
+    type = SolutionAux
+    variable = eqstrain_nonlocal_initial_aux
+    solution = init_sol_components
+    from_variable = xi
+    execute_on = 'INITIAL'
+  []
 []
 
 [Kernels]
@@ -576,19 +609,29 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
 [Materials]
   #damage breakage model
-  [stress_medium]
-      type = ComputeDamageBreakageStress3DSlipWeakening
+  [stress_medium_nonlocal]
+      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocal
       output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
       use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
       m_exponent = ${m_exponent}
       strain_rate_hat = ${strain_rate_hat}
       cd_hat = ${cd_hat}
+      use_nonlocal_eqstrain = true
+      nonlocal_eqstrain_blocks = ${nonlocal_eqstrain_blocks}
       outputs = exodus
   []
   [dummy_material]
       type = GenericConstantMaterial
       prop_names = 'initial_damage initial_breakage damage_perturbation density'
       prop_values = '0 0 0 ${density}'
+  []
+  [eqstrain_nonlocal_initial_xi]
+      type = CoupledVariableValueMaterial #this material object is in thermalhydraulicApp
+      coupled_variable = eqstrain_nonlocal_initial_aux
+      prop_name = eqstrain_nonlocal_initial
+      output_properties = 'eqstrain_nonlocal_initial'
+      outputs = exodus
+      execute_on = 'INITIAL'
   []
   [./czm_mat]
       type = SlipWeakeningFrictionczm3dCDBM
@@ -632,6 +675,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       output_properties = 'static_initial_stress_tensor'
       outputs = exodus
   [../]
+  #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
+  #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
+  [nonlocal_eqstrain]
+    type = ElkNonlocalEqstrain
+    average_UO = eqstrain_averaging
+  []
 []
 
 [Functions]
@@ -743,11 +792,19 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     mesh = '../static_solve/static_solve_out.e'
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
-                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
+                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 xi'
     timestep = LATEST
     force_preaux = true
     execute_on = 'INITIAL'
   [../]
+  [eqstrain_averaging]
+    type = ElkRadialAverage
+    length_scale = ${nonlocal_averaging_length_scale}
+    prop_name = xi
+    radius = ${nonlocal_averaging_radius}
+    weights = BAZANT3D
+    execute_on = TIMESTEP_END
+  []
 []
 
 [Executioner]
@@ -766,7 +823,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
@@ -782,7 +839,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [sample_snapshots]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux'
     time_step_interval = ${sample_snapshots_time_step_interval}
   []
 []    
