@@ -542,15 +542,13 @@ top_right2 = '2e-4 0.0025 0'
   [permeability] #take effective_perm
     type = ElkPorousFlowPermeabilityDamaged
   []
-  #compute biot modulus #include damaged solid compliance
-  [biot_modulus]
-    type = ElkPorousFlowDamagedBiotModulus
-    biot_coefficient = ${biot_coefficient}
-    solid_bulk_compliance = ${solid_bulk_modulus_compliance}
-    fluid_bulk_modulus = ${fluid_bulk_modulus}
-    output_properties = 'PorousFlow_constant_biot_modulus_qp'
-    outputs = exodus
-  []
+  # #compute biot modulus #include damaged solid compliance
+  # [biot_modulus]
+  #   type = ElkPorousFlowDamagedBiotModulus
+  #   biot_coefficient = ${biot_coefficient}
+  #   solid_bulk_compliance = ${solid_bulk_modulus_compliance}
+  #   fluid_bulk_modulus = ${fluid_bulk_modulus}
+  # []
   ##----------------------------------------------------------##
   #compute permeability
   # [permeability_constant]
@@ -558,12 +556,12 @@ top_right2 = '2e-4 0.0025 0'
   #     permeability = ${permeability}
   # []
   #compute biot modulus
-  # [biot_modulus_constant]
-  #     type = PorousFlowConstantBiotModulus
-  #     biot_coefficient = ${biot_coefficient}
-  #     solid_bulk_compliance = ${solid_bulk_modulus_compliance}
-  #     fluid_bulk_modulus = ${fluid_bulk_modulus}
-  # []  
+  [biot_modulus_constant]
+      type = PorousFlowConstantBiotModulus
+      biot_coefficient = ${biot_coefficient}
+      solid_bulk_compliance = ${solid_bulk_modulus_compliance}
+      fluid_bulk_modulus = ${fluid_bulk_modulus}
+  []  
   ##----------------------------------------------------------##
   #Compute density and viscosity
   [simple_fluid_qp]

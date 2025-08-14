@@ -113,4 +113,6 @@ private:
   const Real _wc; // characteristic width for the Darcy-Poiseuille model
   const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
 
+  // Damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
+  MaterialProperty<Real> & _solid_bulk_compliance_damaged;
 };

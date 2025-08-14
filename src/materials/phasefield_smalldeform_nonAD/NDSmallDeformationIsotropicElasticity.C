@@ -135,7 +135,8 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     // Darcy-Poiseuille permeability model
     _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
     _wc(getParam<Real>("wc")),
-    _perm_exponent(getParam<Real>("perm_exponent"))
+  _perm_exponent(getParam<Real>("perm_exponent")),
+  _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
 {
   //Check placed to ensure parameters are valid
   if(_porous_flow_coupling && !_exponential_permeability_model &&
@@ -434,6 +435,14 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
   }
   else
     mooseError("Unknown model type: " + _model_type);
+
+  // Update damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
+  // Use a small floor on g to avoid division by zero when damage is nearly complete.
+  const Real g_eff = std::max(_g[_qp], 1e-12);
+  // K may be spatially varying; evaluate at current qp
+  const Real K_eff = _K[_qp] * g_eff;
+  // Declare/update property lazily via reference member
+  _solid_bulk_compliance_damaged[_qp] = 1.0 / std::max(K_eff, 1e-24);
 }
 
 void
