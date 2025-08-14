@@ -402,7 +402,7 @@
     nl_rel_tol = 1e-5
     nl_max_its = 50
     nl_abs_tol = 1e-7
-    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_monitor_solution'
     petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
     # petsc_options_value = 'lu       NONZERO'
