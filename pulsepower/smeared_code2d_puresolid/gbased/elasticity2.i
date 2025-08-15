@@ -437,7 +437,7 @@ top_right2 = '2e-4 0.0025 0'
   [./elastic_stress]
     type = ComputeSmearedCrackingStressDebug
     nonlocal_eqstrain = nonlocal_eqstrain
-    damage_evolution_law_span = 0.5
+    damage_evolution_law_span = 1.0
     model = NONLOCAL
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
