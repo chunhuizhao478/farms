@@ -107,6 +107,10 @@ top_right2 = '2e-4 0.0025 0'
     family = MONOMIAL
     order = CONSTANT
   []
+  [eqstrain_max]
+    family = MONOMIAL
+    order = CONSTANT
+  []
   [accel_x]
   []
   [accel_y]
@@ -168,7 +172,7 @@ top_right2 = '2e-4 0.0025 0'
   [define_initial_damage_block1]
     type = ConstantAux
     variable = crack_damage_initial
-    value = 0.5
+    value = 0.25
     block = 1
     execute_on = INITIAL
   []
@@ -200,6 +204,12 @@ top_right2 = '2e-4 0.0025 0'
     property = crack_damage
     execute_on = 'TIMESTEP_END'
   []
+  [eqstrain_max_aux]
+    type = ADMaterialRealAux
+    variable = eqstrain_max
+    property = eqstrain_max
+    execute_on = 'TIMESTEP_END'
+  []
 []
 
 [Functions]
@@ -215,7 +225,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 40e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 80e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -242,7 +252,7 @@ top_right2 = '2e-4 0.0025 0'
   [diffusion_nonlocal]
     type = ADCoefDiffusion
     variable = nonlocal_eqstrain
-    coef = ${fparse 0.5*l*l}
+    coef = ${fparse 0.25*l*l}
   []
   [reaction_local]
     type = ADElkLocalEqstrainForce
@@ -339,8 +349,8 @@ top_right2 = '2e-4 0.0025 0'
   [./elastic_stress]
     type = ADFarmsComputeSmearedCrackingStressGrads
     nonlocal_eqstrain = nonlocal_eqstrain
-    paramA = 0.99
-    paramB = 1000
+    paramA = 0.95
+    paramB = 150
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
@@ -383,8 +393,8 @@ top_right2 = '2e-4 0.0025 0'
 
   solve_type = 'NEWTON'
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist                 '
 
   # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
   # petsc_options_value = '101                asm      lu'
@@ -392,14 +402,14 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
   # petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
-  nl_max_its = 20
+  nl_max_its = 30
 
   # dt = 0.5e-7
   end_time = 100e-5
@@ -427,7 +437,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 10
+  time_step_interval = 1
   print_linear_residuals = false
   csv = true
   [checkpoint]

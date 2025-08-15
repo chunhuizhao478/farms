@@ -52,6 +52,12 @@ protected:
   virtual void updatePermeabilityForCracking();
   // @}
 
+  // Update the local elasticity tensor based on the cracking state
+  virtual void updateLocalElasticityTensor();
+
+  // Macaulay bracket function
+  Real Macaulay(const Real x, const bool deriv);
+
   ///@{ Input parameters for smeared crack models
 
   /// Threshold at which cracking initiates if tensile stress exceeds it
@@ -89,6 +95,11 @@ protected:
 
   ///initial damage for crack_damage material property
   const VariableValue & _initial_crack_damage;
+
+  /// Vector helper to update local elasticity tensor
+  std::vector<Real> _local_elastic_vector;
+  /// Variables used by multiple methods within the calculation for a single material point
+  RankFourTensor _local_elasticity_tensor;
 
   //porous flow coupling related parameters
   const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled

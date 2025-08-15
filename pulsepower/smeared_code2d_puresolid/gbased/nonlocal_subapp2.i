@@ -9,7 +9,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../2dmeshfile/fieldscale_test1_2d_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -50,48 +50,48 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-[Kernels]
-  [react_nonlocal]
-    type = Reaction
-    variable = nonlocal_eqstrain
-    rate = 1.0
-  []
-  [diffusion_nonlocal]
-    type = CoefDiffusion
-    variable = nonlocal_eqstrain
-    coef = ${fparse 0.5*l*l}
-  []
-  [reaction_local]
-    type = CoupledElkFixedLocalEqstrainForce
-    variable = nonlocal_eqstrain
-    eqstrain_local = eqstrain_local
-  []    
-[]
-
 # [Kernels]
 #   [react_nonlocal]
-#     type = CoupledReaction
+#     type = Reaction
 #     variable = nonlocal_eqstrain
 #     rate = 1.0
-#     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
 #   []
 #   [diffusion_nonlocal]
 #     type = CoefDiffusion
 #     variable = nonlocal_eqstrain
-#     coef = ${fparse 1.0}
+#     coef = ${fparse 0.25*l*l}
 #   []
 #   [reaction_local]
-#     type = CoupledElkLocalEqstrainForce
+#     type = CoupledElkFixedLocalEqstrainForce
 #     variable = nonlocal_eqstrain
 #     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
 #   []    
 # []
+
+[Kernels]
+  [react_nonlocal]
+    type = CoupledReaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []
+  [diffusion_nonlocal]
+    type = CoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = ${fparse 1.0}
+  []
+  [reaction_local]
+    type = CoupledElkLocalEqstrainForce
+    variable = nonlocal_eqstrain
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []    
+[]
 
 # [Preconditioning]
 #     [smp]
@@ -103,7 +103,10 @@ top_right2 = '2e-4 0.0025 0'
 [Executioner]
   type = Transient
 
-  solve_type = JFNK
+  solve_type = NEWTON
+
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type'
+  petsc_options_value = 'cg        hypre   boomeramg'
 
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
@@ -114,8 +117,8 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
   # petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
 

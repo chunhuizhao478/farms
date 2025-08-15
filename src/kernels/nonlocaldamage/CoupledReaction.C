@@ -48,19 +48,13 @@ CoupledReaction::CoupledReaction(const InputParameters & parameters)
 Real
 CoupledReaction::computeQpResidual()
 {
-  //test gradient activity parameter
+  // match residual scaling: (_rate/xi) * u
   Real xi = 0.0;
-  Real l = _length_scale; //length scale
-  Real kappa_i = _kappa_i;
-  Real e_xi = 10*kappa_i; //xi is the equivalent strain at which the gradient activity starts
-  Real c0 = _c0;
-  Real c = 0.5*l*l;
-  if (_eqstrain_local[_qp] < e_xi){
-    xi = c0 + (c - c0) * (_eqstrain_local[_qp] / e_xi);
-  }
-  else{
-    xi = c;
-  }
+  const Real l = _length_scale;
+  const Real c = 0.2 * l * l;
+  const Real e_xi = 10.0 * _kappa_i;
+  const Real e = std::max(_eqstrain_local[_qp], 0.0);
+  xi = (e < e_xi) ? _c0 + (c - _c0) * (e / e_xi) : c;
 
   return _test[_i][_qp] * _rate * _u[_qp] / xi;
 }
@@ -68,5 +62,14 @@ CoupledReaction::computeQpResidual()
 Real
 CoupledReaction::computeQpJacobian()
 {
-  return _test[_i][_qp] * _rate * _phi[_j][_qp];
+
+  // match residual scaling: (_rate/xi) * u
+  Real xi = 0.0;
+  const Real l = _length_scale;
+  const Real c = 0.2 * l * l;
+  const Real e_xi = 10.0 * _kappa_i;
+  const Real e = std::max(_eqstrain_local[_qp], 0.0);
+  xi = (e < e_xi) ? _c0 + (c - _c0) * (e / e_xi) : c;
+
+  return _test[_i][_qp] * _rate / xi * _phi[_j][_qp];
 }

@@ -1,13 +1,13 @@
 E = 50e9
 nu = 0.373
-ft = 150e6 ##computed from pf
+ft = 137e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 
+l =  2e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -58,30 +58,30 @@ hht_alpha = 0.11
 #   []
 # []
 
-[MultiApps]
-  [fracture]
-    type = TransientMultiApp
-    input_files = nonlocal_subapp2.i
-    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-    execute_on = 'TIMESTEP_END'
-    clone_parent_mesh = true
-  []
-[]
+# [MultiApps]
+#   [fracture]
+#     type = TransientMultiApp
+#     input_files = nonlocal_subapp2.i
+#     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+#     execute_on = 'TIMESTEP_END'
+#     clone_parent_mesh = true
+#   []
+# []
 
-[Transfers]
-  [from_d]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'fracture'
-    variable = nonlocal_eqstrain
-    source_variable = nonlocal_eqstrain
-  []
-  [to_psie_active]
-    type = MultiAppCopyTransfer
-    to_multi_app = 'fracture'
-    variable = eqstrain_local
-    source_variable = eqstrain_local
-  []
-[]
+# [Transfers]
+#   [from_d]
+#     type = MultiAppCopyTransfer
+#     from_multi_app = 'fracture'
+#     variable = nonlocal_eqstrain
+#     source_variable = nonlocal_eqstrain
+#   []
+#   [to_psie_active]
+#     type = MultiAppCopyTransfer
+#     to_multi_app = 'fracture'
+#     variable = eqstrain_local
+#     source_variable = eqstrain_local
+#   []
+# []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -98,7 +98,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -135,6 +135,10 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   [] 
+  [nonlocal_eqstrain]
+      order = FIRST
+      family = LAGRANGE
+  [] 
 []
 
 [AuxVariables]
@@ -159,10 +163,10 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   []
-  [nonlocal_eqstrain]
-      order = FIRST
-      family = LAGRANGE
-  [] 
+  # [nonlocal_eqstrain]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # [] 
   [eqstrain_local]
     family = MONOMIAL
     order = CONSTANT
@@ -244,7 +248,7 @@ top_right2 = '2e-4 0.0025 0'
     type = MaterialRealAux
     variable = eqstrain_local
     property = eqstrain_local
-    execute_on = 'TIMESTEP_END'
+    execute_on = 'INITIAL NONLINEAR TIMESTEP_END'
   []
   #get crack damage aux
   [crack_damage_aux]
@@ -285,6 +289,49 @@ top_right2 = '2e-4 0.0025 0'
     density = ${density}
     strain = FINITE
   []
+[]
+
+# [Kernels]
+#   [react_nonlocal]
+#     type = Reaction
+#     variable = nonlocal_eqstrain
+#     rate = 1.0
+#   []
+#   [diffusion_nonlocal]
+#     type = CoefDiffusion
+#     variable = nonlocal_eqstrain
+#     coef = ${fparse 0.25*l*l}
+#   []
+#   [reaction_local]
+#     type = CoupledElkFixedLocalEqstrainForce
+#     variable = nonlocal_eqstrain
+#     eqstrain_local = eqstrain_local
+#   []    
+# []
+
+[Kernels]
+  [react_nonlocal]
+    type = CoupledReaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []
+  [diffusion_nonlocal]
+    type = CoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = ${fparse 1.0}
+  []
+  [reaction_local]
+    type = CoupledElkLocalEqstrainForce
+    variable = nonlocal_eqstrain
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []    
 []
 
 # [Kernels]
@@ -449,10 +496,10 @@ top_right2 = '2e-4 0.0025 0'
   # dt = 0.5e-7
   end_time = 100e-5
 
-  fixed_point_max_its = 10
-  accept_on_max_fixed_point_iteration = false
-  fixed_point_rel_tol = 1e-6
-  fixed_point_abs_tol = 1e-8
+  # fixed_point_max_its = 10
+  # accept_on_max_fixed_point_iteration = false
+  # fixed_point_rel_tol = 1e-6
+  # fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT

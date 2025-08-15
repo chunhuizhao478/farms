@@ -92,6 +92,7 @@ FarmsComputeSmearedCrackingStressGrads::FarmsComputeSmearedCrackingStressGrads(c
     _wc(getParam<Real>("wc")),
     _perm_exponent(getParam<Real>("perm_exponent"))
 {
+  _local_elastic_vector.resize(9);
 }
 
 void
@@ -110,65 +111,50 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
   _elastic_strain[_qp] = _elastic_strain_old[_qp] + _strain_increment[_qp];
 
   // (1) Retrieve material parameters and compute cracking strain ε₀
-  const Real E    = ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
-  const Real eps0 = _cracking_stress[_qp] / E;
+  const Real E = ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
+  const Real tiny = 1e-14;
+  const Real eps0 = _cracking_stress[_qp] / (E + tiny);
 
   // (2) Compute Mazars‐type equivalent strain ε̃ and principal directions
   RealVectorValue eps_dir;
   computeCrackStrainAndOrientation(eps_dir);
-  Real eps_dir0 = std::max(eps_dir(0), 0.0);
-  Real eps_dir1 = std::max(eps_dir(1), 0.0);
-  Real eps_dir2 = std::max(eps_dir(2), 0.0);
-  Real eqstrain_local = std::sqrt(eps_dir0*eps_dir0 + eps_dir1*eps_dir1 + eps_dir2*eps_dir2);
+  Real p0 = Macaulay(eps_dir(0),false);
+  Real p1 = Macaulay(eps_dir(1),false);
+  Real p2 = Macaulay(eps_dir(2),false);
+  Real eqstrain_local = std::sqrt(p0 * p0 + p1 * p1 + p2 * p2);
   _eqstrain_local[_qp] = eqstrain_local;
 
-  // (3) Update history κ = max(κ_old, ε̃)
-  Real kappa = std::max(_kappa_old[_qp], _eqstrain_nonlocal[_qp]);
-  _kappa[_qp] = kappa;
+  // History with nonlocal regularization (monotonic): kappa = max(kappa_old, nonlocal_eq)
+  _kappa[_qp] = std::fmax(_kappa_old[_qp], _eqstrain_nonlocal[_qp]);
+  Real kappa = _kappa[_qp];
 
-  //(4) Exponential damage law ω(κ)
-  Real omega = 0.0;
+  // Damage law (ensure safe when kappa ~ eps0)
+  Real omega = _initial_crack_damage[_qp];
   if (kappa > eps0)
   {
-    // Real arg1 = std::exp(-_paramB * (kappa - eps0));
-    // Real arg2 = 1 - _paramA + _paramA * arg1;
-    // omega = 1.0 - eps0 / kappa * arg2;
-
-    omega = 1.0 - eps0 / kappa * (1.0 - _paramA) - _paramA / std::exp(_paramB * (kappa - eps0));
-
+    Real term = 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * std::exp(_paramB * (eps0 - kappa)));
+    omega = std::fmax(term, omega);
   }
 
-  // irreversible crack damage, set to initial damage if it is smaller
-  if (omega < _initial_crack_damage[_qp])
-  {
-    omega = _initial_crack_damage[_qp];
-  }
-
-  // Ensure damage is non-decreasing (enforce irreversibility)
-  if (omega < _crack_damage_old[_qp])
-  {
-    omega = _crack_damage_old[_qp];
-  }
-
-  //save the damage
+  // Irreversibility
+  omega = std::fmax(omega, _crack_damage_old[_qp]);
+  // Clamp upper bound
+  omega = std::fmin(omega, 0.999999);
   _crack_damage[_qp] = omega;
 
-  // (5) Build consistent tangent and stress
-  const RankFourTensor & De  = _elasticity_tensor[_qp];
-  const RankTwoTensor  & eps = _elastic_strain[_qp];
-  RankTwoTensor De_eps = De * eps;
+  // update the local elasticity tensor
+  updateLocalElasticityTensor();
 
-  // (6d) Consistent tangent: (1-ω)De - (De:ε) ⊗ (∂ω/∂ε)
-  RankFourTensor tangent = (1.0 - omega + 0.01) * De;
+  // (6) Assign stress - the tangent is automatically computed by AD
+  _stress[_qp] = _local_elasticity_tensor * _elastic_strain[_qp];
 
-  // (6e) Assign stress and Jacobian multiplier
-  _stress[_qp] = (1.0 - omega + 0.01) * De_eps;
+  RankFourTensor tangent = (1.0 - omega)*_local_elasticity_tensor;
   _Jacobian_mult[_qp] = tangent;
 
   // (7) Finite‐strain rotation if needed
   if (_perform_finite_strain_rotations)
   {
-    finiteStrainRotation(true);
+    finiteStrainRotation(); // Remove the 'true' argument
     _crack_rotation[_qp] = _rotation_increment[_qp] * _crack_rotation[_qp];
   }
 
@@ -245,4 +231,56 @@ FarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
   // Update effective perm
   _effective_perm[_qp] = effective_perm_new;
 
+}
+
+void
+FarmsComputeSmearedCrackingStressGrads::updateLocalElasticityTensor()
+{
+  
+  // ADRealVectorValue stiffness_ratio_local(1.0, 1.0, 1.0);
+  RealVectorValue stiffness_ratio_local(1.0 - _crack_damage[_qp], 1.0 - _crack_damage[_qp], 1.0 - _crack_damage[_qp]);
+  const RankTwoTensor & R = _crack_rotation[_qp];
+
+  const Real youngs_modulus =
+      ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
+
+  const Real cracking_stress = _cracking_stress[_qp];
+
+  const Real & c0 = stiffness_ratio_local(0);
+  const Real & c1 = stiffness_ratio_local(1);
+  const Real & c2 = stiffness_ratio_local(2); 
+
+  const Real c01 = c0 * c1;
+  const Real c02 = c0 * c2;
+  const Real c12 = c1 * c2;
+
+  const Real c01_shear_retention = c01;
+  const Real c02_shear_retention = c02;
+  const Real c12_shear_retention = c12;
+
+  _local_elastic_vector[0] = _elasticity_tensor[_qp](0, 0, 0, 0) * c0;
+  _local_elastic_vector[1] = _elasticity_tensor[_qp](0, 0, 1, 1) * c01;
+  _local_elastic_vector[2] = _elasticity_tensor[_qp](0, 0, 2, 2) * c02;
+  _local_elastic_vector[3] = _elasticity_tensor[_qp](1, 1, 1, 1) * c1;
+  _local_elastic_vector[4] = _elasticity_tensor[_qp](1, 1, 2, 2) * c12;
+  _local_elastic_vector[5] = _elasticity_tensor[_qp](2, 2, 2, 2) * c2;
+  _local_elastic_vector[6] = _elasticity_tensor[_qp](1, 2, 1, 2) * c12_shear_retention;
+  _local_elastic_vector[7] = _elasticity_tensor[_qp](0, 2, 0, 2) * c02_shear_retention;
+  _local_elastic_vector[8] = _elasticity_tensor[_qp](0, 1, 0, 1) * c01_shear_retention;
+
+  // Filling with 9 components is sufficient because these are the only nonzero entries
+  // for isotropic or orthotropic materials.
+  _local_elasticity_tensor.fillFromInputVector(_local_elastic_vector,
+                                              RankFourTensor::symmetric9);
+
+  // Rotate the modified elasticity tensor back into global coordinates
+  _local_elasticity_tensor.rotate(R);
+}
+
+Real
+FarmsComputeSmearedCrackingStressGrads::Macaulay(const Real x, const bool deriv)
+{
+  if (deriv)
+    return x > 0 ? 1 : 0;
+  return 0.5 * (x + std::abs(x));
 }

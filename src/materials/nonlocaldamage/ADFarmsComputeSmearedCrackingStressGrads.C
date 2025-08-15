@@ -132,7 +132,7 @@ ADFarmsComputeSmearedCrackingStressGrads::computeQpStress()
   ADReal omega = _initial_crack_damage[_qp];
   if (kappa > eps0)
   {
-    ADReal term = 1.0 - eps0 / (kappa + tiny) * (1.0 - _paramA) - _paramA / std::exp(_paramB * (kappa - eps0));
+    ADReal term = 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * std::exp(_paramB * (eps0 - kappa)));
     omega = std::fmax(term, omega);
   }
 

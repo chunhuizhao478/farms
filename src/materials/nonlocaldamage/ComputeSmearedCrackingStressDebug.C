@@ -301,6 +301,7 @@ ComputeSmearedCrackingStressDebug::computeQpStress()
     _stress[_qp] = _local_elasticity_tensor * _elastic_strain[_qp];
 
     _Jacobian_mult[_qp] = _local_elasticity_tensor;
+
     force_elasticity_rotation = true;
   }
 
@@ -356,7 +357,7 @@ ComputeSmearedCrackingStressDebug::updateLocalElasticityTensor()
         }
         else
         {
-          Real residual_stress_fraction = 1e-2; // Set a default residual stress fraction
+          Real residual_stress_fraction = 1e-4; // Set a default residual stress fraction
           stiffness_ratio_local(i) = (1.0 - _crack_damage_old[_qp](i)) * (1.0 - residual_stress_fraction) + residual_stress_fraction;
           cracking_locally_active = true;
         }
@@ -521,7 +522,7 @@ ComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
       //const bool met_stress_criterion = (sigma(i) > cracking_stress);
       //** met_stress_criterion | loading existing_crack */
       const bool met_stress_criterion = (eqstrain >= cracking_strain);
-      const bool loading_existing_crack = (eqstrain >= _crack_max_strain[_qp](i));
+      const bool loading_existing_crack = (eqstrain >= _crack_initiation_strain[_qp](i));
       const bool allowed_to_crack = (pre_existing_crack || num_cracks < _max_cracks);
       bool new_crack = false;
 
@@ -557,9 +558,11 @@ ComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
         /** update crack damage **/
         _crack_damage[_qp](i) = 1.0 - cracking_strain / _crack_max_strain[_qp](i) * std::exp(-(_crack_max_strain[_qp](i) - cracking_strain)/(_damage_evolution_law_span*cracking_strain));
         // Real paramA = 0.99;
-        // Real paramB = 100.0;
+        // Real paramB = 1000.0;
         // _crack_damage[_qp](i) = 1.0 - cracking_strain * (1 - paramA) / _crack_max_strain[_qp](i) - paramA / std::exp( paramB * (_crack_max_strain[_qp](i) - cracking_strain));
         // sigma(i) = (1 - _crack_damage[_qp](i)) * youngs_modulus * _crack_initiation_strain[_qp](i);
+        // 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * std::exp(_paramB * (eps0 - kappa)));
+        // _crack_damage[_qp](i) = 1.0 - cracking_strain / _crack_max_strain[_qp](i) * ((1 - paramA) + paramA * std::exp(paramB * (cracking_strain - _crack_max_strain[_qp](i))));
       
         if (_crack_damage[_qp](i) > 1.0)
           _crack_damage[_qp](i) = 1.0;
