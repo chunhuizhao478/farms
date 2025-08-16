@@ -1,13 +1,13 @@
 E = 50e9
 nu = 0.373
-ft = 160e6 ##computed from pf
+ft = 137e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 
+l =  2e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -252,9 +252,10 @@ top_right2 = '2e-4 0.0025 0'
   []
   #get crack damage aux
   [crack_damage_aux]
-    type = MaterialRealAux
+    type = MaterialRealVectorValueAux
     variable = crack_damage_aux
     property = crack_damage
+    component = 0
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -290,48 +291,48 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-[Kernels]
-  [react_nonlocal]
-    type = Reaction
-    variable = nonlocal_eqstrain
-    rate = 1.0
-  []
-  [diffusion_nonlocal]
-    type = CoefDiffusion
-    variable = nonlocal_eqstrain
-    coef = ${fparse 0.25*l*l}
-  []
-  [reaction_local]
-    type = CoupledElkFixedLocalEqstrainForce
-    variable = nonlocal_eqstrain
-    eqstrain_local = eqstrain_local
-  []    
-[]
-
 # [Kernels]
 #   [react_nonlocal]
-#     type = CoupledReaction
+#     type = Reaction
 #     variable = nonlocal_eqstrain
 #     rate = 1.0
-#     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
 #   []
 #   [diffusion_nonlocal]
 #     type = CoefDiffusion
 #     variable = nonlocal_eqstrain
-#     coef = ${fparse 1.0}
+#     coef = ${fparse 0.25*l*l}
 #   []
 #   [reaction_local]
-#     type = CoupledElkLocalEqstrainForce
+#     type = CoupledElkFixedLocalEqstrainForce
 #     variable = nonlocal_eqstrain
 #     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
 #   []    
 # []
+
+[Kernels]
+  [react_nonlocal]
+    type = CoupledReaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []
+  [diffusion_nonlocal]
+    type = CoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = ${fparse 1.0}
+  []
+  [reaction_local]
+    type = CoupledElkLocalEqstrainForce
+    variable = nonlocal_eqstrain
+    eqstrain_local = eqstrain_local
+    length_scale = ${fparse l}
+    kappa_i = ${fparse kappa_i}
+    c0 = ${fparse c0}
+  []    
+[]
 
 # [Kernels]
 #   [dispkernel_x]
@@ -434,13 +435,15 @@ top_right2 = '2e-4 0.0025 0'
     poissons_ratio = ${nu}
   [../]
   [./elastic_stress]
-    type = FarmsComputeSmearedCrackingStressGradsSpectral
+    type = ComputeSmearedCrackingStressDebug
     nonlocal_eqstrain = nonlocal_eqstrain
-    paramA = 0.99
-    paramB = 500
+    damage_evolution_law_span = 1.0
+    model = NONLOCAL
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
+    softening_models = abrupt_softening
+    cracked_elasticity_type = FULL
     outputs = exodus
   [../]
   # [strain]
@@ -516,7 +519,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 100
+  time_step_interval = 20
   print_linear_residuals = false
   csv = true
   [checkpoint]
