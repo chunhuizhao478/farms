@@ -516,7 +516,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 20
+  time_step_interval = 100
   print_linear_residuals = false
   csv = true
   [checkpoint]
