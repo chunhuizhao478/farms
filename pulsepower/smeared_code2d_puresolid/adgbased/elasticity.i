@@ -188,7 +188,7 @@ top_right2 = '2e-4 0.0025 0'
     type = ADMaterialRealAux
     variable = eqstrain_local
     property = eqstrain_local
-    execute_on = 'TIMESTEP_END'
+    execute_on = 'INITIAL NONLINEAR TIMESTEP_END'
   []
   #get crack damage aux
   # [crack_damage_aux]

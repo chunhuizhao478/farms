@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 137e6 ##computed from pf
+ft = 160e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -252,10 +252,9 @@ top_right2 = '2e-4 0.0025 0'
   []
   #get crack damage aux
   [crack_damage_aux]
-    type = MaterialRealVectorValueAux
+    type = MaterialRealAux
     variable = crack_damage_aux
     property = crack_damage
-    component = 0
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -435,15 +434,13 @@ top_right2 = '2e-4 0.0025 0'
     poissons_ratio = ${nu}
   [../]
   [./elastic_stress]
-    type = ComputeSmearedCrackingStressDebug
+    type = FarmsComputeSmearedCrackingStressGradsSpectral
     nonlocal_eqstrain = nonlocal_eqstrain
-    damage_evolution_law_span = 1.0
-    model = NONLOCAL
+    paramA = 0.99
+    paramB = 500
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
-    softening_models = abrupt_softening
-    cracked_elasticity_type = FULL
     outputs = exodus
   [../]
   # [strain]
