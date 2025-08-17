@@ -90,7 +90,8 @@ FarmsComputeSmearedCrackingStressGradsSpectral::FarmsComputeSmearedCrackingStres
     // Darcy-Poiseuille permeability model
     _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
     _wc(getParam<Real>("wc")),
-    _perm_exponent(getParam<Real>("perm_exponent"))
+    _perm_exponent(getParam<Real>("perm_exponent")),
+    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
 {
   _local_elastic_vector.resize(9);
 }
@@ -194,6 +195,9 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
     _crack_rotation[_qp] = _rotation_increment[_qp] * _crack_rotation[_qp];
   }
 
+  // Update solid bulk compliance
+  updateSolidBulkCompliance();
+
   // (8) Permeability update stays the same and uses _crack_damage, _crack_rotation
   updatePermeabilityForCracking();
 }
@@ -221,6 +225,25 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeCrackStrainAndOrientation
   strain_in_crack_dir(0) = eigval[2];
   strain_in_crack_dir(1) = eigval[1];
   strain_in_crack_dir(2) = eigval[0];
+}
+
+void
+FarmsComputeSmearedCrackingStressGradsSpectral::updateSolidBulkCompliance()
+{
+  
+  // If porous flow coupling is not enabled, return
+  if (!_porous_flow_coupling)
+    return;
+
+  const Real K  = ElasticityTensorTools::getIsotropicBulkModulus(_elasticity_tensor[_qp]);
+  // Update damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
+  // Use a small floor on g to avoid division by zero when damage is nearly complete.
+  const Real g_eff = std::max((1-_crack_damage[_qp]), 1e-12);
+  // K may be spatially varying; evaluate at current qp
+  const Real K_eff = K * g_eff;
+  // Declare/update property lazily via reference member
+  _solid_bulk_compliance_damaged[_qp] = 1.0 / std::max(K_eff, 1e-24);  
+
 }
 
 void

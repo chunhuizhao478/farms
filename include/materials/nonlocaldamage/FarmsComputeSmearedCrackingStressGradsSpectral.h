@@ -48,6 +48,9 @@ protected:
    */
   void computeCrackStrainAndOrientation(RealVectorValue & strain_in_crack_dir);
 
+  // Update solid bulk compliance
+  virtual void updateSolidBulkCompliance();
+
   // @{ add additional functions for porous flow coupling
   virtual void updatePermeabilityForCracking();
   // @}
@@ -117,5 +120,8 @@ protected:
   const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
   const Real _wc; // characteristic width for the Darcy-Poiseuille model
   const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
+
+  // Damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
+  MaterialProperty<Real> & _solid_bulk_compliance_damaged;
 
 };

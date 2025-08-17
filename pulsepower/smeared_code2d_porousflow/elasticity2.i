@@ -8,7 +8,7 @@ density = 2600
 # dx_min = 5e-5
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2e-4 
+l =  1e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -103,6 +103,31 @@ hht_alpha = 0.11
 #   []
 # []
 
+[MultiApps]
+  [fracture]
+    type = TransientMultiApp
+    input_files = nonlocal_subapp2.i
+    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+    execute_on = 'TIMESTEP_END'
+    clone_parent_mesh = true
+  []
+[]
+
+[Transfers]
+  [from_d]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'fracture'
+    variable = nonlocal_eqstrain
+    source_variable = nonlocal_eqstrain
+  []
+  [to_psie_active]
+    type = MultiAppCopyTransfer
+    to_multi_app = 'fracture'
+    variable = eqstrain_local
+    source_variable = eqstrain_local
+  []
+[]
+
 [GlobalParams]
   displacements = 'disp_x disp_y'
   PorousFlowDictator = dictator #All porous modules must contain
@@ -161,7 +186,6 @@ top_right2 = '2e-4 0.0025 0'
   [pp]
     order = FIRST
     family = LAGRANGE  
-  initial_condition = ${initial_pore_pressure}
   []
 []
 
@@ -227,6 +251,45 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [AuxKernels]
+  #
+  [accel_x]
+    type = NewmarkAccelAux
+    variable = accel_x
+    displacement = disp_x
+    velocity = vel_x
+    beta = ${newmark_beta}
+    execute_on = 'TIMESTEP_END'
+  []
+  [vel_x]
+    type = NewmarkVelAux
+    variable = vel_x
+    acceleration = accel_x
+    gamma = ${newmark_gamma}
+    execute_on = 'TIMESTEP_END'
+  []
+  #
+  [accel_y]
+    type = NewmarkAccelAux
+    variable = accel_y
+    displacement = disp_y
+    velocity = vel_y
+    beta = ${newmark_beta}
+    execute_on = 'TIMESTEP_END'
+  []
+  [vel_y]
+    type = NewmarkVelAux
+    variable = vel_y
+    acceleration = accel_y
+    gamma = ${newmark_gamma}
+    execute_on = 'TIMESTEP_END'
+  []
+  #get pulse load aux
+  [get_pulse_load_aux]
+    type = FunctionAux 
+    variable = pulse_load_aux
+    function = func_tri_pulse
+    execute_on = timestep_end
+  []
   #mesh size aux
   [./max]
     type = ElementLengthAux
@@ -288,8 +351,43 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
+[Functions]
+  [func_tri_pulse]
+    type = ElkPulseLoadExperiment
+    shape_param_alpha = 4.658e5
+    shape_param_beta = 4.661e5
+    rise_time = 3e-6
+    single_pulse_duration = 1e-5
+    EM = 0.03
+    gap = 0.001
+    convert_efficiency = 1.0
+    fitting_param_alpha = 0.35
+    discharge_center = '0 0 0.0005'
+    number_of_pulses = 10
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+  []
+[]
+
 [Kernels]
   #solid
+  [inertia_x]
+      type = InertialForce
+      variable = disp_x
+      acceleration = accel_x
+      velocity = vel_x
+      beta = 0.25
+      gamma = 0.5
+      eta = 0
+  []
+  [inertia_y]
+      type = InertialForce
+      variable = disp_y
+      acceleration = accel_y
+      velocity = vel_y
+      beta = 0.25
+      gamma = 0.5
+      eta = 0
+  []
   [dispkernel_x]
       type = StressDivergenceTensors
       variable = disp_x
@@ -313,6 +411,14 @@ top_right2 = '2e-4 0.0025 0'
       variable = disp_y
       component = 1
   []
+  #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
+  [mass0]
+      type = PorousFlowFullySaturatedMassTimeDerivative
+      biot_coefficient = ${biot_coefficient}
+      coupling_type = HydroMechanical
+      multiply_by_density = false
+      variable = pp
+  []
   #flux * grad(test)
   [flux]
       type = PorousFlowFullySaturatedDarcyBase
@@ -325,6 +431,13 @@ top_right2 = '2e-4 0.0025 0'
 [BCs]
   #confinement
   [./Pressure]
+    #assign pressure on inner surface
+    [pressure_inner]
+      boundary = 3
+      function = func_tri_pulse
+      displacements = 'disp_x disp_y'
+      use_displaced_mesh = false
+    []
     #assign pressure on outer surface
     [static_pressure_outer]
       boundary = 1
@@ -346,12 +459,42 @@ top_right2 = '2e-4 0.0025 0'
     boundary = corner_ptr
     value = 0
   []
-  # pressure gauge to remove steady-state nullspace
   [fix_pp_gauge]
     type = DirichletBC
     variable = pp
     boundary = corner_ptr
     value = ${initial_pore_pressure}
+  []
+  #add dampers
+  [damp_outer_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
+    component = 0
+    boundary = 1
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+  []
+  [damp_outer_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
+    component = 1
+    boundary = 1
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
   []
 []
 
@@ -371,7 +514,7 @@ top_right2 = '2e-4 0.0025 0'
     paramB = 500
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
-    output_properties = 'stress elastic_strain'
+    output_properties = 'stress'
     outputs = exodus
     ##---------------------------------------------##
     # porous flow coupling
@@ -486,7 +629,44 @@ top_right2 = '2e-4 0.0025 0'
     number_fluid_phases = 1
     number_fluid_components = 1
   []
+  [./init_sol_components]
+    type = SolutionUserObject
+    mesh = ./static_solve_out.e
+    system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    timestep = LATEST
+    force_preaux = true
+  [../]
 []
+
+[ICs]
+  [disp_x_ic]
+    type = SolutionIC
+    variable = disp_x
+    solution_uo = init_sol_components
+    from_variable = disp_x
+  []
+  [disp_y_ic]
+    type = SolutionIC
+    variable = disp_y
+    solution_uo = init_sol_components
+    from_variable = disp_y
+  []
+  [pp_ic]
+    type = SolutionIC
+    variable = pp
+    solution_uo = init_sol_components
+    from_variable = pp
+  []
+[]
+
+[Controls] # turns off inertial terms for the SECOND time step
+  [./period0]
+    type = TimePeriod
+    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
+    start_time = 0
+    end_time = 1e-8 # dt used in the simulation
+  []
+[../]
 
 [Preconditioning]
     [smp]
@@ -496,11 +676,9 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [Executioner]
-  type = Steady
+  type = Transient
 
   solve_type = 'NEWTON'
-  # automatic_scaling = true
-  line_search = bt
 
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
@@ -519,17 +697,47 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 40
 
   # dt = 0.5e-7
-  # end_time = 10e-5
+  end_time = 10e-5
 
-  # fixed_point_max_its = 10
-  # accept_on_max_fixed_point_iteration = false
-  # fixed_point_rel_tol = 1e-6
-  # fixed_point_abs_tol = 1e-8
+  fixed_point_max_its = 10
+  accept_on_max_fixed_point_iteration = false
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
+
+  [TimeStepper]
+    type = FarmsIterationAdaptiveDT
+    dt = 1e-8
+    iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
+    cutback_factor_at_failure = 0.5
+    optimal_iterations = 20
+    growth_factor = 1.25
+    max_time_step_bound = 1e-7
+  []
+  [./TimeIntegrator]
+    type = NewmarkBeta
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+  [../]
 []
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 40
   print_linear_residuals = false
   csv = true
+  [checkpoint]
+      type = Checkpoint
+      time_step_interval = 100
+      num_files = 2
+  []
 []
+
+# [Distributions]
+#   #typically for granite
+#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+#   [weibull]
+#     type = Weibull
+#     shape = 8.0 #k
+#     scale = ${ft} #lambda
+#     location = 0 
