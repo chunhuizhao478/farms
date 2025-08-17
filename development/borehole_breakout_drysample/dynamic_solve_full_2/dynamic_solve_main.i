@@ -371,9 +371,9 @@
 [UserObjects]
     [eqstrain_averaging] #length scale = radius = grain size 
         type = ElkRadialAverage
-        length_scale = 0.0026
+        length_scale = 0.0013
         prop_name = strain_invariant_ratio
-        radius = 0.0026
+        radius = 0.0013
         weights = BAZANT
         execute_on = LINEAR
     []
@@ -395,7 +395,7 @@
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
-    l_tol = 1e-7
+    l_tol = 1e-8
     nl_rel_tol = 1e-6
     nl_max_its = 30
     nl_abs_tol = 1e-8
@@ -413,8 +413,8 @@
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
         dt = 1
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
+        cutback_factor_at_failure = 0.75
+        optimal_iterations = 20
         growth_factor = 1.25
         max_time_step_bound = 10
     []
