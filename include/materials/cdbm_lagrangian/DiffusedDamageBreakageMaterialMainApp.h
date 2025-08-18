@@ -109,7 +109,7 @@ protected:
   /// First Elastic Strain Invariant
   const MaterialProperty<Real> & _I1;
   /// Elastic deformation gradient
-  // const MaterialProperty<RankTwoTensor> & _Fe;
+  const MaterialProperty<RankTwoTensor> & _Fe;
   /// Second Elastic Strain Invariant
   const MaterialProperty<Real> & _xi;
   /// Plastic Jacobian
