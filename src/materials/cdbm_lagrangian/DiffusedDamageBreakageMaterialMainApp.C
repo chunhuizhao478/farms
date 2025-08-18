@@ -124,7 +124,7 @@ DiffusedDamageBreakageMaterialMainApp::DiffusedDamageBreakageMaterialMainApp(con
   //---------------------------------------------------------------//
   //Invariants, Jp and Dp - USE OLD VALUES TO BREAK CYCLIC DEPENDENCY
   _I1(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "first_elastic_strain_invariant")),
-  _Fe(getMaterialPropertyOldByName<RankTwoTensor>(getParam<std::string>("base_name") + "elastic_deformation_gradient")),
+  // _Fe(getMaterialPropertyOldByName<RankTwoTensor>(getParam<std::string>("base_name") + "elastic_deformation_gradient")),
   _xi(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "strain_invariant_ratio")),
   _Jp(getMaterialPropertyOldByName<Real>(getParam<std::string>("base_name") + "plastic_deformation_gradient_det")),
   _Dp(getMaterialPropertyOldByName<RankTwoTensor>(getParam<std::string>("base_name") + "plastic_strain_rate")),
@@ -324,7 +324,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporosolid()
   Real I1 = _I1[_qp];
   Real xi = _xi[_qp];
   
-  Real Je = _Fe[_qp].det();
+  // Real Je = _Fe[_qp].det();
 
   // Get damage/breakage variables
   Real alpha_damage = _alpha_damagedvar[_qp];
@@ -343,8 +343,8 @@ DiffusedDamageBreakageMaterialMainApp::updateporosolid()
   Real alpha_s = 1.0 - K_d/K_s;
   
   // Compute porosity evolution for solid phase
-  // Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1)
-  Real porosity_s = 1 - (1 - _porosity_solid_o) / Je;
+  Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1);
+  // Real porosity_s = 1 - (1 - _porosity_solid_o) / Je;
   
    // Compute Biot modulus for solid phase
   Real one_over_Storage = (K_s*K_f)/(porosity_s * K_f + (alpha_s - porosity_s) * K_s);
@@ -382,7 +382,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporogranular()
   Real I1 = _I1[_qp];
   Real xi = _xi[_qp];
 
-  Real Je = _Fe[_qp].det();
+  // Real Je = _Fe[_qp].det();
 
   // Get damage/breakage variables
   Real alpha_damage = _alpha_damagedvar[_qp];
@@ -408,8 +408,8 @@ DiffusedDamageBreakageMaterialMainApp::updateporogranular()
   Real alpha_g = 1.0 - K_d_granular/K_s_granular;
 
   // Compute elastic porosity evolution 
-  // Real porosity_e = 1 - (1 - _porosity_solid_o) * exp(-I1);
-  Real porosity_e = 1 - (1 - _porosity_solid_o) / Je;
+  Real porosity_e = 1 - (1 - _porosity_solid_o) * exp(-I1);
+  // Real porosity_e = 1 - (1 - _porosity_solid_o) / Je;
 
   // Compute plastic porosity evolution 
   Real dporosity_pdt_new = (1 - _phi_p[_qp]) * _Dp[_qp].trace();
@@ -429,6 +429,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporogranular()
  // Compute permeability for solid phase
   // k = k_cr * (φ/φ_0)^n * (DH/DH_0)^2  where n is typically 3
   Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0) * pow(DH/_DHo, 2.0);
+  // Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0);
 
   // Save granular phase properties
   _Biot_coeff_g[_qp] = alpha_g;
