@@ -412,7 +412,7 @@
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1
+        dt = 5
         cutback_factor_at_failure = 0.75
         optimal_iterations = 25
         growth_factor = 1.25

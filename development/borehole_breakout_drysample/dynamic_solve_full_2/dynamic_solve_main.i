@@ -55,7 +55,7 @@
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
-    ultimate_grain_size = 1.3
+    ultimate_grain_size = 0.25
     initial_viscosity_fluid = 1e-3
     
 
@@ -412,9 +412,9 @@
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1
+        dt = 5
         cutback_factor_at_failure = 0.75
-        optimal_iterations = 20
+        optimal_iterations = 25
         growth_factor = 1.25
         max_time_step_bound = 10
     []
