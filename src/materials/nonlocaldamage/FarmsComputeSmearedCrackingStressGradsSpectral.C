@@ -65,6 +65,14 @@ FarmsComputeSmearedCrackingStressGradsSpectral::validParams()
 
 FarmsComputeSmearedCrackingStressGradsSpectral::FarmsComputeSmearedCrackingStressGradsSpectral(const InputParameters & parameters)
   : ComputeMultipleInelasticStress(parameters),
+    // strain energy density outputs (match naming from SmallDeformationIsotropicElasticity)
+    _psie(declareProperty<Real>(_base_name + std::string("psie"))),
+    _psie_active(declareProperty<Real>(_base_name + std::string("psie_active"))),
+    // energies for dissipation tracking
+    _accumulated_elastic_energy(declareProperty<Real>(_base_name + std::string("accumulated_elastic_energy"))),
+    _accumulated_elastic_energy_old(getMaterialPropertyOld<Real>(_base_name + std::string("accumulated_elastic_energy"))),
+    _instant_elastic_energy(declareProperty<Real>(_base_name + std::string("instant_elastic_energy"))),
+    _fracture_energy(declareProperty<Real>(_base_name + std::string("fracture_energy"))),
     _cracking_stress(coupledValue("cracking_stress")),
     _crack_damage(declareProperty<Real>(_base_name + "crack_damage")),
     _crack_damage_old(getMaterialPropertyOld<Real>(_base_name + "crack_damage")),
@@ -103,6 +111,10 @@ FarmsComputeSmearedCrackingStressGradsSpectral::initQpStatefulProperties()
   _eqstrain_local[_qp] = 0.0;
   _kappa[_qp] = 0.0;
   _crack_rotation[_qp] = RankTwoTensor::Identity();
+  // initialize energy accumulators
+  _accumulated_elastic_energy[_qp] = 0.0;
+  _instant_elastic_energy[_qp] = 0.0;
+  _fracture_energy[_qp] = 0.0;
 }
 
 void
@@ -170,6 +182,16 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
   // (5) Final stress: degrade tensile part only
   _stress[_qp] = g * stress_pos + stress_neg;
 
+  // (5b) Strain energy density using spectral split, aligned with SmallDeformationIsotropicElasticity
+  // Intact energy density: 0.5*lambda*(tr eps)^2 + G * eps:eps
+  const Real psie_intact = 0.5 * lambda * tr_eps * tr_eps + G * _elastic_strain[_qp].doubleContraction(_elastic_strain[_qp]);
+  // Active part: 0.5*lambda*<tr eps>^2 + G * eps_pos:eps_pos
+  const Real psie_active = 0.5 * lambda * tr_eps_pos * tr_eps_pos +
+                           G * strain_pos.doubleContraction(strain_pos);
+  const Real psie_inactive = psie_intact - psie_active;
+  _psie_active[_qp] = psie_active;
+  _psie[_qp] = g * psie_active + psie_inactive;
+
   // (6) Consistent tangent (matches NDSmallDeformationIsotropicElasticity spectral path)
   // C_intact = K I⊗I + 2G (I4_sym − 1/3 I⊗I)
   RankFourTensor C_intact = K * I4 + 2.0 * G * (I4_sym - I4 / 3.0);
@@ -194,6 +216,19 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
     finiteStrainRotation();
     _crack_rotation[_qp] = _rotation_increment[_qp] * _crack_rotation[_qp];
   }
+
+  // (9) Elastic energy bookkeeping (Chunhui):
+  // dEa = 1/2 * (sigma_old : dE + sigma_new : dE)
+  // Ei  = 1/2 * sigma_new : epsilon
+  // Ea  = Ea_old + dEa
+  // Fracture energy Ediss = Ea - Ei
+  const Real dEa = 0.5 * (_stress_old[_qp].doubleContraction(_strain_increment[_qp]) +
+                          _stress[_qp].doubleContraction(_strain_increment[_qp]));
+  const Real Ei = 0.5 * _stress[_qp].doubleContraction(_elastic_strain[_qp]);
+  const Real Ea = _accumulated_elastic_energy_old[_qp] + dEa;
+  _accumulated_elastic_energy[_qp] = Ea;
+  _instant_elastic_energy[_qp] = Ei;
+  _fracture_energy[_qp] = Ea - Ei;
 
   // Update solid bulk compliance
   updateSolidBulkCompliance();

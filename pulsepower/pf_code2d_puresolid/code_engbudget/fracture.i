@@ -75,6 +75,8 @@ top_right2 = '2e-4 0.0025 0'
 
 [Variables]
   [d]
+    order = FIRST
+    family = LAGRANGE
   []
 []
 
@@ -103,7 +105,7 @@ top_right2 = '2e-4 0.0025 0'
   [define_initial_damage_block1]
     type = ConstantAux
     variable = initial_damage_aux
-    value = 0.9
+    value = 0
     block = 1
   []
   [define_initial_damage_block0]
@@ -208,6 +210,21 @@ top_right2 = '2e-4 0.0025 0'
     type = ADMaterialRealAux
     variable = dissipated_energy_density
     property = dissipated_energy_density
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+# Integrate dissipated energy here (fracture app) to avoid transfer noise
+[Postprocessors]
+  [dissipated_energy_dynamic]
+      type = ADElementIntegralMaterialProperty
+      mat_prop = dissipated_energy_density
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [dissipated_energy_first_step]
+    type = FirstStepElementIntegralVariablePostprocessor
+    variable = dissipated_energy_density
+    execute_on = 'TIMESTEP_END'
   []
 []
 
@@ -225,6 +242,7 @@ top_right2 = '2e-4 0.0025 0'
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
+  use_snes_vi = true
 []
 
 [Outputs]

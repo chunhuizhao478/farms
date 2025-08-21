@@ -28,6 +28,7 @@ public:
 
 protected:
   virtual Real computeQpIntegral() override;
+  virtual Real getValue();
 
   /// Holds the solution at current quadrature points
   const VariableValue & _u;
@@ -37,4 +38,8 @@ protected:
   const VariableGradient & _grad_u;
   /// Option to use absolute variable value
   bool _use_abs_value;
+
+  // Stored value of the first-step integral and a flag indicating capture
+  Real _first_value;
+  bool _captured;
 };

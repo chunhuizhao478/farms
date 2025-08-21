@@ -43,6 +43,20 @@ hht_alpha = 0
     variable = 'psie_active mesh_size'
     source_variable = 'psie_active mesh_size'
   []
+  [pp_transfer_dissipated_energy_total]
+    type = MultiAppPostprocessorTransfer
+    from_multi_app = 'fracture'
+    from_postprocessor = 'dissipated_energy_dynamic'
+    to_postprocessor = 'dissipated_energy_dynamic'
+    reduction_type = 'sum' #this should not have effect in a single app
+  []
+  [pp_transfer_dissipated_energy_first_step]
+    type = MultiAppPostprocessorTransfer
+    from_multi_app = 'fracture'
+    from_postprocessor = 'dissipated_energy_first_step'
+    to_postprocessor = 'dissipated_energy_first_step'
+    reduction_type = 'sum' #this should not have effect in a single app
+  []
 []
 
 [GlobalParams]
@@ -228,19 +242,16 @@ top_right2 = '2e-4 0.0025 0'
     variable = disp_x
     component = 0
     use_displaced_mesh = false
-    save_in = fx
   []
   [solid_y]
     type = ADStressDivergenceTensors
     variable = disp_y
     component = 1
     use_displaced_mesh = false
-    save_in = fy
   []
   [inertia_x]
     type = ADInertialForce
     variable = disp_x
-    component = 0
     use_displaced_mesh = false
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
@@ -251,7 +262,6 @@ top_right2 = '2e-4 0.0025 0'
   [inertia_y]
     type = ADInertialForce
     variable = disp_y
-    component = 1
     use_displaced_mesh = false
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
@@ -287,6 +297,8 @@ top_right2 = '2e-4 0.0025 0'
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
+      save_in_disp_x = fx
+      save_in_disp_y = fy
     []             
   []   
   # fix ptr
@@ -398,7 +410,7 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 30
 
   # dt = 0.5e-7
-  end_time = 10e-5
+  end_time = 1e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -442,29 +454,39 @@ top_right2 = '2e-4 0.0025 0'
 
 #fracture energy
 ###############################################################################
-[Postprocessors]
-  [dissipated_energy_dynamic]
-      type = ElementIntegralVariablePostprocessor
-      variable = dissipated_energy_density
-      execute_on = 'INITIAL TIMESTEP_END'
-  []
-[]
+# [Postprocessors]
+#   [dissipated_energy_dynamic]
+#       type = ElementIntegralVariablePostprocessor
+#       variable = dissipated_energy_density
+#       execute_on = 'INITIAL TIMESTEP_END'
+#   []
+# []
 
 # first step dissipated energy
 # this postprocessor computes the dissipated energy during the first time step
 # and substract in the full energy calculation
+# [Postprocessors]
+#   [dissipated_energy_first_step]
+#     type = FirstStepElementIntegralVariablePostprocessor
+#     variable = dissipated_energy_density
+#     execute_on = 'TIMESTEP_END'
+#   []
+# []
+
+#receive the data from subapp
 [Postprocessors]
-  [dissipated_energy_first_step]
-    type = FirstStepElementIntegralVariablePostprocessor
-    variable = dissipated_energy_density
-    execute_on = 'TIMESTEP_END'
-  []
+  [./dissipated_energy_dynamic]
+    type = Receiver
+  [../]
+  [./dissipated_energy_first_step]
+    type = Receiver
+  [../]
 []
 
 [Postprocessors]
   [dissipated_energy_total]
       type = ParsedPostprocessor
-      expression = 'dissipated_energy_dynamic - dissipated_energy_first_step'
+      expression = 'dissipated_energy_dynamic'
       pp_names = 'dissipated_energy_dynamic dissipated_energy_first_step'
       execute_on = 'INITIAL TIMESTEP_END'
   []
@@ -483,7 +505,7 @@ top_right2 = '2e-4 0.0025 0'
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = 'external_work'
+      expression = '-1 * external_work'
       pp_names = 'external_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []

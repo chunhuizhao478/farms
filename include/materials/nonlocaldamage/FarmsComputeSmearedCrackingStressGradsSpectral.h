@@ -61,6 +61,23 @@ protected:
   // Spectral decomposition for positive part of a symmetric tensor
   RankTwoTensor spectralPositivePart(const RankTwoTensor & A) const;
 
+  // @{ Strain energy density outputs (degraded)
+  // psie_active is the tensile (active) part of the intact energy
+  // psie = g * psie_active + psie_inactive, where g = 1 - omega
+  MaterialProperty<Real> & _psie;
+  MaterialProperty<Real> & _psie_active;
+  ///@}
+
+  // @{ Elastic energy bookkeeping for dissipation accounting
+  // Accumulated elastic energy Ea (history) and its old value
+  MaterialProperty<Real> & _accumulated_elastic_energy;
+  const MaterialProperty<Real> & _accumulated_elastic_energy_old;
+  // Instant elastic energy Ei = 1/2 * sigma : epsilon
+  MaterialProperty<Real> & _instant_elastic_energy;
+  // Fracture (dissipated) energy = Ea - Ei
+  MaterialProperty<Real> & _fracture_energy;
+  ///@}
+
   ///@{ Input parameters for smeared crack models
 
   /// Threshold at which cracking initiates if tensile stress exceeds it

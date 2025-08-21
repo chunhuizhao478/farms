@@ -34,7 +34,9 @@ FirstStepElementIntegralVariablePostprocessor::FirstStepElementIntegralVariableP
     _u(coupledValue("variable")),
     _u_old(coupledValueOld("variable")),
     _grad_u(coupledGradient("variable")),
-    _use_abs_value(getParam<bool>("use_absolute_value"))
+    _use_abs_value(getParam<bool>("use_absolute_value")),
+    _first_value(0.0),
+    _captured(false)
 {
   addMooseVariableDependency(&mooseVariableField());
 }
@@ -42,13 +44,21 @@ FirstStepElementIntegralVariablePostprocessor::FirstStepElementIntegralVariableP
 Real
 FirstStepElementIntegralVariablePostprocessor::computeQpIntegral()
 {
-  if (_t > 0 && _t < 1.5 * _dt){
-    if (_use_abs_value)
-        return std::abs(_u[_qp]);
-    else
-        return _u[_qp];
+  // Always integrate the current field; we'll freeze the first-step value in getValue()
+  if (_use_abs_value)
+    return std::abs(_u[_qp]);
+  else
+    return _u[_qp];
+}
+
+Real
+FirstStepElementIntegralVariablePostprocessor::getValue()
+{
+  // On the first time this PP is queried (end of first step), capture and freeze
+  if (!_captured)
+  {
+    _first_value = ElementIntegralPostprocessor::getValue();
+    _captured = true;
   }
-  else{
-    return _u_old[_qp];
-  }
+  return _first_value;
 }
