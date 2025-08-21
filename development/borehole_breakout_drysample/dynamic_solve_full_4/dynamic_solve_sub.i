@@ -207,12 +207,12 @@
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-8
-    nl_max_its = 20
-    nl_abs_tol = 1e-10
+    nl_rel_tol = 1e-7
+    nl_max_its = 15
+    nl_abs_tol = 1e-9
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
     petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
-    verbose = true
+    #verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
         dt = 10
