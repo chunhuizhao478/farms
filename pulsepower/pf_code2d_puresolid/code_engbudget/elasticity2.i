@@ -17,13 +17,13 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0
+hht_alpha = 0.11
 #----------------------------------------------------#
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true

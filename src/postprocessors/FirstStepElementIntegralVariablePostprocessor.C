@@ -9,6 +9,7 @@
 
 #include "FirstStepElementIntegralVariablePostprocessor.h"
 #include "FEProblem.h"
+#include <cmath>
 
 registerMooseObject("farmsApp", FirstStepElementIntegralVariablePostprocessor);
 
@@ -51,14 +52,42 @@ FirstStepElementIntegralVariablePostprocessor::computeQpIntegral()
     return _u[_qp];
 }
 
-Real
-FirstStepElementIntegralVariablePostprocessor::getValue()
+void
+FirstStepElementIntegralVariablePostprocessor::initialize()
 {
-  // On the first time this PP is queried (end of first step), capture and freeze
+  // Only perform base initialization before we've captured the first-step integral
+  if (!_captured)
+    ElementIntegralPostprocessor::initialize();
+}
+
+void
+FirstStepElementIntegralVariablePostprocessor::execute()
+{
+  // Only accumulate during the first step
+  if (!_captured)
+    ElementIntegralPostprocessor::execute();
+}
+
+void
+FirstStepElementIntegralVariablePostprocessor::finalize()
+{
   if (!_captured)
   {
+    // Finalize once and cache the first-step integral value
+    ElementIntegralPostprocessor::finalize();
     _first_value = ElementIntegralPostprocessor::getValue();
     _captured = true;
   }
-  return _first_value;
+  // After capture, do nothing here so the cached value is reused
+}
+
+Real
+FirstStepElementIntegralVariablePostprocessor::getValue() const
+{
+  // After capture, always return the cached first-step value
+  if (_captured)
+    return _first_value;
+
+  // Before capture, return the current base-class value (during first step)
+  return ElementIntegralPostprocessor::getValue();
 }

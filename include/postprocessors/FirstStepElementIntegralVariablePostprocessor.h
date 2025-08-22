@@ -27,8 +27,14 @@ public:
   FirstStepElementIntegralVariablePostprocessor(const InputParameters & parameters);
 
 protected:
-  virtual Real computeQpIntegral() override;
-  virtual Real getValue();
+  // ElementIntegralPostprocessor API
+  Real computeQpIntegral() override;
+  Real getValue() const override;
+
+  // Freeze the value after first step by skipping base accumulation after capture
+  void initialize() override;
+  void execute() override;
+  void finalize() override;
 
   /// Holds the solution at current quadrature points
   const VariableValue & _u;
