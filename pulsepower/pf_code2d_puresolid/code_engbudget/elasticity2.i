@@ -238,16 +238,20 @@ top_right2 = '2e-4 0.0025 0'
 
 [Kernels]
   [solid_x]
-    type = ADStressDivergenceTensors
+    type = ADDynamicStressDivergenceTensors
     variable = disp_x
     component = 0
     use_displaced_mesh = false
+    alpha = ${hht_alpha}
+    displacements = 'disp_x disp_y'
   []
   [solid_y]
-    type = ADStressDivergenceTensors
+    type = ADDynamicStressDivergenceTensors
     variable = disp_y
     component = 1
     use_displaced_mesh = false
+    alpha = ${hht_alpha}
+    displacements = 'disp_x disp_y'
   []
   [inertia_x]
     type = ADInertialForce
@@ -258,6 +262,7 @@ top_right2 = '2e-4 0.0025 0'
     velocity = vel_x
     acceleration = accel_x
     density = ${density}
+    alpha = ${hht_alpha}
   []
   [inertia_y]
     type = ADInertialForce
@@ -268,6 +273,7 @@ top_right2 = '2e-4 0.0025 0'
     velocity = vel_y
     acceleration = accel_y
     density = ${density}
+    alpha = ${hht_alpha}
   []
 []
 
