@@ -17,7 +17,7 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.11
+hht_alpha = 0 #match energy budget
 #----------------------------------------------------#
 
 [MultiApps]
@@ -114,8 +114,6 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [AuxVariables]
-  [fy]
-  []
   [d]
     family = LAGRANGE
     order = FIRST
@@ -168,6 +166,12 @@ top_right2 = '2e-4 0.0025 0'
   [fy]
   []
   [fz]
+  []
+  [fdampx]
+  []
+  [fdampy]
+  []
+  [fdampz]
   []
 []
 
@@ -320,37 +324,39 @@ top_right2 = '2e-4 0.0025 0'
     boundary = corner_ptr
     value = 0
   []
-  # #add dampers
-  # [damp_outer_x]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_x
-  #   displacements = 'disp_x disp_y'
-  #   velocities = 'vel_x vel_y'
-  #   accelerations = 'accel_x accel_y'
-  #   component = 0
-  #   boundary = 1
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  # []
-  # [damp_outer_y]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_y
-  #   displacements = 'disp_x disp_y'
-  #   velocities = 'vel_x vel_y'
-  #   accelerations = 'accel_x accel_y'
-  #   component = 1
-  #   boundary = 1
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  # []
+  #add dampers
+  [damp_outer_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
+    component = 0
+    boundary = 1
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampx
+  []
+  [damp_outer_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
+    component = 1
+    boundary = 1
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampy
+  []
 []
 
 [Materials]
@@ -452,7 +458,7 @@ top_right2 = '2e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total full_input_energy'
+    show = 'full_energy solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total full_input_energy damping_work'
   []
 []
 
@@ -505,14 +511,19 @@ top_right2 = '2e-4 0.0025 0'
     type = FarmsExternalWork
     boundary = '3'
     forces = 'fx fy fz'
-  []  
+  []
+  [damping_work]
+    type = FarmsExternalWork
+    boundary = '3'
+    forces = 'fdampx fdampy fdampz'
+  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work'
-      pp_names = 'external_work'
+      expression = '-1 * external_work + damping_work'
+      pp_names = 'external_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
