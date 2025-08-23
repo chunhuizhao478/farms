@@ -514,7 +514,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   [damping_work]
     type = FarmsExternalWork
-    boundary = '3'
+    boundary = '1'
     forces = 'fdampx fdampy fdampz'
   []
 []
