@@ -28,8 +28,11 @@ NDComputeSmallDeformationStress::NDComputeSmallDeformationStress(const InputPara
   : Material(parameters),
     BaseNameInterface(parameters),
     _mechanical_strain(getMaterialProperty<RankTwoTensor>(prependBaseName("mechanical_strain"))),
+  _elastic_strain(getMaterialProperty<RankTwoTensor>(prependBaseName("elastic_strain"))),
+  _elastic_strain_old(getMaterialPropertyOld<RankTwoTensor>(prependBaseName("elastic_strain"))),
     _stress(declareProperty<RankTwoTensor>(prependBaseName("stress"))),
-    _Jacobian_mult(declareProperty<RankFourTensor>(prependBaseName("Jacobian_mult")))
+  _Jacobian_mult(declareProperty<RankFourTensor>(prependBaseName("Jacobian_mult"))),
+  _strain_increment(declareProperty<RankTwoTensor>(prependBaseName("strain_increment")))
 {
   if (getParam<bool>("use_displaced_mesh"))
     mooseError("The stress calculator needs to run on the undisplaced mesh.");
@@ -57,6 +60,7 @@ void
 NDComputeSmallDeformationStress::initQpStatefulProperties()
 {
   _stress[_qp].zero();
+  _strain_increment[_qp].zero();
 }
 
 void
@@ -66,4 +70,7 @@ NDComputeSmallDeformationStress::computeQpProperties()
   _elasticity_model->updateStateDF(_mechanical_strain[_qp], 
                                    _stress[_qp],
                                    _Jacobian_mult[_qp]);
+
+  // Compute elastic strain increment for this step: current minus old
+  _strain_increment[_qp] = _elastic_strain[_qp] - _elastic_strain_old[_qp];
 }

@@ -41,9 +41,16 @@ protected:
   /// The mechanical strain excluding eigen strains from the total strain
   const MaterialProperty<RankTwoTensor> & _mechanical_strain;
 
+  /// The elastic strain (from elasticity model) and its old value
+  const MaterialProperty<RankTwoTensor> & _elastic_strain;
+  const MaterialProperty<RankTwoTensor> & _elastic_strain_old;
+
   /// The stress
   MaterialProperty<RankTwoTensor> & _stress;
 
   /// derivative of stress w.r.t. strain (_dstress_dstrain)
   MaterialProperty<RankFourTensor> & _Jacobian_mult;
+
+  /// Elastic strain increment per step: elastic_strain - elastic_strain_old
+  MaterialProperty<RankTwoTensor> & _strain_increment;
 };

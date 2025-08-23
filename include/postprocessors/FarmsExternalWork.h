@@ -30,6 +30,9 @@ protected:
   /// Vector of velocities
   std::vector<const VariableValue *> _u_dots;
 
+  /// Vector of displacement values (used in static mode)
+  std::vector<const VariableValue *> _u;
+
   /// The number of forces
   const unsigned int _nforce;
 
@@ -38,4 +41,7 @@ protected:
 
   /// Cumulative sum of the post-processor value from the old time step */
   const PostprocessorValue & _sum_old;
+
+  /// If true, compute external work from forces · displacements (steady/static use)
+  const bool _use_displacement_work;
 };

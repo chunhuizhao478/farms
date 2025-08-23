@@ -1,3 +1,7 @@
+fluid_elastic_energy_total_static = 8.872887e-05
+solid_elastic_energy_total_static = 1.679652e-03
+full_input_energy_static = 1.768381e-03
+
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
@@ -18,7 +22,7 @@ confinement_pressure  = 1e6
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.3
+biot_coefficient = 0.7
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -90,14 +94,28 @@ hht_alpha = 0.11
   [from_d]
     type = MultiAppCopyTransfer
     from_multi_app = 'fracture'
-    variable = d
-    source_variable = d
+    variable = 'd'
+    source_variable = 'd'
   []
   [to_psie_active]
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
     variable = 'psie_active mesh_size'
     source_variable = 'psie_active mesh_size'
+  []
+  [pp_transfer_dissipated_energy_total]
+    type = MultiAppPostprocessorTransfer
+    from_multi_app = 'fracture'
+    from_postprocessor = 'dissipated_energy_dynamic'
+    to_postprocessor = 'dissipated_energy_dynamic'
+    reduction_type = 'sum' #this should not have effect in a single app
+  []
+  [pp_transfer_dissipated_energy_first_step]
+    type = MultiAppPostprocessorTransfer
+    from_multi_app = 'fracture'
+    from_postprocessor = 'dissipated_energy_first_step'
+    to_postprocessor = 'dissipated_energy_first_step'
+    reduction_type = 'sum' #this should not have effect in a single app
   []
 []
 
@@ -182,6 +200,11 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   []
+  [vel_z]
+    family = LAGRANGE
+    order = FIRST
+  []
+  #
   [accel_x]
     family = LAGRANGE
     order = FIRST
@@ -213,6 +236,43 @@ top_right2 = '2e-4 0.0025 0'
     family = MONOMIAL
     order = FIRST
   []
+  [fx]
+  []
+  [fy]
+  []
+  [fz]
+  []
+  [fconfinementx]
+  []
+  [fconfinementy]
+  []
+  [fconfinementz]
+  []  
+  #darcy velocity components
+  [darcy_vel_x]
+    order = CONSTANT
+    family = MONOMIAL      
+  []
+  [darcy_vel_y]
+    order = CONSTANT
+    family = MONOMIAL      
+  [] 
+  [darcy_vel_z]
+    order = CONSTANT
+    family = MONOMIAL      
+  [] 
+  # [strain_increment_00]
+  #   order = CONSTANT
+  #   family = MONOMIAL   
+  # []
+  # [strain_increment_11]
+  #   order = CONSTANT
+  #   family = MONOMIAL   
+  # []  
+  # [strain_increment_22]
+  #   order = CONSTANT
+  #   family = MONOMIAL   
+  # []    
 []
 
 [AuxKernels]
@@ -285,6 +345,50 @@ top_right2 = '2e-4 0.0025 0'
     column = 1
     variable = effective_perm01_aux
   []
+  ### Darcy Velocity
+  [bulk_vel_x]
+    type = PorousFlowDarcyVelocityComponent
+    variable = darcy_vel_x
+    component = x
+    fluid_phase = 0
+    gravity = '0 0 0'
+  []
+  [bulk_vel_y]
+    type = PorousFlowDarcyVelocityComponent
+    variable = darcy_vel_y
+    component = y
+    fluid_phase = 0
+    gravity = '0 0 0'
+  []
+  [bulk_vel_z]
+    type = PorousFlowDarcyVelocityComponent
+    variable = darcy_vel_z
+    component = z
+    fluid_phase = 0
+    gravity = '0 0 0'
+  []
+  # #### get strain increment
+  # [strain_increment_00]
+  #   type = MaterialRankTwoTensorAux
+  #   property = strain_increment  
+  #   variable = strain_increment_00
+  #   i = 0
+  #   j = 0
+  # []
+  # [strain_increment_11]
+  #   type = MaterialRankTwoTensorAux
+  #   property = strain_increment  
+  #   variable = strain_increment_11
+  #   i = 1
+  #   j = 1
+  # []
+  # [strain_increment_22]
+  #   type = MaterialRankTwoTensorAux
+  #   property = strain_increment  
+  #   variable = strain_increment_22
+  #   i = 2
+  #   j = 2
+  # []
 []
 
 [Functions]
@@ -373,6 +477,8 @@ top_right2 = '2e-4 0.0025 0'
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
+      save_in_disp_x = fx
+      save_in_disp_y = fy
     []          
     #assign pressure on outer surface
     [static_pressure_outer]
@@ -380,6 +486,8 @@ top_right2 = '2e-4 0.0025 0'
       factor = ${confinement_pressure}
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
+      save_in_disp_x = fconfinementx
+      save_in_disp_y = fconfinementy
     []     
   []   
   # fix ptr
@@ -404,36 +512,36 @@ top_right2 = '2e-4 0.0025 0'
   #   use_displaced_mesh = false
   # []
   #add dampers
-  [damp_outer_x]
-    type = FarmsNonReflectDashpotBC
-    variable = disp_x
-    displacements = 'disp_x disp_y'
-    velocities = 'vel_x vel_y'
-    accelerations = 'accel_x accel_y'
-    component = 0
-    boundary = 1
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
-  []
-  [damp_outer_y]
-    type = FarmsNonReflectDashpotBC
-    variable = disp_y
-    displacements = 'disp_x disp_y'
-    velocities = 'vel_x vel_y'
-    accelerations = 'accel_x accel_y'
-    component = 1
-    boundary = 1
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
-  []
+  # [damp_outer_x]
+  #   type = FarmsNonReflectDashpotBC
+  #   variable = disp_x
+  #   displacements = 'disp_x disp_y'
+  #   velocities = 'vel_x vel_y'
+  #   accelerations = 'accel_x accel_y'
+  #   component = 0
+  #   boundary = 1
+  #   beta = ${newmark_beta}
+  #   gamma = ${newmark_gamma}
+  #   alpha = ${hht_alpha}
+  #   shear_wave_speed = ${Cs}
+  #   p_wave_speed = ${Cp}
+  #   density = ${solid_density}
+  # []
+  # [damp_outer_y]
+  #   type = FarmsNonReflectDashpotBC
+  #   variable = disp_y
+  #   displacements = 'disp_x disp_y'
+  #   velocities = 'vel_x vel_y'
+  #   accelerations = 'accel_x accel_y'
+  #   component = 1
+  #   boundary = 1
+  #   beta = ${newmark_beta}
+  #   gamma = ${newmark_gamma}
+  #   alpha = ${hht_alpha}
+  #   shear_wave_speed = ${Cs}
+  #   p_wave_speed = ${Cp}
+  #   density = ${solid_density}
+  # []
 []
 
 [Materials]
@@ -491,7 +599,7 @@ top_right2 = '2e-4 0.0025 0'
   [stress]
     type = NDComputeSmallDeformationStress ###
     elasticity_model = elasticity
-    output_properties = 'stress'
+    output_properties = 'stress strain_increment'
     outputs = exodus
   []
   #solid properties
@@ -631,7 +739,8 @@ top_right2 = '2e-4 0.0025 0'
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
+    # disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
+    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */pressure_inner'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
   []
@@ -693,383 +802,215 @@ top_right2 = '2e-4 0.0025 0'
   exodus = true
   time_step_interval = 20
   print_linear_residuals = false
-  csv = true
   [checkpoint]
       type = Checkpoint
       time_step_interval = 100
       num_files = 2
   []
+  [csv]
+    type = CSV
+    execute_on = 'initial timestep_end'
+    time_step_interval = 1
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total'
+  []
 []
 
-  ###############################Energy Calculation##############################
+###############################Energy Calculation##############################
 
-  #fracture energy
-  ###############################################################################
-  [Postprocessors]
-    [fracture_energy_total]
-        type = ElementIntegralVariablePostprocessor
-        variable = fracture_energy
-    []
-  []
+#fracture energy
+###############################################################################
+#receive the data from subapp
+[Postprocessors]
+  [./dissipated_energy_dynamic]
+    type = Receiver
+  [../]
+  [./dissipated_energy_first_step]
+    type = Receiver
+  [../]
+[]
 
-  # input energy
-  ###############################################################################
-  [AuxVariables]
-    #input energy pulse power
-    [d_inputE_pulse_power_per_area_inner]
-      order = CONSTANT
-      family = MONOMIAL      
-    []
-    [d_inputE_pulse_power_per_area_outer]
-      order = CONSTANT
-      family = MONOMIAL      
-    [] 
-    [d_inputE_pulse_power_per_area_top]
-      order = CONSTANT
-      family = MONOMIAL      
-    [] 
-    [d_inputE_pulse_power_per_area_bottom]
-      order = CONSTANT
-      family = MONOMIAL      
-    []  
-  []
-
-  [AuxVariables]
-    [disp_old_x]
-      order = FIRST
-      family = LAGRANGE
-    []
-    [disp_old_y]
-      order = FIRST
-      family = LAGRANGE
-    []
-    [disp_old_z]
-      order = FIRST
-      family = LAGRANGE
-    []
-  []
-
-  [AuxKernels]
-    [initialize_disp_old_x]
-      type = SolutionAux
-      solution = init_sol_components
-      variable = disp_old_x
-      from_variable = disp_x
-      execute_on = 'INITIAL'
-    []
-    [initialize_disp_old_y]
-      type = SolutionAux
-      solution = init_sol_components
-      variable = disp_old_y
-      from_variable = disp_y
-      execute_on = 'INITIAL'
-    []
-    [initialize_disp_old_z]
-      type = SolutionAux
-      solution = init_sol_components
-      variable = disp_old_z
-      from_variable = disp_z
-      execute_on = 'INITIAL'
-    []
-    #
-    [get_disp_old_x]
-      type = ProjectionAux
-      variable = disp_old_x
-      v = disp_x
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-    [get_disp_old_y]
-      type = ProjectionAux
-      variable = disp_old_y
-      v = disp_y
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-    [get_disp_old_z]
-      type = ProjectionAux
-      variable = disp_old_z
-      v = disp_z
-      execute_on = 'TIMESTEP_BEGIN'
-    []
-  []
-   
-  #inner
-  [AuxKernels]
-    [get_d_inputE_confinement_per_area_inner]
-      type = ElkPulsePowerInputEnergy
-      variable = d_inputE_pulse_power_per_area_inner
-      function = func_tri_pulse
-      option = 1
-      displacements = 'disp_x disp_y disp_z'
-      old_displacements = 'disp_old_x disp_old_y disp_old_z'
-      boundary = '4'
+[Postprocessors]
+  [solid_dissipated_energy_total]
+      type = ParsedPostprocessor
+      expression = 'dissipated_energy_dynamic - dissipated_energy_first_step'
+      pp_names = 'dissipated_energy_dynamic dissipated_energy_first_step'
       execute_on = 'INITIAL TIMESTEP_END'
-    []     
   []
+[]
 
-  [Postprocessors]
-    [d_inputE_pulse_power_inner]
-      type = SideIntegralVariablePostprocessor
-      variable = d_inputE_pulse_power_per_area_inner
-      boundary = '4'
-    []
-    [full_input_energy_dynamic_inner]
-      type = CumulativeValuePostprocessor
-      postprocessor = d_inputE_pulse_power_inner
-    []
-  [] 
-  
-  #outer
-  [AuxKernels]
-    [get_d_inputE_confinement_per_area_outer]
-      type = ElkPulsePowerInputEnergy
-      variable = d_inputE_pulse_power_per_area_outer
-      confinement_pressure = ${confinement_pressure}
-      option = 2
-      displacements = 'disp_x disp_y disp_z'
-      old_displacements = 'disp_old_x disp_old_y disp_old_z'
-      boundary = 3
+# input energy
+###############################################################################
+[Postprocessors]
+  [external_work]
+    type = FarmsExternalWork
+    boundary = '3'
+    forces = 'fx fy fz'
+  []
+  [confinement_work]
+    type = FarmsExternalWork
+    boundary = '1'
+    forces = 'fconfinementx fconfinementy fconfinementz'
+  []
+[]
+
+[Postprocessors]
+  [full_input_energy]
+      type = ParsedPostprocessor
+      expression = '-1 * external_work - confinement_work + ${full_input_energy_static}'
+      pp_names = 'external_work confinement_work'
       execute_on = 'INITIAL TIMESTEP_END'
-    []     
   []
+[]
 
-  [Postprocessors]
-    [d_inputE_pulse_power_outer]
-      type = SideIntegralVariablePostprocessor
-      variable = d_inputE_pulse_power_per_area_outer
-      boundary = 3
-    []
-    [full_input_energy_dynamic_outer]
-      type = CumulativeValuePostprocessor
-      postprocessor = d_inputE_pulse_power_outer
-    []
-  []
-  
-  #top
-  [AuxKernels]
-    [get_d_inputE_confinement_per_area_top]
-      type = ElkPulsePowerInputEnergy
-      variable = d_inputE_pulse_power_per_area_top
-      confinement_pressure = ${confinement_pressure}
-      option = 2
-      displacements = 'disp_x disp_y disp_z'
-      old_displacements = 'disp_old_x disp_old_y disp_old_z'
-      boundary = 2
-      execute_on = 'INITIAL TIMESTEP_END'
-    []     
-  []
-
-  [Postprocessors]
-    [d_inputE_pulse_power_top]
-      type = SideIntegralVariablePostprocessor
-      variable = d_inputE_pulse_power_per_area_top
-      boundary = 2
-    []
-    [full_input_energy_dynamic_top]
-      type = CumulativeValuePostprocessor
-      postprocessor = d_inputE_pulse_power_top
-    []
-  []  
-
-  #botom
-  [AuxKernels]
-    [get_d_inputE_confinement_per_area_bottom]
-      type = ElkPulsePowerInputEnergy
-      variable = d_inputE_pulse_power_per_area_bottom
-      confinement_pressure = ${confinement_pressure}
-      option = 2
-      displacements = 'disp_x disp_y disp_z'
-      old_displacements = 'disp_old_x disp_old_y disp_old_z'
-      boundary = 2
-      execute_on = 'INITIAL TIMESTEP_END'
-    []     
-  []
-
-  [Postprocessors]
-    [d_inputE_pulse_power_bottom]
-      type = SideIntegralVariablePostprocessor
-      variable = d_inputE_pulse_power_per_area_bottom
-      boundary = 2
-    []
-    [full_input_energy_dynamic_bottom]
-      type = CumulativeValuePostprocessor
-      postprocessor = d_inputE_pulse_power_bottom
-    []
-  []
-
-  [Postprocessors]
-    [full_input_energy]
-        type = ParsedPostprocessor
-        expression = '${full_input_energy_initial} + full_input_energy_dynamic_inner + full_input_energy_dynamic_outer + full_input_energy_dynamic_bottom + full_input_energy_dynamic_top'
-        pp_names = 'full_input_energy_dynamic_inner full_input_energy_dynamic_outer full_input_energy_dynamic_bottom full_input_energy_dynamic_top'
-        execute_on = 'INITIAL TIMESTEP_END'
-    []
-  []
-
-  # solid kinetic energy
-  ###############################################################################
-  [AuxVariables]
-    [solid_kinetic_energy]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-  []
-
-  [AuxKernels]
-    [solid_kinetic_energy]
-        type = ParsedAux
-        variable = solid_kinetic_energy
-        coupled_variables = 'vel_x vel_y vel_z'
-        expression = "0.5 * (vel_x * vel_x + vel_y * vel_y + vel_z * vel_z) * 2600"
-    []
-  []
-
-  [Postprocessors]
-    [solid_kinetic_energy_total]
-        type = ElementIntegralVariablePostprocessor
-        variable = solid_kinetic_energy
-    []
-  []
-
-  # fluid kinetic energy
-  ###############################################################################
-  [AuxVariables]
-    [fluid_kinetic_energy]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-  []  
-
-  [AuxKernels]
-    [fluid_kinetic_energy]
-        type = ParsedAux
-        variable = fluid_kinetic_energy
-        coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
-        expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * 1000"
-    []
-  []
-
-  [Postprocessors]
-    [fluid_kinetic_energy_total]
-        type = ElementIntegralVariablePostprocessor
-        variable = fluid_kinetic_energy
-    []
-  []
-  ###############################################################################
-
-  # solid elastic energy
-  [AuxVariables]
-    [solid_elastic_energy]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-  []
-
-  [AuxKernels]
-    [solid_elastic_energy]
-        type = ElasticEnergyAux
-        variable = solid_elastic_energy
-    []
-  []
-
-  [Postprocessors]
-    [solid_elastic_energy_total_dynamic]
-        type = ElementIntegralVariablePostprocessor
-        variable = solid_elastic_energy
-    []
-  []
-
-  [Postprocessors]
-    [solid_elastic_energy_total]
-        type = ParsedPostprocessor
-        expression = '${solid_elastic_energy_total} + solid_elastic_energy_total_dynamic'
-        pp_names = 'solid_elastic_energy_total_dynamic'
-        execute_on = 'INITIAL TIMESTEP_END'
-    []
-  []
-
-  # fluid elastic energy
-  ###############################################################################
-  [AuxVariables]
-    [fluid_elastic_energy]
-        order = CONSTANT
-        family = MONOMIAL
-        initial_condition = ${fluid_elastic_energy_total}
-    []
-  []
-
-  [AuxKernels]
-    [fluid_elastic_energy]
-        type = ParsedAux
-        variable = fluid_elastic_energy
-        coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
-        expression = "0.5 * 0.75 * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
-    []
-  []
-
-  [Postprocessors]
-    [fluid_elastic_energy_total_dynamic]
-        type = ElementIntegralVariablePostprocessor
-        variable = fluid_elastic_energy
-    []
-  []
-
-  [Postprocessors]
-    [fluid_elastic_energy_total]
-        type = ParsedPostprocessor
-        expression = '${fluid_elastic_energy_total} + fluid_elastic_energy_total_dynamic'
-        pp_names = 'fluid_elastic_energy_total_dynamic'
-        execute_on = 'INITIAL TIMESTEP_END'
-    []
-  []
-  ###############################################################################
-
-  # fluid energy dissipation
-  ###############################################################################
-  [AuxVariables]
-    [fluid_dissipated_energy]
-        order = CONSTANT
-        family = MONOMIAL
-        initial_condition = ${fluid_elastic_energy_total}
-    []
-    [fluid_incremental_elastic_energy]
+# solid kinetic energy
+###############################################################################
+[AuxVariables]
+  [solid_kinetic_energy]
       order = CONSTANT
       family = MONOMIAL
-    []
   []
+[]
 
-  [AuxKernels]
-    [fluid_incremental_elastic_energy_per_vol]
-        type = ParsedAux
-        variable = fluid_incremental_elastic_energy
-        coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
-        expression = "0.75 * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
-    []
+[AuxKernels]
+  [solid_kinetic_energy]
+      type = KineticEnergyAux
+      variable = solid_kinetic_energy
+      newmark_velocity_x = vel_x
+      newmark_velocity_y = vel_y
+      newmark_velocity_z = vel_z
+      density = density
   []
+[]
 
-  [Postprocessors]
-    [fluid_incremental_elastic_energy]
-        type = ElementIntegralVariablePostprocessor
-        variable = fluid_incremental_elastic_energy
-    []
-    [fluid_incremental_elastic_energy_total]
-      type = CumulativeValuePostprocessor
-      postprocessor = fluid_incremental_elastic_energy
-    []  
-    [fluid_dissipated_energy_total]
+[Postprocessors]
+  [solid_kinetic_energy_total]
+      type = ElementIntegralVariablePostprocessor
+      variable = solid_kinetic_energy
+  []
+[]
+
+# solid elastic energy
+###############################################################################
+[Postprocessors]
+  [solid_elastic_energy_dynamic]
+    type = ElementIntegralMaterialProperty
+    mat_prop = psie
+  []
+[]
+
+[Postprocessors]
+  [solid_elastic_energy_total]
       type = ParsedPostprocessor
-      pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
-      expression = "${fluid_elastic_energy_total} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
+      expression = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
+      pp_names = 'solid_elastic_energy_dynamic'
       execute_on = 'INITIAL TIMESTEP_END'
-    []  
+  []
+[]
+
+# fluid kinetic energy
+###############################################################################
+[AuxVariables]
+  [fluid_kinetic_energy]
+      order = CONSTANT
+      family = MONOMIAL
+  []
+[]  
+
+[AuxKernels]
+  [fluid_kinetic_energy]
+      type = ParsedAux
+      variable = fluid_kinetic_energy
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
+      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density}"
+  []
+[]
+
+[Postprocessors]
+  [fluid_kinetic_energy_total]
+      type = ElementIntegralVariablePostprocessor
+      variable = fluid_kinetic_energy
+  []
+[]
+###############################################################################
+
+# fluid elastic energy
+###############################################################################
+[AuxVariables]
+  [fluid_elastic_energy]
+      order = CONSTANT
+      family = MONOMIAL
+  []
+[]
+
+[AuxKernels]
+  [get_fluid_elastic_energy]
+      type = ParsedAux
+      variable = fluid_elastic_energy
+      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
+      expression = "0.5 * ${biot_coefficient} * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+  []
+[]
+
+[Postprocessors]
+  [fluid_elastic_energy_total_dynamic]
+      type = ElementIntegralVariablePostprocessor
+      variable = fluid_elastic_energy
+  []
+[]
+
+[Postprocessors]
+  [fluid_elastic_energy_total]
+      type = ParsedPostprocessor
+      expression = '${fluid_elastic_energy_total_static} + fluid_elastic_energy_total_dynamic'
+      pp_names = 'fluid_elastic_energy_total_dynamic'
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+###############################################################################
+
+# fluid energy dissipation
+###############################################################################
+[AuxVariables]
+  [fluid_incremental_elastic_energy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+
+[AuxKernels]
+  [fluid_incremental_elastic_energy_per_vol]
+      type = ParsedAux
+      variable = fluid_incremental_elastic_energy
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
+      expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
+  []
+[]
+
+[Postprocessors]
+  [fluid_incremental_elastic_energy]
+      type = ElementIntegralVariablePostprocessor
+      variable = fluid_incremental_elastic_energy
+  []
+  [fluid_incremental_elastic_energy_total]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_incremental_elastic_energy
   []  
-  ###############################################################################
+  [fluid_dissipated_energy_total]
+    type = ParsedPostprocessor
+    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
+    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
+    execute_on = 'INITIAL TIMESTEP_END'
+  []  
+[]  
+###############################################################################
 
-  # Full Energy
-  [Postprocessors]
-    [full_energy]
-      type = ParsedPostprocessor
-      expression = 'solid_kinetic_energy_total + fluid_kinetic_energy_total + solid_elastic_energy_total + fluid_elastic_energy_total + fracture_energy_total + fluid_dissipated_energy_total'
-      pp_names = 'solid_kinetic_energy_total fluid_kinetic_energy_total solid_elastic_energy_total fluid_elastic_energy_total fracture_energy_total fluid_dissipated_energy_total'
-      execute_on = 'INITIAL TIMESTEP_END'
-    []
+# Full Energy
+###############################################################################
+[Postprocessors]
+  [full_energy]
+    type = ParsedPostprocessor
+    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
+    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
+    execute_on = 'INITIAL TIMESTEP_END'
   []
+[]
