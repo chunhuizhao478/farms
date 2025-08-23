@@ -21,7 +21,7 @@ c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent 
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.3
+biot_coefficient = 0.7
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -106,7 +106,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = nonlocal_subapp2_nodamp.i
+    input_files = nonlocal_subapp1.i
     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
