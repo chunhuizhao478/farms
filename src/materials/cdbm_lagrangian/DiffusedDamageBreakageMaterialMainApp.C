@@ -343,7 +343,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporosolid()
   Real alpha_s = 1.0 - K_d/K_s;
   
   // Compute porosity evolution for solid phase
-  Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1)
+  Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1);
   // Real porosity_s = 1 - (1 - _porosity_solid_o) / Je;
   
    // Compute Biot modulus for solid phase
