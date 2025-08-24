@@ -21,7 +21,7 @@ c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent 
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.7
+biot_coefficient = 0.4
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -40,7 +40,7 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.11
+hht_alpha = 0
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
