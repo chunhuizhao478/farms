@@ -21,7 +21,7 @@ c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent 
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.3
+biot_coefficient = 0.4
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -119,7 +119,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d_small.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator

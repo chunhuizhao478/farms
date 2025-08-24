@@ -686,11 +686,11 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
   # petsc_options_value = '101                asm      lu'
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  # petsc_options_value = ' lu       mumps       100'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8

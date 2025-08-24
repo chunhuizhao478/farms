@@ -21,7 +21,7 @@ c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent 
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.3
+biot_coefficient = 0.4
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -144,7 +144,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../2dmeshfile/fieldscale_test1_2d_small.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -686,11 +686,11 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
   # petsc_options_value = '101                asm      lu'
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  # petsc_options_value = ' lu       mumps       100'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
@@ -722,7 +722,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 40
+  time_step_interval = 1
   print_linear_residuals = false
   csv = true
   [checkpoint]
