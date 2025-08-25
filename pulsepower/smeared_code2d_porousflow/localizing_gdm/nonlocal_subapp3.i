@@ -64,7 +64,7 @@ top_right2 = '2e-4 0.0025 0'
     type = LocalizingCoefDiffusion
     variable = nonlocal_eqstrain
     coef = ${fparse l*l}
-    R = 0.02
+    R = 0.25
     eta = 5
   []
   [reaction_local]
