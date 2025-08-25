@@ -10,7 +10,7 @@ nu = 0.373
 #hydraulic properties
 #----------------------------------------------------#
 fluid_density = 1000
-biot_coefficient = 0.7
+biot_coefficient = 0.4
 fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008

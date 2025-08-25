@@ -22,7 +22,7 @@ confinement_pressure  = 1e6
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
-biot_coefficient = 0.7
+biot_coefficient = 0.4
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -42,7 +42,7 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.11
+hht_alpha = 0
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
@@ -685,6 +685,11 @@ top_right2 = '2e-4 0.0025 0'
     phase = 0
     kr = 1
   []
+  #Compute flow fluid driving energy
+  [flow_fluid_driving_energy]
+    type = ElkPorousFlowFluidDrivingEnergy
+    biot_coefficient = ${biot_coefficient}
+  []
 []
 
 #provide fluid properties for porous flow 
@@ -811,7 +816,7 @@ top_right2 = '2e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total'
+    show = 'full_energy full_energy_2 full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total fluid_driving_energy_dynamic'
   []
 []
 
@@ -1004,6 +1009,16 @@ top_right2 = '2e-4 0.0025 0'
 []  
 ###############################################################################
 
+# fluid driving energy
+###############################################################################
+[Postprocessors]
+  [fluid_driving_energy_dynamic]
+    type = ElementIntegralMaterialProperty
+    mat_prop = fluid_driving_energy_density
+  []
+[]
+###############################################################################
+
 # Full Energy
 ###############################################################################
 [Postprocessors]
@@ -1011,6 +1026,12 @@ top_right2 = '2e-4 0.0025 0'
     type = ParsedPostprocessor
     expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
     pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [full_energy_2]
+    type = ParsedPostprocessor
+    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_driving_energy_dynamic + ${fluid_elastic_energy_total_static}'
+    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_driving_energy_dynamic'
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
