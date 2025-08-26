@@ -13,10 +13,13 @@ ElkPorousFlowFluidDrivingEnergy::validParams()
 {
   InputParameters params = PorousFlowMaterialVectorBase::validParams();
   params.addClassDescription("Fluid driving energy density psi_f for porous flow HM coupling");
-  params.addRequiredRangeCheckedParam<Real>(
+  params.addRangeCheckedParam<Real>(
       "biot_coefficient",
+      1.0,
       "biot_coefficient>=0 & biot_coefficient<=1",
-      "Biot coefficient (alpha)");
+      "Biot coefficient (alpha) (ignored if use_damaged_biot=true)");
+  params.addParam<bool>("use_damaged_biot", false,
+                        "Use biot_coefficient from material property 'biot_coefficient'");
   // Expect the Biot modulus from PorousFlowConstantBiotModulus or equivalent
   params.set<std::string>("pf_material_type") = "fluid_driving_energy";
   return params;
@@ -45,7 +48,12 @@ ElkPorousFlowFluidDrivingEnergy::computeQpProperties()
   const Real p = _p[_qp].empty() ? 0.0 : _p[_qp][0];
   const Real M = _M[_qp];
   const Real tr_eps = _eps_v[_qp];
-  const Real alpha = _biot_coefficient;
+  Real alpha = _biot_coefficient;
+  if (isParamValid("use_damaged_biot") && getParam<bool>("use_damaged_biot"))
+  {
+    const MaterialProperty<Real> & alpha_mp = getMaterialProperty<Real>("biot_coefficient");
+    alpha = alpha_mp[_qp];
+  }
 
   // theta = p/M + alpha * tr(eps)
   const Real theta = (M > 0.0 ? p / M : 0.0) + alpha * tr_eps;

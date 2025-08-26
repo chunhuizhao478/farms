@@ -16,7 +16,7 @@ ElkPorousFlowDamagedBiotModulus::validParams()
 {
   InputParameters params = PorousFlowMaterialVectorBase::validParams();
   params.addRangeCheckedParam<Real>(
-      "biot_coefficient", 1.0, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient");
+      "biot_coefficient", 1.0, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
   params.addRangeCheckedParam<Real>("solid_bulk_compliance",
                                     0.0,
                                     "solid_bulk_compliance>=0.0",
@@ -26,6 +26,7 @@ ElkPorousFlowDamagedBiotModulus::validParams()
                                     "1/Kg = (1 - biot_coefficient) * solid_bulk_compliance.");
   params.addRangeCheckedParam<Real>(
       "fluid_bulk_modulus", 2.0E9, "fluid_bulk_modulus>0", "Fluid bulk modulus");
+  params.addParam<bool>("use_damaged_biot", false, "Use biot_coefficient from material property 'biot_coefficient'");
   params.addPrivateParam<std::string>("pf_material_type", "biot_modulus");
   params.addClassDescription("Computes the Biot Modulus, which is assumed to be constant for all "
                              "time.  Sometimes 1 / BiotModulus is called storativity");
@@ -34,7 +35,10 @@ ElkPorousFlowDamagedBiotModulus::validParams()
 
 ElkPorousFlowDamagedBiotModulus::ElkPorousFlowDamagedBiotModulus(const InputParameters & parameters)
   : PorousFlowMaterialVectorBase(parameters),
-    _biot_coefficient(getParam<Real>("biot_coefficient")),
+    _biot_coefficient_const(getParam<Real>("biot_coefficient")),
+    _use_damaged_biot(getParam<bool>("use_damaged_biot")),
+    _biot_coefficient_matprop(_use_damaged_biot ? &getMaterialProperty<Real>("biot_coefficient")
+                                                : nullptr),
     _fluid_bulk_modulus(getParam<Real>("fluid_bulk_modulus")),
     _solid_bulk_compliance(getParam<Real>("solid_bulk_compliance")),
     _porosity(_nodal_material ? getMaterialProperty<Real>("PorousFlow_porosity_nodal")
@@ -51,7 +55,8 @@ ElkPorousFlowDamagedBiotModulus::ElkPorousFlowDamagedBiotModulus(const InputPara
 void
 ElkPorousFlowDamagedBiotModulus::initQpStatefulProperties()
 {
-  _biot_modulus[_qp] = 1.0 / ((1.0 - _biot_coefficient) * (_biot_coefficient - _porosity[_qp]) *
+  const Real alpha = _use_damaged_biot ? (*_biot_coefficient_matprop)[_qp] : _biot_coefficient_const;
+  _biot_modulus[_qp] = 1.0 / ((1.0 - alpha) * (alpha - _porosity[_qp]) *
                                   _solid_bulk_compliance +
                               _porosity[_qp] / _fluid_bulk_modulus);
 }
@@ -59,8 +64,8 @@ ElkPorousFlowDamagedBiotModulus::initQpStatefulProperties()
 void
 ElkPorousFlowDamagedBiotModulus::computeQpProperties()
 {
-
-  _biot_modulus[_qp] = 1.0 / ((1.0 - _biot_coefficient) * (_biot_coefficient - _porosity[_qp]) *
+  const Real alpha = _use_damaged_biot ? (*_biot_coefficient_matprop)[_qp] : _biot_coefficient_const;
+  _biot_modulus[_qp] = 1.0 / ((1.0 - alpha) * (alpha - _porosity[_qp]) *
                                   _solid_bulk_compliance_damaged[_qp] +
                               _porosity[_qp] / _fluid_bulk_modulus);
 }

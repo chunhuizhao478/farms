@@ -33,7 +33,13 @@ protected:
   virtual void computeQpProperties() override;
 
   /// Biot coefficient
-  const Real _biot_coefficient;
+  const Real _biot_coefficient_const;
+
+  /// Toggle to read biot from material property instead of constant
+  const bool _use_damaged_biot;
+
+  /// Damaged Biot coefficient material property (if enabled)
+  const MaterialProperty<Real> * _biot_coefficient_matprop;
 
   /// Fluid bulk modulus
   const Real _fluid_bulk_modulus;
