@@ -247,7 +247,13 @@ top_right2 = '2e-4 0.0025 0'
   [fconfinementy]
   []
   [fconfinementz]
-  []  
+  [] 
+  [fdampx]
+  []
+  [fdampy]
+  []
+  [fdampz]
+  [] 
   #darcy velocity components
   [darcy_vel_x]
     order = CONSTANT
@@ -503,45 +509,39 @@ top_right2 = '2e-4 0.0025 0'
     boundary = corner_ptr
     value = 0
   []
-  #fix pressure
-  # [./fix_pressure]
-  #   type = DirichletBC
-  #   variable = pp
-  #   boundary = 3
-  #   value = ${initial_pore_pressure}
-  #   use_displaced_mesh = false
-  # []
   #add dampers
-  # [damp_outer_x]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_x
-  #   displacements = 'disp_x disp_y'
-  #   velocities = 'vel_x vel_y'
-  #   accelerations = 'accel_x accel_y'
-  #   component = 0
-  #   boundary = 1
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${solid_density}
-  # []
-  # [damp_outer_y]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_y
-  #   displacements = 'disp_x disp_y'
-  #   velocities = 'vel_x vel_y'
-  #   accelerations = 'accel_x accel_y'
-  #   component = 1
-  #   boundary = 1
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${solid_density}
-  # []
+  [damp_outer_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
+    component = 0
+    boundary = 1
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${solid_density}
+    save_in = fdampx
+  []
+  [damp_outer_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
+    component = 1
+    boundary = 1
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${solid_density}
+    save_in = fdampy
+  []
 []
 
 [Materials]
@@ -816,7 +816,7 @@ top_right2 = '2e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_energy_2 full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total fluid_driving_energy_dynamic'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total'
   []
 []
 
@@ -856,13 +856,18 @@ top_right2 = '2e-4 0.0025 0'
     boundary = '1'
     forces = 'fconfinementx fconfinementy fconfinementz'
   []
+  [damping_work]
+    type = FarmsExternalWork
+    boundary = '1'
+    forces = 'fdampx fdampy fdampz'
+  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - confinement_work + ${full_input_energy_static}'
-      pp_names = 'external_work confinement_work'
+      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
+      pp_names = 'external_work confinement_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1011,12 +1016,12 @@ top_right2 = '2e-4 0.0025 0'
 
 # fluid driving energy
 ###############################################################################
-[Postprocessors]
-  [fluid_driving_energy_dynamic]
-    type = ElementIntegralMaterialProperty
-    mat_prop = fluid_driving_energy_density
-  []
-[]
+# [Postprocessors]
+#   [fluid_driving_energy_dynamic]
+#     type = ElementIntegralMaterialProperty
+#     mat_prop = fluid_driving_energy_density
+#   []
+# []
 ###############################################################################
 
 # Full Energy
@@ -1028,10 +1033,10 @@ top_right2 = '2e-4 0.0025 0'
     pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
   []
-  [full_energy_2]
-    type = ParsedPostprocessor
-    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_driving_energy_dynamic + ${fluid_elastic_energy_total_static}'
-    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_driving_energy_dynamic'
-    execute_on = 'INITIAL TIMESTEP_END'
-  []
+  # [full_energy_2]
+  #   type = ParsedPostprocessor
+  #   expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_driving_energy_dynamic + ${fluid_elastic_energy_total_static}'
+  #   pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_driving_energy_dynamic'
+  #   execute_on = 'INITIAL TIMESTEP_END'
+  # []
 []
