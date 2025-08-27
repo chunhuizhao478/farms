@@ -500,7 +500,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Materials]
   [strain]
-    type = ComputeSmallStrain
+    type = ComputeFiniteStrain
   []
   [./elasticity_tensor]
     type = ComputeIsotropicElasticityTensor
