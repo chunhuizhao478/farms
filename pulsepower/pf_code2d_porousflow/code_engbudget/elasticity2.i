@@ -491,38 +491,38 @@ top_right2 = '2e-4 0.0025 0'
     value = 0
   []
   #add dampers
-  [damp_outer_x]
-    type = FarmsNonReflectDashpotBC
-    variable = disp_x
-    displacements = 'disp_x disp_y'
-    velocities = 'vel_x vel_y'
-    accelerations = 'accel_x accel_y'
-    component = 0
-    boundary = 1
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
-    save_in = fdampx
-  []
-  [damp_outer_y]
-    type = FarmsNonReflectDashpotBC
-    variable = disp_y
-    displacements = 'disp_x disp_y'
-    velocities = 'vel_x vel_y'
-    accelerations = 'accel_x accel_y'
-    component = 1
-    boundary = 1
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
-    save_in = fdampy
-  []
+  # [damp_outer_x]
+  #   type = FarmsNonReflectDashpotBC
+  #   variable = disp_x
+  #   displacements = 'disp_x disp_y'
+  #   velocities = 'vel_x vel_y'
+  #   accelerations = 'accel_x accel_y'
+  #   component = 0
+  #   boundary = 1
+  #   beta = ${newmark_beta}
+  #   gamma = ${newmark_gamma}
+  #   alpha = ${hht_alpha}
+  #   shear_wave_speed = ${Cs}
+  #   p_wave_speed = ${Cp}
+  #   density = ${solid_density}
+  #   save_in = fdampx
+  # []
+  # [damp_outer_y]
+  #   type = FarmsNonReflectDashpotBC
+  #   variable = disp_y
+  #   displacements = 'disp_x disp_y'
+  #   velocities = 'vel_x vel_y'
+  #   accelerations = 'accel_x accel_y'
+  #   component = 1
+  #   boundary = 1
+  #   beta = ${newmark_beta}
+  #   gamma = ${newmark_gamma}
+  #   alpha = ${hht_alpha}
+  #   shear_wave_speed = ${Cs}
+  #   p_wave_speed = ${Cp}
+  #   density = ${solid_density}
+  #   save_in = fdampy
+  # []
 []
 
 [Materials]
