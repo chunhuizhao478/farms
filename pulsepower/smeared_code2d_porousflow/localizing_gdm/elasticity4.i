@@ -106,7 +106,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = nonlocal_subapp3.i
+    input_files = nonlocal_subapp4.i
     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
