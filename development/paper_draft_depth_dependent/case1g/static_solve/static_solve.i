@@ -195,9 +195,10 @@ fault_center = '0 0 -10000'
     displacements = 'disp_x disp_y disp_z'
   [../]
   [gravity_z]
-    type = BodyForce
+    type = CoupledBodyForce
     variable = disp_z
-    value = ${fparse -1 * density * gravity}
+    value = ${fparse -1 * gravity}
+    density_property_name = density
   []
 []
 
@@ -248,8 +249,8 @@ fault_center = '0 0 -10000'
   []
   [dummy_material]
       type = GenericConstantMaterial
-      prop_names = 'initial_breakage damage_perturbation density'
-      prop_values = '0 0 ${density}'
+      prop_names = 'initial_breakage damage_perturbation'
+      prop_values = '0 0'
   []
   [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
     type = ComputeEigenstrainFromInitialStress
