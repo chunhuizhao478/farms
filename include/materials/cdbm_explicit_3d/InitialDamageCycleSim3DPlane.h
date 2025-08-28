@@ -33,6 +33,15 @@ public:
 
 protected:
 
+  /// Time step index (from FEProblem)
+  int & _step;
+
+  /// Enable time-dependent ramping of initial damage amplitude
+  bool _use_time_dependent_damage;
+
+  /// Damage increase rate per step (absolute amplitude per step)
+  Real _damage_rate_per_step;
+
   /// Material property initial damage profile
   MaterialProperty<Real> & _initial_damage;
 

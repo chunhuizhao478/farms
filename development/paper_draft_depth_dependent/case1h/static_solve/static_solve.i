@@ -224,7 +224,9 @@ fault_center = '0 0 -10000'
     len_of_fault_strike = ${len_of_fault_strike}
     len_of_fault_dip = ${len_of_fault_dip}
     nucl_center = ${fault_center}
-    output_properties = 'initial_damage'      
+    output_properties = 'initial_damage'     
+    use_time_dependent_damage = true
+    damage_rate_per_step = 0.1
     outputs = exodus
   []
   [dummy_material]
@@ -503,18 +505,18 @@ fault_center = '0 0 -10000'
 
 [Executioner]
   solve_type = NEWTON
-  type = Steady
-
+  type = Transient
+  num_steps = 7
   nl_abs_tol = 1E-12
   nl_rel_tol = 1E-10
   l_tol = 1E-7
   l_max_its = 200
   nl_max_its = 400
   line_search  = 'bt'
-  # automatic_scaling = true
+  automatic_scaling = true
   verbose = true
-  petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  True'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 []
 
 [Outputs]

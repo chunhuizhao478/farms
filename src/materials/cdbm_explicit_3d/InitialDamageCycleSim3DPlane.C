@@ -34,6 +34,11 @@ InitialDamageCycleSim3DPlane::validParams()
                                 "Decay rate (controls radial spread of damage)");
   params.addRequiredParam<Real>("peak_val",
                                 "Peak value of the initial damage at the plane");
+  params.addParam<bool>("use_time_dependent_damage", false,
+                        "If true, ramp the peak damage over steps using damage_rate_per_step.");
+  params.addParam<Real>("damage_rate_per_step", 0.1,
+                        "Absolute increase of peak damage per time step (e.g., 0.1 to reach 0.7 in 7 steps).\n"
+                        "Only used when use_time_dependent_damage = true.");
   params.addParam<bool>("use_damage_perturb", false,
                         "Whether to use additional damage perturbation");
   params.addParam<bool>("use_background_randalpha", false,
@@ -49,6 +54,9 @@ InitialDamageCycleSim3DPlane::validParams()
 
 InitialDamageCycleSim3DPlane::InitialDamageCycleSim3DPlane(const InputParameters & parameters)
   : Material(parameters),
+    _step(_fe_problem.timeStep()),
+    _use_time_dependent_damage(getParam<bool>("use_time_dependent_damage")),
+    _damage_rate_per_step(getParam<Real>("damage_rate_per_step")),
     _initial_damage(declareProperty<Real>("initial_damage")),
     _len_of_fault_strike(getParam<Real>("len_of_fault_strike")),
     _len_of_fault_dip(getParam<Real>("len_of_fault_dip")),
@@ -97,7 +105,16 @@ InitialDamageCycleSim3DPlane::computeQpProperties()
   const Real r = std::sqrt(dx * dx + dy * dy + dz * dz);
 
   // Exponential decay
-  Real alpha_o = _peak_val * std::exp(-1.0 * (r * r) / (_sigma * _sigma));
+  // Optionally ramp peak amplitude by step index
+  Real peak = _peak_val;
+  if (_use_time_dependent_damage)
+  {
+    // step starts at 1 in many materials; cap at _peak_val
+    const Real ramp = std::max(0.0, std::min(peak, _damage_rate_per_step * static_cast<Real>(_step)));
+    peak = ramp;
+  }
+
+  Real alpha_o = peak * std::exp(-1.0 * (r * r) / (_sigma * _sigma));
 
   // Optionally include background random alpha
   if (_use_background_randalpha)
