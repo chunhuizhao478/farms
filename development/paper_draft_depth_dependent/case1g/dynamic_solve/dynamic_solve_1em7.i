@@ -546,16 +546,19 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = InertialForce
     use_displaced_mesh = false
     variable = disp_x
+    density = "density"
   []
   [./inertia_y]
     type = InertialForce
     use_displaced_mesh = false
     variable = disp_y
+    density = "density"
   []
   [./inertia_z]
     type = InertialForce
     use_displaced_mesh = false
     variable = disp_z
+    density = "density"
   []
   [./Reactionx]
     type = StiffPropDamping
@@ -575,20 +578,36 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Materials]
+  [./depth_dependent_props]
+    type = TPV32DepthSeismicProperties
+    depth_axis = z           # z is vertical in this model
+    flip_sign = true         # domain uses negative z for depth; flip to get positive depth
+    clamp_nonpositive_depth = true
+    vs_property_name = "Vs"
+    vp_property_name = "Vp"
+    density_property_name = "density"
+    shear_modulus_property_name = "shear_modulus_input"
+    lambda_property_name = "lambda_input"
+    output_properties = 'lambda_input shear_modulus_input density'
+    outputs = exodus
+  [../]
   #damage breakage model
+  #here we assume Cd = 0 if deviatoric strain rate is less than strain_rate_hat !
   [stress_medium]
-      type = ComputeDamageBreakageStress3DSlipWeakening
-      output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
-      use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
-      m_exponent = ${m_exponent}
-      strain_rate_hat = ${strain_rate_hat}
-      cd_hat = ${cd_hat}
-      outputs = exodus
+    type = ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure
+    output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
+    use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
+    m_exponent = ${m_exponent}
+    strain_rate_hat = ${strain_rate_hat}
+    cd_hat = ${cd_hat}
+    shear_modulus_input = shear_modulus_input #material property from depth_dependent_props
+    lambda_input = lambda_input #material property from depth_dependent_props
+    outputs = exodus
   []
   [dummy_material]
       type = GenericConstantMaterial
-      prop_names = 'initial_damage initial_breakage damage_perturbation density'
-      prop_values = '0 0 0 ${density}'
+      prop_names = 'initial_damage initial_breakage damage_perturbation'
+      prop_values = '0 0 0'
   []
   [./czm_mat]
       type = SlipWeakeningFrictionczm3dCDBM
@@ -699,12 +718,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   ###fluid pressure###
   [./func_fluid_pressure]
-    type = InitialStressStrainTPV26
+  type = InitialStressStrainTPV26VaryingDensity
     i = 0 #not used
     j = 0 #not used
     get_fluid_pressure = true
     fluid_density = ${fluid_density}
-    rock_density = ${density}
     gravity = ${gravity}
     bxx = ${bxx}
     byy = ${byy}
@@ -712,6 +730,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
   []
   ###cohesion###
   [./func_cohesion]

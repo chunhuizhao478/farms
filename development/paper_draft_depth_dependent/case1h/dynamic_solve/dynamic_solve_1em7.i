@@ -99,6 +99,14 @@ checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
+##initial damage parameters
+sigma = 5e2
+peak_val = 0.7
+len_of_fault_strike = 40000
+len_of_fault_dip = 20000
+fault_center = '0 0 -10000'
+##-------------------------##
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
@@ -583,12 +591,23 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       m_exponent = ${m_exponent}
       strain_rate_hat = ${strain_rate_hat}
       cd_hat = ${cd_hat}
+      zero_Cd_below_threshold = true #set Cd = 0 when strain rate < strain_rate_hat
       outputs = exodus
+  []
+  [initial_damage_surround]
+    type = InitialDamageCycleSim3DPlane
+    sigma = ${sigma}
+    peak_val = ${peak_val}
+    len_of_fault_strike = ${len_of_fault_strike}
+    len_of_fault_dip = ${len_of_fault_dip}
+    nucl_center = ${fault_center}
+    output_properties = 'initial_damage'      
+    outputs = exodus
   []
   [dummy_material]
       type = GenericConstantMaterial
-      prop_names = 'initial_damage initial_breakage damage_perturbation density'
-      prop_values = '0 0 0 ${density}'
+      prop_names = 'initial_breakage damage_perturbation density'
+      prop_values = '0 0 ${density}'
   []
   [./czm_mat]
       type = SlipWeakeningFrictionczm3dCDBM

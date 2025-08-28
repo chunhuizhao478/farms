@@ -20,6 +20,8 @@ ComputeDamageBreakageStress3DStatic::validParams()
   //to initialize _lambda, _shear_modulus material properties
   InputParameters params = ComputeDamageBreakageStressBase3D::validParams();
   params.addClassDescription("Compute stress using elasticity for small strains");
+  params.addParam<MaterialPropertyName>("lambda_input", "", "Optional material property supplying lambda (overrides lambda_o)");
+  params.addParam<MaterialPropertyName>("shear_modulus_input", "", "Optional material property supplying shear modulus (overrides shear_modulus_o)");
   
   //constant parameters
   params.addRequiredParam<Real>(        "lambda_o", "initial lambda constant value");

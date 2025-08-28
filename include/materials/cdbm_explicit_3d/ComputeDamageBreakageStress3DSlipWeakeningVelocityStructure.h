@@ -12,16 +12,16 @@
 #include "ComputeDamageBreakageStressBase3D.h"
 
 /**
- * ComputeDamageBreakageStress3DSlipWeakening put everything inside the computeQpstress without defining
+ * ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure put everything inside the computeQpstress without defining
  * additional functions
  
  */
-class ComputeDamageBreakageStress3DSlipWeakening : public ComputeDamageBreakageStressBase3D
+class ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure : public ComputeDamageBreakageStressBase3D
 {
 public:
   static InputParameters validParams();
 
-  ComputeDamageBreakageStress3DSlipWeakening(const InputParameters & parameters);
+  ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure(const InputParameters & parameters);
 
   virtual void initialSetup() override;
 
@@ -153,8 +153,5 @@ protected:
   Real _m_exponent;
   Real _strain_rate_hat;
   Real _cd_hat;
-
-  /// option: set Cd = 0 when strain rate < strain_rate_hat (default: false -> use cd_hat)
-  bool _zero_Cd_below_threshold;
 
 };

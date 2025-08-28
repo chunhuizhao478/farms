@@ -7,20 +7,22 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ComputeDamageBreakageStress3DSlipWeakening.h"
+#include "ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure.h"
 #include "NestedSolve.h"
 #include "FEProblem.h"
 
-registerMooseObject("farmsApp", ComputeDamageBreakageStress3DSlipWeakening);
+registerMooseObject("farmsApp", ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure);
 
 InputParameters
-ComputeDamageBreakageStress3DSlipWeakening::validParams()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::validParams()
 { 
   //Note: lambda_o, shear_modulus_o is defined in "ComputeGeneralDamageBreakageStressBase"
   //to initialize _lambda, _shear_modulus material properties
   InputParameters params = ComputeDamageBreakageStressBase3D::validParams();
   params.addClassDescription("Compute stress using elasticity for small strains");
-  
+  params.addParam<MaterialPropertyName>("lambda_input", "", "Optional material property supplying lambda (overrides lambda_o)");
+  params.addParam<MaterialPropertyName>("shear_modulus_input", "", "Optional material property supplying shear modulus (overrides shear_modulus_o)");
+
   //constant parameters
   params.addRequiredParam<Real>(        "lambda_o", "initial lambda constant value");
   params.addRequiredParam<Real>( "shear_modulus_o", "initial shear modulus value");
@@ -45,13 +47,11 @@ ComputeDamageBreakageStress3DSlipWeakening::validParams()
   params.addParam<Real>( "m_exponent", 0.8, "strain rate dependent parameters");
   params.addParam<Real>( "strain_rate_hat", 1e-4, "strain rate dependent parameters");
   params.addParam<Real>( "cd_hat", 1.0, "strain rate dependent parameters");
-  params.addParam<bool>("zero_Cd_below_threshold", false,
-                        "If true, set Cd = 0 when deviatoric strain rate < strain_rate_hat; otherwise use cd_hat.");
 
   return params;
 }
 
-ComputeDamageBreakageStress3DSlipWeakening::ComputeDamageBreakageStress3DSlipWeakening(const InputParameters & parameters)
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure(const InputParameters & parameters)
   : ComputeDamageBreakageStressBase3D(parameters),
     _xi_0(getParam<Real>("xi_0")),
     _xi_d(getParam<Real>("xi_d")),
@@ -96,13 +96,12 @@ ComputeDamageBreakageStress3DSlipWeakening::ComputeDamageBreakageStress3DSlipWea
     _use_strain_rate_dependent_Cd(getParam<bool>("use_strain_rate_dependent_Cd")),
     _m_exponent(getParam<Real>("m_exponent")),
     _strain_rate_hat(getParam<Real>("strain_rate_hat")),
-    _cd_hat(getParam<Real>("cd_hat")),
-    _zero_Cd_below_threshold(getParam<bool>("zero_Cd_below_threshold"))
+    _cd_hat(getParam<Real>("cd_hat"))
 {
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakening::initialSetup()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::initialSetup()
 {
   // _base_name + "unstabilized_deformation_gradient" is only declared if we're
   // using the Lagrangian kernels.  It's okay to invoke this small strain
@@ -117,7 +116,7 @@ ComputeDamageBreakageStress3DSlipWeakening::initialSetup()
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakening::initQpStatefulProperties()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::initQpStatefulProperties()
 {
   _elastic_strain[_qp].zero();
   _stress[_qp].zero();
@@ -127,7 +126,7 @@ ComputeDamageBreakageStress3DSlipWeakening::initQpStatefulProperties()
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakening::computeQpStress()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::computeQpStress()
 { 
   
   /*
@@ -295,7 +294,7 @@ ComputeDamageBreakageStress3DSlipWeakening::computeQpStress()
 }
 
 Real 
-ComputeDamageBreakageStress3DSlipWeakening::computegammar()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::computegammar()
 {
   // Calculate each part of the expression
   Real term1 = -_xi_0 * (-_lambda_o * pow(_xi_0, 2) + 6 * _lambda_o + 2 * _shear_modulus_o);
@@ -312,7 +311,7 @@ ComputeDamageBreakageStress3DSlipWeakening::computegammar()
 }
 
 std::vector<Real>
-ComputeDamageBreakageStress3DSlipWeakening::computecoefficients(Real gamma_damaged_r)
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::computecoefficients(Real gamma_damaged_r)
 {
 
   //compute xi_1
@@ -359,7 +358,7 @@ ComputeDamageBreakageStress3DSlipWeakening::computecoefficients(Real gamma_damag
 
 // Function for alpha_func_root1
 Real 
-ComputeDamageBreakageStress3DSlipWeakening::alphacr_root1(Real xi, Real gamma_damaged_r) {
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::alphacr_root1(Real xi, Real gamma_damaged_r) {
     Real term1 = _lambda_o * pow(xi, 3) - 6 * _lambda_o * _xi_0 + 6 * _shear_modulus_o * xi - 8 * _shear_modulus_o * _xi_0;
     Real term2 = std::sqrt(_lambda_o * _lambda_o * pow(xi, 6) 
                              - 12 * _lambda_o * _lambda_o * pow(xi, 3) * _xi_0 
@@ -377,12 +376,12 @@ ComputeDamageBreakageStress3DSlipWeakening::alphacr_root1(Real xi, Real gamma_da
 
 // Function for alpha_func_root2
 Real 
-ComputeDamageBreakageStress3DSlipWeakening::alphacr_root2(Real xi, Real gamma_damaged_r) {
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::alphacr_root2(Real xi, Real gamma_damaged_r) {
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakening::computeQpTangentModulus(RankFourTensor & tangent, 
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::computeQpTangentModulus(RankFourTensor & tangent, 
                                                       Real I1, 
                                                       Real I2, 
                                                       Real xi, 
@@ -510,7 +509,7 @@ ComputeDamageBreakageStress3DSlipWeakening::computeQpTangentModulus(RankFourTens
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakening::setupInitial()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::setupInitial()
 {
 
   // Real gamma_damaged_r = computegammar();
@@ -625,7 +624,7 @@ ComputeDamageBreakageStress3DSlipWeakening::setupInitial()
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakening::computeDeviatroicStrainRateTensor()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::computeDeviatroicStrainRateTensor()
 {
   //Compute strain rate E_dot = F^T * D * F
   RankTwoTensor E_dot = (_eps_total[_qp] - _eps_total_old[_qp]) / _dt;
@@ -643,15 +642,14 @@ ComputeDamageBreakageStress3DSlipWeakening::computeDeviatroicStrainRateTensor()
 }
 
 void 
-ComputeDamageBreakageStress3DSlipWeakening::computeStrainRateCd()
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructure::computeStrainRateCd()
 {
   //_m_exponent: constant value - default value = 0.8
   //_strain_rate_hat: constant value - default value = 1e-4
   //_cd_hat: constant value - default value = 1
   //_strain_rate: deviatoric strain rate, variable value passed from main app
   if (_deviatroic_strain_rate_old[_qp] < _strain_rate_hat){
-    // if deviatoric strain rate is less than strain_rate_hat, Cd = 0 (optional) or Cd_hat (default)
-    _Cd_mat[_qp] = _zero_Cd_below_threshold ? 0.0 : _cd_hat;
+    _Cd_mat[_qp] = 0; //if deviatoric strain rate is less than strain_rate_hat, Cd = Cd_hat
   }
   else{
     _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_deviatroic_strain_rate_old[_qp]/_strain_rate_hat)) * _cd_hat;

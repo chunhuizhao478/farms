@@ -17,6 +17,8 @@ ComputeGeneralDamageBreakageStressBase3D::validParams()
   InputParameters params = Material::validParams();
   params.addRequiredParam<Real>("lambda_o", "initial lambda value (first lame constant) [Pa]");
   params.addRequiredParam<Real>("shear_modulus_o", "initial shear modulus value (second lame constant) [Pa]");
+  params.addParam<MaterialPropertyName>("lambda_input", "", "Optional material property supplying lambda (overrides lambda_o)");
+  params.addParam<MaterialPropertyName>("shear_modulus_input", "", "Optional material property supplying shear modulus (overrides shear_modulus_o)");
   params.addParam<std::string>("base_name",
                                "Optional parameter that allows the user to define "
                                "multiple mechanics material systems on the same "
@@ -47,12 +49,28 @@ ComputeGeneralDamageBreakageStressBase3D::ComputeGeneralDamageBreakageStressBase
     _epsilon_eq(declareProperty<Real>("epsilon_eq")),
     _lambda_o(getParam<Real>("lambda_o")),
     _shear_modulus_o(getParam<Real>("shear_modulus_o")),
+    _lambda_input_prop_ptr(nullptr),
+    _mu_input_prop_ptr(nullptr),
     _sts_initial_tensor(declareProperty<RankTwoTensor>("sts_initial_tensor"))
 {
+  const auto lambda_name = isParamValid("lambda_input") ? getParam<MaterialPropertyName>("lambda_input") : MaterialPropertyName("");
+  const auto mu_name = isParamValid("shear_modulus_input") ? getParam<MaterialPropertyName>("shear_modulus_input") : MaterialPropertyName("");
+  if (!lambda_name.empty() && !mu_name.empty())
+  {
+    _lambda_input_prop_ptr = &getMaterialPropertyByName<Real>(lambda_name);
+    _mu_input_prop_ptr = &getMaterialPropertyByName<Real>(mu_name);
+    _use_input_props = true;
+  }
 }
 
 void
 ComputeGeneralDamageBreakageStressBase3D::computeQpProperties()
 {
+  // If using input properties, capture current qp values into the _lambda_o and _shear_modulus_o
+  if (_use_input_props)
+  {
+    _lambda_o = (*_lambda_input_prop_ptr)[_qp];
+    _shear_modulus_o = (*_mu_input_prop_ptr)[_qp];
+  }
   computeQpStress();
 }
