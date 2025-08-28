@@ -267,15 +267,18 @@ top_right2 = '2e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL      
   [] 
-  [biot_modulus_aux]
-    order = CONSTANT
-    family = MONOMIAL
-  []   
-  # fluid compressibility energy density: 0.5 * p^2 / M
-  [fluid_compressibility_energy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
+  # [strain_increment_00]
+  #   order = CONSTANT
+  #   family = MONOMIAL   
+  # []
+  # [strain_increment_11]
+  #   order = CONSTANT
+  #   family = MONOMIAL   
+  # []  
+  # [strain_increment_22]
+  #   order = CONSTANT
+  #   family = MONOMIAL   
+  # []    
 []
 
 [AuxKernels]
@@ -370,12 +373,28 @@ top_right2 = '2e-4 0.0025 0'
     fluid_phase = 0
     gravity = '0 0 0'
   []
-  [biot_modulus_aux]
-    type = MaterialRealAux
-    variable = biot_modulus_aux
-    property = PorousFlow_constant_biot_modulus_qp
-    execute_on = 'INITIAL TIMESTEP_END'
-  []
+  # #### get strain increment
+  # [strain_increment_00]
+  #   type = MaterialRankTwoTensorAux
+  #   property = strain_increment  
+  #   variable = strain_increment_00
+  #   i = 0
+  #   j = 0
+  # []
+  # [strain_increment_11]
+  #   type = MaterialRankTwoTensorAux
+  #   property = strain_increment  
+  #   variable = strain_increment_11
+  #   i = 1
+  #   j = 1
+  # []
+  # [strain_increment_22]
+  #   type = MaterialRankTwoTensorAux
+  #   property = strain_increment  
+  #   variable = strain_increment_22
+  #   i = 2
+  #   j = 2
+  # []
 []
 
 [Functions]
@@ -391,7 +410,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 100e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -797,7 +816,7 @@ top_right2 = '2e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_compressibility_energy_total damping_work confinement_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total'
   []
 []
 
@@ -959,60 +978,40 @@ top_right2 = '2e-4 0.0025 0'
 []
 ###############################################################################
 
-# fluid compressibility energy
+# fluid energy dissipation
 ###############################################################################
+[AuxVariables]
+  [fluid_incremental_elastic_energy]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+
 [AuxKernels]
-  [fluid_compressibility_energy]
-    type = ParsedAux
-    variable = fluid_compressibility_energy
-    coupled_variables = 'pp biot_modulus_aux'
-    expression = '0.5 * pp * pp / biot_modulus_aux'
+  [fluid_incremental_elastic_energy_per_vol]
+      type = ParsedAux
+      variable = fluid_incremental_elastic_energy
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
+      expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
   []
 []
 
 [Postprocessors]
-  [fluid_compressibility_energy_total]
+  [fluid_incremental_elastic_energy]
       type = ElementIntegralVariablePostprocessor
-      variable = fluid_compressibility_energy
+      variable = fluid_incremental_elastic_energy
   []
-[]
-###############################################################################
-
-
-# fluid energy dissipation
-###############################################################################
-# [AuxVariables]
-#   [fluid_incremental_elastic_energy]
-#     order = CONSTANT
-#     family = MONOMIAL
-#   []
-# []
-
-# [AuxKernels]
-#   [fluid_incremental_elastic_energy_per_vol]
-#       type = ParsedAux
-#       variable = fluid_incremental_elastic_energy
-#       coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
-#       expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
-#   []
-# []
-
-# [Postprocessors]
-#   [fluid_incremental_elastic_energy]
-#       type = ElementIntegralVariablePostprocessor
-#       variable = fluid_incremental_elastic_energy
-#   []
-#   [fluid_incremental_elastic_energy_total]
-#     type = CumulativeValuePostprocessor
-#     postprocessor = fluid_incremental_elastic_energy
-#   []  
-#   [fluid_dissipated_energy_total]
-#     type = ParsedPostprocessor
-#     pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
-#     expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
-#     execute_on = 'INITIAL TIMESTEP_END'
-#   []  
-# []  
+  [fluid_incremental_elastic_energy_total]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_incremental_elastic_energy
+  []  
+  [fluid_dissipated_energy_total]
+    type = ParsedPostprocessor
+    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
+    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
+    execute_on = 'INITIAL TIMESTEP_END'
+  []  
+[]  
 ###############################################################################
 
 # fluid driving energy
@@ -1030,8 +1029,8 @@ top_right2 = '2e-4 0.0025 0'
 [Postprocessors]
   [full_energy]
     type = ParsedPostprocessor
-    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_compressibility_energy_total'
-    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_compressibility_energy_total'
+    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
+    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   # [full_energy_2]
