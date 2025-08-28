@@ -506,15 +506,15 @@ fault_center = '0 0 -10000'
   type = Steady
 
   nl_abs_tol = 1E-12
-  nl_rel_tol = 1E-12
+  nl_rel_tol = 1E-10
   l_tol = 1E-7
   l_max_its = 200
   nl_max_its = 400
-  line_search  = 'basic'
-  automatic_scaling = true
+  line_search  = 'bt'
+  # automatic_scaling = true
   verbose = true
-  petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
-  petsc_options_value = ' asm      2              hypre             gmres     200'
+  petsc_options_iname = '-ksp_type -pc_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  True'
 []
 
 [Outputs]
