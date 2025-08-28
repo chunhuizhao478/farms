@@ -217,18 +217,19 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
     _crack_rotation[_qp] = _rotation_increment[_qp] * _crack_rotation[_qp];
   }
 
-  // (9) Elastic energy bookkeeping (Chunhui):
-  // dEa = 1/2 * (sigma_old : dE + sigma_new : dE)
-  // Ei  = 1/2 * sigma_new : epsilon
+  // (9) Mechanical energy bookkeeping (Chunhui):
+  // dEa = 1/2 * (sigma_old : dE + sigma_new : dE)  [trapezoidal work increment]
+  // Ei  = psi_e (model free energy density with spectral split)
   // Ea  = Ea_old + dEa
-  // Fracture energy Ediss = Ea - Ei
+  // Fracture energy Ediss = Ea - Ei = Ea - psi_e
   const Real dEa = 0.5 * (_stress_old[_qp].doubleContraction(_strain_increment[_qp]) +
                           _stress[_qp].doubleContraction(_strain_increment[_qp]));
-  const Real Ei = 0.5 * _stress[_qp].doubleContraction(_elastic_strain[_qp]);
   const Real Ea = _accumulated_elastic_energy_old[_qp] + dEa;
   _accumulated_elastic_energy[_qp] = Ea;
-  _instant_elastic_energy[_qp] = Ei;
-  _fracture_energy[_qp] = Ea - Ei;
+  // Instantaneous stored elastic energy density consistent with spectral degradation
+  _instant_elastic_energy[_qp] = _psie[_qp];
+  // Cumulative fracture/dissipated energy density (clamped to avoid tiny negatives)
+  _fracture_energy[_qp] = std::max(Ea - _psie[_qp], 0.0);
 
   // Update solid bulk compliance
   updateSolidBulkCompliance();
