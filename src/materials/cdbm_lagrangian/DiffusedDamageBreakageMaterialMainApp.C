@@ -428,8 +428,8 @@ DiffusedDamageBreakageMaterialMainApp::updateporogranular()
 
  // Compute permeability for solid phase
   // k = k_cr * (φ/φ_0)^n * (DH/DH_0)^2  where n is typically 3
-  Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0) * pow(DH/_DHo, 2.0);
-  // Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0);
+  // Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0) * pow(DH/_DHo, 2.0);
+  Real perm_g = _perm_cr[_qp] * pow(porosity/_phi_cr[_qp], 3.0);
 
   // Save granular phase properties
   _Biot_coeff_g[_qp] = alpha_g;
