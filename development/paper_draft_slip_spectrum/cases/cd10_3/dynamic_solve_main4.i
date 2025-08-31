@@ -141,7 +141,7 @@
     []
     #spatial damage parameters
     [cg_aux]
-        order = CONSTANT
+        order = FIRST
         family = LAGRANGE
     []
     #
