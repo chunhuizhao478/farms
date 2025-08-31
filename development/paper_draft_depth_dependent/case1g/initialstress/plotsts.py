@@ -21,6 +21,23 @@ vp  = np.interp(depths, depth_knots, vp_knots,  left=vp_knots[0],  right=vp_knot
 vs  = np.interp(depths, depth_knots, vs_knots,  left=vs_knots[0],  right=vs_knots[-1])
 rho_depth = np.interp(depths, depth_knots, rho_knots, left=rho_knots[0], right=rho_knots[-1])
 
+# ------------------------
+# Plot depth variation of Vs, Vp, and density
+# ------------------------
+plt.figure(figsize=(6, 8))
+plt.plot(vs / 1e3, depths / 1e3, label='Vs (km/s)', color='r')
+plt.plot(vp / 1e3, depths / 1e3, label='Vp (km/s)', color='b')
+plt.plot(rho_depth / 1e3, depths / 1e3, label='Density (g/cc)', color='k', linestyle='--')  # 1 g/cc = 1000 kg/m^3
+plt.gca().invert_yaxis()
+plt.ylabel('Depth (km)', fontsize=12)
+plt.xlabel('Value (km/s or g/cc)', fontsize=12)
+plt.title('Seismic Properties vs Depth', fontsize=14)
+plt.legend(loc='best')
+plt.grid(True)
+plt.tight_layout()
+plt.savefig('seismic_properties_vs_depth.png', dpi=300)
+plt.show()
+
 # Derived elastic constants (arrays)
 mu_depth   = rho_depth * vs**2
 lmbda_depth = np.maximum(rho_depth * vp**2 - 2.0 * mu_depth, 0.0)
