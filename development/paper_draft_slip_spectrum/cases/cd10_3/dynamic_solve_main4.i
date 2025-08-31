@@ -127,7 +127,7 @@
         family = MONOMIAL
     []
     [structural_stress_coefficient_aux]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     #
