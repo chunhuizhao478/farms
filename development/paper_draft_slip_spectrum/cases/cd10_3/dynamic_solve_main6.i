@@ -123,7 +123,7 @@
         family = MONOMIAL
     []
     [deviatroic_strain_rate_aux]
-        order = CONSTANT
+        order = FIRST
         family = MONOMIAL
     []
     [structural_stress_coefficient_aux]
