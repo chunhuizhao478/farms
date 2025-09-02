@@ -60,6 +60,9 @@ FarmsComputeSmearedCrackingStressGradsSpectral::validParams()
   params.addParam<Real>("wc", -1.0, "ultimate crack width for Darcy-Poiseuille model");
   params.addParam<Real>("perm_exponent", -1.0,
                         "Exponent for the Darcy-Poiseuille model for the effective permeability");
+  // Gradient damage coupling term: 0.5 * h * (e - e_tilde)^2
+  params.addParam<Real>("h", 0.0, "Gradient-damage coupling modulus h for 0.5*h*(e - e_tilde)^2");
+  params.addParam<Real>("fd_delta", 1e-8, "Finite-difference step for equivalent strain derivatives");
   return params;
 }
 
@@ -99,7 +102,9 @@ FarmsComputeSmearedCrackingStressGradsSpectral::FarmsComputeSmearedCrackingStres
     _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
     _wc(getParam<Real>("wc")),
     _perm_exponent(getParam<Real>("perm_exponent")),
-    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
+  _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged")),
+  _h(getParam<Real>("h")),
+  _fd_delta(getParam<Real>("fd_delta"))
 {
   _local_elastic_vector.resize(9);
 }
@@ -192,6 +197,12 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
   _psie_active[_qp] = psie_active;
   _psie[_qp] = g * psie_active + psie_inactive;
 
+  // (5c) Add gradient-damage energy 0.5 * h * (e - e_tilde)^2
+  const Real e_local = _eqstrain_local[_qp];
+  const Real e_tilde = _eqstrain_nonlocal[_qp];
+  if (_h > 0.0)
+    _psie[_qp] += 0.5 * _h * (e_local - e_tilde) * (e_local - e_tilde);
+
   // (6) Consistent tangent (matches NDSmallDeformationIsotropicElasticity spectral path)
   // C_intact = K I⊗I + 2G (I4_sym − 1/3 I⊗I)
   RankFourTensor C_intact = K * I4 + 2.0 * G * (I4_sym - I4 / 3.0);
@@ -207,8 +218,24 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
   // C_pos = λ H(tr ε) I⊗I + 2G P⁺
   const RankFourTensor C_pos = lambda * H_tr * I4 + 2.0 * G * P_pos;
 
-  // Final Jacobian: C = C_intact + (g - 1) C_pos
+  // Final Jacobian base: C = C_intact + (g - 1) C_pos
   _Jacobian_mult[_qp] = C_intact + (g - 1.0) * C_pos;
+
+  // (6b) Add gradient-damage stress and tangent per Appendix B
+  if (_h > 0.0)
+  {
+    // Derivatives of equivalent strain w.r.t. epsilon (FD-based)
+    RankTwoTensor de_dE;          // gradient tensor
+    RankFourTensor d2e_dEdE;      // Hessian tensor
+    equivalentStrainDerivativesFD(_elastic_strain[_qp], _fd_delta, de_dE, d2e_dEdE);
+
+    // Stress contribution: h (e - e_tilde) de/dE
+    const Real diff = e_local - e_tilde;
+    _stress[_qp] += _h * diff * de_dE;
+
+    // Tangent contribution: h (de/dE ⊗ de/dE) + h (e - e_tilde) d^2e/dE^2
+    _Jacobian_mult[_qp] += _h * de_dE.outerProduct(de_dE) + _h * diff * d2e_dEdE;
+  }
 
   // (7) Finite-strain rotation if requested (keeps your existing update)
   if (_perform_finite_strain_rotations)
@@ -236,6 +263,96 @@ FarmsComputeSmearedCrackingStressGradsSpectral::computeQpStress()
 
   // (8) Permeability update stays the same and uses _crack_damage, _crack_rotation
   updatePermeabilityForCracking();
+}
+
+// Equivalent strain from tensor: e = sqrt(sum_i <eps_i>^2)
+Real
+FarmsComputeSmearedCrackingStressGradsSpectral::equivalentStrainFromTensor(const RankTwoTensor & eps) const
+{
+  RankTwoTensor eigvecs;
+  std::vector<Real> eigvals(LIBMESH_DIM);
+  eps.symmetricEigenvaluesEigenvectors(eigvals, eigvecs);
+  Real acc = 0.0;
+  for (unsigned i = 0; i < 3; ++i)
+  {
+    const Real pi = (eigvals[i] > 0.0) ? eigvals[i] : 0.0;
+    acc += pi * pi;
+  }
+  return std::sqrt(acc);
+}
+
+// Symmetric basis tensor for (i,j)
+RankTwoTensor
+FarmsComputeSmearedCrackingStressGradsSpectral::symmetricBasis(unsigned int i, unsigned int j) const
+{
+  RankTwoTensor B; // initialized to zero
+  if (i == j)
+    B(i, j) = 1.0;
+  else
+  {
+    B(i, j) = 0.5;
+    B(j, i) = 0.5;
+  }
+  return B;
+}
+
+// Finite-difference derivatives of equivalent strain wrt epsilon
+void
+FarmsComputeSmearedCrackingStressGradsSpectral::equivalentStrainDerivativesFD(const RankTwoTensor & eps,
+                                                                              Real delta,
+                                                                              RankTwoTensor & grad,
+                                                                              RankFourTensor & hess) const
+{
+  // Initialize outputs
+  grad.zero();
+  hess.zero();
+
+  // Build list of symmetric index pairs (i<=j)
+  std::vector<std::pair<unsigned, unsigned>> idx;
+  idx.reserve(6);
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = i; j < 3; ++j)
+      idx.emplace_back(i, j);
+
+  // Central differences for gradient
+  for (const auto & ij : idx)
+  {
+    const unsigned i = ij.first, j = ij.second;
+    const RankTwoTensor Bij = symmetricBasis(i, j);
+    RankTwoTensor eps_p = eps + delta * Bij;
+    RankTwoTensor eps_m = eps - delta * Bij;
+    const Real e_p = equivalentStrainFromTensor(eps_p);
+    const Real e_m = equivalentStrainFromTensor(eps_m);
+    const Real d = 0.5 * (e_p - e_m) / delta;
+    grad(i, j) = d;
+    grad(j, i) = d;
+  }
+
+  // Second derivatives (mixed) via 4-point stencil
+  for (const auto & ij : idx)
+  {
+    const unsigned i = ij.first, j = ij.second;
+    const RankTwoTensor Bij = symmetricBasis(i, j);
+    for (const auto & kl : idx)
+    {
+      const unsigned k = kl.first, l = kl.second;
+      const RankTwoTensor Bkl = symmetricBasis(k, l);
+
+      const RankTwoTensor eps_pp = eps + delta * Bij + delta * Bkl;
+      const RankTwoTensor eps_pm = eps + delta * Bij - delta * Bkl;
+      const RankTwoTensor eps_mp = eps - delta * Bij + delta * Bkl;
+      const RankTwoTensor eps_mm = eps - delta * Bij - delta * Bkl;
+
+      const Real e_pp = equivalentStrainFromTensor(eps_pp);
+      const Real e_pm = equivalentStrainFromTensor(eps_pm);
+      const Real e_mp = equivalentStrainFromTensor(eps_mp);
+      const Real e_mm = equivalentStrainFromTensor(eps_mm);
+
+      const Real d2 = (e_pp - e_pm - e_mp + e_mm) / (4.0 * delta * delta);
+      // Accumulate d2 * (Bij ⊗ Bkl)
+      hess += d2 * Bij.outerProduct(Bkl);
+    }
+  }
 }
 
 void

@@ -5,6 +5,8 @@ ft = 160e6 ##computed from pf
 density = 2600
 # dx_min = 5e-5
 
+h_modulus = '${fparse 1e-9 * E}'
+
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  1e-4 
@@ -20,7 +22,7 @@ c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent 
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.11
+hht_alpha = 0
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
@@ -58,30 +60,30 @@ hht_alpha = 0.11
 #   []
 # []
 
-# [MultiApps]
-#   [fracture]
-#     type = TransientMultiApp
-#     input_files = nonlocal_subapp2.i
-#     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-#     execute_on = 'TIMESTEP_END'
-#     clone_parent_mesh = true
-#   []
-# []
+[MultiApps]
+  [fracture]
+    type = TransientMultiApp
+    input_files = nonlocal_subapp.i
+    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+    execute_on = 'TIMESTEP_END'
+    clone_parent_mesh = true
+  []
+[]
 
-# [Transfers]
-#   [from_d]
-#     type = MultiAppCopyTransfer
-#     from_multi_app = 'fracture'
-#     variable = nonlocal_eqstrain
-#     source_variable = nonlocal_eqstrain
-#   []
-#   [to_psie_active]
-#     type = MultiAppCopyTransfer
-#     to_multi_app = 'fracture'
-#     variable = eqstrain_local
-#     source_variable = eqstrain_local
-#   []
-# []
+[Transfers]
+  [from_d]
+    type = MultiAppCopyTransfer
+    from_multi_app = 'fracture'
+    variable = nonlocal_eqstrain
+    source_variable = nonlocal_eqstrain
+  []
+  [to_psie_active]
+    type = MultiAppCopyTransfer
+    to_multi_app = 'fracture'
+    variable = eqstrain_local
+    source_variable = eqstrain_local
+  []
+[]
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -135,10 +137,6 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   [] 
-  [nonlocal_eqstrain]
-      order = FIRST
-      family = LAGRANGE
-  [] 
 []
 
 [AuxVariables]
@@ -163,10 +161,10 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   []
-  # [nonlocal_eqstrain]
-  #     order = FIRST
-  #     family = LAGRANGE
-  # [] 
+  [nonlocal_eqstrain]
+      order = FIRST
+      family = LAGRANGE
+  [] 
   [eqstrain_local]
     family = MONOMIAL
     order = CONSTANT
@@ -305,23 +303,23 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-[Kernels]
-  [react_nonlocal]
-    type = Reaction
-    variable = nonlocal_eqstrain
-    rate = 1.0
-  []
-  [diffusion_nonlocal]
-    type = LocalizingCoefDiffusion
-    variable = nonlocal_eqstrain
-    coef = ${fparse l*l}
-  []
-  [reaction_local]
-    type = CoupledElkFixedLocalEqstrainForce
-    variable = nonlocal_eqstrain
-    eqstrain_local = eqstrain_local
-  []    
-[]
+# [Kernels]
+#   [react_nonlocal]
+#     type = Reaction
+#     variable = nonlocal_eqstrain
+#     rate = 1.0
+#   []
+#   [diffusion_nonlocal]
+#     type = LocalizingCoefDiffusion
+#     variable = nonlocal_eqstrain
+#     coef = ${fparse l*l}
+#   []
+#   [reaction_local]
+#     type = CoupledElkFixedLocalEqstrainForce
+#     variable = nonlocal_eqstrain
+#     eqstrain_local = eqstrain_local
+#   []    
+# []
 
 # [Kernels]
 #   [react_nonlocal]
@@ -460,6 +458,7 @@ top_right2 = '2e-4 0.0025 0'
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'stress'
+    h = ${h_modulus}
     outputs = exodus
   [../]
   # [strain]

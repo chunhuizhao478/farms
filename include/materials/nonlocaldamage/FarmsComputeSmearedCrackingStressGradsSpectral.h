@@ -61,6 +61,25 @@ protected:
   // Spectral decomposition for positive part of a symmetric tensor
   RankTwoTensor spectralPositivePart(const RankTwoTensor & A) const;
 
+  // Equivalent strain from a symmetric tensor (Mazars-type: sqrt(sum <eps_i>^2))
+  Real equivalentStrainFromTensor(const RankTwoTensor & eps) const;
+
+  // Build symmetric basis tensor E^(ij) with 1 on diagonal, 1/2 on symmetric off-diagonals
+  RankTwoTensor symmetricBasis(unsigned int i, unsigned int j) const;
+
+  // Finite-difference derivatives of equivalent strain wrt strain tensor
+  // Returns gradient G such that de ≈ G : dε, and Hessian H such that
+  // d^2 e ≈ (H :: (dε ⊗ dε)) where :: is double contraction on both pairs
+  void equivalentStrainDerivativesFD(const RankTwoTensor & eps,
+                                     Real delta,
+                                     RankTwoTensor & grad,
+                                     RankFourTensor & hess) const;
+
+  // Analytical derivatives using spectral projectors (preferred)
+  void equivalentStrainDerivativesAnalytical(const RankTwoTensor & eps,
+                                             RankTwoTensor & grad,
+                                             RankFourTensor & hess) const;
+
   // @{ Strain energy density outputs (degraded)
   // psie_active is the tensile (active) part of the intact energy
   // psie = g * psie_active + psie_inactive, where g = 1 - omega
@@ -140,5 +159,10 @@ protected:
 
   // Damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
   MaterialProperty<Real> & _solid_bulk_compliance_damaged;
+
+  // Gradient damage coupling modulus (energy term 1/2 h (e - e~)^2)
+  Real _h;
+  // Finite-difference step for equivalent strain derivatives
+  Real _fd_delta;
 
 };

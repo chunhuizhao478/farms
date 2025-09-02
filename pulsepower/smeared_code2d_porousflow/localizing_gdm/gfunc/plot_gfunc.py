@@ -30,7 +30,7 @@ if __name__ == "__main__":
             g = g_func(d, eta, R)
             leff_ratio = np.sqrt(np.clip(g, 0.0, None))  # l_eff / l
             plt.plot(d, g, lw=2, label=f"g(d), eta={eta}, R={R}")
-            plt.plot(d, leff_ratio, lw=1.5, ls="--", label=f"sqrt(g), eta={eta}, R={R}")
+            # plt.plot(d, leff_ratio, lw=1.5, ls="--", label=f"sqrt(g), eta={eta}, R={R}")
 
     plt.xlabel("damage d")
     plt.ylabel("value")
