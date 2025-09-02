@@ -46,11 +46,11 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 1e3
+    Cd_constant = -1
 
     #strain rate dependent Cd options
     m_exponent = 0.8
-    strain_rate_hat = 1e-4
+    strain_rate_hat = 2.5e-4
     cd_hat = 1e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -227,8 +227,9 @@
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
         #use strain rate dependent Cd
-        use_cd_strain_dependent = false
+        use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
+        zero_cd_below_hat = true
     []
     #add shear perturbation to the system
     [damage_perturbation]

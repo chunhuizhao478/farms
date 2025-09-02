@@ -151,19 +151,19 @@
     []
     #outputs
     [pk2_stress_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [green_lagrange_elastic_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [plastic_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL       
     []
     [total_lagrange_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
 []
@@ -471,7 +471,7 @@
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
-        constant_dt_on_overspeed = 1e-2
+        constant_dt_on_overspeed = 5e-2
         maxvelx = 'maxvelx'
         maxvely = 'maxvely'
         maxvelz = 'maxvelz'
@@ -676,7 +676,7 @@
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub5.i'
+        input_files = 'dynamic_solve_sub4.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true

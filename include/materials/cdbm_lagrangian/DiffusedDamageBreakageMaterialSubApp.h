@@ -104,4 +104,7 @@ protected:
   const VariableValue & _cd_aux;
   Real _Cd_constant_value; //constant Cd value, used when not using spatial Cd
 
+  // option: set Cd = 0 when strain_rate < strain_rate_hat
+  bool _zero_cd_below_hat = false;
+
 };

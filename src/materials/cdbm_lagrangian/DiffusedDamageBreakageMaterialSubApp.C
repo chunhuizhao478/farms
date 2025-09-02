@@ -58,7 +58,9 @@ DiffusedDamageBreakageMaterialSubApp::validParams()
   params.addParam<bool>("use_spatial_cd", false, "Use spatial Cd from an auxiliary variable");
   params.addCoupledVar("cd_aux", "Auxiliary variable for spatially varying Cd");
   // Change the Cd_constant parameter from required to optional
-  params.addParam<Real>("Cd_constant", 0.0, "Coefficient gives positive damage evolution (used when not using spatial Cd)");  
+  params.addParam<Real>("Cd_constant", 0.0, "Coefficient gives positive damage evolution (used when not using spatial Cd)");
+  // Option: zero Cd when strain_rate < strain_rate_hat
+  params.addParam<bool>("zero_cd_below_hat", false, "If true, set Cd = 0 when strain_rate < strain_rate_hat; otherwise use cd_hat");
   return params;
 }
 
@@ -127,6 +129,8 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _cd_aux(_use_spatial_cd ? coupledValue("cd_aux") : _zero),
   _Cd_constant_value(_use_spatial_cd ? 0.0 : getParam<Real>("Cd_constant"))
 {
+  // read option to zero Cd below threshold
+  _zero_cd_below_hat = getParam<bool>("zero_cd_below_hat");
   //check strain rate dependent Cd options
   if (_use_cd_strain_dependent && (_strain_rate_hat < 0 || _cd_hat < 0 || _m_exponent < 0)){
     mooseError("Strain rate dependent Cd options are not set correctly");
@@ -303,7 +307,8 @@ DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
   //_cd_hat: constant value - default value = 1
   //_strain_rate: deviatoric strain rate, variable value passed from main app
   if (_strain_rate[_qp] < _strain_rate_hat){
-    _Cd_mat[_qp] = _cd_hat; //if deviatoric strain rate is less than strain_rate_hat, Cd = Cd_hat
+    // If enabled, zero Cd below threshold; otherwise use legacy Cd_hat
+    _Cd_mat[_qp] = _zero_cd_below_hat ? 0.0 : _cd_hat;
   }
   else{
     _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate[_qp]/_strain_rate_hat)) * _cd_hat;
