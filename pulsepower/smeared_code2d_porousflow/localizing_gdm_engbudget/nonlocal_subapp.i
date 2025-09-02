@@ -119,7 +119,7 @@ top_right2 = '2e-4 0.0025 0'
 [Executioner]
   type = Transient
 
-  solve_type = JFNK
+  solve_type = NEWTON
 
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '

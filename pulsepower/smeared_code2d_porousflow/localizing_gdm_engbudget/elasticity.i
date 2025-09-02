@@ -6,7 +6,7 @@ full_input_energy_static = 1.768381e-03
 #----------------------------------------------------#
 E = 50e9
 nu = 0.373
-ft = 137e6 ##computed from pf
+ft = 160e6 ##computed from pf
 Gc_const = 100
 density = 2600
 # dx_min = 5e-5
