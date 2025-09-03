@@ -299,89 +299,9 @@ top_right2 = '2e-4 0.0025 0'
     # mass_damping_coefficient = 0.1
     # stiffness_damping_coefficient = 0.1
     density = ${density}
-    strain = FINITE
+    strain = SMALL
   []
 []
-
-# [Kernels]
-#   [react_nonlocal]
-#     type = Reaction
-#     variable = nonlocal_eqstrain
-#     rate = 1.0
-#   []
-#   [diffusion_nonlocal]
-#     type = LocalizingCoefDiffusion
-#     variable = nonlocal_eqstrain
-#     coef = ${fparse l*l}
-#   []
-#   [reaction_local]
-#     type = CoupledElkFixedLocalEqstrainForce
-#     variable = nonlocal_eqstrain
-#     eqstrain_local = eqstrain_local
-#   []    
-# []
-
-# [Kernels]
-#   [react_nonlocal]
-#     type = CoupledReaction
-#     variable = nonlocal_eqstrain
-#     rate = 1.0
-#     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
-#   []
-#   [diffusion_nonlocal]
-#     type = CoefDiffusion
-#     variable = nonlocal_eqstrain
-#     coef = ${fparse 1.0}
-#   []
-#   [reaction_local]
-#     type = CoupledElkLocalEqstrainForce
-#     variable = nonlocal_eqstrain
-#     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
-#   []    
-# []
-
-# [Kernels]
-#   [dispkernel_x]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_x
-#     component = 0
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [dispkernel_y]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_y
-#     component = 1
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [inertia_x]
-#     type = InertialForce
-#     variable = disp_x
-#     velocity = vel_x
-#     acceleration = accel_x
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-#   [inertia_y]
-#     type = InertialForce
-#     variable = disp_y
-#     velocity = vel_y
-#     acceleration = accel_y
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-# []
 
 [BCs]
   #confinement
@@ -451,7 +371,7 @@ top_right2 = '2e-4 0.0025 0'
     poissons_ratio = ${nu}
   [../]
   [./elastic_stress]
-    type = FarmsComputeSmearedCrackingStressGradsSpectral
+    type = FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
     paramB = 500
