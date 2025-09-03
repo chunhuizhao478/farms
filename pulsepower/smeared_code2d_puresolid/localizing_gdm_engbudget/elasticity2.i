@@ -511,10 +511,10 @@ top_right2 = '2e-4 0.0025 0'
   # dt = 0.5e-7
   end_time = 100e-5
 
-  # fixed_point_max_its = 10
-  # accept_on_max_fixed_point_iteration = false
-  # fixed_point_rel_tol = 1e-6
-  # fixed_point_abs_tol = 1e-8
+  fixed_point_max_its = 10
+  accept_on_max_fixed_point_iteration = false
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
