@@ -64,8 +64,8 @@ top_right2 = '2e-4 0.0025 0'
     type = LocalizingCoefDiffusion
     variable = nonlocal_eqstrain
     coef = ${fparse l*l}
-    R = 0.0001
-    eta = 5
+    R = 0.0005
+    eta = 100
   []
   [reaction_local]
     type = CoupledElkFixedLocalEqstrainForce
