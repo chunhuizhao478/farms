@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 160e6 ##computed from pf
+ft = 137e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -24,66 +24,6 @@ newmark_beta = 0.25
 newmark_gamma = 0.5
 hht_alpha = 0
 #----------------------------------------------------#
-
-#fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
-
-# [Adaptivity]
-#   max_h_level = 5
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.01
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []   
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#       [] 
-#   []
-# []
-
-# [MultiApps]
-#   [fracture]
-#     type = TransientMultiApp
-#     input_files = nonlocal_subapp2.i
-#     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-#     execute_on = 'TIMESTEP_END'
-#     clone_parent_mesh = true
-#   []
-# []
-
-# [Transfers]
-#   [from_d]
-#     type = MultiAppCopyTransfer
-#     from_multi_app = 'fracture'
-#     variable = nonlocal_eqstrain
-#     source_variable = nonlocal_eqstrain
-#   []
-#   [to_psie_active]
-#     type = MultiAppCopyTransfer
-#     to_multi_app = 'fracture'
-#     variable = eqstrain_local
-#     source_variable = eqstrain_local
-#   []
-# []
 
 [GlobalParams]
   displacements = 'disp_x disp_y'
@@ -288,7 +228,7 @@ top_right2 = '2e-4 0.0025 0'
     # mass_damping_coefficient = 0.1
     # stiffness_damping_coefficient = 0.1
     density = ${density}
-    strain = FINITE
+    strain = SMALL
   []
 []
 
@@ -302,6 +242,8 @@ top_right2 = '2e-4 0.0025 0'
     type = LocalizingCoefDiffusion
     variable = nonlocal_eqstrain
     coef = ${fparse l*l}
+    R = 0.005
+    eta = 5    
   []
   [reaction_local]
     type = CoupledElkFixedLocalEqstrainForce
@@ -374,7 +316,7 @@ top_right2 = '2e-4 0.0025 0'
     poissons_ratio = ${nu}
   [../]
   [./elastic_stress]
-    type = FarmsComputeSmearedCrackingStressGradsSpectral
+    type = FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
     paramB = 500
