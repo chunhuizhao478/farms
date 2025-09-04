@@ -456,7 +456,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 40
   print_linear_residuals = false
   [checkpoint]
       type = Checkpoint
