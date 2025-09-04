@@ -6,7 +6,7 @@ full_input_energy_static = 1.768381e-03
 #----------------------------------------------------#
 E = 50e9
 nu = 0.373
-ft = 160e6 ##computed from pf
+ft = 137e6 ##computed from pf
 Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -112,7 +112,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = nonlocal_subapp1.i
+    input_files = nonlocal_subapp.i
     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -428,7 +428,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -570,7 +570,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Materials]
   [strain]
-    type = ComputeSmallStrain
+    type = ComputeSmallStrain    
     outputs = exodus
   []
   [./elasticity_tensor]
@@ -792,7 +792,7 @@ top_right2 = '2e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total external_work confinement_work damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total'
   []
 []
 
@@ -884,8 +884,8 @@ top_right2 = '2e-4 0.0025 0'
 [Postprocessors]
   [solid_elastic_energy_total]
       type = ParsedPostprocessor
-      expression = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
-      pp_names = 'solid_elastic_energy_dynamic'
+      expression = 'solid_elastic_energy_dynamic'
+      pp_names = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
