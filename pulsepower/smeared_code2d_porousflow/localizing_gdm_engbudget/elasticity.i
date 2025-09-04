@@ -6,7 +6,7 @@ full_input_energy_static = 1.768381e-03
 #----------------------------------------------------#
 E = 50e9
 nu = 0.373
-ft = 160e6 ##computed from pf
+ft = 137e6 ##computed from pf
 Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -428,7 +428,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -570,8 +570,7 @@ top_right2 = '2e-4 0.0025 0'
 
 [Materials]
   [strain]
-    type = ComputeFiniteStrain
-    output_properties = 'strain_increment'
+    type = ComputeSmallStrain    
     outputs = exodus
   []
   [./elasticity_tensor]
@@ -580,7 +579,7 @@ top_right2 = '2e-4 0.0025 0'
     poissons_ratio = ${nu}
   [../]
   [./elastic_stress]
-    type = FarmsComputeSmearedCrackingStressGradsSpectral
+    type = FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
     paramB = 500
@@ -886,7 +885,7 @@ top_right2 = '2e-4 0.0025 0'
   [solid_elastic_energy_total]
       type = ParsedPostprocessor
       expression = 'solid_elastic_energy_dynamic'
-      pp_names = 'solid_elastic_energy_dynamic'
+      pp_names = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
