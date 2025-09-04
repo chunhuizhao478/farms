@@ -884,8 +884,8 @@ top_right2 = '2e-4 0.0025 0'
 [Postprocessors]
   [solid_elastic_energy_total]
       type = ParsedPostprocessor
-      expression = 'solid_elastic_energy_dynamic'
-      pp_names = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
+      expression = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
+      pp_names = 'solid_elastic_energy_dynamic'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
