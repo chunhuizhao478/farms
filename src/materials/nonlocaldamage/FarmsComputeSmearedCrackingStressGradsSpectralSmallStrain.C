@@ -48,7 +48,7 @@ FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain::
     FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain(const InputParameters & parameters)
   : ComputeGeneralStressBase(parameters),
     _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_base_name + "elasticity_tensor")),
-    _strain_increment(declareProperty<RankTwoTensor>(_base_name + "strain_increment")),
+  _mechanical_strain_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "mechanical_strain")),
     _stress_old(getMaterialPropertyOldByName<RankTwoTensor>(_base_name + "stress")),
     _psie(declareProperty<Real>(_base_name + std::string("psie"))),
     _psie_active(declareProperty<Real>(_base_name + std::string("psie_active"))),
@@ -100,9 +100,7 @@ void
 FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain::computeQpStress()
 {
   // Small-strain mechanical strain is provided by ComputeSmallStrain as _mechanical_strain
-  // Track strain increment for work integration
-  _strain_increment[_qp] = _mechanical_strain[_qp] - _elastic_strain[_qp];
-  // For small strain, elastic_strain = mechanical_strain (no inelastic models here)
+  // For small strain in this model, elastic_strain equals mechanical_strain (no inelastic part)
   _elastic_strain[_qp] = _mechanical_strain[_qp];
 
   // Isotropic elastic constants and helpers
@@ -191,9 +189,10 @@ FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain::computeQpStress()
     _Jacobian_mult[_qp] += _h * de_dE.outerProduct(de_dE) + _h * diff * d2e_dEdE;
   }
 
-  // Energy bookkeeping
-  const Real dEa = 0.5 * (_stress_old[_qp].doubleContraction(_strain_increment[_qp]) +
-                          _stress[_qp].doubleContraction(_strain_increment[_qp]));
+  // Energy bookkeeping using mechanical strain increment from framework
+  const RankTwoTensor deps = _mechanical_strain[_qp] - _mechanical_strain_old[_qp];
+  const Real dEa = 0.5 * (_stress_old[_qp].doubleContraction(deps) +
+                          _stress[_qp].doubleContraction(deps));
   const Real Ea = _accumulated_elastic_energy_old[_qp] + dEa;
   _accumulated_elastic_energy[_qp] = Ea;
   _instant_elastic_energy[_qp] = _psie[_qp];

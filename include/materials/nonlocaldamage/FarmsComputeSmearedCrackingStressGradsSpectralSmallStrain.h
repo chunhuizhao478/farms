@@ -52,8 +52,8 @@ protected:
   // Elasticity tensor (intact)
   const MaterialProperty<RankFourTensor> & _elasticity_tensor;
 
-  // strain increment for energy accounting (small strain)
-  MaterialProperty<RankTwoTensor> & _strain_increment;
+  // old mechanical strain for proper energy increment dE = E^{n+1} - E^{n}
+  const MaterialProperty<RankTwoTensor> & _mechanical_strain_old;
 
   // Stress old for trapezoidal work
   const MaterialProperty<RankTwoTensor> & _stress_old;
