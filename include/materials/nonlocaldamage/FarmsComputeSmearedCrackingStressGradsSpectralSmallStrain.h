@@ -106,4 +106,7 @@ protected:
   // Gradient-damage parameters
   Real _h;
   Real _fd_delta;
+
+  // strain increment
+  MaterialProperty<RankTwoTensor> & _strain_increment;
 };

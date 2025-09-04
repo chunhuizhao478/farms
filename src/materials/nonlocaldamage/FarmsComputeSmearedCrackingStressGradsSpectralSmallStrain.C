@@ -80,7 +80,8 @@ FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain::
     _perm_exponent(getParam<Real>("perm_exponent")),
     _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged")),
     _h(getParam<Real>("h")),
-    _fd_delta(getParam<Real>("fd_delta"))
+    _fd_delta(getParam<Real>("fd_delta")),
+    _strain_increment(declareProperty<RankTwoTensor>("strain_increment"))
 {
 }
 
@@ -197,6 +198,9 @@ FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain::computeQpStress()
   _accumulated_elastic_energy[_qp] = Ea;
   _instant_elastic_energy[_qp] = _psie[_qp];
   _fracture_energy[_qp] = std::max(Ea - _psie[_qp], 0.0);
+
+  // Strain increment
+  _strain_increment[_qp] = deps;
 
   // HM updates
   updateSolidBulkCompliance();
