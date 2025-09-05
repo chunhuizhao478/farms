@@ -121,6 +121,21 @@ top_right2 = '2e-4 0.0025 0'
   []
   [vel_y]
   []
+  [vel_z]
+  []
+  #reaction force
+  [fx]
+  []
+  [fy]
+  []
+  [fz]
+  []
+  [fdampx]
+  []
+  [fdampy]
+  []
+  [fdampz]
+  []
 []
 
 [AuxKernels]
@@ -261,6 +276,8 @@ top_right2 = '2e-4 0.0025 0'
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
       use_displaced_mesh = false
+      save_in_disp_x = fx
+      save_in_disp_y = fy
     []             
   []   
   # fix ptr
@@ -291,6 +308,7 @@ top_right2 = '2e-4 0.0025 0'
     shear_wave_speed = ${Cs}
     p_wave_speed = ${Cp}
     density = ${density}
+    save_in = fdampx
   []
   [damp_outer_y]
     type = FarmsNonReflectDashpotBC
@@ -306,6 +324,7 @@ top_right2 = '2e-4 0.0025 0'
     shear_wave_speed = ${Cs}
     p_wave_speed = ${Cp}
     density = ${density}
+    save_in = fdampy
   []
 []
 
@@ -401,30 +420,115 @@ top_right2 = '2e-4 0.0025 0'
   exodus = true
   time_step_interval = 40
   print_linear_residuals = false
-  csv = true
   [checkpoint]
       type = Checkpoint
       time_step_interval = 100
       num_files = 2
   []
+  [csv]
+    type = CSV
+    execute_on = 'initial timestep_end'
+    time_step_interval = 1
+    show = 'full_energy solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total full_input_energy damping_work'
+  []
 []
 
-# [Distributions]
-#   #typically for granite
-#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-#   [weibull]
-#     type = Weibull
-#     shape = 8.0 #k
-#     scale = ${ft} #lambda
-#     location = 0 
-#   []
-# [] 
+###############################Energy Calculation##############################
 
-# [ICs]
-#   [./strength_var]
-#     type =  RandomIC
-#     variable = strength
-#     distribution = weibull
-#   []
-# []
+#fracture energy
+###############################################################################
+[Postprocessors]
+  [fracture_energy_total]
+    type = ElementIntegralMaterialProperty
+    mat_prop = fracture_energy
+  []
+[]
+
+[Postprocessors]
+  [dissipated_energy_total]
+      type = ParsedPostprocessor
+      expression = 'fracture_energy_total'
+      pp_names = 'fracture_energy_total'
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+# input energy
+###############################################################################
+[Postprocessors]
+  [external_work]
+    type = FarmsExternalWork
+    boundary = '3'
+    forces = 'fx fy fz'
+  []
+  [damping_work]
+    type = FarmsExternalWork
+    boundary = '1'
+    forces = 'fdampx fdampy fdampz'
+  []
+[]
+
+[Postprocessors]
+  [full_input_energy]
+      type = ParsedPostprocessor
+      expression = '-1 * external_work - damping_work'
+      pp_names = 'external_work damping_work'
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+# solid kinetic energy
+###############################################################################
+[AuxVariables]
+  [solid_kinetic_energy]
+      order = CONSTANT
+      family = MONOMIAL
+  []
+[]
+
+[AuxKernels]
+  [solid_kinetic_energy]
+      type = KineticEnergyAux
+      variable = solid_kinetic_energy
+      newmark_velocity_x = vel_x
+      newmark_velocity_y = vel_y
+      newmark_velocity_z = vel_z
+      density = density
+  []
+[]
+
+[Postprocessors]
+  [solid_kinetic_energy_total]
+      type = ElementIntegralVariablePostprocessor
+      variable = solid_kinetic_energy
+  []
+[]
+
+# solid elastic energy
+###############################################################################
+[Postprocessors]
+  [solid_elastic_energy_dynamic]
+    type = ElementIntegralMaterialProperty
+    mat_prop = psie
+  []
+[]
+
+[Postprocessors]
+  [solid_elastic_energy_total]
+      type = ParsedPostprocessor
+      expression = 'solid_elastic_energy_dynamic'
+      pp_names = 'solid_elastic_energy_dynamic'
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+# Full Energy
+###############################################################################
+[Postprocessors]
+  [full_energy]
+    type = ParsedPostprocessor
+    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + dissipated_energy_total'
+    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total dissipated_energy_total'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
