@@ -394,10 +394,10 @@
     start_time = -1e-12
     end_time = 1e10
     # num_steps = 10
-    l_max_its = 100
+    l_max_its = 50
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 30
+    nl_max_its = 20
     nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -412,11 +412,11 @@
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 1
+        dt = 0.5
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.25
-        max_time_step_bound = 5
+        max_time_step_bound = 1
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -428,7 +428,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 3 ###
+        time_step_interval = 5 ###
         show = 'disp_z porepressure vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
