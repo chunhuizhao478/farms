@@ -2,7 +2,6 @@ E = 50e9
 nu = 0.373
 # ft = 25.5e6
 Gc_const = 100
-c_alpha = 8/3 #scaling parameter
 density = 2600
 dx_min = 5e-5
 
@@ -226,19 +225,6 @@ top_right2 = '2e-4 0.0025 0'
     execute_on = 'TIMESTEP_END'
   []
 []
-
-# [Physics/SolidMechanics/Dynamic]
-#   [all]
-#     add_variables = true
-#     hht_alpha = ${hht_alpha}
-#     newmark_beta = ${newmark_beta}
-#     newmark_gamma = ${newmark_gamma}
-#     use_automatic_differentiation = true
-#     # mass_damping_coefficient = 0.1
-#     # stiffness_damping_coefficient = 0.1
-#     density = ${density}
-#   []
-# []
 
 [Kernels]
   [solid_x]

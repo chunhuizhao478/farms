@@ -3,80 +3,77 @@ import matplotlib.pyplot as plt
 from scipy.optimize import minimize
 
 def pressure(t, alpha, beta, t0, p0=1.0):
-    """Compute pressure at time t"""
-    numerator = np.exp(-alpha * t) - np.exp(-beta * t)
-    denominator = np.exp(-alpha * t0) - np.exp(-beta * t0)
-    return p0 * numerator / denominator
+    """Normalized pressure history (p(t0)=p0, p→0 as t→t0+td)."""
+    # Vectorized operations; assume alpha<beta
+    num = np.exp(-alpha * t) - np.exp(-beta * t)
+    den = np.exp(-alpha * t0) - np.exp(-beta * t0)
+    return p0 * num / den
 
-def objective(params, t0, td, epsilon=1e-6):
-    """
-    Objective function to minimize:
-    1. Error in peak time condition
-    2. Error in decay condition
-    """
+def peak_time(alpha, beta):
+    """Return analytical peak time where dp/dt=0 for the bi-exponential difference."""
+    return np.log(beta/alpha) / (beta - alpha)
+
+def objective(params, t0, td, epsilon):
+    """Scalar objective enforcing peak at t0 and near-zero at t0+td."""
     alpha, beta = params
-    
-    # Avoid invalid parameter combinations
-    if alpha >= beta or alpha <= 0 or beta <= 0:
-        return 1e6
-    
-    # Peak time condition error
-    peak_time_error = np.abs(t0 - (1/(beta - alpha)) * np.log(beta/alpha))
-    
-    # Decay condition error
-    p_at_decay = pressure(t0 + td, alpha, beta, t0)
-    decay_error = np.abs(p_at_decay - epsilon)
-    
-    return peak_time_error + decay_error
+    if not (alpha > 0 and beta > 0 and alpha < beta):
+        return 1e9
+    pt_err = abs(t0 - peak_time(alpha, beta))
+    decay_val = pressure(t0 + td, alpha, beta, t0)
+    decay_err = abs(decay_val - epsilon)
+    # Weighted sum (can tune weights if needed)
+    return pt_err + decay_err
 
-# Parameters for both cases
-td_values = [4e-5]  # Fixed decay time
-t0 = 3e-6  # Two different rise times
-epsilon = np.finfo(float).eps 
-
-# Colors for the plots
-colors = ['blue', 'red']
-labels = ['td = 5e-5 s', 'td = 1e-4 s']
-
-# Create plot
-plt.figure(figsize=(10, 6))
-
-# Generate curves for each t0
-for td, color, label in zip(td_values, colors, labels):
-    # Initial guess based on characteristic times
+def solve_params(t0, td, epsilon):
+    # Heuristic initial guesses
     alpha_guess = 1.0/td
-    beta_guess = 5.0/t0
-    initial_guess = [alpha_guess, beta_guess]
-    
-    # Optimization
-    result = minimize(objective, initial_guess, 
-                    args=(t0, td, epsilon),
-                    method='powell',
-                    options={'xatol': 1e-12, 'fatol': 1e-12, 'maxiter': 50000})
-    
-    if result.success:
-        alpha_opt, beta_opt = result.x
-        print(f"\nResults for {label}:")
-        print(f"alpha = {alpha_opt:.3e}, beta = {beta_opt:.3e}")
-        
-        # Generate and plot pressure curve
-        t_values = np.linspace(0, 1e-4, 1000)
-        p_values = pressure(t_values, alpha_opt, beta_opt, t0)
-        plt.plot(t_values, p_values, color=color, linewidth=2, label=label)
-        
-        # Print verification
-        print("Verification:")
-        print(f"Peak time error: {np.abs(t0 - (1/(beta_opt - alpha_opt)) * np.log(beta_opt/alpha_opt)):.2e}")
-        print(f"Value at t0 + td: {pressure(t0 + td, alpha_opt, beta_opt, t0):.2e}")
-    else:
-        print(f"Optimization failed for {label}:", result.message)
+    beta_guess = max(5.0/t0, alpha_guess*1.1)
+    x0 = [alpha_guess, beta_guess]
+    res = minimize(
+        objective, x0,
+        args=(t0, td, epsilon),
+        method='Powell',
+        options={'xatol':1e-12,'fatol':1e-12,'maxiter':20000,'disp':False}
+    )
+    if not res.success:
+        print(f"WARNING: optimization did not fully converge for t0={t0:.2e}s: {res.message}")
+    alpha_opt, beta_opt = res.x
+    return alpha_opt, beta_opt, res
 
-plt.xlabel('Time (s)')
-plt.ylabel('p(t)/p₀')
-plt.title(f'Pressure Profiles (td = {td:.1e}s)')
-plt.grid(True, alpha=0.3)
-plt.legend()
-plt.xlim(0, 2e-5)
-plt.ylim(0, 1.1)
-plt.tight_layout()
-plt.show()
+def main():
+    # User settings
+    td = 8e-5            # fixed decay time
+    t0_list = [2e-6, 4e-6]
+    epsilon = 1e-6       # target near-zero value at t0+td
+    colors = ['tab:blue', 'tab:red']
+
+    # Time range covers entire decay for the largest t0
+    t_end = max(t0_list) + td
+    t_values = np.linspace(0.0, t_end, 1500)
+
+    # Styling aligned with wu2022 script
+    plt.figure(figsize=(6,4))
+    for t0, color in zip(t0_list, colors):
+        alpha_opt, beta_opt, res = solve_params(t0, td, epsilon)
+        p_vals = pressure(t_values, alpha_opt, beta_opt, t0)
+        label = fr'$t_0={t0*1e6:.1f}\,\mu s$'
+        plt.plot(t_values*1e6, p_vals, color=color, lw=2, label=label)
+        # Mark peak
+        # plt.axvline(t0, color=color, ls='--', lw=1, alpha=0.6)
+        # print(f"t0={t0:.3e} s: alpha={alpha_opt:.3e}, beta={beta_opt:.3e}, peak_time_err={abs(t0-peak_time(alpha_opt,beta_opt)):.2e}, p(t0+td)={pressure(t0+td,alpha_opt,beta_opt,t0):.2e}")
+
+    total_end_us = t_end*1e6
+    plt.xlabel('Time ($\mu$s)')
+    plt.ylabel('$p(t)/p_{0}$')
+    plt.title('Normalized Pressure Profiles')
+    plt.grid(True, which='both', alpha=0.35)
+    plt.xlim(0, total_end_us)
+    plt.ylim(0, 1.05)
+    plt.legend(frameon=True, fontsize=9)
+    plt.tight_layout()
+    plt.savefig('singlepulse_profiles.png', dpi=300)
+    plt.savefig('singlepulse_profiles.pdf')
+    plt.show()
+
+if __name__ == '__main__':
+    main()
