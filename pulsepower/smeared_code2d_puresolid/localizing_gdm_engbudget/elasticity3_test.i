@@ -25,68 +25,6 @@ newmark_gamma = 0.5
 hht_alpha = 0
 #----------------------------------------------------#
 
-#fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
-
-# [Adaptivity]
-#   max_h_level = 5
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.01
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []   
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#       [] 
-#   []
-# []
-
-[MultiApps]
-  [fracture]
-    type = TransientMultiApp
-    input_files = nonlocal_subapp.i
-    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-    execute_on = 'TIMESTEP_BEGIN'
-    clone_parent_mesh = true
-  []
-[]
-
-[Transfers]
-  [from_d]
-    type = MultiAppCopyTransfer
-    from_multi_app = 'fracture'
-    variable = nonlocal_eqstrain
-    source_variable = nonlocal_eqstrain
-    execute_on = 'TIMESTEP_BEGIN'
-  []
-  [to_psie_active]
-    type = MultiAppCopyTransfer
-    to_multi_app = 'fracture'
-    variable = eqstrain_local
-    source_variable = eqstrain_local
-    execute_on = 'TIMESTEP_BEGIN'
-  []
-[]
-
 [GlobalParams]
   displacements = 'disp_x disp_y'
 []
@@ -139,6 +77,10 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   [] 
+  [nonlocal_eqstrain]
+      order = FIRST
+      family = LAGRANGE
+  [] 
 []
 
 [AuxVariables]
@@ -163,10 +105,10 @@ top_right2 = '2e-4 0.0025 0'
     family = LAGRANGE
     order = FIRST
   []
-  [nonlocal_eqstrain]
-      order = FIRST
-      family = LAGRANGE
-  [] 
+  # [nonlocal_eqstrain]
+  #     order = FIRST
+  #     family = LAGRANGE
+  # [] 
   [eqstrain_local]
     family = MONOMIAL
     order = CONSTANT
@@ -263,7 +205,7 @@ top_right2 = '2e-4 0.0025 0'
     type = MaterialRealAux
     variable = eqstrain_local
     property = eqstrain_local
-    execute_on = 'INITIAL NONLINEAR TIMESTEP_END'
+    execute_on = 'INITIAL TIMESTEP_END' #remove nonlinear
   []
   #get crack damage aux
   [crack_damage_aux]
@@ -305,85 +247,25 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-# [Kernels]
-#   [react_nonlocal]
-#     type = Reaction
-#     variable = nonlocal_eqstrain
-#     rate = 1.0
-#   []
-#   [diffusion_nonlocal]
-#     type = LocalizingCoefDiffusion
-#     variable = nonlocal_eqstrain
-#     coef = ${fparse l*l}
-#   []
-#   [reaction_local]
-#     type = CoupledElkFixedLocalEqstrainForce
-#     variable = nonlocal_eqstrain
-#     eqstrain_local = eqstrain_local
-#   []    
-# []
-
-# [Kernels]
-#   [react_nonlocal]
-#     type = CoupledReaction
-#     variable = nonlocal_eqstrain
-#     rate = 1.0
-#     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
-#   []
-#   [diffusion_nonlocal]
-#     type = CoefDiffusion
-#     variable = nonlocal_eqstrain
-#     coef = ${fparse 1.0}
-#   []
-#   [reaction_local]
-#     type = CoupledElkLocalEqstrainForce
-#     variable = nonlocal_eqstrain
-#     eqstrain_local = eqstrain_local
-#     length_scale = ${fparse l}
-#     kappa_i = ${fparse kappa_i}
-#     c0 = ${fparse c0}
-#   []    
-# []
-
-# [Kernels]
-#   [dispkernel_x]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_x
-#     component = 0
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [dispkernel_y]
-#     type = DynamicStressDivergenceTensors
-#     displacements = 'disp_x disp_y'
-#     variable = disp_y
-#     component = 1
-#     zeta = 1e-8
-#     use_displaced_mesh = true
-#   []
-#   [inertia_x]
-#     type = InertialForce
-#     variable = disp_x
-#     velocity = vel_x
-#     acceleration = accel_x
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-#   [inertia_y]
-#     type = InertialForce
-#     variable = disp_y
-#     velocity = vel_y
-#     acceleration = accel_y
-#     beta = 0.25
-#     gamma = 0.5
-#     use_displaced_mesh = true
-#   []
-# []
+[Kernels]
+  [react_nonlocal]
+    type = Reaction
+    variable = nonlocal_eqstrain
+    rate = 1.0
+  []
+  [diffusion_nonlocal]
+    type = LocalizingCoefDiffusion
+    variable = nonlocal_eqstrain
+    coef = ${fparse l*l}
+    R = 0.005
+    eta = 5    
+  []
+  [reaction_local]
+    type = CoupledElkFixedLocalEqstrainForce
+    variable = nonlocal_eqstrain
+    eqstrain_local = eqstrain_local
+  []    
+[]
 
 [BCs]
   #confinement
@@ -459,7 +341,7 @@ top_right2 = '2e-4 0.0025 0'
     paramB = 500
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
-    output_properties = 'elastic_strain psie_active strain_increment'
+    output_properties = 'stress'
     h = ${h_modulus}
     outputs = exodus
   [../]
