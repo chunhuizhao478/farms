@@ -70,15 +70,6 @@ RateStateFrictionLaw2Dv7::RateStateFrictionLaw2Dv7(const InputParameters & param
 {
 }
 
-//Define Frictional Law (function of sliprate and statevar)
-double mu_friction_law_2Dv7(Real sliprate, Real statevar, Real rsf_a, Real rsf_b, Real rsf_L, Real delta_o, Real f_o)
-{
-  double mu = 0;
-  mu = rsf_a * asinh( sliprate/(2*delta_o) * exp((f_o + rsf_b * log(delta_o * statevar/rsf_L))/rsf_a) );
-  //mu = f_o + rsf_a * log(sliprate/delta_o) + rsf_b * log(delta_o*statevar/rsf_L);
-  return mu;
-}
-
 void
 RateStateFrictionLaw2Dv7::computeInterfaceTractionAndDerivatives()
 {   
@@ -92,6 +83,8 @@ RateStateFrictionLaw2Dv7::computeInterfaceTractionAndDerivatives()
     Real Tn_o = _Tn_o;
     Real Ts_o = _Ts_o;
     
+    //--------------------------------------------------------------------------------------------------//
+
     //*Restoration Force*
     ///Define in global coordinate
     //current time step 
@@ -109,6 +102,8 @@ RateStateFrictionLaw2Dv7::computeInterfaceTractionAndDerivatives()
     Real R_plus_local_normal  = R_plus_local(0);
     Real R_minus_local_strike = R_minus_local(1);
     Real R_minus_local_normal = R_minus_local(0);
+
+    //--------------------------------------------------------------------------------------------------//
 
     //*Nodal Mass*
     ///QUAD4 Element
@@ -150,41 +145,28 @@ RateStateFrictionLaw2Dv7::computeInterfaceTractionAndDerivatives()
 
     //*Compute Trial Shear Traction Along Strike Direction at Current Time Step*
     Real Ts_trial = ( M * M * sliprate_strike_tminusdtover2 )/( len * _dt * (M + M) ) + (M * R_plus_local_strike - M * R_minus_local_strike) / ( len * ( M + M ) ) + Ts_o + Ts_perturb;
+    Real Tmag_trial = sqrt(Ts_trial*Ts_trial);
 
-    //*Solve Nonlinear Equation for sliprate at new step t+dt/2*
-    //guess - unknown sliprate of next time step
+    //const
+    Real c = len * _dt * ( M + M ) / (M * M);
+    Real Z = 0.5 / delta_o * exp((f_o + rsf_b * log(delta_o * statevar_t/rsf_L))/rsf_a); 
     
-    ///Compute known values
-    Real c = len * _dt * ( M + M ) / ( M * M );
-    
-    //Setup outer while loop
-    Real err = 1;
-    Real iter = 1;
-    Real v_h_pre = sliprate_mag_tminusdtover2; //sliprate value at previous time step
-    Real theta_pre = statevar_t; //state variable at previous time step
-    Real dv_pre = abs(sliprate_mag_tminusdtover2); //sliprate predictor initialization 
-    Real dv_corr;  //sliprate corrector initialization 
-    //
-    Real theta_ref=theta_pre; 
-    Real solution; 
-    
+    //Setup while loop
     Real iterr = 1;
     Real max_iter = 10000;
     Real er = 1;
-    //Setup inner while loop
-    Real guess_i = sliprate_mag_tminusdtover2;
+    Real solution; 
+    Real guess_i = abs(sliprate_mag_tminusdtover2); //slip rate at time t-dt/2
     Real residual;
     Real jacobian;
     Real guess_j;
-    while ( er > 1e-8 && iterr < max_iter ){  
+    while ( er > 1e-10 && iterr < max_iter ){  
         
         //Compute Residual
-        residual = guess_i + c * Tn * mu_friction_law_2Dv7(0.5*(guess_i+sliprate_mag_tminusdtover2), theta_ref, rsf_a, rsf_b, rsf_L, delta_o, f_o) - c * Ts_trial;
+        residual = guess_i + c * Tn * rsf_a * asinh( 0.5*(guess_i+sliprate_mag_tminusdtover2) * Z ) - c * Tmag_trial;
 
         //Compute Jacobian
-        Real ratioup = rsf_a * exp((f_o+rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a));
-        Real ratiodown = 2 * delta_o * sqrt((exp((2*f_o+2*rsf_b*log((delta_o*theta_ref)/(rsf_L)))/(rsf_a))*(0.5*(guess_i+sliprate_strike_tminusdtover2))*(0.5*(guess_i+sliprate_strike_tminusdtover2)))/(4*delta_o*delta_o)+1);
-        jacobian = 1.0 + c * Tn * ratioup / ratiodown;
+        jacobian = 1.0 + c * Tn * rsf_a * 0.5 * Z / sqrt( 1.0 + 0.5 * 0.5 * (guess_i+sliprate_mag_tminusdtover2) * (guess_i+sliprate_mag_tminusdtover2) * Z * Z );
 
         //Compute New guess
         guess_j = guess_i - residual / jacobian;
@@ -198,45 +180,26 @@ RateStateFrictionLaw2Dv7::computeInterfaceTractionAndDerivatives()
         //Update Old guess
         guess_i = guess_j;
 
-        //printout
         if (iterr == max_iter){
-            std::cout<<"NOT CONVERGED!"<<std::endl;
+            mooseError("NOT CONVERGED!"); //strong convergence check
         }
 
-        //
+        //update iterr
         iterr = iterr + 1;
     
     }
-    //
-    dv_corr = 0.5 * ( abs(sliprate_mag_tminusdtover2) + abs(guess_j)); //update slip rate corrector
-    // 
-    err = abs(guess_j - v_h_pre)/abs(guess_j);
-    //
-    v_h_pre = guess_j; //pass previous value <- current value
-    //
-    dv_pre = dv_corr; //pass predictor <- corrector
-    //
-    iter = iter + 1;
 
-    if (iterr == max_iter){
-        std::cout<<"NOT CONVERGED!"<<std::endl;
-    }
+    Real sliprate_mag_tplusdtover2 = abs(solution); 
 
-    
-
-    Real sliprate_mag_tplusdtover2 = abs(solution); //2D
-
-    theta_ref = ( theta_pre + _dt ) / ( 1.0 + _dt * abs(solution) / rsf_L ); //febealg2dot1
-
-    Real statevar_tplusdt = theta_ref;
+    //update state variable
+    Real coeffD = exp(-sliprate_mag_tplusdtover2*_dt/rsf_L);
+    Real statevar_tplusdt = statevar_t * coeffD + (rsf_L/sliprate_mag_tplusdtover2) * (1-coeffD);
 
     //*Compute shear traction at time t*
-    ///trapezoidal method
-    Real mu_predict = mu_friction_law_2Dv7(0.5*(sliprate_mag_tminusdtover2+sliprate_mag_tplusdtover2), statevar_tplusdt, rsf_a, rsf_b, rsf_L, delta_o, f_o);
-    Real T_mag = Tn * mu_predict;
+    Real T_mag = Tn * rsf_a * asinh( 0.5*(sliprate_mag_tminusdtover2+sliprate_mag_tplusdtover2) * Z );
 
-    //Get traction component for t
-    Ts = T_mag;
+    ///Get Components
+    Ts = T_mag * ( Ts_trial / Tmag_trial );
 
     //Update Slip Rate and Slip at t + dt/2 or t + dt
     ///Slip Rate
@@ -272,7 +235,7 @@ RateStateFrictionLaw2Dv7::computeInterfaceTractionAndDerivatives()
     RealVectorValue traction;
 
     traction(0) = 0.0; 
-    traction(1) = -Ts+Ts_o+Ts_perturb; 
+    traction(1) = Ts - Ts_o - Ts_perturb; 
     traction(2) = 0.0;
 
     _interface_traction[_qp] = traction;

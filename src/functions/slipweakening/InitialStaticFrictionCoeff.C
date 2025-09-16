@@ -23,12 +23,12 @@ InitialStaticFrictionCoeff::value(Real /*t*/, const Point & p) const
 {
 
   Real x_coord = p(0); //along the x direction
-  Real y_coord = p(1); //along the y direction
-  //Real z_coord = p(2); //along the z direction
+  //Real y_coord = p(1); //along the y direction
+  Real z_coord = p(2); //along the z direction
 
   //TPV205-3D
   Real mu_s = 0.0;
-  if ((x_coord<=(0.0+15e3))&&(x_coord>=(0.0-15e3)) && (y_coord<=(0.0+0.0))&&(y_coord>=(0.0-15e3)))
+  if ((x_coord<=(0.0+15e3))&&(x_coord>=(0.0-15e3)) && (z_coord<=(0.0+0.0))&&(z_coord>=(0.0-15e3)))
   {
 	  mu_s = 0.677;
   }  

@@ -300,7 +300,7 @@ ComputeDamageBreakageStress3D::computeQpStress()
   sigma_b(2,1)  = ( 2 * _a0 + _a1 * xi - _a3 * std::pow(xi,3) ) * eps_e(2,1);
   
   sigma_total = (1 - _B_old[_qp]) * sigma_s + _B_old[_qp] * sigma_b;
-  sigma_d = sigma_total - 1/3 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
+  sigma_d = sigma_total - 1.0/3.0 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
 
   _eps_total[_qp] = eps_p + eps_e;
   _eps_p[_qp] = eps_p;
