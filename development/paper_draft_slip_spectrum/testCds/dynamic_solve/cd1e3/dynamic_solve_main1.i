@@ -296,6 +296,18 @@
         gamma = 0.5
         eta = 0
     []     
+    [rayleigh_damp_x]
+        type = LagrangianStiffPropDampingImplicit
+        variable = disp_x
+        component = 0
+        zeta = 0.04       # modal fraction (adjust 0.02–0.06)
+    []
+    [rayleigh_damp_y]
+        type = LagrangianStiffPropDampingImplicit
+        variable = disp_y
+        component = 1
+        zeta = 0.04
+    []
 []
 
 [Functions]
@@ -478,8 +490,8 @@
     []
     [./TimeIntegrator]
         type = NewmarkBeta
-        beta = 0.3 #0.25
-        gamma = 0.55 #0.5
+        beta = 0.25
+        gamma = 0.5
     [../]
 []
 
@@ -676,7 +688,7 @@
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_damp1.i'
+        input_files = 'dynamic_solve_sub1.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
