@@ -531,8 +531,10 @@ fault_center = '0 0 -10000'
   line_search  = 'basic'
   automatic_scaling = true
   verbose = true
-  petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
-  petsc_options_value = ' asm      2              hypre             gmres     200'
+  # petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
+  # petsc_options_value = ' asm      2              hypre             gmres     200'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist                 '
 []
 
 [Outputs]
