@@ -41,7 +41,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-12
+    C_g = 1e-10
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -698,7 +698,7 @@
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub2.i'
+        input_files = 'dynamic_solve_sub3.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true

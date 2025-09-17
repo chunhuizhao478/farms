@@ -367,8 +367,18 @@
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation'
-        prop_values = '0.0 0.0 0.0'
+        prop_names = 'initial_damage'
+        prop_values = '0.0'
+    []
+    [define_shear_stress_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 10e6
+        thickness = 1000
+        length = 1000
+        duration = 1
+        perturbation_type = shear_stress
+        sigma_divisor = 2.0
     []
     #elastic material
     [elastic_tensor]
@@ -498,7 +508,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 50
+      time_step_interval = 20
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
