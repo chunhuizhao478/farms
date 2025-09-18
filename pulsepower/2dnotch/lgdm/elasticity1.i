@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 100e6 ##computed from pf
+ft = 50e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -28,7 +28,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = nonlocal_subapp.i
+    input_files = nonlocal_subapp1.i
     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
     execute_on = 'TIMESTEP_BEGIN'
     clone_parent_mesh = true
