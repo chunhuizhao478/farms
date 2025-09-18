@@ -330,8 +330,8 @@ hht_alpha = 0 #match energy budget
   # dt = 0.5e-7
   end_time = 1e10
 
-  fixed_point_max_its = 10
-  accept_on_max_fixed_point_iteration = false
+  fixed_point_max_its = 20
+  accept_on_max_fixed_point_iteration = true
   fixed_point_rel_tol = 1e-6
   fixed_point_abs_tol = 1e-8
 
