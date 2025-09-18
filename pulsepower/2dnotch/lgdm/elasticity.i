@@ -344,7 +344,7 @@ hht_alpha = 0
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 50
   print_linear_residuals = false
   [csv]
     type = CSV
