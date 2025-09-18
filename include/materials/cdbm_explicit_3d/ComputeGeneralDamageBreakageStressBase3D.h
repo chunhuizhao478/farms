@@ -94,4 +94,12 @@ protected:
   Real _lambda_o;
   /// mu (shear modulus)
   Real _shear_modulus_o;
+
+  // Optional: read initial constants from material properties (lambda_input, shear_modulus_input)
+  const MaterialProperty<Real> * _lambda_input_prop_ptr = nullptr;
+  const MaterialProperty<Real> * _mu_input_prop_ptr = nullptr;
+  bool _use_input_props = false;
+
+  /// initial stress tensor
+  MaterialProperty<RankTwoTensor> & _sts_initial_tensor;
 };
