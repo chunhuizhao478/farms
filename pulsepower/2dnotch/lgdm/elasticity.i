@@ -9,7 +9,7 @@ h_modulus = '${fparse 1e-9 * E}'
 
 # K = '${fparse E/3.0/(1.0-2.0*nu)}'
 # G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-5
+l =  1e-4
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 # Cs = '${fparse sqrt(G/density)}'
 # Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
