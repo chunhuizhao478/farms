@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 50e6 ##computed from pf
+ft = 80e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
