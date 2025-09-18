@@ -2,10 +2,11 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../meshfile/mesh_adaptive_refined.msh'
+        file = '../meshfile/mesh_adaptive.msh'
     [] 
 
 []
+
 
 [GlobalParams]
     

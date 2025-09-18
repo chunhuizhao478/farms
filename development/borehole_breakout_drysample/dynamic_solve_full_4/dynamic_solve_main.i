@@ -414,9 +414,9 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5 
-        optimal_iterations = 8
+        optimal_iterations = 10
         growth_factor = 1.25
-        max_time_step_bound = 1.5
+        max_time_step_bound = 2
     []
     [./TimeIntegrator]
         type = NewmarkBeta
