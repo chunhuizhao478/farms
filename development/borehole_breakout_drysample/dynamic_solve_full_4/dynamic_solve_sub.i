@@ -36,7 +36,7 @@
     #strain rate dependent Cd options
      m_exponent = 0.8
      strain_rate_hat = 1e-4
-     cd_hat = 12
+     cd_hat = 13
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -213,14 +213,7 @@
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
     petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     #verbose = true
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 10
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
-        growth_factor = 1.25
-        max_time_step_bound = 100
-    []
+    dt = 1
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
