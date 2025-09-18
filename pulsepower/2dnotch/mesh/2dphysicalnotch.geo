@@ -1,17 +1,17 @@
 // Parameters
-lc = 1e-4;
-lc_refined = 2.5e-6;
-lc_refined_2 = 2.5e-6;
+lc = 1e-3;
+lc_refined = 5e-5;
+lc_refined_2 = 5e-5;
 
 // Points
 Point(1) = {0, 0, 0, lc};
-Point(2) = {0.001, 0, 0, lc};
-Point(3) = {0.001, 0.001, 0, lc};
-Point(4) = {0, 0.001, 0, lc};
-Point(5) = {0, 0.000501, 0, lc};
-Point(6) = {0.0005, 0.000501, 0, lc};
-Point(7) = {0.0005, 0.000499, 0, lc};
-Point(8) = {0, 0.000499, 0, lc};
+Point(2) = {0.01, 0, 0, lc};
+Point(3) = {0.01, 0.01, 0, lc};
+Point(4) = {0, 0.01, 0, lc};
+Point(5) = {0, 0.00501, 0, lc};
+Point(6) = {0.005, 0.00501, 0, lc};
+Point(7) = {0.005, 0.00499, 0, lc};
+Point(8) = {0, 0.00499, 0, lc};
 
 // Lines
 Line(1) = {1, 2};
@@ -31,21 +31,21 @@ Plane Surface(1) = {1};
 Field[1] = Box;
 Field[1].VIn = lc_refined;  // Mesh size inside the fault zone
 Field[1].VOut = lc;       // Mesh size outside the fault zone
-Field[1].XMin = 0.00045;     // Adjusted to cover the notch area
-Field[1].XMax = 0.001;     // Adjusted to cover the notch area
-Field[1].YMin = 0.00048;    // Adjusted to cover the notch area
-Field[1].YMax = 0.00052;    // Adjusted to cover the notch area
-Field[1].Thickness = 0.001; // Transition thickness
+Field[1].XMin = 0.0045;     // Adjusted to cover the notch area
+Field[1].XMax = 0.01;     // Adjusted to cover the notch area
+Field[1].YMin = 0.0048;    // Adjusted to cover the notch area
+Field[1].YMax = 0.0052;    // Adjusted to cover the notch area
+Field[1].Thickness = 0.01; // Transition thickness
 
 // Refine mesh near the notch
 Field[2] = Box;
 Field[2].VIn = lc_refined_2;  // Mesh size inside the fault zone
 Field[2].VOut = lc;       // Mesh size outside the fault zone
-Field[2].XMin = 0.00048;     // Adjusted to cover the notch area
-Field[2].XMax = 0.00052;     // Adjusted to cover the notch area
-Field[2].YMin = 0.00048;    // Adjusted to cover the notch area
-Field[2].YMax = 0.00052;    // Adjusted to cover the notch area
-Field[2].Thickness = 0.001; // Transition thickness
+Field[2].XMin = 0.0048;     // Adjusted to cover the notch area
+Field[2].XMax = 0.0052;     // Adjusted to cover the notch area
+Field[2].YMin = 0.0048;    // Adjusted to cover the notch area
+Field[2].YMax = 0.0052;    // Adjusted to cover the notch area
+Field[2].Thickness = 0.01; // Transition thickness
 
 // Use the minimum of the two fields
 Field[3] = Min;
