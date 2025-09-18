@@ -65,15 +65,18 @@
 [Variables]
     [disp_x]
         order = FIRST
-        family = LAGRANGE     
+        family = LAGRANGE    
+        scaling = 1e-6 
     []
     [disp_y]
         order = FIRST
-        family = LAGRANGE    
+        family = LAGRANGE   
+        scaling = 1e-6 
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
+        scaling = 1e-6
     []
     [porepressure]
         order = FIRST
@@ -405,7 +408,7 @@
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
-    automatic_scaling = true
+    # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
     # dt = 10
@@ -416,7 +419,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.25
-        max_time_step_bound = 1.5
+        max_time_step_bound = 2
     []
     [./TimeIntegrator]
         type = NewmarkBeta
