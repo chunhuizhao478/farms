@@ -373,9 +373,9 @@
     [define_shear_stress_perturbation]
         type = PerturbationRadial
         nucl_center = '0 0 0'
-        peak_value = 10e6
+        peak_value = 30e6
         thickness = 1000
-        length = 1000
+        length = 2000
         duration = 1
         perturbation_type = shear_stress
         sigma_divisor = 2.0
