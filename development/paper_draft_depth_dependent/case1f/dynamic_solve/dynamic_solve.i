@@ -869,6 +869,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     positions = 'pos'
     sort_by = x
     execute_on = TIMESTEP_END
+    discontinuous = false
   []
 []
 
