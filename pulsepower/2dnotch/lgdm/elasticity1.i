@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 80e6 ##computed from pf
+ft = 90e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -263,7 +263,7 @@ hht_alpha = 0
     type = FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
-    paramB = 500
+    paramB = 750
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'elastic_strain psie_active strain_increment'
