@@ -10,6 +10,10 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 ##element size
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 
+##mesh domain
+nonlocal_eqstrain_blocks = '10 100 200'
+local_eqstrain_blocks = '11' 
+
 ##main fault parameters
 xmin_fault = -20000 #xmin of fault
 xmax_fault = 20000 #xmax of fault
@@ -17,9 +21,8 @@ zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
 #nonlocal length applied region along ydir
-ymin_fault = -2000
-ymax_fault = 2000
-nonlocal_eqstrain_blocks = '100 200'
+ymin_fault = -1500
+ymax_fault = 1500
 nonlocal_averaging_length_scale = 200
 nonlocal_averaging_radius = 200
 
@@ -109,7 +112,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_localrefine.msh'
+    file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -631,7 +634,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       prop_name = eqstrain_nonlocal_initial
       output_properties = 'eqstrain_nonlocal_initial'
       outputs = exodus
-      execute_on = 'INITIAL'
   []
   [./czm_mat]
       type = SlipWeakeningFrictionczm3dCDBM
@@ -677,9 +679,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [../]
   #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
   #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
-  [nonlocal_eqstrain]
+  [nonlocal_eqstrain_block0]
     type = ElkNonlocalEqstrain
     average_UO = eqstrain_averaging
+    block = ${nonlocal_eqstrain_blocks}
+  []
+  #for the block outside the region, nonlocal strain is equal to the local strain
+  [nonlocal_eqstrain_block1]
+    type = ParsedMaterial
+    property_name = eqstrain_nonlocal
+    coupled_variables = 'xi_aux'
+    expression = 'xi_aux'
+    block = ${local_eqstrain_blocks}
   []
 []
 
@@ -804,6 +815,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     radius = ${nonlocal_averaging_radius}
     weights = BAZANT3D
     execute_on = TIMESTEP_END
+    block = ${nonlocal_eqstrain_blocks}
   []
 []
 
@@ -850,5 +862,71 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux jump_y_aux jump_z_aux jump_x_rate_aux jump_y_rate_aux jump_z_rate_aux traction_x_aux traction_y_aux traction_z_aux alpha_damagedvar_aux B_aux xi_aux' 
     boundary = 'Block100_Block200'
     sort_by = x
+  []
+  [off_fault]
+    type = PositionsFunctorValueSampler
+    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
+    positions = 'pos'
+    sort_by = x
+    execute_on = TIMESTEP_END
+  []
+[]
+
+#should use negative y as in tensile side
+[Positions]
+  [pos]
+    type = InputPositions
+    positions = '-24000 -1000 0
+                 -20000 -1000 0
+                 -16000 -1000 0
+                 -12000 -1000 0
+                 -8000 -1000 0
+                 -4000 -1000 0
+                 0 -1000 0
+                 4000 -1000 0
+                 8000 -1000 0
+                 12000 -1000 0
+                 16000 -1000 0
+                 20000 -1000 0 
+                 24000 -1000 0 
+                 -24000 -2000 0
+                 -20000 -2000 0
+                 -16000 -2000 0
+                 -12000 -2000 0
+                 -8000 -2000 0
+                 -4000 -2000 0
+                 0 -2000 0
+                 4000 -2000 0
+                 8000 -2000 0
+                 12000 -2000 0
+                 16000 -2000 0
+                 20000 -2000 0 
+                 24000 -2000 0 
+                 -24000 -3000 0
+                 -20000 -3000 0
+                 -16000 -3000 0
+                 -12000 -3000 0
+                 -8000 -3000 0
+                 -4000 -3000 0
+                 0 -3000 0
+                 4000 -3000 0
+                 8000 -3000 0
+                 12000 -3000 0
+                 16000 -3000 0
+                 20000 -3000 0 
+                 24000 -3000 0
+                 -24000 -4000 0
+                 -20000 -4000 0
+                 -16000 -4000 0
+                 -12000 -4000 0
+                 -8000 -4000 0
+                 -4000 -4000 0
+                 0 -4000 0
+                 4000 -4000 0
+                 8000 -4000 0
+                 12000 -4000 0
+                 16000 -4000 0
+                 20000 -4000 0 
+                 24000 -4000 0'
   []
 []
