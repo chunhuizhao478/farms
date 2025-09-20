@@ -12,6 +12,12 @@ elem_size = 100 #!!! element size near the fault, need to be consistent with the
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
+
+#here we avoid the cross-fault averaging by defining separate averaging blocks
+nonlocal_eqstrain_blocks_1 = '10'
+nonlocal_eqstrain_blocks_2 = '100'
+nonlocal_eqstrain_blocks_3 = '200'
+
 local_eqstrain_blocks = '11' 
 
 ##main fault parameters
@@ -679,13 +685,23 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [../]
   #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
   #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
-  [nonlocal_eqstrain_block0]
-    type = ElkNonlocalEqstrain
-    average_UO = eqstrain_averaging
-    block = ${nonlocal_eqstrain_blocks}
-  []
-  #for the block outside the region, nonlocal strain is equal to the local strain
   [nonlocal_eqstrain_block1]
+    type = ElkNonlocalEqstrain
+    average_UO = eqstrain_averaging_block1
+    block = ${nonlocal_eqstrain_blocks_1}
+  []
+  [nonlocal_eqstrain_block2]
+    type = ElkNonlocalEqstrain
+    average_UO = eqstrain_averaging_block2
+    block = ${nonlocal_eqstrain_blocks_2}
+  []
+  [nonlocal_eqstrain_block3]
+    type = ElkNonlocalEqstrain
+    average_UO = eqstrain_averaging_block3
+    block = ${nonlocal_eqstrain_blocks_3}
+  []      
+  #for the block outside the region, nonlocal strain is equal to the local strain
+  [nonlocal_eqstrain_block]
     type = ParsedMaterial
     property_name = eqstrain_nonlocal
     coupled_variables = 'xi_aux'
@@ -808,14 +824,33 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     force_preaux = true
     execute_on = 'INITIAL'
   [../]
-  [eqstrain_averaging]
+  #here we avoid the cross-fault averaging by defining separate averaging blocks
+  [eqstrain_averaging_block1]
     type = ElkRadialAverage
     length_scale = ${nonlocal_averaging_length_scale}
     prop_name = xi
     radius = ${nonlocal_averaging_radius}
     weights = BAZANT3D
     execute_on = TIMESTEP_END
-    block = ${nonlocal_eqstrain_blocks}
+    block = ${nonlocal_eqstrain_blocks_1}
+  []
+  [eqstrain_averaging_block2]
+    type = ElkRadialAverage
+    length_scale = ${nonlocal_averaging_length_scale}
+    prop_name = xi
+    radius = ${nonlocal_averaging_radius}
+    weights = BAZANT3D
+    execute_on = TIMESTEP_END
+    block = ${nonlocal_eqstrain_blocks_2}
+  []
+  [eqstrain_averaging_block3]
+    type = ElkRadialAverage
+    length_scale = ${nonlocal_averaging_length_scale}
+    prop_name = xi
+    radius = ${nonlocal_averaging_radius}
+    weights = BAZANT3D
+    execute_on = TIMESTEP_END
+    block = ${nonlocal_eqstrain_blocks_3}
   []
 []
 

@@ -18,7 +18,7 @@ Fault_length = 40e3;
 Fault_width = 20e3;
 Fault_dip = 90*Pi/180.;
 transition_length = 1.5e3; // 2 km halo around fault
-refined_length = 150;      // half-thickness for local box refinement (meters)
+refined_length = 100;      // half-thickness for local box refinement (meters)
 
 // Nucleation in X,Z local coordinates
 X_nucl = 0e3;
