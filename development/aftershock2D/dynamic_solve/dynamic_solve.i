@@ -35,7 +35,7 @@ xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
 xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = -1 #coefficient gives positive damage evolution
+Cd_constant = 0 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
 strain_rate_hat = 1e-4 #strain rate dependent parameters
@@ -444,7 +444,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         m_exponent = ${m_exponent}
         strain_rate_hat = ${strain_rate_hat}
         cd_hat = ${cd_hat}
-        zero_Cd_below_threshold = false
+        zero_Cd_below_threshold = true
         outputs = exodus
     []
     [dummy_material]
