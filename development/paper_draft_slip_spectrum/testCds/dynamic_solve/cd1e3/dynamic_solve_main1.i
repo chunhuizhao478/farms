@@ -371,14 +371,19 @@
         prop_values = '0.0'
     []
     [define_shear_stress_perturbation]
-        type = PerturbationRadial
+        type = PerturbationRadialAdvanced
         nucl_center = '0 0 0'
         peak_value = 30e6
         thickness = 1000
         length = 2000
         duration = 1
-        perturbation_type = shear_stress
+        perturbation_type = mean_stress
+        temporal_ramp = cosine
+        thickness_taper = cosine
+        hold_after_duration = true
         sigma_divisor = 2.0
+        output_properties = 'mean_stress_perturbation'
+        outputs = exodus
     []
     #elastic material
     [elastic_tensor]
@@ -509,7 +514,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 10
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux mean_stress_perturbation'
     [../]
     [./csv]
         type = CSV

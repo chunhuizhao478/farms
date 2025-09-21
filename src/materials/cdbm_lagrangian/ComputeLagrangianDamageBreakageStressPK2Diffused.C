@@ -84,8 +84,8 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _const_theta_o_mat(getMaterialProperty<Real>("const_theta_o_mat")),
   _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat")),
   //---------------------------------------------------------------------------------------------//
-  //add shear stress perturbation
-  _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation"))
+  //add mean stress perturbation
+  _mean_stress_perturbation(getMaterialPropertyByName<Real>("mean_stress_perturbation"))
 {
 }
 
@@ -350,10 +350,11 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
 
-  /* add pore pressure */
-  if (_shear_stress_perturbation[_qp] != 0){
-    sigma_total(0,0) -= _shear_stress_perturbation[_qp];
-    sigma_total(1,1) -= _shear_stress_perturbation[_qp];
+  /* add pore pressure | mean stress perturbation */
+  if (_mean_stress_perturbation[_qp] != 0){
+    sigma_total(0,0) -= _mean_stress_perturbation[_qp];
+    sigma_total(1,1) -= _mean_stress_perturbation[_qp];
+    sigma_total(2,2) -= _mean_stress_perturbation[_qp];
   }
 
   //save
