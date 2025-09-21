@@ -320,6 +320,7 @@ hht_alpha = 0 #match energy budget
     Pmax_coefficients = '-8.48306 105.794 -451.486 696.525 -146.249'
     discharge_center = '0 0 0.03'
     number_of_pulses = 10
+    r_max_mm = 4.5
   []
 []
 
@@ -496,7 +497,7 @@ hht_alpha = 0 #match energy budget
 
 [Outputs]
   exodus = true
-  time_step_interval = 1
+  time_step_interval = 20
   print_linear_residuals = false
   [checkpoint]
       type = Checkpoint

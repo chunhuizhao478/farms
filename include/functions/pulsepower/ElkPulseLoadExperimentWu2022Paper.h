@@ -26,6 +26,9 @@ public:
   std::vector<Real> _pmax_coefficients;
   int  _number_of_pulses;
 
+  // maximum radius cap (mm). If distance exceeds this (in mm), Pmax = 0
+  Real _r_max_mm;
+
   //minimum applied pressure applied on the boundary
   //to mimic the effect of water pressure
   Real _minimum_applied_pressure;

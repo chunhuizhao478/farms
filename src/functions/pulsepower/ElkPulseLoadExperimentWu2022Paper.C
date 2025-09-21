@@ -13,6 +13,7 @@ ElkPulseLoadExperimentWu2022Paper::validParams()
   params.addRequiredParam<std::vector<Real>>("discharge_center", "discharge center (x,y,z) (m)");
   params.addRequiredParam<std::vector<Real>>("Pmax_coefficients", "coefficients for Pmax");
   params.addRequiredParam<int>("number_of_pulses","number of pulse, assume pulses are continuous");
+  params.addParam<Real>("r_max_mm", 4.5, "Maximum radius in mm beyond which Pmax is set to zero");
   params.addParam<Real>("minimum_applied_pressure", 0.0, "Minimum applied pressure to mimic the effect of water pressure");
   params.addParam<bool>("use_minimum_applied_pressure", false, "Flag to use minimum applied pressure");
   return params;
@@ -27,6 +28,7 @@ ElkPulseLoadExperimentWu2022Paper::ElkPulseLoadExperimentWu2022Paper(const Input
   _discharge_center(getParam<std::vector<Real>>("discharge_center")),
   _pmax_coefficients(getParam<std::vector<Real>>("Pmax_coefficients")),
   _number_of_pulses(getParam<int>("number_of_pulses")),
+  _r_max_mm(getParam<Real>("r_max_mm")),
   _minimum_applied_pressure(getParam<Real>("minimum_applied_pressure")),
   _use_minimum_applied_pressure(getParam<bool>("use_minimum_applied_pressure")) 
 {
@@ -53,6 +55,15 @@ ElkPulseLoadExperimentWu2022Paper::value(Real t, const Point & p) const
 
   // Convert r from m to mm
   r *= 1000.0;
+
+  // If beyond cap radius, return 0 (respect minimum pressure logic later)
+  if (r > _r_max_mm)
+  {
+    if (_use_minimum_applied_pressure)
+      return std::max(0.0, _minimum_applied_pressure);
+    else
+      return 0.0;
+  }
 
   // Get Pmax coefficients
   // Polynomial fit (degree 4) for r >= 1.6 mm:
