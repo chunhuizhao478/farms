@@ -95,12 +95,12 @@ void PerturbationRadialAdvanced::computeQpProperties(){
   const Real z = _q_point[_qp](2);
 
   const Real sigma_x = _length / _sigma_divisor;
-  const Real sigma_z = _length / _sigma_divisor;
+  const Real sigma_y = _length / _sigma_divisor;
 
   const Real dx = x - _nucl_center[0];
-  const Real dz = z - _nucl_center[2];
+  const Real dy = y - _nucl_center[1];
 
-  const Real gaussian = _peak_value * std::exp(-(dx*dx)/(2.0*sigma_x*sigma_x) - (dz*dz)/(2.0*sigma_z*sigma_z));
+  const Real gaussian = _peak_value * std::exp(-(dx*dx)/(2.0*sigma_x*sigma_x) - (dy*dy)/(2.0*sigma_y*sigma_y));
 
   Real amp = 0.0;
   if (_t <= _duration)
@@ -109,7 +109,7 @@ void PerturbationRadialAdvanced::computeQpProperties(){
     amp = gaussian;
 
   // spatial thickness taper
-  amp *= thicknessFactor(y);
+  //amp *= thicknessFactor(y);
 
   if (_perturbation_type == "damage")
     _damage_perturbation[_qp] = amp;

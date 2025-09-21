@@ -1,25 +1,38 @@
 #implicit continuum damage-breakage model dynamics
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file = '../../mesh/mesh_test.msh'
-    []
-    [./sidesets]
+        type = GeneratedMeshGenerator
+        dim = 2
+        nx = 100
+        ny = 20
+        xmin = 0
+        xmax = 0.05
+        ymin = 0
+        ymax = 0.01
+    [] 
+    [./box]
+        type = SubdomainBoundingBoxGenerator
         input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
+        block_id = 1
+        bottom_left = '0 0 0'
+        top_right = '0.05 0.004 0'
     []
-    [./extranodeset1]
-        type = ExtraNodesetGenerator
-        coord = '0 -480000 0'
-        new_boundary = corner_ptr
-        input = sidesets
+    [./box2]
+        type = SubdomainBoundingBoxGenerator
+        input = box
+        block_id = 0
+        bottom_left = '0 0.004 0'
+        top_right = '0.05 0.006 0'
     []
+    [./box3]
+        type = SubdomainBoundingBoxGenerator
+        input = box2
+        block_id = 2
+        bottom_left = '0 0.006 0'
+        top_right = '0.05 0.01 0'
+    []  
 []
+
 
 [GlobalParams]
     
@@ -46,12 +59,12 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = -1
+    Cd_constant = 10
 
     #strain rate dependent Cd options
     m_exponent = 0.8
     strain_rate_hat = 1e-4
-    cd_hat = 10
+    cd_hat = 1e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -92,7 +105,7 @@
         family = MONOMIAL
     []
     [I2_sub_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [initial_damage_sub_aux]
@@ -101,7 +114,7 @@
     []
     #deviatroic_strain_rate
     [deviatroic_strain_rate_sub_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #
@@ -111,12 +124,12 @@
     []
     #
     [structural_stress_coefficient_sub]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     #
     [Cd_aux]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [xio_aux]
@@ -139,19 +152,19 @@
         type = DamageEvolutionDiffusion
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
-        block = '1 3'
+        block = 0
     []
     [forcing_term_alpha]
         type = DamageEvolutionConditionalForcing
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
-        block = '1 3'
+        block = 0
     []
     # [perturb_source_alpha]
     #     type = PerturbationSource
     #     variable = alpha_damagedvar_sub
     #     damage_source = 'damage_perturbation'
-    #     block = '1 3'
+    #     block = 0
     # []
     #breakagevar
     [time_derivative_B]
@@ -162,13 +175,13 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
-        block = '1 3'
+        block = 0
     []
     [perturb_source_b]
         type = PerturbationSource
         variable = B_damagedvar_sub
         damage_source = 'damage_perturbation'
-        block = '1 3'
+        block = 0
     []
 []
 
@@ -204,13 +217,13 @@
 []
 
 [AuxKernels]
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_sub_aux
-        solution = init_sol_components
-        from_variable = alpha_damagedvar_output
-        execute_on = 'TIMESTEP_BEGIN'
-    []
+    # [get_initial_damage]
+    #     type = SolutionAux
+    #     variable = initial_damage_sub_aux
+    #     solution = init_sol_components
+    #     from_variable = alpha_damagedvar_output
+    #     execute_on = 'TIMESTEP_BEGIN'
+    # []
     #
     [get_Cd]
         type = MaterialRealAux
@@ -227,9 +240,8 @@
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
         #use strain rate dependent Cd
-        use_cd_strain_dependent = true
+        use_cd_strain_dependent = false
         strain_rate = deviatroic_strain_rate_sub_aux
-        zero_cd_below_hat = true
     []
     #add shear perturbation to the system
     [damage_perturbation]
@@ -273,32 +285,6 @@
         optimal_iterations = 20
         growth_factor = 1.1
         max_time_step_bound = 1e7
-    []
-[]
-
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = '../../static_solve/static_solve_out.e'
-      system_variables = 'alpha_damagedvar_output B_damagedvar_output'
-      timestep = LATEST
-      force_preaux = true
-      execute_on = 'INITIAL'
-    [../]
-[]
-
-[ICs]
-    [alpha_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = alpha_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = alpha_damagedvar_output
-    []  
-    [B_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = B_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = B_damagedvar_output
     []
 []
 
