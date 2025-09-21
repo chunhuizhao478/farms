@@ -83,7 +83,8 @@ def parallel_interpolate_and_write(comm, x, y, field, exo_path, out_csv, plot=Fa
                                    oob_mode: str = "nearest",
                                    x_min_bound: float = -16000, x_max_bound: float = 16000,
                                    y_min_bound: float = -2000, y_max_bound: float = 2000,
-                                   taper_width: float = 0.0):
+                                   taper_width: float = 0.0,
+                                   exclude_rects=None):
     rank = comm.Get_rank()
     size = comm.Get_size()
 
@@ -151,6 +152,16 @@ def parallel_interpolate_and_write(comm, x, y, field, exo_path, out_csv, plot=Fa
     # Map to damage variable
     mapped_local = mean_val + std_val * local_vals
 
+    # Apply exclusion rectangles (set to zero) BEFORE taper so zeros stay zero.
+    excl_zeroed = 0
+    if exclude_rects:
+        for (ex_xmin, ex_xmax, ex_ymin, ex_ymax) in exclude_rects:
+            m_ex = (recv_x >= ex_xmin) & (recv_x <= ex_xmax) & \
+                  (recv_y >= ex_ymin) & (recv_y <= ex_ymax)
+            if np.any(m_ex):
+                mapped_local[m_ex] = 0.0
+                excl_zeroed += int(np.count_nonzero(m_ex))
+
     # Apply optional cosine taper outside the user box; width in meters.
     # If taper_width <= 0: hard cutoff to zero outside the box.
     if taper_width and taper_width > 0:
@@ -195,9 +206,13 @@ def parallel_interpolate_and_write(comm, x, y, field, exo_path, out_csv, plot=Fa
     # Report diagnostics on OOB ratio
     local_oob = int(np.count_nonzero(~ib))
     total_oob = comm.reduce(local_oob, op=MPI.SUM, root=0)
+    # Exclusion diagnostics
+    total_excl = comm.reduce(excl_zeroed, op=MPI.SUM, root=0)
     if rank == 0 and N > 0:
         frac = total_oob / float(N)
         print(f"Out-of-bounds nodes: {total_oob}/{N} ({frac:.2%}), oob_mode={oob_mode}")
+        if exclude_rects:
+            print(f"Excluded (zeroed) nodes inside rectangles: {total_excl}/{N} ({total_excl/float(N):.2%}) from {len(exclude_rects)} rectangle(s)")
 
     # Rank 0 writes CSV and optional plot
     if rank == 0:
@@ -265,6 +280,9 @@ def main():
     parser.add_argument('--auto-extent', action='store_true',
                         help='Use Exodus coord bounds for grid extents (overrides x/y min/max)')
     parser.add_argument('--taper-width', type=float, default=0.0, help='Cosine taper width outside the box (m)')
+    parser.add_argument('--exclude-rect', action='append', nargs=4, type=float,
+                        metavar=('XMIN','XMAX','YMIN','YMAX'),
+                        help='Add an exclusion rectangle where damage is forced to zero; can repeat.')
     args = parser.parse_args()
 
     comm = MPI.COMM_WORLD
@@ -324,6 +342,13 @@ def main():
         field = np.empty((args.ny, args.nx), dtype=float)
     comm.Bcast(field, root=0)
 
+    # Prepare exclusion rectangles list
+    exclude_rects = []
+    if args.exclude_rect:
+        for r in args.exclude_rect:
+            # each r is list of 4 floats
+            exclude_rects.append(tuple(r))
+
     # Interpolate and write in parallel
     parallel_interpolate_and_write(
         comm, x, y, field, args.exo, args.out, plot=args.plot,
@@ -332,7 +357,8 @@ def main():
     oob_mode=args.oob,
     x_min_bound=args.x_min, x_max_bound=args.x_max,
     y_min_bound=args.y_min, y_max_bound=args.y_max,
-    taper_width=args.taper_width
+    taper_width=args.taper_width,
+    exclude_rects=exclude_rects
     )
 
     if rank == 0:

@@ -60,7 +60,7 @@ nucl_radius = 1500 #nucleation radius (m)
 ##-------------------------##
 
 ##model parameters##
-dt = 0.001 #time step size
+dt = 0.0025 #time step size
 
 end_time = 100.0 #end time for simulation
 
