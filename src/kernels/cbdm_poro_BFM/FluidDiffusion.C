@@ -47,9 +47,11 @@ FluidDiffusion::computeQpResidual()
   else{
      K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
   }
+
+  K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
  
   // 3. Compute flux components
-  // Solid phase flux: q_s = -K_s_ref * grad(p)
+  // Solid phase flux: q_s = K_s_ref * grad(p)
   RealVectorValue flux_s = K_s_ref * _grad_u[_qp];
   
   // 4. Residual: ∇ψ · q
@@ -73,9 +75,10 @@ FluidDiffusion::computeQpJacobian()
      K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
   }
  
-  
+  K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
+
   // 3. Compute Jacobian components
-  // Solid phase Jacobian: ∂q_s/∂p = -K_s_ref * grad(φ)
+  // Solid phase Jacobian: ∂q_s/∂p = K_s_ref * grad(φ)
   RealVectorValue jac_s = K_s_ref * _grad_phi[_j][_qp];
   
   // 4. Final Jacobian: ∇ψ · (∂q/∂p)
