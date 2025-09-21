@@ -81,7 +81,7 @@ t0 = 0.5 #nucleation time (s)
 
 ##initial damage parameters
 sigma = 5e2
-peak_val = 0.7
+peak_val = 0.6
 len_of_fault_strike = 40000
 len_of_fault_dip = 20000
 fault_center = '0 0 -10000'
@@ -506,7 +506,7 @@ fault_center = '0 0 -10000'
 [Executioner]
   solve_type = NEWTON
   type = Transient
-  num_steps = 7
+  num_steps = 6
   nl_abs_tol = 1E-12
   nl_rel_tol = 1E-10
   l_tol = 1E-7

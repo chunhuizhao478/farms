@@ -112,7 +112,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
 ##initial damage parameters
 sigma = 5e2
-peak_val = 0.7
+peak_val = 0.6
 len_of_fault_strike = 40000
 len_of_fault_dip = 20000
 fault_center = '0 0 -10000'
