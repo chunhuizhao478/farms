@@ -373,7 +373,7 @@
     [define_shear_stress_perturbation]
         type = PerturbationRadialAdvanced
         nucl_center = '0 0 0'
-        peak_value = 0
+        peak_value = 30e6
         thickness = 1000
         length = 2000
         duration = 1
