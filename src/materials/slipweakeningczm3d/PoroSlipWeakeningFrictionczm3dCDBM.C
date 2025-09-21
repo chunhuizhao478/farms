@@ -13,6 +13,7 @@ Material Description of Slip Weakening Friction 3d
 
 #include "PoroSlipWeakeningFrictionczm3dCDBM.h"
 #include "InterfaceKernel.h"
+#include "FEProblemBase.h
 
 registerMooseObject("farmsApp", PoroSlipWeakeningFrictionczm3dCDBM);
 
