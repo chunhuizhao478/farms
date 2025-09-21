@@ -521,4 +521,5 @@ fault_center = '0 0 -10000'
 
 [Outputs]
   exodus = true
+  execute_on = FINAL
 []    
