@@ -350,9 +350,11 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   RankTwoTensor sigma_b = (2 * _a2[_qp] + _a1[_qp] / xi + 3 * _a3[_qp] * xi) * I1 * RankTwoTensor::Identity() + (2 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3)) * Ee;
   RankTwoTensor sigma_total = (1 - _B_breakagevar[_qp]) * sigma_s + _B_breakagevar[_qp] * sigma_b;
 
-  //add shear stress perturbation
-  sigma_total(0,1) += _shear_stress_perturbation[_qp];
-  sigma_total(1,0) += _shear_stress_perturbation[_qp];
+  /* add pore pressure */
+  if (_shear_stress_perturbation[_qp] != 0){
+    sigma_total(0,0) -= _shear_stress_perturbation[_qp];
+    sigma_total(1,1) -= _shear_stress_perturbation[_qp];
+  }
 
   //save
   _Ep[_qp] = Ep;
