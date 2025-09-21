@@ -50,7 +50,7 @@
 
     #strain rate dependent Cd options
     m_exponent = 0.8
-    strain_rate_hat = 1e-4
+    strain_rate_hat = 1e-8
     cd_hat = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -164,12 +164,12 @@
         coupled = alpha_damagedvar_sub
         block = '1 3'
     []
-    # [perturb_source_b]
-    #     type = PerturbationSource
-    #     variable = B_damagedvar_sub
-    #     damage_source = 'damage_perturbation'
-    #     block = '1 3'
-    # []
+    [perturb_source_b]
+        type = PerturbationSource
+        variable = B_damagedvar_sub
+        damage_source = 'damage_perturbation'
+        block = '1 3'
+    []
 []
 
 [Bounds]
@@ -231,19 +231,19 @@
         strain_rate = deviatroic_strain_rate_sub_aux
         zero_cd_below_hat = true
     []
-    # #add shear perturbation to the system
-    # [damage_perturbation]
-    #     type = PerturbationRadialSource
-    #     nucl_center = '0 0 0'
-    #     peak_value = 1.0
-    #     thickness = 200
-    #     length = 2000
-    #     duration = 10
-    #     perturbation_type = 'damage'
-    #     sigma_divisor = 2.0
-    #     # output_properties = 'shear_stress_perturbation damage_perturbation'
-    #     # outputs = exodus
-    # [] 
+    #add shear perturbation to the system
+    [damage_perturbation]
+        type = PerturbationRadialSource
+        nucl_center = '0 0 0'
+        peak_value = 1.0
+        thickness = 200
+        length = 2000
+        duration = 10
+        perturbation_type = 'damage'
+        sigma_divisor = 2.0
+        # output_properties = 'shear_stress_perturbation damage_perturbation'
+        # outputs = exodus
+    [] 
 [] 
 
 [Preconditioning]

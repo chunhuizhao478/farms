@@ -41,7 +41,7 @@
     xi_d = -0.9
     
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-10
+    C_g = 1e-12
     
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -371,14 +371,19 @@
         prop_values = '0.0'
     []
     [define_shear_stress_perturbation]
-        type = PerturbationRadial
+        type = PerturbationRadialAdvanced
         nucl_center = '0 0 0'
         peak_value = 30e6
         thickness = 1000
         length = 2000
         duration = 1
-        perturbation_type = shear_stress
+        perturbation_type = mean_stress
+        temporal_ramp = cosine
+        thickness_taper = cosine
+        hold_after_duration = true
         sigma_divisor = 2.0
+        output_properties = 'mean_stress_perturbation'
+        outputs = exodus
     []
     #elastic material
     [elastic_tensor]
@@ -489,7 +494,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.1
-        max_time_step_bound = 1e-2
+        max_time_step_bound = 5e-2
         #constrain velocity during dynamic simulation
         constrain_by_velocity = true
         vel_threshold = 1e-2
@@ -508,8 +513,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
+      time_step_interval = 10
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux mean_stress_perturbation'
     [../]
     [./csv]
         type = CSV
