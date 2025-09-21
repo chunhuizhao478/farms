@@ -496,7 +496,7 @@ hht_alpha = 0 #match energy budget
 
 [Outputs]
   exodus = true
-  time_step_interval = 40
+  time_step_interval = 1
   print_linear_residuals = false
   [checkpoint]
       type = Checkpoint
