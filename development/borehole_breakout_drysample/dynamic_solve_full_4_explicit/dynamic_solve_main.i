@@ -354,7 +354,7 @@
     automatic_scaling = true
     #nl_forced_its = 3
     line_search = 'bt'
-    dt = 1e-4
+    dt = 1e-2
     [./TimeIntegrator]
         type = CentralDifference
     [../]
