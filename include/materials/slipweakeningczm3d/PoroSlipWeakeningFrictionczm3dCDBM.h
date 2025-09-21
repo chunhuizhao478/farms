@@ -48,13 +48,6 @@ protected:
   const VariableValue & _vel_slipweakening_z;
   const VariableValue & _vel_slipweakening_neighbor_z;
 
-  const VariableValue & _reaction_pressure_x;
-  const VariableValue & _reaction_pressure_neighbor_x;
-  const VariableValue & _reaction_pressure_y;
-  const VariableValue & _reaction_pressure_neighbor_y;
-  const VariableValue & _reaction_pressure_z;
-  const VariableValue & _reaction_pressure_neighbor_z;
-
   const VariableValue & _reaction_slipweakening_x;
   const VariableValue & _reaction_slipweakening_neighbor_x;
   const VariableValue & _reaction_slipweakening_y;
@@ -62,6 +55,12 @@ protected:
   const VariableValue & _reaction_slipweakening_z;
   const VariableValue & _reaction_slipweakening_neighbor_z;
 
+  const VariableValue & _reaction_pressure_x;
+  const VariableValue & _reaction_pressure_neighbor_x;
+  const VariableValue & _reaction_pressure_y;
+  const VariableValue & _reaction_pressure_neighbor_y;
+  const VariableValue & _reaction_pressure_z;
+  const VariableValue & _reaction_pressure_neighbor_z;
 
   const VariableValue & _disp_slipweakening_x_old;
   const VariableValue & _disp_slipweakening_neighbor_x_old;
