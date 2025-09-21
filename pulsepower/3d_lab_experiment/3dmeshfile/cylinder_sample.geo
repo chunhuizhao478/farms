@@ -1,10 +1,10 @@
 SetFactory("OpenCASCADE");
 
 // Characteristic length (mesh size)
-lc = 0.0005;  // Smaller values result in finer mesh
-height = 0.001;
+lc = 0.00025;  // Smaller values result in finer mesh
+height = 0.06;
 radius_outer = 0.0125;
-radius_inner = 0.002;
+radius_inner = 0.0016;
 
 // Define the main cylinder with specific mesh size at base points
 Point(1) = {0, 0, 0, lc};

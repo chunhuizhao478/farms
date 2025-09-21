@@ -151,6 +151,59 @@ if __name__ == "__main__":
 	plt.legend()
 	plt.tight_layout()
 
+	# ---------------- Polynomial Approximation (Pressure vs Radius) ----------------
+	# Fit a polynomial only for r >= r_fit_min (user requirement)
+	r_fit_min_mm = 1.6
+	poly_degree = 4  # adjust if needed
+	mask_fit = r_vals_mm >= r_fit_min_mm
+	if mask_fit.sum() > poly_degree:
+		# Subset for fitting
+		r_fit = r_vals_mm[mask_fit]
+		P_fit_data = P_vals_MPa[mask_fit]
+		coeffs = np.polyfit(r_fit, P_fit_data, poly_degree)
+		poly_func = np.poly1d(coeffs)
+		P_fit_subset = poly_func(r_fit)
+		# Metrics on subset only
+		ss_res = np.sum((P_fit_data - P_fit_subset)**2)
+		ss_tot = np.sum((P_fit_data - np.mean(P_fit_data))**2)
+		R2 = 1.0 - ss_res/ss_tot if ss_tot > 0 else np.nan
+		RMSE = np.sqrt(ss_res/len(r_fit))
+		# Build readable equation
+		terms = []
+		deg = poly_degree
+		for c in coeffs:
+			if deg == 0:
+				terms.append(f"{c:.6g}")
+			elif deg == 1:
+				terms.append(f"{c:.6g} r")
+			else:
+				terms.append(f"{c:.6g} r^{deg}")
+			deg -= 1
+		poly_equation_str = "P(r) = " + " + ".join(terms)
+		print(f"Polynomial fit (degree {poly_degree}) for r >= {r_fit_min_mm} mm:")
+		print("Variables: r in mm, P in MPa")
+		print(poly_equation_str)
+		print(f"R^2 = {R2:.6f}; RMSE = {RMSE:.6g} MPa (subset only)")
+	else:
+		print(f"Not enough data points (have {mask_fit.sum()}) above r >= {r_fit_min_mm} mm to fit a degree {poly_degree} polynomial.")
+		coeffs = None
+
+	# Plot comparison (show fit only in region where applied)
+	plt.figure(figsize=(6,4))
+	plt.plot(r_vals_mm, P_vals_MPa, label='Simulation', lw=2)
+	plt.axvline(r_fit_min_mm, color='gray', ls='--', lw=1, label=f'fit start {r_fit_min_mm} mm')
+	if coeffs is not None:
+		plt.plot(r_fit, poly_func(r_fit), '--', lw=2,
+			 label=f'Poly deg {poly_degree} (R^2={R2:.4f})')
+	plt.xlabel('$r_{ch}$ (mm)')
+	plt.ylabel('P (MPa)')
+	plt.title(f'Pressure vs Radius (Poly Fit for r ≥ {r_fit_min_mm} mm)')
+	plt.grid(True)
+	plt.legend()
+	plt.tight_layout()
+	plt.savefig('pressure_radius_polyfit.png', dpi=300)
+	plt.savefig('pressure_radius_polyfit.pdf')
+
 	# 2x2 combined summary figure
 	fig, axes = plt.subplots(2, 2, figsize=(10,8))
 

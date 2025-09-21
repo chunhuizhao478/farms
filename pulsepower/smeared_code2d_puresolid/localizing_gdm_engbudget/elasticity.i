@@ -81,8 +81,8 @@ hht_alpha = 0
   [to_psie_active]
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
-    variable = eqstrain_local
-    source_variable = eqstrain_local
+    variable = 'eqstrain_local crack_damage_aux'
+    source_variable = 'eqstrain_local crack_damage_aux'
     execute_on = 'TIMESTEP_BEGIN'
   []
 []
