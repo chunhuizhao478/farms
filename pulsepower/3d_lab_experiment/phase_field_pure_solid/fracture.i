@@ -1,15 +1,11 @@
-# #initial damage box 1
-# bottom_left1 = '-0.0025 -2e-4 0'
-# top_right1 = '0.0025 2e-4 0'
-
-# #initial damage box 2
-# bottom_left2 = '-2e-4 -0.0025 0'
-# top_right2 = '2e-4 0.0025 0'
+#initial damage box 1
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../3dmeshfile/cylinder_sample.msh'
+    file =  '../3dmeshfile/cylinder_sample_coarse.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -18,14 +14,14 @@
     input = msh
     use_closest_node=true
   []
-  # [./subdomain_id]
-  #   type = SubdomainBoundingBoxGenerator
-  #   bottom_left = ${bottom_left1}
-  #   top_right = ${top_right1}
-  #   location = INSIDE
-  #   block_id = 1
-  #   input = extranodeset1
-  # []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 2
+    input = extranodeset1
+  []
   # [./subdomain_id2]
   #   type = SubdomainBoundingBoxGenerator
   #   bottom_left = ${bottom_left2}
@@ -65,20 +61,20 @@
 []
 
 #need to check whether to apply initial damage
-# [AuxKernels]
-#   [define_initial_damage_block1]
-#     type = ConstantAux
-#     variable = initial_damage_aux
-#     value = 0.9
-#     block = 1
-#   []
-#   [define_initial_damage_block0]
-#     type = ConstantAux
-#     variable = initial_damage_aux
-#     value = 0
-#     block = '4 5'
-#   []
-# []
+[AuxKernels]
+  [define_initial_damage_block1]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0.9
+    block = 2
+  []
+  [define_initial_damage_block0]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0
+    block = 1
+  []
+[]
 
 [Bounds]
   [irreversibility_first_step]

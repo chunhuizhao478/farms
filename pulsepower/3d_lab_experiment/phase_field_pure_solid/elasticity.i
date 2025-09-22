@@ -7,7 +7,7 @@ dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2.5e-4 
+l =  5e-4 
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -62,18 +62,14 @@ hht_alpha = 0 #match energy budget
   displacements = 'disp_x disp_y disp_z'
 []
 
-# #initial damage box 1
-# bottom_left1 = '-0.0025 -2e-4 0'
-# top_right1 = '0.0025 2e-4 0'
-
-# #initial damage box 2
-# bottom_left2 = '-2e-4 -0.0025 0'
-# top_right2 = '2e-4 0.0025 0'
+#initial damage box 1
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../3dmeshfile/cylinder_sample.msh'
+    file =  '../3dmeshfile/cylinder_sample_coarse.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -82,22 +78,14 @@ hht_alpha = 0 #match energy budget
     input = msh
     use_closest_node=true
   []
-  # [./subdomain_id]
-  #   type = SubdomainBoundingBoxGenerator
-  #   bottom_left = ${bottom_left1}
-  #   top_right = ${top_right1}
-  #   location = INSIDE
-  #   block_id = 1
-  #   input = extranodeset1
-  # []
-  # [./subdomain_id2]
-  #   type = SubdomainBoundingBoxGenerator
-  #   bottom_left = ${bottom_left2}
-  #   top_right = ${top_right2}
-  #   location = INSIDE
-  #   block_id = 1
-  #   input = subdomain_id
-  # []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 2
+    input = extranodeset1
+  []
   displacements = 'disp_x disp_y disp_z'
 []
 
@@ -324,89 +312,40 @@ hht_alpha = 0 #match energy budget
   []
 []
 
-[BCs]
-  #confinement
-  [./Pressure]
-    #assign pressure on inner surface
-    [pressure_inner]
-      boundary = 4 #confirm the boundary id
-      function = func_tri_pulse
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx
-      save_in_disp_y = fy
-      save_in_disp_z = fz
-    []             
-  []   
-  # fix ptr
-  [./fix_cptr1_x]
-    type = DirichletBC
-    variable = disp_x
-    boundary = corner_ptr
-    value = 0
-  []
-  [./fix_cptr2_y]
-    type = DirichletBC
-    variable = disp_y
-    boundary = corner_ptr
-    value = 0
-  []
-  [./fix_cptr2_z]
-    type = DirichletBC
-    variable = disp_z
-    boundary = corner_ptr
-    value = 0
-  []
-  # #add dampers
-  # [damp_outer_x]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_x
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 0 
-  #   boundary = 1 #confirm the boundary id, and whether to use absorbing bc
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  #   save_in = fdampx
-  # []
-  # [damp_outer_y]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_y
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 1
-  #   boundary = 1
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  #   save_in = fdampy
-  # []
-  # [damp_outer_z]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_z
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 2
-  #   boundary = 1
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  #   save_in = fdampz
-  # []
-[]
+# [BCs]
+#   #confinement
+#   [./Pressure]
+#     #assign pressure on inner surface
+#     [pressure_inner]
+#       boundary = 4 #confirm the boundary id
+#       function = func_tri_pulse
+#       displacements = 'disp_x disp_y disp_z'
+#       use_displaced_mesh = false
+#       save_in_disp_x = fx
+#       save_in_disp_y = fy
+#       save_in_disp_z = fz
+#     []             
+#   []   
+#   # fix ptr
+#   [./fix_cptr1_x]
+#     type = DirichletBC
+#     variable = disp_x
+#     boundary = corner_ptr
+#     value = 0
+#   []
+#   [./fix_cptr2_y]
+#     type = DirichletBC
+#     variable = disp_y
+#     boundary = corner_ptr
+#     value = 0
+#   []
+#   [./fix_cptr2_z]
+#     type = DirichletBC
+#     variable = disp_z
+#     boundary = corner_ptr
+#     value = 0
+#   []
+# []
 
 [Materials]
   [bulk]
@@ -498,7 +437,7 @@ hht_alpha = 0 #match energy budget
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 4
+    time_step_interval = 10
     show = 'd pulse_load_aux'
   [../]
   [checkpoint]
