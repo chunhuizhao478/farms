@@ -1,24 +1,36 @@
 #implicit continuum damage-breakage model dynamics
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file = '../../mesh/mesh_test.msh'
-    []
-    [./sidesets]
+        type = GeneratedMeshGenerator
+        dim = 2
+        nx = 100
+        ny = 20
+        xmin = 0
+        xmax = 0.05
+        ymin = 0
+        ymax = 0.01
+    [] 
+    [./box]
+        type = SubdomainBoundingBoxGenerator
         input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
+        block_id = 1
+        bottom_left = '0 0 0'
+        top_right = '0.05 0.004 0'
     []
-    [./extranodeset1]
-        type = ExtraNodesetGenerator
-        coord = '0 -480000 0'
-        new_boundary = corner_ptr
-        input = sidesets
+    [./box2]
+        type = SubdomainBoundingBoxGenerator
+        input = box
+        block_id = 0
+        bottom_left = '0 0.004 0'
+        top_right = '0.05 0.006 0'
     []
+    [./box3]
+        type = SubdomainBoundingBoxGenerator
+        input = box2
+        block_id = 2
+        bottom_left = '0 0.006 0'
+        top_right = '0.05 0.01 0'
+    []  
 []
 
 [GlobalParams]
@@ -50,7 +62,7 @@
 
     #strain rate dependent Cd options
     m_exponent = 0.8
-    strain_rate_hat = 1e-6
+    strain_rate_hat = 1e-8
     cd_hat = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -61,7 +73,7 @@
     CBH_constant = 1e4
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    C_1 = 1e-4
+    C_1 = 300
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -139,13 +151,13 @@
         type = DamageEvolutionDiffusion
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
-        block = '1 3'
+        block = '0'
     []
     [forcing_term_alpha]
         type = DamageEvolutionConditionalForcing
         variable = alpha_damagedvar_sub
         coupled = B_damagedvar_sub
-        block = '1 3'
+        block = '0'
     []
     # [perturb_source_alpha]
     #     type = PerturbationSource
@@ -162,7 +174,7 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
-        block = '1 3'
+        block = '0'
     []
     # [perturb_source_b]
     #     type = PerturbationSource
@@ -204,14 +216,6 @@
 []
 
 [AuxKernels]
-    [get_initial_damage]
-        type = SolutionAux
-        variable = initial_damage_sub_aux
-        solution = init_sol_components
-        from_variable = alpha_damagedvar_output
-        execute_on = 'TIMESTEP_BEGIN'
-    []
-    #
     [get_Cd]
         type = MaterialRealAux
         variable = Cd_aux
@@ -265,42 +269,4 @@
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
     petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     verbose = true
-    # dt = 1e-2
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-2
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
-        growth_factor = 1.1
-        max_time_step_bound = 1e7
-    []
-[]
-
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = '../../static_solve/static_solve_out.e'
-      system_variables = 'alpha_damagedvar_output B_damagedvar_output'
-      timestep = LATEST
-      force_preaux = true
-      execute_on = 'INITIAL'
-    [../]
-[]
-
-[ICs]
-    [alpha_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = alpha_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = alpha_damagedvar_output
-    []  
-    [B_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = B_damagedvar_sub
-        solution_uo = init_sol_components
-        from_variable = B_damagedvar_output
-    []
-[]
-
-[Outputs]
 []

@@ -1,26 +1,36 @@
 #implicit continuum damage-breakage model dynamics
 [Mesh]
     [./msh]
-        type = FileMeshGenerator
-        file = '../../mesh/mesh_test.msh'
-    []
-    [./sidesets]
+        type = GeneratedMeshGenerator
+        dim = 2
+        nx = 100
+        ny = 20
+        xmin = 0
+        xmax = 0.05
+        ymin = 0
+        ymax = 0.01
+    [] 
+    [./box]
+        type = SubdomainBoundingBoxGenerator
         input = msh
-        type = SideSetsFromNormalsGenerator
-        normals = '-1 0 0
-                    1 0 0
-                    0 -1 0
-                    0 1 0'
-        new_boundary = 'left right bottom top'
+        block_id = 1
+        bottom_left = '0 0 0'
+        top_right = '0.05 0.004 0'
     []
-    [./extranodeset1]
-        type = ExtraNodesetGenerator
-        coord = '-50000 -50000 0;
-                 50000 -50000 0'
-        new_boundary = corner_ptr
-        input = sidesets
+    [./box2]
+        type = SubdomainBoundingBoxGenerator
+        input = box
+        block_id = 0
+        bottom_left = '0 0.004 0'
+        top_right = '0.05 0.006 0'
     []
-    displacements = 'disp_x disp_y'
+    [./box3]
+        type = SubdomainBoundingBoxGenerator
+        input = box2
+        block_id = 2
+        bottom_left = '0 0.006 0'
+        top_right = '0.05 0.01 0'
+    []  
 []
 
 [GlobalParams]
@@ -204,25 +214,19 @@
         type = MaterialRealAux
         variable = xi_aux
         property = strain_invariant_ratio
-        block = '1 3'
+        block = '0'
     []
     [get_I2]
         type = MaterialRealAux
         variable = I2_aux
         property = second_elastic_strain_invariant
-        block = '1 3'
+        block = '0'
     [] 
     [get_deviatroic_strain_rate]
         type = MaterialRealAux
         variable = deviatroic_strain_rate_aux
         property = deviatroic_strain_rate
-        block = '1 3'
-    []
-    #get spatial damage parameters
-    [get_cg]
-        type = FunctionAux
-        variable = cg_aux
-        function = func_spatial_cg
+        block = '0'
     []
     #
     [get_nonlocal_xi]
@@ -237,7 +241,7 @@
         property = pk2_stress
         i = 0
         j = 1
-        block = '1 3'
+        block = '0'
     []
     [get_green_lagrange_elastic_strain_01]
         type = MaterialRankTwoTensorAux
@@ -245,7 +249,7 @@
         property = green_lagrange_elastic_strain
         i = 0
         j = 1
-        block = '1 3'
+        block = '0'
     []
     [get_plastic_strain_01]
         type = MaterialRankTwoTensorAux
@@ -253,7 +257,7 @@
         property = plastic_strain
         i = 0
         j = 1
-        block = '1 3'   
+        block = '0'   
     []
     [get_total_lagrange_strain_01]
         type = MaterialRankTwoTensorAux
@@ -261,7 +265,7 @@
         property = total_lagrange_strain
         i = 0
         j = 1
-        block = '1 3'
+        block = '0'
     []
 []
 
@@ -311,26 +315,9 @@
 []
 
 [Functions]
-    [func_top_bc]
+    [applied_load_top]
         type = ParsedFunction
-        expression = 'if (t>dt, 1e-8 * t, 0)'
-        symbol_names = 'dt'
-        symbol_values = '1e-3'
-    []
-    [func_top_traction]
-        type = ParsedFunction
-        expression = '12e6 + 1e-8 * 32.04e9 * t'
-    []
-    [func_bottom_traction]
-        type = ParsedFunction
-        expression = '-12e6 - 1e-8 * 32.04e9 * t'
-    []
-    [func_spatial_cg]
-        type = SpatialDamageBreakageParameters
-        W = 1e3 #half the total width
-        w = 3e3
-        max_val = 1e-11
-        min_val = 1e-14
+        expression = '1e-6 * t'
     []
 []
 
@@ -363,7 +350,7 @@
         large_kinematics = true
         # output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
         # outputs = exodus
-        block = '1 3'
+        block = '0'
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
@@ -373,7 +360,7 @@
     [define_shear_stress_perturbation]
         type = PerturbationRadialAdvanced
         nucl_center = '0 0 0'
-        peak_value = 0
+        peak_value = 30e6
         thickness = 1000
         length = 2000
         duration = 1
@@ -396,14 +383,14 @@
         large_kinematics = true
         # output_properties = 'green_lagrange_strain pk2_stress'
         # outputs = exodus
-        block = '2'
+        block = '1 2'
     []
     #strain invariant ratio
     [comp_strain_invariant_ratio]
         type = ComputeXi 
         output_properties = 'strain_invariant_ratio'
         outputs = exodus
-        block = '2'
+        block = '1 2'
     []
     #nonlocal eqstrain
     [nonlocal_eqstrain]
@@ -417,9 +404,9 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 200
+        length_scale = 1e-3
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 1e-3
         weights = BAZANT
         execute_on = TIMESTEP_END
     []
@@ -430,33 +417,6 @@
       type = SMP
       full = true
     []
-[]
-
-[Controls] # turns off inertial terms for the SECOND time step
-  [./period0]
-    type = TimePeriod
-    disable_objects = '*/vel_x */vel_y */accel_x */accel_y */inertia_x */inertia_y */damp_left_x */damp_left_y */damp_right_x */damp_right_y */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y'
-    start_time = -1e-12
-    end_time = 1e-2 # dt used in the simulation
-  []
-[../]
-
-[Postprocessors]
-  [./_dt]
-    type = TimestepSize
-  []
-  [./maxvelx]
-    type = NodalExtremeValue
-    variable = vel_x
-  []
-  [./maxvely]
-    type = NodalExtremeValue
-    variable = vel_y
-  []
-  [./maxvelz]
-    type = NodalExtremeValue
-    variable = vel_z
-  []
 []
   
 [Executioner]
@@ -482,27 +442,12 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    # dt = 1e-2
+    dt = 0.1
     verbose = true
     fixed_point_max_its = 10
     accept_on_max_fixed_point_iteration = false
     fixed_point_rel_tol = 1e-6
     fixed_point_abs_tol = 1e-8
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-2
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
-        growth_factor = 1.1
-        max_time_step_bound = 5e-2
-        #constrain velocity during dynamic simulation
-        constrain_by_velocity = true
-        vel_threshold = 1e-2
-        constant_dt_on_overspeed = 5e-2
-        maxvelx = 'maxvelx'
-        maxvely = 'maxvely'
-        maxvelz = 'maxvelz'
-    []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
@@ -528,182 +473,55 @@
 []
 
 [BCs]
-    # fix bottom boundary
-    # [fix_bottom_y]
-    #     type = DirichletBC
-    #     variable = disp_y
-    #     boundary = bottom
-    #     value = 0
-    # []
-    #add initial shear stress
-    [initial_shear_stress_top]
-        type = NeumannBC
-        variable = disp_x
-        value = 13e6
-        boundary = top
-    [] 
-    # 
-    [static_pressure_top]
-        type = NeumannBC
-        variable = disp_y
-        boundary = top
-        value = -50e6
-        displacements = 'disp_x disp_y'
-    []
-    [static_pressure_bottom]
-        type = NeumannBC
-        variable = disp_y
-        boundary = bottom
-        value = 50e6
-        displacements = 'disp_x disp_y'
-    []       
-    [static_pressure_left]
-        type = NeumannBC
-        variable = disp_x
-        boundary = left
-        value = 50e6
-        displacements = 'disp_x disp_y'
-    []  
-    [static_pressure_right]
-        type = NeumannBC
-        variable = disp_x
-        boundary = right
-        value = -50e6
-        displacements = 'disp_x disp_y'
-    []       
-    # fix left ptr
-    [./fix_cptr1_x]
+    #fix bottom
+    [fix_bottom_x]
         type = DirichletBC
         variable = disp_x
-        boundary = corner_ptr
+        boundary = bottom
         value = 0
     []
-    [./fix_cptr2_y]
+    [fix_bottom_y]
         type = DirichletBC
         variable = disp_y
-        boundary = corner_ptr
+        boundary = bottom
         value = 0
+    []
+    #load on top
+    [load_top_y2]
+        type = NeumannBC
+        variable = disp_y
+        boundary = top
+        value = -100e6
+    []
+    #periodic boundary
+    [./Periodic]
+        [./x]
+          variable = disp_x
+          primary = left
+          secondary = right
+          translation = '0.05 0 0'
+        [../]
+        [./y]
+          variable = disp_y
+          primary = left
+          secondary = right
+          translation = '0.05 0 0'
+        [../]
+    [../]
+    #displacement rate    
+    [applied_top_x2]
+        type = FunctionDirichletBC
+        variable = disp_x
+        boundary = top
+        function = applied_load_top
     [] 
-    #add dampers
-    [damp_top_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_top_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = top
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-   [damp_bottom_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_bottom_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = bottom
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_left_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = left
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_left_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = left
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_right_x]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_x
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 0
-        boundary = right
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []
-    [damp_right_y]
-        type = FarmsNonReflectDashpotBC
-        variable = disp_y
-        displacements = 'disp_x disp_y'
-        velocities = 'vel_x vel_y'
-        accelerations = 'accel_x accel_y'
-        component = 1
-        boundary = right
-        beta = 0.25
-        gamma = 0.5
-        shear_wave_speed = 3464
-        p_wave_speed = 6000
-        density = 2700
-    []   
 []
 
 [MultiApps]
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub3.i'
+        input_files = 'dynamic_solve_sub.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
@@ -727,52 +545,12 @@
     []
 []
 
-[UserObjects]
-    [./init_sol_components]
-      type = SolutionUserObject
-      mesh = '../../static_solve/static_solve_out.e'
-      system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
-      timestep = LATEST
-      force_preaux = true
-      execute_on = 'INITIAL'
+#compute the reaction force on the top boundary
+[Postprocessors]
+    [./react_x]
+      type = SidesetReaction
+      direction = '1 0 0'
+      stress_tensor = pk2_stress
+      boundary = top
     [../]
-[]
-
-[ICs]
-    [disp_x_ic]
-      type = SolutionIC
-      variable = disp_x
-      solution_uo = init_sol_components
-      from_variable = disp_x
-    []
-    [disp_y_ic]
-      type = SolutionIC
-      variable = disp_y
-      solution_uo = init_sol_components
-      from_variable = disp_y
-    []
-    [strain_invariant_ratio_ic]
-      type = SolutionIC
-      variable = nonlocal_xi
-      solution_uo = init_sol_components
-      from_variable = xi_output
-    []
-    [I2_aux_ic]
-      type = SolutionIC
-      variable = I2_aux
-      solution_uo = init_sol_components
-      from_variable = I2_output
-    []
-    [alpha_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = alpha_damagedvar_aux
-        solution_uo = init_sol_components
-        from_variable = alpha_damagedvar_output
-    []  
-    [B_damagedvar_sub_ic]
-        type = SolutionIC
-        variable = B_damagedvar_aux
-        solution_uo = init_sol_components
-        from_variable = B_damagedvar_output
-    [] 
 []
