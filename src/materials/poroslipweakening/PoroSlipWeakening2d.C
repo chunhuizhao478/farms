@@ -321,8 +321,7 @@ PoroSlipWeakening2d::computeInterfaceTractionAndDerivatives()
      Real dtau_f_dp  = 0;
 
    //Compute friction strength
-  //  Real T2_SW = -(T2 + p);
-      Real T2_SW = T2_o - p;
+   Real T2_SW = -(T2 + p);
 
    if (std::abs(displacement_jump(1)) < Dc)
    {
