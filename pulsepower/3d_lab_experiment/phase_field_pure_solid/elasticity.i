@@ -299,16 +299,30 @@ top_right1 = '0.002 4e-4 0.06'
 []
 
 [Functions]
-  [func_tri_pulse] 
-    type = ElkPulseLoadExperimentWu2022Paper #need to adopt function
+  # [func_tri_pulse] 
+  #   type = ElkPulseLoadExperimentWu2022Paper #need to adopt function
+  #   shape_param_alpha = 4.658e5
+  #   shape_param_beta = 4.661e5
+  #   rise_time = 3e-6
+  #   single_pulse_duration = 1e-5
+  #   Pmax_coefficients = '-8.48306 105.794 -451.486 696.525 -146.249'
+  #   discharge_center = '0 0 0.03'
+  #   number_of_pulses = 10
+  #   r_max_mm = 4.5
+  # []
+  [func_tri_pulse]
+    type = ElkPulseLoadExperiment
     shape_param_alpha = 4.658e5
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    Pmax_coefficients = '-8.48306 105.794 -451.486 696.525 -146.249'
-    discharge_center = '0 0 0.03'
+    EM = 0.03
+    gap = 0.001
+    convert_efficiency = 1.0
+    fitting_param_alpha = 0.35
+    discharge_center = '0 0 0.0005'
     number_of_pulses = 10
-    r_max_mm = 4.5
+    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
