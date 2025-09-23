@@ -266,14 +266,17 @@
     petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     verbose = true
     # dt = 1e-2
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-2
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
-        growth_factor = 1.1
-        max_time_step_bound = 1e7
-    []
+    # [./TimeStepper]
+    #     type = HalfResidualAdaptiveDT
+    #     initial_dt = 1e-2
+    #     dt_min = 1e-7
+    #     dt_max = 1
+    #     half_abs_tol = 1e-8
+    #     half_rel_tol = 0.2
+    #     growth_factor = 1.25
+    #     shrink_factor = 0.5
+    #     start_adaptive_after = 1
+    # [../]
 []
 
 [UserObjects]

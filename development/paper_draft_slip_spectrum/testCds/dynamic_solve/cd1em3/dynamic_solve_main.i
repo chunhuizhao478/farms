@@ -465,7 +465,7 @@
     # solve_type = 'PJFNK'
     start_time = -1e-12
     end_time = 1e5
-    # num_steps = 1
+    num_steps = 5
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
@@ -488,21 +488,32 @@
     accept_on_max_fixed_point_iteration = false
     fixed_point_rel_tol = 1e-6
     fixed_point_abs_tol = 1e-8
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1e-2
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
-        growth_factor = 1.1
-        max_time_step_bound = 1 #increase it to 1e3
-        #constrain velocity during dynamic simulation
-        constrain_by_velocity = true
-        vel_threshold = 1e-2
-        constant_dt_on_overspeed = 5e-2
-        maxvelx = 'maxvelx'
-        maxvely = 'maxvely'
-        maxvelz = 'maxvelz'
-    []
+    # [TimeStepper]
+    #     type = FarmsIterationAdaptiveDT
+    #     dt = 1e-2
+    #     cutback_factor_at_failure = 0.5
+    #     optimal_iterations = 20
+    #     growth_factor = 1.1
+    #     max_time_step_bound = 1 #increase it to 1e3
+    #     #constrain velocity during dynamic simulation
+    #     constrain_by_velocity = true
+    #     vel_threshold = 1e-2
+    #     constant_dt_on_overspeed = 5e-2
+    #     maxvelx = 'maxvelx'
+    #     maxvely = 'maxvely'
+    #     maxvelz = 'maxvelz'
+    # []
+    [./TimeStepper]
+        type = HalfResidualAdaptiveDT
+        initial_dt = 1e-2
+        dt_min = 1e-7
+        dt_max = 1
+        half_abs_tol = 1e-8
+        half_rel_tol = 0.5
+        growth_factor = 1.25
+        shrink_factor = 0.5
+        start_adaptive_after = 1
+    [../]
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
@@ -513,7 +524,7 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 10
+      time_step_interval = 1
       show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux mean_stress_perturbation'
     [../]
     [./csv]
