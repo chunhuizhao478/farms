@@ -312,40 +312,40 @@ top_right1 = '0.002 4e-4 0.06'
   []
 []
 
-# [BCs]
-#   #confinement
-#   [./Pressure]
-#     #assign pressure on inner surface
-#     [pressure_inner]
-#       boundary = 4 #confirm the boundary id
-#       function = func_tri_pulse
-#       displacements = 'disp_x disp_y disp_z'
-#       use_displaced_mesh = false
-#       save_in_disp_x = fx
-#       save_in_disp_y = fy
-#       save_in_disp_z = fz
-#     []             
-#   []   
-#   # fix ptr
-#   [./fix_cptr1_x]
-#     type = DirichletBC
-#     variable = disp_x
-#     boundary = corner_ptr
-#     value = 0
-#   []
-#   [./fix_cptr2_y]
-#     type = DirichletBC
-#     variable = disp_y
-#     boundary = corner_ptr
-#     value = 0
-#   []
-#   [./fix_cptr2_z]
-#     type = DirichletBC
-#     variable = disp_z
-#     boundary = corner_ptr
-#     value = 0
-#   []
-# []
+[BCs]
+  #confinement
+  [./Pressure]
+    #assign pressure on inner surface
+    [pressure_inner]
+      boundary = 4 #confirm the boundary id
+      function = func_tri_pulse
+      displacements = 'disp_x disp_y disp_z'
+      use_displaced_mesh = false
+      save_in_disp_x = fx
+      save_in_disp_y = fy
+      save_in_disp_z = fz
+    []             
+  []   
+  # fix ptr
+  [./fix_cptr1_x]
+    type = DirichletBC
+    variable = disp_x
+    boundary = corner_ptr
+    value = 0
+  []
+  [./fix_cptr2_y]
+    type = DirichletBC
+    variable = disp_y
+    boundary = corner_ptr
+    value = 0
+  []
+  [./fix_cptr2_z]
+    type = DirichletBC
+    variable = disp_z
+    boundary = corner_ptr
+    value = 0
+  []
+[]
 
 [Materials]
   [bulk]
