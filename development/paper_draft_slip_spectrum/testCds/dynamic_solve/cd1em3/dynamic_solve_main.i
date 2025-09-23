@@ -509,8 +509,8 @@
         dt_min = 1e-7
         dt_max = 1
         half_abs_tol = 1e-8
-        half_rel_tol = 0.5
-        growth_factor = 1.25
+        half_rel_tol = 0.2
+        growth_factor = 1.1
         shrink_factor = 0.5
         start_adaptive_after = 1
     [../]
