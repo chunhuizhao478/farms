@@ -7,7 +7,7 @@ dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  5e-4 
+l =  5e-4 #l = 5e-4, ft = 61 MPa
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -22,7 +22,7 @@ hht_alpha = 0 #match energy budget
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture2.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
@@ -316,13 +316,13 @@ top_right1 = '0.002 4e-4 0.06'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.03
+    EM = 0.004 #peak ~ 80e6 at center borehole
     gap = 0.001
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '0 0 0.0005'
+    discharge_center = '0 0 0.03'
     number_of_pulses = 10
-    peak_pressure = 80e6 #if peak pressure is specified, the depth variation is ignored
+    # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
