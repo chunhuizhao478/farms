@@ -274,8 +274,8 @@
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 4.2333e9
-        shear_modulus = 13.3e9
+        lambda = 3.87e9
+        shear_modulus = 6.8e9
         use_displaced_mesh = false
     []
     [stress]
@@ -287,7 +287,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2353
+        prop_values = 2419
     []
     [./rhof]
         type = GenericConstantMaterial
@@ -297,32 +297,32 @@
     [./turtuosity]
         type = GenericConstantMaterial
         prop_names = taut
-        prop_values = 7.07
+        prop_values = 2.29
     [../]
     [./porosity]
         type = GenericConstantMaterial
         prop_names = porosity
-        prop_values = 0.02
+        prop_values = 0.19
     [../]
     [./hydconductivity]
         type = GenericConstantMaterial
         prop_names = hydconductivity
-        prop_values = 1.974e-13
+        prop_values = 5.527e-12
     [../]
     [./hydconductivity_layer]
         type = GenericConstantMaterial
         prop_names = hydconductivity_layer
-        prop_values = 1.974e-13
+        prop_values = 5.527e-12
     [../]
     [./biotcoeff]
         type = GenericConstantMaterial
         prop_names = biot_coefficient
-        prop_values = 0.637
+        prop_values = 0.729
     [../]
     [./biotmodulus]
         type = GenericConstantMaterial
         prop_names = biot_modulus
-        prop_values = 38.4e9
+        prop_values = 9.01e9
     [../]
     [./constants]
         type = GenericConstantMaterial
@@ -402,8 +402,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = top
     []
     [./dashpot_top_y]
@@ -412,8 +412,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = top
     []
     [./dashpot_bottom_x]
@@ -422,8 +422,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = bottom
     []
     [./dashpot_bottom_y]
@@ -432,8 +432,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = bottom
     []
     [./dashpot_left_x]
@@ -442,8 +442,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = left
     []
     [./dashpot_left_y]
@@ -452,8 +452,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = left
     []
     [./dashpot_right_x]
@@ -462,8 +462,8 @@
         variable = disp_x
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = right
     []
     [./dashpot_right_y]
@@ -472,8 +472,8 @@
         variable = disp_y
         disp_x = disp_x
         disp_y = disp_y
-        p_wave_speed = 3619
-        shear_wave_speed = 2377
+        p_wave_speed = 2687
+        shear_wave_speed = 1676
         boundary = right
     []
 []
