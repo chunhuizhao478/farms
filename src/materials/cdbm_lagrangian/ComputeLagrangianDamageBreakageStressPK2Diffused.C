@@ -178,9 +178,9 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
         //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
-        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
+          F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
         for (unsigned int m = 0; m < 3; m++){
-          F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j);
+         // F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j);
           Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
         }
     }

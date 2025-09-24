@@ -414,7 +414,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 25
+        optimal_iterations = 10
         growth_factor = 1.25
         max_time_step_bound = 10
     []
@@ -428,7 +428,7 @@
 [Outputs]
     [./exodus]
         type = Exodus
-        time_step_interval = 3 ###
+        time_step_interval = 5 ###
         show = 'disp_z porepressure vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
