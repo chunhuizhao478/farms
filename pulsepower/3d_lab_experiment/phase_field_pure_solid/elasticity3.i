@@ -22,7 +22,7 @@ hht_alpha = 0 #match energy budget
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture2.i
+    input_files = fracture3.i
     cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
@@ -316,7 +316,7 @@ top_right1 = '0.002 4e-4 0.06'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.016 #peak ~ 100e6 at center borehole
+    EM = 0.032 #peak ~ 170e6 at center borehole
     gap = 0.001
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35

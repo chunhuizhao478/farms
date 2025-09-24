@@ -242,7 +242,6 @@ top_right2 = '2e-4 0.0025 0'
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
-  use_snes_vi = true
 []
 
 [Outputs]

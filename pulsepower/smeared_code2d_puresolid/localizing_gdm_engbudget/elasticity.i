@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 137e6 ##computed from pf
+ft = 90e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -13,10 +13,6 @@ l =  1e-4
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
-
-#gradient activity parameters
-kappa_i = ${fparse ft / E}
-c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent strain
 
 #finite element properties
 #----------------------------------------------------#
@@ -64,7 +60,7 @@ hht_alpha = 0
   [fracture]
     type = TransientMultiApp
     input_files = nonlocal_subapp.i
-    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+    cli_args = 'l=${l}'
     execute_on = 'TIMESTEP_BEGIN'
     clone_parent_mesh = true
   []
@@ -102,7 +98,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -287,7 +283,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
     number_of_pulses = 100
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -456,7 +452,7 @@ top_right2 = '2e-4 0.0025 0'
     type = FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
-    paramB = 500
+    paramB = 750
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'elastic_strain psie_active strain_increment'
@@ -535,9 +531,11 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [Outputs]
-  exodus = true
-  time_step_interval = 40
-  print_linear_residuals = false
+  [./exodus]
+    type = Exodus
+    time_step_interval = 40
+    show = 'crack_damage_aux vel_x vel_y vel_z'
+  [../]
   [checkpoint]
       type = Checkpoint
       time_step_interval = 100

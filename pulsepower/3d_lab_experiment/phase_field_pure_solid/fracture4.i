@@ -1,15 +1,11 @@
 #initial damage box 1
-bottom_left1 = '-0.0025 -2e-4 0'
-top_right1 = '0.0025 2e-4 0'
-
-#initial damage box 2
-bottom_left2 = '-2e-4 -0.0025 0'
-top_right2 = '2e-4 0.0025 0'
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../3dmeshfile/cylinder_sample_coarse.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -23,55 +19,18 @@ top_right2 = '2e-4 0.0025 0'
     bottom_left = ${bottom_left1}
     top_right = ${top_right1}
     location = INSIDE
-    block_id = 1
+    block_id = 2
     input = extranodeset1
   []
-  [./subdomain_id2]
-    type = SubdomainBoundingBoxGenerator
-    bottom_left = ${bottom_left2}
-    top_right = ${top_right2}
-    location = INSIDE
-    block_id = 1
-    input = subdomain_id
-  []
+  # [./subdomain_id2]
+  #   type = SubdomainBoundingBoxGenerator
+  #   bottom_left = ${bottom_left2}
+  #   top_right = ${top_right2}
+  #   location = INSIDE
+  #   block_id = 1
+  #   input = subdomain_id
+  # []
 []
-
-# [Adaptivity]
-#   max_h_level = 3
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#         block = 2
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.5
-#         block = 2
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#         block = 2
-#       []   
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#         block = 2
-#       [] 
-#   []
-# []
 
 [Variables]
   [d]
@@ -101,18 +60,19 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
+#need to check whether to apply initial damage
 [AuxKernels]
   [define_initial_damage_block1]
     type = ConstantAux
     variable = initial_damage_aux
     value = 0.9
-    block = 1
+    block = 2
   []
   [define_initial_damage_block0]
     type = ConstantAux
     variable = initial_damage_aux
     value = 0
-    block = '4 5'
+    block = 1
   []
 []
 
@@ -235,6 +195,7 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
+  #scalable to large problems
   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
   petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
 
@@ -242,6 +203,7 @@ top_right2 = '2e-4 0.0025 0'
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
+  use_snes_vi = true
 []
 
 [Outputs]

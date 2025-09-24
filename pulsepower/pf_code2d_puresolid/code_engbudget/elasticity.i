@@ -3,7 +3,6 @@ nu = 0.373
 # ft = 25.5e6
 Gc_const = 100
 density = 2600
-dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
@@ -23,7 +22,7 @@ hht_alpha = 0 #match energy budget
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -279,8 +278,8 @@ top_right2 = '2e-4 0.0025 0'
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.0005'
-    number_of_pulses = 10
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    number_of_pulses = 100
+    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -392,11 +391,11 @@ top_right2 = '2e-4 0.0025 0'
 
   solve_type = NEWTON
 
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  petsc_options_value = 'lu       superlu_dist                 '
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  # petsc_options_value = 'lu       superlu_dist                 '
 
-  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  # petsc_options_value = 'gmres     hypre  boomeramg True'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
   line_search = 'basic'
@@ -408,7 +407,7 @@ top_right2 = '2e-4 0.0025 0'
   nl_max_its = 30
 
   # dt = 0.5e-7
-  end_time = 1e-5
+  end_time = 100e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -432,9 +431,11 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [Outputs]
-  exodus = true
-  time_step_interval = 20
-  print_linear_residuals = false
+  [./exodus]
+    type = Exodus
+    time_step_interval = 40
+    show = 'd vel_x vel_y vel_z'
+  [../]
   [checkpoint]
       type = Checkpoint
       time_step_interval = 100

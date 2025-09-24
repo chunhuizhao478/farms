@@ -6,7 +6,7 @@ full_input_energy_static = 1.768381e-03
 #----------------------------------------------------#
 E = 50e9
 nu = 0.373
-ft = 137e6 ##computed from pf
+ft = 90e6 ##computed from pf
 Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -17,11 +17,6 @@ l =  1e-4
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 confinement_pressure  = 1e6
-#----------------------------------------------------#
-#gradient activity parameters
-kappa_i = ${fparse ft / E}
-c0 = 1e-12 #minimum value of the gradient activity parameter for the equivalent strain
-#hydraulic properties
 #----------------------------------------------------#
 initial_pore_pressure = 0.0965e6
 fluid_density = 1000
@@ -51,69 +46,11 @@ hht_alpha = 0
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
-# [Adaptivity]
-#   max_h_level = 5
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.01
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []   
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#       [] 
-#   []
-# []
-
-# [MultiApps]
-#   [fracture]
-#     type = TransientMultiApp
-#     input_files = nonlocal_subapp2.i
-#     cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
-#     execute_on = 'TIMESTEP_END'
-#     clone_parent_mesh = true
-#   []
-# []
-
-# [Transfers]
-#   [from_d]
-#     type = MultiAppCopyTransfer
-#     from_multi_app = 'fracture'
-#     variable = nonlocal_eqstrain
-#     source_variable = nonlocal_eqstrain
-#   []
-#   [to_psie_active]
-#     type = MultiAppCopyTransfer
-#     to_multi_app = 'fracture'
-#     variable = eqstrain_local
-#     source_variable = eqstrain_local
-#   []
-# []
-
 [MultiApps]
   [fracture]
     type = TransientMultiApp
     input_files = nonlocal_subapp.i
-    cli_args = 'l=${l};kappa_i=${kappa_i};c0=${c0}'
+    cli_args = 'l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -150,7 +87,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -582,7 +519,7 @@ top_right2 = '2e-4 0.0025 0'
     type = FarmsComputeSmearedCrackingStressGradsSpectralSmallStrain
     nonlocal_eqstrain = nonlocal_eqstrain
     paramA = 0.99
-    paramB = 500
+    paramB = 750
     cracking_stress = strength
     initial_crack_damage = crack_damage_initial
     output_properties = 'elastic_strain psie_active strain_increment'
@@ -745,11 +682,11 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-ksp_gmres_restart -pc_type -sub_pc_type'
   # petsc_options_value = '101                asm      lu'
 
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  petsc_options_value = ' lu       mumps       100'
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  # petsc_options_value = ' lu       mumps       100'
 
-  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  # petsc_options_value = 'gmres     hypre  boomeramg True'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
@@ -780,9 +717,11 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [Outputs]
-  exodus = true
-  time_step_interval = 40
-  print_linear_residuals = false
+  [./exodus]
+    type = Exodus
+    time_step_interval = 40
+    show = 'crack_damage_aux vel_x vel_y vel_z pp'
+  [../]
   [checkpoint]
       type = Checkpoint
       time_step_interval = 100

@@ -8,7 +8,6 @@ E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3 
-dx_min = 2.5e-5 # minimum mesh size, m
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  1e-4 # length scale, m
@@ -20,7 +19,6 @@ confinement_pressure  = 1e6
 
 #hydraulic properties
 #----------------------------------------------------#
-initial_pore_pressure = 0.0965e6
 fluid_density = 1000
 biot_coefficient = 0.4
 fluid_bulk_modulus = 1e+9
@@ -84,7 +82,7 @@ hht_alpha = 0
   [fracture]
     type = TransientMultiApp
     input_files = fracture.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -135,7 +133,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d_small.msh'
+    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -744,8 +742,8 @@ top_right2 = '2e-4 0.0025 0'
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    # disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
-    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */pressure_inner'
+    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
+    # disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */pressure_inner'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
   []
@@ -766,11 +764,11 @@ top_right2 = '2e-4 0.0025 0'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  petsc_options_value = ' lu       mumps       100'
+  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  # petsc_options_value = ' lu       mumps       100'
 
-  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  # petsc_options_value = 'gmres     hypre  boomeramg True'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
   line_search = 'basic'
@@ -804,9 +802,11 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [Outputs]
-  exodus = true
-  time_step_interval = 20
-  print_linear_residuals = false
+  [./exodus]
+    type = Exodus
+    time_step_interval = 40
+    show = 'd vel_x vel_y vel_z pp'
+  [../]
   [checkpoint]
       type = Checkpoint
       time_step_interval = 100
