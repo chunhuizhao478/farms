@@ -5,13 +5,13 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  './Planar_fault_unstructured.msh'
+        file =  './Planar_fault_unstructured_Berea.msh'
     []
     [subdomain1]
         input = msh
         type = SubdomainBoundingBoxGenerator
-        bottom_left = '-15000 -15000 0'
-        top_right = '15000 15000 0'
+        bottom_left = '-10000 -10000 0'
+        top_right = '10000 10000 0'
         block_id = 0
     []
     [./new_block_1]
@@ -33,9 +33,9 @@
     displacements = 'disp_x disp_y' 
     fluid_vel = 'fluid_vel_x fluid_vel_y'
     porepressure = 'p'
-    q = 0.5
+    q = 0.2
     Dc = 0.4
-    elem_size = 75
+    elem_size = 25
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -500,8 +500,8 @@
 [Executioner]
     type = Transient
     dt = 0.001
-    end_time = 4
-    automatic_scaling = true
+    end_time = 4.5
+   # automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference
     []

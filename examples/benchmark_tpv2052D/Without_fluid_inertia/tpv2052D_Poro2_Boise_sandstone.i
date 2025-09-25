@@ -40,21 +40,22 @@
     mu_d = 0.525
 []
 
+[UserObjects]
+  [dictator]
+    type = PorousFlowDictator
+    porous_flow_vars = 'p'
+    number_fluid_phases = 1
+    number_fluid_components = 1
+  []
+[]
+
 [Variables]
     [./disp_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./disp_y]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./fluid_vel_x]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./fluid_vel_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./p]
@@ -65,77 +66,56 @@
 
 [AuxVariables]
     [./vel_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [./accel_x]
     []
     [./vel_y]
-        order = SECOND
-        family = LAGRANGE
-    []
-    [./fluid_disp_x]
-        order = SECOND
-        family = LAGRANGE
-    []
-    [./fluid_disp_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     []
     [./accel_y]
     []
     [./nodal_area]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./resid_primary_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./resid_primary_y]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./jacob_primary_x]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./jacob_primary_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./resid_damping_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./resid_damping_y]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./jacob_damping_x]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./jacob_damping_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./resid_pressure_x]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
     [./resid_pressure_y]
-        order = SECOND
+        order = FIRST
         family = LAGRANGE
     [../]
-    [./jacob_pressure_x]
-        order = SECOND
-        family = LAGRANGE
-    [../]
-    [./jacob_pressure_y]
-        order = SECOND
-        family = LAGRANGE
-    [../]
+[]
+
+
+[FluidProperties]
+  [simple_fluid]
+    type = SimpleFluidProperties
+    thermal_expansion = 0.0
+    bulk_modulus = 2.25e9
+    viscosity = 0.001
+    density0 = 1000
+  []
 []
 
 [AuxKernels]
@@ -144,18 +124,18 @@
         variable = vel_x
         coupled = disp_x
     []
-    [velocity_y]
-        type = CompVarRate
-        variable = vel_y
-        coupled = disp_y
-    [] 
+   # [velocity_y]
+   ##     type = CompVarRate
+   #     variable = vel_y
+   ##     coupled = disp_y
+    #[] 
 []
 
-[Actions/PoroCohesiveZoneAction]
+[Modules/TensorMechanics/CohesiveZoneMaster]
     [./czm_ik]
         boundary = 'Block0_Block1'
         strain = SMALL
-        generate_output='traction_x traction_y jump_x jump_y jump_vel_x jump_vel_y normal_traction tangent_traction normal_jump tangent_jump'
+        generate_output='traction_x traction_y jump_x jump_y normal_traction tangent_traction normal_jump tangent_jump'
     [../]
 []
 
@@ -166,9 +146,8 @@
         variable = disp_x
         component = 0
         displacements = 'disp_x disp_y'
-        use_displaced_mesh = false   
+        use_displaced_mesh = false     
         save_in = 'resid_primary_x' 
-        diag_save_in = 'jacob_primary_x' 
     [../]
     [./stressdiv_y]
         type = StressDivergenceTensors
@@ -177,7 +156,6 @@
         displacements = 'disp_x disp_y'
         use_displaced_mesh = false
         save_in = 'resid_primary_y' 
-        diag_save_in = 'jacob_primary_y' 
     [../]
     [./skeletoninertia_x]
         type = InertialForce
@@ -189,93 +167,53 @@
         variable = disp_y
         use_displaced_mesh = false
     [../]
-    [./porefluidIFcoupling_x]
-        type = CoupledFluidInertialForce
+    [poro_x]
+        type = PorousFlowEffectiveStressCoupling
+        biot_coefficient = 0.4092
         variable = disp_x
-        fluid_vel = fluid_vel_x
-        use_displaced_mesh = false
-    [../]
-    [./porefluidIFcoupling_y]
-        type = CoupledFluidInertialForce
-        variable = disp_y
-        fluid_vel = fluid_vel_y
-        use_displaced_mesh = false
-    [../]
-    [./darcyflow_x]
-        type = DynamicDarcyFlow2
-        variable = fluid_vel_x
-        skeleton_acceleration = disp_x
-    [../]
-    [./darcyflow_y]
-        type = DynamicDarcyFlow2
-        variable = fluid_vel_y
-        skeleton_acceleration = disp_y
-    [../]
-    [./poromechskeletoncoupling_x]
-        type = PoroMechanicsCoupling
-        variable = disp_x
-        porepressure = p
         component = 0
         save_in = 'resid_pressure_x'
-        diag_save_in = 'jacob_pressure_x' 
-    [../]
-    [./poromechskeletoncoupling_y]
-        type = PoroMechanicsCoupling
+    []
+    [poro_y]
+        type = PorousFlowEffectiveStressCoupling
+        biot_coefficient = 0.4092
         variable = disp_y
-        porepressure = p
         component = 1
         save_in = 'resid_pressure_y'
-        diag_save_in = 'jacob_pressure_y' 
-    [../]
-    [./poromechfluidcoupling_x]
-        type = PoroMechanicsCoupling2
-        variable = fluid_vel_x
-        porepressure = p
-        component = 0
-    [../]
-    [./poromechfluidcoupling_y]
-        type = PoroMechanicsCoupling2
-        variable = fluid_vel_y
-        porepressure = p
-        component = 1
-    [../]
-    [./massconservationskeleton]
-        type = INSmassSolid
+    []
+    [mass0]
+        type = PorousFlowFullySaturatedMassTimeDerivative
+        biot_coefficient = 0.4092
+        coupling_type = HydroMechanical
         variable = p
-        displacements = 'disp_x disp_y'
-    [../]
-    [./massconservationpressure]
-        type = FluidStorage
+        multiply_by_density = false
+    []
+    [flux]
+        type = PorousFlowFullySaturatedDarcyBase
         variable = p
-    [../]
-    [./massconservationfluid]
-        type = INSmassFluid
-        variable = p
-        u = fluid_vel_x
-        v = fluid_vel_y
-        pressure = p
-    [../]
+        gravity = '0 0 0'
+        multiply_by_density = false
+    []
     [./Reactionx]
         type = StiffPropDamping
         variable = 'disp_x'
         component = '0'
         save_in = 'resid_damping_x'
-        diag_save_in = 'jacob_damping_x' 
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = 'disp_y'
         component = '1'
         save_in = 'resid_damping_y'
-        diag_save_in = 'jacob_damping_y' 
     []
 []
+
 
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 1.8e9
-        shear_modulus = 4.2e9
+        lambda = 6.22219e9
+        shear_modulus = 13.86e9
         use_displaced_mesh = false
     []
     [stress]
@@ -287,7 +225,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2238
+        prop_values = 2320
     []
     [./rhof]
         type = GenericConstantMaterial
@@ -297,32 +235,32 @@
     [./turtuosity]
         type = GenericConstantMaterial
         prop_names = taut
-        prop_values = 1.96
+        prop_values = 2.24
     [../]
     [./porosity]
         type = GenericConstantMaterial
         prop_names = porosity
-        prop_values = 0.26
+        prop_values = 0.2
     [../]
     [./hydconductivity]
         type = GenericConstantMaterial
         prop_names = hydconductivity
-        prop_values = 7.895e-10
+        prop_values = 1.1430653319e-9
     [../]
     [./hydconductivity_layer]
         type = GenericConstantMaterial
         prop_names = hydconductivity_layer
-        prop_values = 7.895e-10
+        prop_values = 1.1430653319e-9
     [../]
     [./biotcoeff]
         type = GenericConstantMaterial
         prop_names = biot_coefficient
-        prop_values = 0.853
+        prop_values = 0.5669
     [../]
     [./biotmodulus]
         type = GenericConstantMaterial
         prop_names = biot_modulus
-        prop_values = 4.82e9
+        prop_values = 1.00841e10
     [../]
     [./constants]
         type = GenericConstantMaterial
@@ -358,43 +296,115 @@
     
 []
 
+[Materials]
+    [temperature]
+        type = PorousFlowTemperature
+    []
+    [elasticity]
+        type = ComputeIsotropicElasticityTensor
+        bulk_modulus = 21.09e9
+        shear_modulus = 18.9e9
+        use_displaced_mesh = false
+    []
+    [stress]
+        type = ComputeLinearElasticStress
+    []
+    [Strain]
+        type = ComputeSmallStrain
+    []
+    [density]
+        type = GenericConstantMaterial
+        prop_names = density
+        prop_values = 2419
+    []
+    [eff_fluid_pressure_qp]
+        type = PorousFlowEffectiveFluidPressure
+    []
+    [vol_strain]
+        type = PorousFlowVolumetricStrain
+    []
+    [ppss]
+        type = PorousFlow1PhaseFullySaturated
+        porepressure = p
+    []
+    [massfrac]
+        type = PorousFlowMassFraction
+    []
+    [simple_fluid_qp]
+        type = PorousFlowSingleComponentFluid
+        fp = simple_fluid
+        phase = 0
+    []
+    [porosity]
+        type = PorousFlowPorosityConst # only the initial value of this is ever used
+        porosity = 0.14
+    []
+    [biot_modulus]
+        type = PorousFlowConstantBiotModulus
+        biot_coefficient = 0.4092
+        solid_bulk_compliance = 4.7412329e-11
+        fluid_bulk_modulus = 2.25e9
+    []
+    [permeability]
+        type = PorousFlowPermeabilityConst
+        permeability = '2.3e-13 0 0   0 2.3e-13 0   0 0 2.3e-13'
+    []
+    [./czm_stress_derivative]
+        type = StressDerivative2
+        boundary = 'Block0_Block1'
+    [../]
+    [./czm_mat]
+        type = PoroSlipWeakeningFriction2dNoInertia
+        boundary = 'Block0_Block1'
+        pressure_plus = p
+        pressure_minus = p
+        react_x = resid_primary_x
+        react_y = resid_primary_y
+        react_pressure_x = resid_pressure_x
+        react_pressure_y = resid_pressure_y 
+        react_damp_x = resid_damping_x
+        react_damp_y = resid_damping_y
+        nodal_area = nodal_area
+    [../]
+[]
+
 [BCs]
-    [./fault_p]
-        type = DirichletBC
-        variable = fluid_vel_y
-        boundary = Block0_Block1
-        value = 0.0
-    [../]
-    [./fault_n]
-        type = DirichletBC
-        variable = fluid_vel_y
-        boundary = Block1_Block0
-        value = 0.0
-    [../]
-    [./left_vf]
-        type = DirichletBC
-        variable = fluid_vel_x
-        boundary = left
-        value = 0.0
-    [../]
-    [./right_vf]
-        type = DirichletBC
-        variable = fluid_vel_x
-        boundary = right
-        value = 0.0
-    [../]
-    [./top_vf]
-        type = DirichletBC
-        variable = fluid_vel_y
-        boundary = top
-        value = 0.0
-    [../]
-    [./bot_vf]
-        type = DirichletBC
-        variable = fluid_vel_y
-        boundary = bottom
-        value = 0.0
-    [../]
+  [./fault_p]
+    type = FunctionNeumannBC
+    variable = p
+    boundary = Block0_Block1
+    function = 0.0
+  [../]
+  [./fault_n]
+    type = FunctionNeumannBC
+    variable = p
+    boundary = Block1_Block0
+    function = 0.0
+  [../]
+  [./flux_top]
+    type = FunctionNeumannBC
+    variable = p
+    boundary = top
+    function = 0.0
+  [../]
+  [./flux_bot]
+    type = FunctionNeumannBC
+    variable = p
+    boundary = bottom
+    function = 0.0
+  [../]
+  [./flux_left]
+    type = FunctionNeumannBC
+    variable = p
+    boundary = left
+    function = 0.0
+  [../]
+  [./flux_right]
+    type = FunctionNeumannBC
+    variable = p
+    boundary = right
+    function = 0.0
+  []
   ##non-reflecting bc
     [./dashpot_top_x]
         type = NonReflectDashpotBC
@@ -509,8 +519,8 @@
 []
 
 [Outputs]
-    #file_base = '$ENV{WORK}/tpv2052D_results/simulation'
+#    file_base = '$ENV{WORK}/tpv2052D_results/simulation'
     exodus = true
     time_step_interval = 5
-    show = 'disp_x disp_y fluid_vel_x fluid_vel_y p vel_x vel_y traction_x traction_y jump_x jump_y jump_vel_x jump_vel_y normal_traction tangent_traction normal_jump tangent_jump'
+    show = 'disp_x disp_y p vel_x vel_y traction_x traction_y jump_x jump_y normal_traction tangent_traction normal_jump tangent_jump'
 []
