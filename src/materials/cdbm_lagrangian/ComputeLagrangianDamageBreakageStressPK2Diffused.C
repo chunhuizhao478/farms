@@ -392,12 +392,30 @@ RankTwoTensor
 ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
 {
 
-  //Apply power operation on every element of Tau
-  //let's assume m2 = 1, and not apply pow on its elements
-  RankTwoTensor Tau_old_power_m2 = _Tau_old[_qp];
+  //Get equvialent deviatroic stress scalar
+  Real Tau_eq = 0.0;
+  for (unsigned int p = 0; p < 3; p++){
+    for (unsigned int q = 0; q < 3; q++){
+      Tau_eq += 2.0/3.0 * _Tau_old[_qp](p,q) * _Tau_old[_qp](p,q);
+    }
+  }
+
+  Tau_eq = std::sqrt(Tau_eq); 
+
+  //Get deviatroic stress direction
+  RankTwoTensor N; N.zero();
+  // Epsilon to avoid division by zero
+  if (Tau_eq != 0.0){
+    //Compute deviatroic stress direction
+    for (unsigned int p = 0; p < 3; p++){
+      for (unsigned int q = 0; q < 3; q++){
+        N(p,q) = _Tau_old[_qp](p,q) / Tau_eq;
+      }
+    }
+  }
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
-  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * Tau_old_power_m2; 
+  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N; 
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;
