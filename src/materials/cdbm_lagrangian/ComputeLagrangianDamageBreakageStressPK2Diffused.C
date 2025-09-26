@@ -43,6 +43,8 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _eta(declareProperty<Real>(_base_name + "plastic_volume_change")),
   _dilatancy_function_beta(declareProperty<Real>(_base_name + "dilatancy_function_beta")),
   _shear_rate_nu(declareProperty<Real>(_base_name + "shear_rate_nu")),
+  _effective_solid_shear_modulus(declareProperty<Real>(_base_name + "effective_solid_shear_modulus")),
+  _effective_granular_shear_modulus(declareProperty<Real>(_base_name + "effective_granular_shear_modulus")),
   //---------------------------------------------------------------------------------------------//
   _deviatroic_strain_rate(declareProperty<Real>("deviatroic_strain_rate")),
   //---------------------------------------------------------------------------------------------//
@@ -112,6 +114,8 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::initQpStatefulProperties()
   _eta[_qp] = 0.0;
   _dilatancy_function_beta[_qp] = 0.0;
   _shear_rate_nu[_qp] = 0.0;
+  _effective_solid_shear_modulus[_qp] = 0.0;
+  _effective_granular_shear_modulus[_qp] = 0.0;
   _Theta[_qp] = _initial_theta0_mat[_qp];
 }
 
@@ -344,6 +348,14 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   Real xi = (I1) / (std::sqrt(I2));
   //Catch the nan error in the initial solve
   if (std::isnan(xi)){xi = -std::sqrt(3);}
+
+  /* Track effective shear moduli for post-processing */
+  Real effective_solid_shear_modulus = 2.0 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi;
+  Real effective_granular_shear_modulus =
+      2.0 * _a0[_qp] + _a1[_qp] * xi - _a3[_qp] * std::pow(xi, 3);
+
+  _effective_solid_shear_modulus[_qp] = effective_solid_shear_modulus;
+  _effective_granular_shear_modulus[_qp] = effective_granular_shear_modulus;
 
   /* Compute PK2 stress */
   RankTwoTensor sigma_s = (_lambda_const[_qp] - _damaged_modulus[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _damaged_modulus[_qp] * xi) * Ee;

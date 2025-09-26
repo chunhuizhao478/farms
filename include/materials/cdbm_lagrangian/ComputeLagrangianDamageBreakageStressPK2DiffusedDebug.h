@@ -94,6 +94,10 @@ protected:
   MaterialProperty<Real> & _dilatancy_function_beta;
   // Shear-rate 
   MaterialProperty<Real> & _shear_rate_nu;
+  // Effective shear modulus of the solid skeleton
+  MaterialProperty<Real> & _effective_solid_shear_modulus;
+  // Effective shear modulus of the granular branch
+  MaterialProperty<Real> & _effective_granular_shear_modulus;
   // Deviatroic Strain Rate
   MaterialProperty<Real> & _deviatroic_strain_rate;
 
@@ -152,6 +156,6 @@ protected:
   const MaterialProperty<Real> & _const_theta_o_mat;
   const MaterialProperty<Real> & _initial_theta0_mat;
 
-  /* add shear perturbation */
-  const MaterialProperty<Real> & _shear_stress_perturbation;
+  /* add mean stress perturbation */
+  const MaterialProperty<Real> & _mean_stress_perturbation;
 };

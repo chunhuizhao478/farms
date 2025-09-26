@@ -126,6 +126,18 @@
         order = FIRST
         family = MONOMIAL
     []
+    [solid_effective_shear_modulus_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [granular_effective_shear_modulus_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [B_damagedvar_material]
+        order = FIRST
+        family = MONOMIAL
+    []
     [structural_stress_coefficient_aux]
         order = FIRST
         family = MONOMIAL
@@ -216,6 +228,24 @@
         type = MaterialRealAux
         variable = deviatroic_strain_rate_aux
         property = deviatroic_strain_rate
+        block = '1 3'
+    []
+    [get_effective_solid_shear_modulus]
+        type = MaterialRealAux
+        variable = solid_effective_shear_modulus_aux
+        property = effective_solid_shear_modulus
+        block = '1 3'
+    []
+    [get_effective_granular_shear_modulus]
+        type = MaterialRealAux
+        variable = granular_effective_shear_modulus_aux
+        property = effective_granular_shear_modulus
+        block = '1 3'
+    []
+    [get_B_damagedvar_material]
+        type = MaterialRealAux
+        variable = B_damagedvar_material
+        property = B_damagedvar
         block = '1 3'
     []
     #get spatial damage parameters
@@ -514,7 +544,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 100
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux mean_stress_perturbation'
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux B_damagedvar_material xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux solid_effective_shear_modulus_aux granular_effective_shear_modulus_aux mean_stress_perturbation'
     [../]
     [./csv]
         type = CSV
