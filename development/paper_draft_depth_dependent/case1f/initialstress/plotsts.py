@@ -1,5 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from cycler import cycler
+
+# ----------------------------------------------
+# THEME (mirrors case1g/plotsts.py for consistency)
+# ----------------------------------------------
+THEME_ACCENTS = ['#000000', '#577399', '#C22B48', '#FFAB40', '#579499', '#5C5799']
+THEME_LT1 = '#FFFFFF'
+THEME_DK1 = '#000000'
+
+mpl.rcParams.update({
+    'axes.prop_cycle': cycler('color', THEME_ACCENTS),
+    'figure.facecolor': THEME_LT1,
+    'axes.facecolor': THEME_LT1,
+    'savefig.facecolor': THEME_LT1,
+    'text.color': THEME_DK1,
+    'axes.labelcolor': THEME_DK1,
+    'xtick.color': THEME_DK1,
+    'ytick.color': THEME_DK1,
+    'axes.edgecolor': THEME_DK1,
+    'grid.color': THEME_DK1,
+    'legend.edgecolor': THEME_DK1,
+})
 
 # Physical constants
 density_fluid = 1000      # kg/m^3
@@ -48,18 +71,23 @@ residual_shear_strength = c + abs( mu_d * (sigma_yy + Pf) )
 # ------------------------
 plt.figure(figsize=(6, 8))
 plt.plot(Pf/1e6, depths/1e3, label=r'$P_f$')
-plt.plot(abs(sigma_zz)/1e6, depths/1e3, label=r'$\sigma_{zz}$') #when plotting, we use positive values for compression
+plt.plot(abs(sigma_zz)/1e6, depths/1e3, label=r'$\sigma_{zz}$')  # compression plotted positive
 plt.plot(abs(sigma_xx)/1e6, depths/1e3, label=r'$\sigma_{xx}$')
 plt.plot(abs(sigma_yy)/1e6, depths/1e3, label=r'$\sigma_{yy}$')
 plt.plot(sigma_xy/1e6, depths/1e3, label=r'$\sigma_{xy}$')
-plt.plot(static_shear_strength/1e6, depths/1e3, label='Static Shear Strength', linestyle='--', color='orange')
-plt.plot(residual_shear_strength/1e6, depths/1e3, label='Residual Shear Strength', linestyle='--', color='red')
+plt.plot(static_shear_strength/1e6, depths/1e3, label='Static Shear Strength', linestyle='--', alpha=0.8)
+plt.plot(residual_shear_strength/1e6, depths/1e3, label='Residual Shear Strength', linestyle='--', alpha=0.8)
 plt.gca().invert_yaxis()
-plt.ylabel('Depth (km)')
-plt.xlabel('Stress (MPa)')
-plt.title('Stress Components vs Depth')
-plt.legend(loc='best')
-plt.grid(True)
+plt.ylabel('Depth (km)', fontsize=20)
+plt.xlabel('Stress (MPa)', fontsize=20)
+plt.title('Stress Components vs Depth', fontsize=20)
+plt.grid(True, which='both', linestyle=':')
+# match tick styling to case1g
+ax = plt.gca()
+tick_prop = mpl.font_manager.FontProperties(family='DejaVu Sans', size=16)
+for lab in ax.get_xticklabels() + ax.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+plt.legend(loc='best', fontsize=14)
 plt.tight_layout()
 plt.savefig('stress_components_vs_depth.png', dpi=300)
 plt.show()
@@ -94,15 +122,24 @@ xi = I1 / np.sqrt(I2)
 # Plot Strain Invariants
 # ------------------------
 plt.figure(figsize=(6, 8))
-plt.plot(I1, depths, label=r'$I_1$')
-plt.plot(I2, depths, label=r'$I_2$')
-plt.plot(xi, depths, label=r'$\xi$')
+# plt.plot(I1, depths, label=r'$I_1$')
+# plt.plot(I2, depths, label=r'$I_2$')
+plt.plot(xi, depths/1e3, label=r'$\xi$')
 plt.gca().invert_yaxis()
-plt.ylabel('Depth (m)')
-plt.xlabel('Invariant values')
-plt.title('Strain Invariants vs Depth')
-plt.legend(loc='best')
-plt.grid(True)
+plt.ylabel('Depth (km)', fontsize=20)
+plt.xlabel('Invariant values', fontsize=20)
+plt.title('Strain Invariants vs Depth', fontsize=20)
+plt.grid(True, which='both', linestyle=':')
+ax2 = plt.gca()
+# Fixed ticks for xi as requested (-1.5 to 1.5)
+ax2.set_xticks([-1.73, -1.075, -0.5, 0.0])
+# Optionally enforce symmetric x-limits if xi range narrower
+current_xlim = ax2.get_xlim()
+if current_xlim[0] > -1.5 or current_xlim[1] < 1.5:
+    ax2.set_xlim(-1.8, 0)
+for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+plt.legend(loc='best', fontsize=14)
 plt.tight_layout()
 plt.savefig('strain_invariants_vs_depth.png', dpi=300)
 plt.show()

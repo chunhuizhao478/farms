@@ -178,19 +178,28 @@ I1 = np.trace(strain, axis1=1, axis2=2)
 I2 = np.einsum('nij,nij->n', strain, strain)
 xi = I1 / np.sqrt(I2)
 
-# -------------------------------------------------------------------
-# PLOT: Strain Invariants
-# -------------------------------------------------------------------
+# ------------------------
+# Plot Strain Invariants
+# ------------------------
 plt.figure(figsize=(6, 8))
-plt.plot(I1, depths, label=r'$I_1$')
-plt.plot(I2, depths, label=r'$I_2$')
-plt.plot(xi, depths, label=r'$\xi$')
+# plt.plot(I1, depths, label=r'$I_1$')
+# plt.plot(I2, depths, label=r'$I_2$')
+plt.plot(xi, depths/1e3, label=r'$\xi$')
 plt.gca().invert_yaxis()
-plt.ylabel('Depth (m)')
-plt.xlabel('Invariant values')
-plt.title('Strain Invariants vs Depth')
-plt.legend(loc='best')
-plt.grid(True)
+plt.ylabel('Depth (km)', fontsize=20)
+plt.xlabel('Invariant values', fontsize=20)
+plt.title('Strain Invariants vs Depth', fontsize=20)
+plt.grid(True, which='both', linestyle=':')
+ax2 = plt.gca()
+# Fixed ticks for xi as requested (-1.5 to 1.5)
+ax2.set_xticks([-1.73, -1.075, -0.5, 0.0])
+# Optionally enforce symmetric x-limits if xi range narrower
+current_xlim = ax2.get_xlim()
+if current_xlim[0] > -1.5 or current_xlim[1] < 1.5:
+    ax2.set_xlim(-1.8, 0)
+for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+plt.legend(loc='best', fontsize=14)
 plt.tight_layout()
 plt.savefig('strain_invariants_vs_depth.png', dpi=300)
 plt.show()
