@@ -131,7 +131,7 @@ COMMON_PATH = "/scratch1/10024/zhaochun/projects/farms_benchmark_09192025/develo
 CASES = [
     {
         "name": "dynamic_solve_csv_main_fault",
-        "data_dir": COMMON_PATH + 'case1f/',
+        "data_dir": COMMON_PATH + 'case1f/dynamic_solve/',
         "file_prefix": "dynamic_solve_csv_main_fault_",
         "index": {"start": 2, "end": 2400, "step": 2, "pad": 4},
         "dt": 0.005,
@@ -139,7 +139,7 @@ CASES = [
     },
     {
         "name": "dynamic_solve_csv_main_fault",
-        "data_dir": COMMON_PATH + 'case2f/',
+        "data_dir": COMMON_PATH + 'case2f/dynamic_solve/',
         "file_prefix": "dynamic_solve_csv_main_fault_",
         "index": {"start": 2, "end": 2400, "step": 2, "pad": 4},
         "dt": 0.005,
@@ -147,7 +147,7 @@ CASES = [
     },
     {
         "name": "dynamic_solve_csv_main_fault",
-        "data_dir": COMMON_PATH + 'case3f/',
+        "data_dir": COMMON_PATH + 'case3f/dynamic_solve/',
         "file_prefix": "dynamic_solve_csv_main_fault_",
         "index": {"start": 2, "end": 2400, "step": 2, "pad": 4},
         "dt": 0.005,
