@@ -10,8 +10,8 @@
     [subdomain1]
         input = msh
         type = SubdomainBoundingBoxGenerator
-        bottom_left = '-7500 -7500 0'
-        top_right = '7500 7500 0'
+        bottom_left = '-6000 -6000 0'
+        top_right = '6000 6000 0'
         block_id = 0
     []
     [./new_block_1]
@@ -35,7 +35,7 @@
     porepressure = 'p'
     q = 0.2
     Dc = 0.4
-    elem_size = 20
+    elem_size = 25
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -500,7 +500,7 @@
 [Executioner]
     type = Transient
     dt = 0.00125
-    end_time = 4.5
+    end_time = 3.6
     #automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference
@@ -511,6 +511,6 @@
 [Outputs]
     #file_base = '$ENV{WORK}/tpv2052D_results/simulation'
     exodus = true
-    time_step_interval = 10
+    time_step_interval = 20
     show = 'disp_x disp_y fluid_vel_x fluid_vel_y p vel_x vel_y traction_x traction_y jump_x jump_y jump_vel_x jump_vel_y normal_traction tangent_traction normal_jump tangent_jump'
 []
