@@ -3,7 +3,6 @@ nu = 0.373
 # ft = 25.5e6
 Gc_const = 100
 density = 2600
-dx_min = 5e-5
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
@@ -23,7 +22,7 @@ hht_alpha = 0 #match energy budget
   [fracture]
     type = TransientMultiApp
     input_files = fracture1.i
-    cli_args = 'Gc_const=${Gc_const};l=${l};dx_min=${dx_min}'
+    cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
   []
@@ -316,7 +315,7 @@ top_right1 = '0.002 4e-4 0.06'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.008 #peak ~ 80e6 at center borehole
+    EM = 0.128 
     gap = 0.001
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -359,6 +358,55 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = corner_ptr
     value = 0
   []
+  #add dampers
+  [damp_outer_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 0
+    boundary = 3
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampx
+  []
+  [damp_outer_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 1
+    boundary = 3
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampy
+  []  
+  [damp_outer_z]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_z
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 2
+    boundary = 3
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampz
+  [] 
 []
 
 [Materials]

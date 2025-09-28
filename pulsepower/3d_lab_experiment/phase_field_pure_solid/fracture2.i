@@ -203,7 +203,6 @@ top_right1 = '0.002 4e-4 0.06'
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
-  use_snes_vi = true
 []
 
 [Outputs]
