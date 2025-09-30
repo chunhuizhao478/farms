@@ -21,7 +21,7 @@ hht_alpha = 0 #match energy budget
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture3.i
+    input_files = fracture5.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
@@ -166,18 +166,6 @@ top_right1 = '0.002 4e-4 0.06'
   [fdampy]
   []
   [fdampz]
-  []
-  [fx_top]
-  []
-  [fy_top]
-  []
-  [fz_top]
-  []
-  [fx_bottom]
-  []
-  [fy_bottom]
-  []
-  [fz_bottom]
   []
 []
 
@@ -330,7 +318,7 @@ top_right1 = '0.002 4e-4 0.06'
     EM = 0.03
     gap = 0.008
     convert_efficiency = 1.0
-    fitting_param_alpha = 0.35
+    fitting_param_alpha = 0.1
     discharge_center = '0 0 0.03'
     number_of_pulses = 10
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
@@ -349,26 +337,8 @@ top_right1 = '0.002 4e-4 0.06'
       save_in_disp_x = fx
       save_in_disp_y = fy
       save_in_disp_z = fz
-    []  
-    [pressure_top]
-      boundary = 2 #confirm the boundary id
-      factor = 2e6
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx_top
-      save_in_disp_y = fy_top
-      save_in_disp_z = fz_top
-    []
-    [pressure_bottom]
-      boundary = 5 #confirm the boundary id
-      factor = 2e6
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx_bottom
-      save_in_disp_y = fy_bottom
-      save_in_disp_z = fz_bottom
-    []
-  []
+    []             
+  []   
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -600,23 +570,13 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = '3'
     forces = 'fdampx fdampy fdampz'
   []
-  [external_work_top]
-    type = FarmsExternalWork
-    boundary = '2'
-    forces = 'fx_top fy_top fz_top'
-  []
-  [external_work_bottom]
-    type = FarmsExternalWork
-    boundary = '5'
-    forces = 'fx_bottom fy_bottom fz_bottom'
-  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - damping_work - external_work_top - external_work_bottom'
-      pp_names = 'external_work damping_work external_work_top external_work_bottom'
+      expression = '-1 * external_work - damping_work'
+      pp_names = 'external_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []

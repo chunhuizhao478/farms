@@ -6,7 +6,7 @@ density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  5e-4 #l = 5e-4, ft = 61 MPa
+l =  2.5e-4 #l = 5e-4, ft = 61 MPa
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -21,7 +21,7 @@ hht_alpha = 0 #match energy budget
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture3.i
+    input_files = fracture6.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
@@ -68,7 +68,7 @@ top_right1 = '0.002 4e-4 0.06'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../3dmeshfile/cylinder_sample_coarse.msh'
+    file =  '../3dmeshfile/cylinder_sample.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -166,18 +166,6 @@ top_right1 = '0.002 4e-4 0.06'
   [fdampy]
   []
   [fdampz]
-  []
-  [fx_top]
-  []
-  [fy_top]
-  []
-  [fz_top]
-  []
-  [fx_bottom]
-  []
-  [fy_bottom]
-  []
-  [fz_bottom]
   []
 []
 
@@ -349,26 +337,8 @@ top_right1 = '0.002 4e-4 0.06'
       save_in_disp_x = fx
       save_in_disp_y = fy
       save_in_disp_z = fz
-    []  
-    [pressure_top]
-      boundary = 2 #confirm the boundary id
-      factor = 2e6
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx_top
-      save_in_disp_y = fy_top
-      save_in_disp_z = fz_top
-    []
-    [pressure_bottom]
-      boundary = 5 #confirm the boundary id
-      factor = 2e6
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx_bottom
-      save_in_disp_y = fy_bottom
-      save_in_disp_z = fz_bottom
-    []
-  []
+    []             
+  []   
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -600,23 +570,13 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = '3'
     forces = 'fdampx fdampy fdampz'
   []
-  [external_work_top]
-    type = FarmsExternalWork
-    boundary = '2'
-    forces = 'fx_top fy_top fz_top'
-  []
-  [external_work_bottom]
-    type = FarmsExternalWork
-    boundary = '5'
-    forces = 'fx_bottom fy_bottom fz_bottom'
-  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - damping_work - external_work_top - external_work_bottom'
-      pp_names = 'external_work damping_work external_work_top external_work_bottom'
+      expression = '-1 * external_work - damping_work'
+      pp_names = 'external_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
