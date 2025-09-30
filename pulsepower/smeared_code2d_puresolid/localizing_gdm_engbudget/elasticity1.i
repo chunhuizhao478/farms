@@ -1,6 +1,6 @@
 E = 50e9
 nu = 0.373
-ft = 180e6 ##computed from pf
+ft = 160e6 ##computed from pf
 # Gc_const = 100
 density = 2600
 # dx_min = 5e-5
@@ -23,10 +23,43 @@ hht_alpha = 0
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
+# [Adaptivity]
+#   max_h_level = 5
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.01
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#       []   
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#       [] 
+#   []
+# []
+
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = nonlocal_subapp4.i
+    input_files = nonlocal_subapp1.i
     cli_args = 'l=${l}'
     execute_on = 'TIMESTEP_BEGIN'
     clone_parent_mesh = true
