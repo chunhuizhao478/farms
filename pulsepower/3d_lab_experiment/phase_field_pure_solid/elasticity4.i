@@ -1,7 +1,7 @@
 E = 50e9
 nu = 0.373
 # ft = 25.5e6
-Gc_const = 100
+Gc_const = 40
 density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
@@ -166,18 +166,6 @@ top_right1 = '0.002 4e-4 0.06'
   [fdampy]
   []
   [fdampz]
-  []
-  [fx_top]
-  []
-  [fy_top]
-  []
-  [fz_top]
-  []
-  [fx_bottom]
-  []
-  [fy_bottom]
-  []
-  [fz_bottom]
   []
 []
 
@@ -349,26 +337,8 @@ top_right1 = '0.002 4e-4 0.06'
       save_in_disp_x = fx
       save_in_disp_y = fy
       save_in_disp_z = fz
-    []  
-    [pressure_top]
-      boundary = 2 #confirm the boundary id
-      factor = 4e6
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx_top
-      save_in_disp_y = fy_top
-      save_in_disp_z = fz_top
-    []
-    [pressure_bottom]
-      boundary = 5 #confirm the boundary id
-      factor = 4e6
-      displacements = 'disp_x disp_y disp_z'
-      use_displaced_mesh = false
-      save_in_disp_x = fx_bottom
-      save_in_disp_y = fy_bottom
-      save_in_disp_z = fz_bottom
-    []
-  []
+    []             
+  []   
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -388,55 +358,55 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = corner_ptr
     value = 0
   []
-  # #add dampers
-  # [damp_outer_x]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_x
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 0
-  #   boundary = 3
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  #   save_in = fdampx
-  # []
-  # [damp_outer_y]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_y
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 1
-  #   boundary = 3
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  #   save_in = fdampy
-  # []  
-  # [damp_outer_z]
-  #   type = FarmsNonReflectDashpotBC
-  #   variable = disp_z
-  #   displacements = 'disp_x disp_y disp_z'
-  #   velocities = 'vel_x vel_y vel_z'
-  #   accelerations = 'accel_x accel_y accel_z'
-  #   component = 2
-  #   boundary = 3
-  #   beta = ${newmark_beta}
-  #   gamma = ${newmark_gamma}
-  #   alpha = ${hht_alpha}
-  #   shear_wave_speed = ${Cs}
-  #   p_wave_speed = ${Cp}
-  #   density = ${density}
-  #   save_in = fdampz
-  # [] 
+  #add dampers
+  [damp_outer_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 0
+    boundary = 3
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampx
+  []
+  [damp_outer_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 1
+    boundary = 3
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampy
+  []  
+  [damp_outer_z]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_z
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 2
+    boundary = 3
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampz
+  [] 
 []
 
 [Materials]
@@ -600,23 +570,13 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = '3'
     forces = 'fdampx fdampy fdampz'
   []
-  [external_work_top]
-    type = FarmsExternalWork
-    boundary = '2'
-    forces = 'fx_top fy_top fz_top'
-  []
-  [external_work_bottom]
-    type = FarmsExternalWork
-    boundary = '5'
-    forces = 'fx_bottom fy_bottom fz_bottom'
-  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - damping_work - external_work_top - external_work_bottom'
-      pp_names = 'external_work damping_work external_work_top external_work_bottom'
+      expression = '-1 * external_work - damping_work'
+      pp_names = 'external_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
