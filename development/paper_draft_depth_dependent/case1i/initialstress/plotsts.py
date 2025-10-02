@@ -4,7 +4,7 @@ import matplotlib as mpl
 from cycler import cycler
 
 # ----------------------------------------------
-# THEME (mirrors case1f/plotsts.py for consistency)
+# THEME (mirrors case1g/plotsts.py for consistency)
 # ----------------------------------------------
 THEME_ACCENTS = ['#000000', '#577399', '#C22B48', '#FFAB40', '#579499', '#5C5799']
 THEME_LT1 = '#FFFFFF'
@@ -66,92 +66,28 @@ static_shear_strength = c + abs( mu_s * (sigma_yy + Pf) )
 mu_d = 0.6
 residual_shear_strength = c + abs( mu_d * (sigma_yy + Pf) )
 
-# constant material properties
-vs = 3464 * np.ones_like(depths)  # m/s
-vp = 6000 * np.ones_like(depths)   # m/s
-rho_depth = 2670 * np.ones_like(depths)  # kg/m^3
-# ------------------------
-# Plot depth variation of Vs, Vp, and density
-# ------------------------
-plt.figure(figsize=(6, 8))
-line_vs, = plt.plot(vs / 1e3, depths / 1e3, label='Vs (km/s)')
-line_vp, = plt.plot(vp / 1e3, depths / 1e3, label='Vp (km/s)')
-line_rho, = plt.plot(rho_depth / 1e3, depths / 1e3, label='Density (g/cc)', linestyle='--')  # 1 g/cc = 1000 kg/m^3
-
-# Add text labels near the lines with their values
-vs_val = float(np.mean(vs) / 1e3)
-vp_val = float(np.mean(vp) / 1e3)
-rho_val = float(np.mean(rho_depth) / 1e3)
-x_off = 0.05  # small horizontal offset so text doesn't sit on the line
-
-# Choose distinct depths (in km) for annotations to avoid overlap
-y_vs, y_vp, y_rho = 2.0, 5.0, 8.0
-
-plt.text(vs_val + x_off, y_vs, f"Vs = {vs_val:.2f} km/s", color=line_vs.get_color(), va='center', ha='center',
-         rotation=90, fontsize=12,
-         bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor='none'))
-plt.text(vp_val + x_off, y_vp, f"Vp = {vp_val:.2f} km/s", color=line_vp.get_color(), va='center', ha='center',
-         rotation=90, fontsize=12,
-         bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor='none'))
-plt.text(rho_val + x_off, y_rho, f"ρ = {rho_val:.2f} g/cc", color=line_rho.get_color(), va='center', ha='center',
-         rotation=90, fontsize=12,
-         bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor='none'))
-plt.gca().invert_yaxis()
-plt.ylabel('Depth (km)', fontsize=20)
-plt.xlabel('Value (km/s or g/cc)', fontsize=20)
-plt.title('Seismic Properties vs Depth', fontsize=20)
-plt.legend(loc='best', fontsize=18)
-ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(family='DejaVu Sans', size=16)  # e.g., 'Arial', 'Helvetica'
-for lab in ax.get_xticklabels() + ax.get_yticklabels():
-    lab.set_fontproperties(tick_prop)
-plt.tight_layout()
-plt.savefig('seismic_properties_vs_depth.png', dpi=300)
-plt.show()
-
 # ------------------------
 # Plot Stress Components
 # ------------------------
-# plt.figure(figsize=(6, 8))
-# plt.plot(Pf/1e6, depths/1e3, label=r'$P_f$')
-# plt.plot(abs(sigma_zz)/1e6, depths/1e3, label=r'$\sigma_{zz}$') #when plotting, we use positive values for compression
-# plt.plot(abs(sigma_xx)/1e6, depths/1e3, label=r'$\sigma_{xx}$')
-# plt.plot(abs(sigma_yy)/1e6, depths/1e3, label=r'$\sigma_{yy}$')
-# plt.plot(sigma_xy/1e6, depths/1e3, label=r'$\sigma_{xy}$')
-# plt.plot(static_shear_strength/1e6, depths/1e3, label='Static Shear Strength', linestyle='--', color='orange')
-# plt.plot(residual_shear_strength/1e6, depths/1e3, label='Residual Shear Strength', linestyle='--', color='red')
-# plt.gca().invert_yaxis()
-# plt.ylabel('Depth (km)')
-# plt.xlabel('Stress (MPa)')
-# plt.title('Stress Components vs Depth')
-# plt.legend(loc='best')
-# plt.grid(True)
-# plt.tight_layout()
-# plt.savefig('stress_components_vs_depth.png', dpi=300)
-# plt.show()
-
 plt.figure(figsize=(6, 8))
-plt.plot(Pf        / 1e6, depths / 1e3, label=r'$P_f$')
-plt.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r'$\sigma_{zz}$')
-plt.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r'$\sigma_{xx}$')
-plt.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r'$\sigma_{yy}$')
-plt.plot(sigma_xy        / 1e6, depths / 1e3, label=r'$\sigma_{xy}$')
-plt.plot(static_shear_strength   / 1e6, depths / 1e3,
-         label='Static Shear Strength', linestyle='--', alpha=0.8)
-plt.plot(residual_shear_strength / 1e6, depths / 1e3,
-         label='Residual Shear Strength', linestyle='--', alpha=0.8)
-
+plt.plot(Pf/1e6, depths/1e3, label=r'$P_f$')
+plt.plot(abs(sigma_zz)/1e6, depths/1e3, label=r'$\sigma_{zz}$')  # compression plotted positive
+plt.plot(abs(sigma_xx)/1e6, depths/1e3, label=r'$\sigma_{xx}$')
+plt.plot(abs(sigma_yy)/1e6, depths/1e3, label=r'$\sigma_{yy}$')
+plt.plot(sigma_xy/1e6, depths/1e3, label=r'$\sigma_{xy}$')
+plt.plot(static_shear_strength/1e6, depths/1e3, label='Static Shear Strength', linestyle='--', alpha=0.8)
+plt.plot(residual_shear_strength/1e6, depths/1e3, label='Residual Shear Strength', linestyle='--', alpha=0.8)
 plt.gca().invert_yaxis()
-plt.ylabel('Depth (km)',fontsize = 20)
-plt.xlabel('Stress (MPa)',fontsize = 20)
-plt.title('Stress Components vs Depth',fontsize = 20)
-# plt.legend(loc='best',fontsize = 18)
+plt.ylabel('Depth (km)', fontsize=20)
+plt.xlabel('Stress (MPa)', fontsize=20)
+plt.title('Stress Components vs Depth', fontsize=20)
 plt.grid(True, which='both', linestyle=':')
-# Set tick label font family and size
+# match tick styling to case1g
 ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(family='DejaVu Sans', size=16)  # e.g., 'Arial', 'Helvetica'
+tick_prop = mpl.font_manager.FontProperties(family='DejaVu Sans', size=16)
 for lab in ax.get_xticklabels() + ax.get_yticklabels():
     lab.set_fontproperties(tick_prop)
+plt.legend(loc='best', fontsize=14)
 plt.tight_layout()
 plt.savefig('stress_components_vs_depth.png', dpi=300)
 plt.show()
@@ -186,15 +122,24 @@ xi = I1 / np.sqrt(I2)
 # Plot Strain Invariants
 # ------------------------
 plt.figure(figsize=(6, 8))
-plt.plot(I1, depths, label=r'$I_1$')
-plt.plot(I2, depths, label=r'$I_2$')
-plt.plot(xi, depths, label=r'$\xi$')
+# plt.plot(I1, depths, label=r'$I_1$')
+# plt.plot(I2, depths, label=r'$I_2$')
+plt.plot(xi, depths/1e3, label=r'$\xi$')
 plt.gca().invert_yaxis()
-plt.ylabel('Depth (m)')
-plt.xlabel('Invariant values')
-plt.title('Strain Invariants vs Depth')
-plt.legend(loc='best')
-plt.grid(True)
+plt.ylabel('Depth (km)', fontsize=20)
+plt.xlabel('Invariant values', fontsize=20)
+plt.title('Strain Invariants vs Depth', fontsize=20)
+plt.grid(True, which='both', linestyle=':')
+ax2 = plt.gca()
+# Fixed ticks for xi as requested (-1.5 to 1.5)
+ax2.set_xticks([-1.73, -1.075, -0.5, 0.0])
+# Optionally enforce symmetric x-limits if xi range narrower
+current_xlim = ax2.get_xlim()
+if current_xlim[0] > -1.5 or current_xlim[1] < 1.5:
+    ax2.set_xlim(-1.8, 0)
+for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+plt.legend(loc='best', fontsize=14)
 plt.tight_layout()
 plt.savefig('strain_invariants_vs_depth.png', dpi=300)
 plt.show()
