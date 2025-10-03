@@ -355,8 +355,8 @@
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation'
-        prop_values = '0.0 0.0 0.0'
+        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation mean_stress_perturbation'
+        prop_values = '0.0 0.0 0.0 0.0'
     []
     #elastic material
     [elastic_tensor]
