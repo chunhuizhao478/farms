@@ -55,8 +55,13 @@
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
-    ultimate_grain_size = 1.3
+    ultimate_grain_size = 0.2
     initial_viscosity_fluid = 1e-3
+    anand_param_go_mat = 0.25
+    anand_param_eta_cv_mat = 0.01
+    anand_param_p_mat = 1
+    alpha_compaction = 0.1
+    m_compaction = 1
     
 
 []
@@ -328,6 +333,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
         large_kinematics = true
+        use_dilatancy = true 
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
         outputs = exodus
         block = '3'

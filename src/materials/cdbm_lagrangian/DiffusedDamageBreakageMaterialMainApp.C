@@ -346,7 +346,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporosolid()
   Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1);
   // Real porosity_s = 1 - (1 - _porosity_solid_o) / Je;
   
-   // Compute Biot modulus for solid phase
+  // Compute Biot modulus for solid phase
   Real one_over_Storage = (K_s*K_f)/(porosity_s * K_f + (alpha_s - porosity_s) * K_s);
   
   // Compute permeability for solid phase
@@ -355,7 +355,7 @@ DiffusedDamageBreakageMaterialMainApp::updateporosolid()
   // Save solid phase properties
   _Biot_coeff_s[_qp] = alpha_s;
   _Biot_modulus_s[_qp] = one_over_Storage;
-  _perm_s[_qp] = (1 - B_breakage) * perm_s/_initial_viscosity_fluid;
+  _perm_s[_qp] = (1 - B_breakage) * perm_s/ _initial_viscosity_fluid;
 
   // Compute critical damage value
   Real alpha_cr = alphacr_root1(xi);

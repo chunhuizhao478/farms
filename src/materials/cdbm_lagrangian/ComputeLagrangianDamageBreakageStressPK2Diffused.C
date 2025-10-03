@@ -26,7 +26,11 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::validParams()
   params.addParam<Real>("anand_param_go_mat",0,"Dilatancy parameter go");
   params.addParam<Real>("anand_param_eta_cv_mat",0,"Dilatancy parameter eta_cv");
   params.addParam<Real>("anand_param_p_mat",0,"Dilatancy parameter p");
-
+  params.addParam<Real>("initial_grain_size", "initial harmonic mean grain size"); 
+  params.addParam<Real>("ultimate_grain_size", "ultimate harmonic mean grain size"); 
+  params.addParam<Real>("alpha_compaction", "maximum compaction based on grain size packing"); 
+  params.addParam<Real>("m_compaction", "power law for compaction based on grain size"); 
+  
   return params;
 }
 
@@ -112,9 +116,15 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat")),
   //---------------------------------------------------------------------------------------------//
   //add shear stress perturbation
-  _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation"))
+  _shear_stress_perturbation(getMaterialPropertyOldByName<Real>("shear_stress_perturbation")),
+  //---------------------------------------------------------------------------------------------//
+  // Harmonic mean grain sizes
+  _DHo(getParam<Real>("initial_grain_size")),
+  _DHu(getParam<Real>("ultimate_grain_size")),
+  _alpha_compact(getParam<Real>("alpha_compaction")),
+  _m_compact(getParam<Real>("m_compaction"))
 {
-}
+} 
 
 //Rules:See https://github.com/idaholab/moose/discussions/19450
 //Only the object that declares the material property can assign values to it.
@@ -695,11 +705,25 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
   }
   else if (_use_dilatancy)
   {
-    _shear_rate_nu[_qp] = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * std::pow(Tau_norm, _m2[_qp]) * N; 
+    // Calculate current harmonic mean grain size based on breakage
+    Real DH = (1.0 - _B_breakagevar_old[_qp]) * _DHo + _B_breakagevar_old[_qp] * _DHu;
 
-    _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * _C_g[_qp] * std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * std::pow(Tau_norm, _m2[_qp]) * _dt;
-    
-    _dilatancy_function_beta[_qp] = _anand_param_go_mat * std::pow( 1 - _eta[_qp] / _anand_param_eta_cv_mat, _anand_param_p_mat );  
+    // Calculate dilatancy function beta (grain-size enhanced)
+    _dilatancy_function_beta[_qp] = - _alpha_compact * std::pow(1.0 - DH / _DHo, _m_compact) + _anand_param_go_mat *  std::pow(_DHo / DH, 0.19) * 
+                                    std::pow(1.0 - _eta[_qp] / _anand_param_eta_cv_mat, _anand_param_p_mat);
+
+    // Calculate shear rate 
+    _shear_rate_nu[_qp] = _C_g[_qp] * 
+                          std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * 
+                          std::pow(Tau_norm, _m2[_qp]) * N;
+
+    // Calculate scalar plastic flow rate (plastic multiplier)
+    Real plastic_multiplier = _C_g[_qp] * 
+                          std::pow(_B_breakagevar_old[_qp], _m1[_qp]) * 
+                          std::pow(Tau_norm, _m2[_qp]);
+
+    // Update eta with BOTH compaction and dilatancy
+    _eta[_qp] = _eta_old[_qp] + _dilatancy_function_beta[_qp] * plastic_multiplier  * _dt;
   }
   else
   {

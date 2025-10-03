@@ -182,4 +182,12 @@ protected:
 
   /* add shear perturbation */
   const MaterialProperty<Real> & _shear_stress_perturbation;
+
+  /// Anand model parameters
+  Real _DHo;
+  Real _DHu;
+  Real _alpha_compact;
+  Real _m_compact;
 };
+
+    
