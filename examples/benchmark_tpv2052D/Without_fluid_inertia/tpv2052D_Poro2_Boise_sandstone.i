@@ -5,13 +5,13 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  './Planar_fault_unstructured_Boise.msh'
+        file =  '../With_fluid_inertia/Planar_fault_unstructured_Boise.msh'
     []
     [subdomain1]
         input = msh
         type = SubdomainBoundingBoxGenerator
-        bottom_left = '-7500 -7500 0'
-        top_right = '7500 7500 0'
+        bottom_left = '-6000 -6000 0'
+        top_right = '6000 6000 0'
         block_id = 0
     []
     [./new_block_1]
@@ -26,7 +26,7 @@
         split_interface = true
         add_interface_on_two_sides = true
         block_pairs = '0 1'
-    []     
+    []    
 []
 
 [GlobalParams]
@@ -35,7 +35,7 @@
     porepressure = 'p'
     q = 0.2
     Dc = 0.4
-    elem_size = 20
+    elem_size = 18
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -51,11 +51,11 @@
 
 [Variables]
     [./disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./p]
@@ -66,43 +66,43 @@
 
 [AuxVariables]
     [./vel_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [./accel_x]
     []
     [./vel_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [./accel_y]
     []
     [./nodal_area]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./resid_primary_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./resid_primary_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./resid_damping_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./resid_damping_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./resid_pressure_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
     [./resid_pressure_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     [../]
 []
@@ -169,21 +169,21 @@
     [../]
     [poro_x]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.4092
+        biot_coefficient = 0.853
         variable = disp_x
         component = 0
         save_in = 'resid_pressure_x'
     []
     [poro_y]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.4092
+        biot_coefficient = 0.853
         variable = disp_y
         component = 1
         save_in = 'resid_pressure_y'
     []
     [mass0]
         type = PorousFlowFullySaturatedMassTimeDerivative
-        biot_coefficient = 0.4092
+        biot_coefficient = 0.853
         coupling_type = HydroMechanical
         variable = p
         multiply_by_density = false
@@ -210,100 +210,13 @@
 
 
 [Materials]
-    [elasticity]
-        type = ComputeIsotropicElasticityTensor
-        lambda = 6.22219e9
-        shear_modulus = 13.86e9
-        use_displaced_mesh = false
-    []
-    [stress]
-        type = ComputeLinearElasticStress
-    []
-    [Strain]
-        type = ComputeSmallStrain
-    []
-    [density]
-        type = GenericConstantMaterial
-        prop_names = density
-        prop_values = 2320
-    []
-    [./rhof]
-        type = GenericConstantMaterial
-        prop_names = rhof
-        prop_values = 1000
-    [../]
-    [./turtuosity]
-        type = GenericConstantMaterial
-        prop_names = taut
-        prop_values = 2.24
-    [../]
-    [./porosity]
-        type = GenericConstantMaterial
-        prop_names = porosity
-        prop_values = 0.2
-    [../]
-    [./hydconductivity]
-        type = GenericConstantMaterial
-        prop_names = hydconductivity
-        prop_values = 1.1430653319e-9
-    [../]
-    [./hydconductivity_layer]
-        type = GenericConstantMaterial
-        prop_names = hydconductivity_layer
-        prop_values = 1.1430653319e-9
-    [../]
-    [./biotcoeff]
-        type = GenericConstantMaterial
-        prop_names = biot_coefficient
-        prop_values = 0.5669
-    [../]
-    [./biotmodulus]
-        type = GenericConstantMaterial
-        prop_names = biot_modulus
-        prop_values = 1.00841e10
-    [../]
-    [./constants]
-        type = GenericConstantMaterial
-        prop_names = 'rho mu'
-        prop_values = '1  1'
-    [../]
-    [./czm_stress_derivative]
-        type = StressDerivative2
-        boundary = 'Block0_Block1'
-    [../]
-    [./czm_mat]
-        type = PoroSlipWeakening2d
-        boundary = 'Block0_Block1'
-        pressure_plus = p
-        pressure_minus = p
-        react_x = resid_primary_x
-        react_y = resid_primary_y
-        jacob_x = jacob_primary_x
-        jacob_y = jacob_primary_y
-        react_pressure_x = resid_pressure_x
-        react_pressure_y = resid_pressure_y 
-        jacob_pressure_x = jacob_pressure_x
-        jacob_pressure_y = jacob_pressure_y 
-        react_damp_x = resid_damping_x
-        react_damp_y = resid_damping_y
-        jacob_damp_x = jacob_damping_x
-        jacob_damp_y = jacob_damping_y
-        nodal_area = nodal_area
-        fluid_disp_x = fluid_disp_x
-        fluid_disp_y = fluid_disp_y
-        permeability_type = 'impermeable'
-    [../]
-    
-[]
-
-[Materials]
     [temperature]
         type = PorousFlowTemperature
     []
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        bulk_modulus = 21.09e9
-        shear_modulus = 18.9e9
+        lambda = 1.8e9
+        shear_modulus = 4.2e9
         use_displaced_mesh = false
     []
     [stress]
@@ -315,7 +228,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2419
+        prop_values = 2238
     []
     [eff_fluid_pressure_qp]
         type = PorousFlowEffectiveFluidPressure
@@ -337,22 +250,18 @@
     []
     [porosity]
         type = PorousFlowPorosityConst # only the initial value of this is ever used
-        porosity = 0.14
+        porosity = 0.26
     []
     [biot_modulus]
         type = PorousFlowConstantBiotModulus
-        biot_coefficient = 0.4092
-        solid_bulk_compliance = 4.7412329e-11
+        biot_coefficient =  0.853
+        solid_bulk_compliance = 2.07469e-11
         fluid_bulk_modulus = 2.25e9
     []
     [permeability]
         type = PorousFlowPermeabilityConst
-        permeability = '2.3e-13 0 0   0 2.3e-13 0   0 0 2.3e-13'
+        permeability = '7.895e-13 0 0   0 7.895e-13 0   0 0 7.895e-13'
     []
-    [./czm_stress_derivative]
-        type = StressDerivative2
-        boundary = 'Block0_Block1'
-    [../]
     [./czm_mat]
         type = PoroSlipWeakeningFriction2dNoInertia
         boundary = 'Block0_Block1'
@@ -509,8 +418,8 @@
 
 [Executioner]
     type = Transient
-    dt = 0.00085
-    end_time = 4.5
+    dt = 0.0008
+    end_time = 3
     #automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference

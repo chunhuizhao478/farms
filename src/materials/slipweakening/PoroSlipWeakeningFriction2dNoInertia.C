@@ -38,7 +38,6 @@ PoroSlipWeakeningFriction2dNoInertia::PoroSlipWeakeningFriction2dNoInertia(const
     _nodal_area2(getParam<Real>("elem_size")),
     _rot(getMaterialPropertyByName<RankTwoTensor>(_base_name + "czm_total_rotation")),
     _stress(getMaterialPropertyByName<RankTwoTensor>(_base_name + "stress")),
-    _dstress(getMaterialPropertyByName<RankTwoTensor>(_base_name + "dstress")),
     _interface_displacement_jump_old(getMaterialPropertyOld<RealVectorValue>(_base_name + "interface_displacement_jump")),
     _interface_displacement_jump_older(getMaterialPropertyOlder<RealVectorValue>(_base_name + "interface_displacement_jump")),
     _interface_pressure_plus(coupledNeighborValue("pressure_plus")),
@@ -103,10 +102,8 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   //Stress state 
   //RealVectorValue stress_x = _stress[_qp].row(0); 
   RealVectorValue stress_y = _stress[_qp].row(1);  
-  RealVectorValue dstress_y = _dstress[_qp].row(1);  
   //RealVectorValue stress_z = _stress[_qp].row(2); 
   Real shear = stress_y(0); 
-  Real dshear = dstress_y(0); 
   //Real normal = stress_y(1);
 
 
@@ -205,10 +202,10 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   //Compute fault traction
   if (std::abs(T1)<tau_f)
   {
-    dT1d_disp =  -(1/_dt)*( M )* (1/_dt) / (2*area) + dshear ; 
+    dT1d_disp =  -(1/_dt)*( M )* (1/_dt) / (2*area)  ; 
   }else{
      T1 = tau_f*T1/std::abs(T1);
-     dfd_disp =  -(1/_dt)*( M )* (1/_dt) / (2*area) +  dshear ; 
+     dfd_disp =  -(1/_dt)*( M )* (1/_dt) / (2*area)  ; 
      dT1d_disp =  dtau_f *T1/std::abs(T1) + tau_f  * (dfd_disp*std::abs(T1)-T1*std::copysign(1.0, T1)*dfd_disp)/std::pow(std::abs(T1), 2);  
   }
 
@@ -235,9 +232,6 @@ PoroSlipWeakeningFriction2dNoInertia::computeInterfaceTractionAndDerivatives()
   dtraction(2,1) = 0;
   dtraction(2,2) = 0; 
 
-  // std::cout << "T1: " << -T1 << std::endl;
-  //  std::cout << "dshear: " <<   dshear << std::endl;
-  // std::cout << "shear " << shear << std::endl;
   
   _interface_traction[_qp] = traction;
   _dinterface_traction_djump[_qp] = 0;

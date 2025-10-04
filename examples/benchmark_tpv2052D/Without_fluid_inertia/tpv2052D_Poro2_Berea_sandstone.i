@@ -5,13 +5,13 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file =  './Planar_fault_unstructured_Berea.msh'
+        file = '../With_fluid_inertia/Planar_fault_unstructured_Berea.msh'
     []
     [subdomain1]
         input = msh
         type = SubdomainBoundingBoxGenerator
-        bottom_left = '-10000 -10000 0'
-        top_right = '10000 10000 0'
+        bottom_left = '-7500 -7500 0'
+        top_right = '7500 7500 0'
         block_id = 0
     []
     [./new_block_1]
@@ -34,7 +34,7 @@
     PorousFlowDictator = dictator
     q = 0.2
     Dc = 0.4
-    elem_size = 25
+    elem_size = 20
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -168,21 +168,21 @@
     [../]
     [poro_x]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.5669
+        biot_coefficient = 0.778
         variable = disp_x
         component = 0
         save_in = 'resid_pressure_x'
     []
     [poro_y]
         type = PorousFlowEffectiveStressCoupling
-        biot_coefficient = 0.5669
+        biot_coefficient = 0.778
         variable = disp_y
         component = 1
         save_in = 'resid_pressure_y'
     []
     [mass0]
         type = PorousFlowFullySaturatedMassTimeDerivative
-        biot_coefficient = 0.5669
+        biot_coefficient = 0.778
         coupling_type = HydroMechanical
         variable = p
         multiply_by_density = false
@@ -215,8 +215,8 @@
     []
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 6.22219e9
-        shear_modulus = 13.86e9
+        lambda = 4e9 
+        shear_modulus = 6e9
         use_displaced_mesh = false
     []
     [stress]
@@ -250,22 +250,18 @@
     []
     [porosity]
         type = PorousFlowPorosityConst # only the initial value of this is ever used
-        porosity = 0.2
+        porosity = 0.19
     []
     [biot_modulus]
         type = PorousFlowConstantBiotModulus
-        biot_coefficient = 0.5669
-        solid_bulk_compliance = 3.233610303e-11
-        fluid_bulk_modulus = 4.5e9
+        biot_coefficient = 0.778
+        solid_bulk_compliance = 1.00806e-11
+        fluid_bulk_modulus = 2.25e9
     []
     [permeability]
         type = PorousFlowPermeabilityConst
-        permeability = '1.1430653319e-12 0 0   0 1.1430653319e-12 0   0 0 1.1430653319e-12'
+        permeability = '1.875e-13 0 0   0 1.875e-13 0   0 0 1.875e-13'
     []
-    [./czm_stress_derivative]
-        type = StressDerivative2
-        boundary = 'Block0_Block1'
-    [../]
     [./czm_mat]
         type = PoroSlipWeakeningFriction2dNoInertia
         boundary = 'Block0_Block1'
@@ -423,7 +419,7 @@
 [Executioner]
     type = Transient
     dt = 0.001
-    end_time = 4.5
+    end_time = 3
    # automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference
@@ -434,7 +430,7 @@
 [Outputs]
 #    file_base = '$ENV{WORK}/tpv2052D_results/simulation'
     exodus = true
-    time_step_interval = 5
+    time_step_interval = 20
     show = 'disp_x disp_y p vel_x vel_y traction_x traction_y jump_x jump_y normal_traction tangent_traction normal_jump tangent_jump'
 []
 

@@ -24,7 +24,6 @@ protected:
   const MaterialProperty<RankTwoTensor> & _rot;
 
   const MaterialProperty<RankTwoTensor> & _stress;
-  const MaterialProperty<RankTwoTensor> & _dstress;
   const MaterialProperty<RealVectorValue> & _interface_displacement_jump_old;
   const MaterialProperty<RealVectorValue> & _interface_displacement_jump_older;
   
