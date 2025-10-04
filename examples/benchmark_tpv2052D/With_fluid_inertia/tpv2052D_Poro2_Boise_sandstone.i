@@ -35,7 +35,7 @@
     porepressure = 'p'
     q = 0.2
     Dc = 0.4
-    elem_size = 25
+    elem_size = 18
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -499,8 +499,8 @@
 
 [Executioner]
     type = Transient
-    dt = 0.00125
-    end_time = 3.6
+    dt = 0.0008
+    end_time = 3
     #automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference
