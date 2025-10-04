@@ -347,7 +347,7 @@
         # use_spatial_cg = true
     [] 
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2Diffused
+        type = ComputeLagrangianDamageBreakageStressPK2DiffusedDebug
         large_kinematics = true
         # output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
         # outputs = exodus

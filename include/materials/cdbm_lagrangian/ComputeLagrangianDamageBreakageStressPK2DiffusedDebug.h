@@ -51,6 +51,8 @@ protected:
   // virtual void computedilatancyfunction();
   // /// @brief Compute plastic volume change
   // virtual void computeplasticvolumechange();
+  
+  virtual RankTwoTensor computeQpFpRadial();
 
 protected:
   /* Declare Material Properties */

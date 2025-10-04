@@ -148,6 +148,10 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
     }
   }
 
+  //Save the Fp_dot, F_dot
+  _Fp_dot[_qp] = Fp_dot;
+  _F_dot[_qp]  = F_dot;
+
   //--------------------------------------------------------------------------
   // Precompute the 4D tensor dFpdF_tensor[i][j][k][l] = dFpdF(i,j,k,l)
   // where dFpdF(i,j,k,l) = 0 if _dt==0 or if either Fp_dot(i,j) or F_dot(k,l) vanish;

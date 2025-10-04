@@ -151,19 +151,19 @@
     []
     #outputs
     [pk2_stress_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [green_lagrange_elastic_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [plastic_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL       
     []
     [total_lagrange_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
 []
