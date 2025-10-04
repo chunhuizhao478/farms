@@ -14,16 +14,16 @@
 #include <algorithm>
 
 /**
- * ComputeDamageBreakageStress3DSlipWeakeningNonlocal put everything inside the computeQpstress without defining
+ * ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv put everything inside the computeQpstress without defining
  * additional functions
  
  */
-class ComputeDamageBreakageStress3DSlipWeakeningNonlocal : public ComputeDamageBreakageStressBase3D
+class ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv : public ComputeDamageBreakageStressBase3D
 {
 public:
   static InputParameters validParams();
 
-  ComputeDamageBreakageStress3DSlipWeakeningNonlocal(const InputParameters & parameters);
+  ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv(const InputParameters & parameters);
 
   virtual void initialSetup() override;
 
@@ -162,6 +162,20 @@ protected:
 
   /// blocks where nonlocal equivalent strain is enabled; empty means all blocks
   const std::vector<unsigned int> _nonlocal_eqstrain_blocks;
+
+  /// optional dilatancy model toggles and parameters
+  bool _add_dilatancy;
+  Real _anand_param_go_mat;
+  Real _anand_param_eta_cv_mat;
+  Real _anand_param_p_mat;
+
+  /// optional thermal activation parameters
+  bool _add_temperature;
+  Real _thermal_A;
+  Real _thermal_n;
+  Real _thermal_Q;
+  Real _thermal_R;
+  const MaterialProperty<Real> * _thermal_T_prop;
 
   /// helper: whether nonlocal eqstrain should be used on the current element
   inline bool useNonlocalEqStrainHere() const

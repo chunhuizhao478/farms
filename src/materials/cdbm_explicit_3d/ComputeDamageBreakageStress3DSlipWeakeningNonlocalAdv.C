@@ -7,14 +7,14 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ComputeDamageBreakageStress3DSlipWeakeningNonlocal.h"
+#include "ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv.h"
 #include "NestedSolve.h"
 #include "FEProblem.h"
 
-registerMooseObject("farmsApp", ComputeDamageBreakageStress3DSlipWeakeningNonlocal);
+registerMooseObject("farmsApp", ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv);
 
 InputParameters
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::validParams()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::validParams()
 { 
   //Note: lambda_o, shear_modulus_o is defined in "ComputeGeneralDamageBreakageStressBase"
   //to initialize _lambda, _shear_modulus material properties
@@ -52,10 +52,38 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::validParams()
   params.addParam<std::vector<unsigned int>>("nonlocal_eqstrain_blocks", {},
                         "REQUIRED when use_nonlocal_eqstrain=true. Subdomain/Block IDs where nonlocal equivalent strain is enabled (e.g., 100 200)");
 
+  // optional dilatancy contribution (evaluated only when add_dilatancy=true)
+  params.addParam<bool>("add_dilatancy", false,
+                        "Enable dilatancy/compaction contribution following the Anand model");
+  params.addParam<Real>("anand_param_go", -1.0,
+                        "Anand dilatancy parameter g0; must be positive when add_dilatancy=true");
+  params.addParam<Real>("anand_param_eta_cv", -1.0,
+                        "Anand dilatancy parameter eta_cv; must be positive when add_dilatancy=true");
+  params.addParam<Real>("anand_param_p", -1.0,
+                        "Anand dilatancy exponent p; must be positive when add_dilatancy=true");
+  params.addParam<Real>("dilatancy_eta", 0.0,
+                        "Initial plastic volume change eta used in the dilatancy model");
+
+  // optional thermal contribution (evaluated only when add_temperature=true)
+  params.addParam<bool>("add_temperature", false,
+                        "Enable thermally activated plastic strain rate contribution");
+  params.addParam<Real>("thermal_A", 0.0,
+                        "Pre-exponential factor for the thermal plastic strain rate term");
+  params.addParam<Real>("thermal_n", 1.0,
+                        "Stress exponent for the thermal plastic strain rate term");
+  params.addParam<Real>("thermal_Q", 0.0,
+                        "Activation energy for the thermal plastic strain rate term");
+  params.addParam<Real>("thermal_R", 8.314462618,
+                        "Activation constant (e.g., gas constant) used in the thermal activation term");
+  params.addParam<MaterialPropertyName>(
+      "thermal_T_name",
+      "",
+      "Optional material property providing absolute temperature (Kelvin); required when add_temperature=true");
+
   return params;
 }
 
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::ComputeDamageBreakageStress3DSlipWeakeningNonlocal(const InputParameters & parameters)
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv(const InputParameters & parameters)
   : ComputeDamageBreakageStressBase3D(parameters),
     _xi_0(getParam<Real>("xi_0")),
     _xi_d(getParam<Real>("xi_d")),
@@ -104,15 +132,46 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::ComputeDamageBreakageStress3
     //use nonlocal equivalent strain
     _use_nonlocal_eqstrain(getParam<bool>("use_nonlocal_eqstrain")),
     _eqstrain_nonlocal_old(getMaterialPropertyOldByName<Real>("eqstrain_nonlocal")),
-    _nonlocal_eqstrain_blocks(getParam<std::vector<unsigned int>>("nonlocal_eqstrain_blocks"))
+    _nonlocal_eqstrain_blocks(getParam<std::vector<unsigned int>>("nonlocal_eqstrain_blocks")),
+    //use dilatancy
+    _add_dilatancy(getParam<bool>("add_dilatancy")),
+    _anand_param_go_mat(getParam<Real>("anand_param_go")),
+    _anand_param_eta_cv_mat(getParam<Real>("anand_param_eta_cv")),
+    _anand_param_p_mat(getParam<Real>("anand_param_p")),
+    //use temperature
+    _add_temperature(getParam<bool>("add_temperature")),
+    _thermal_A(getParam<Real>("thermal_A")),
+    _thermal_n(getParam<Real>("thermal_n")),
+    _thermal_Q(getParam<Real>("thermal_Q")),
+    _thermal_R(getParam<Real>("thermal_R")),
+    _thermal_T_prop(_add_temperature ? &getMaterialProperty<Real>("thermal_T_name") : nullptr)
 {
   // Enforce explicit block list when nonlocal eqstrain is enabled
   if (_use_nonlocal_eqstrain && _nonlocal_eqstrain_blocks.empty())
     mooseError("When 'use_nonlocal_eqstrain=true' you must provide 'nonlocal_eqstrain_blocks' (e.g., 'nonlocal_eqstrain_blocks = 100 200').");
+
+  if (_add_dilatancy && _add_temperature)
+    mooseError("add_dilatancy and add_temperature cannot both be set to true for this model");
+
+  if (_add_dilatancy)
+  {
+    if (_anand_param_go_mat <= 0.0 || _anand_param_eta_cv_mat <= 0.0 || _anand_param_p_mat <= 0.0)
+      mooseError("When add_dilatancy=true you must provide positive values for anand_param_go, anand_param_eta_cv, and anand_param_p");
+  }
+
+  if (_add_temperature)
+  {
+    if (_thermal_R <= 0.0)
+      mooseError("When add_temperature=true you must provide a positive thermal_R");
+    if (_thermal_A < 0.0)
+      mooseError("When add_temperature=true thermal_A must be non-negative");
+    if (_thermal_n < 0.0)
+      mooseError("When add_temperature=true thermal_n must be non-negative");
+  }
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::initialSetup()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::initialSetup()
 {
   // _base_name + "unstabilized_deformation_gradient" is only declared if we're
   // using the Lagrangian kernels.  It's okay to invoke this small strain
@@ -127,7 +186,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::initialSetup()
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::initQpStatefulProperties()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::initQpStatefulProperties()
 {
   _elastic_strain[_qp].zero();
   _stress[_qp].zero();
@@ -137,7 +196,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::initQpStatefulProperties()
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpStress()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::computeQpStress()
 { 
   
   /*
@@ -252,8 +311,86 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpStress()
     _shear_modulus[_qp] = shear_modulus_out;
     _gamma_damaged[_qp] = gamma_damaged_out;
 
+    //Define Dp components
+    //shear, dilatancy, temperature
+    RankTwoTensor Dp_shear; Dp_shear.zero();
+    RankTwoTensor Dp_dilatancy; Dp_dilatancy.zero();
+    RankTwoTensor Dp_thermal; Dp_thermal.zero();
+
+    //Define plastic strain
+    RankTwoTensor eps_p; eps_p.zero();
+
+    //----------------------------------Dp_shear----------------------------------//
+    //Get equvialent deviatroic stress scalar
+    Real Tau_eq = 0.0;
+    for (unsigned int p = 0; p < 3; p++){
+      for (unsigned int q = 0; q < 3; q++){
+        Tau_eq += 2.0/3.0 * _sigma_d_old[_qp](p,q) * _sigma_d_old[_qp](p,q);
+      }
+    }
+
+    Tau_eq = std::sqrt(Tau_eq); 
+
+    //Get deviatroic stress direction
+    RankTwoTensor N; N.zero();
+    // Epsilon to avoid division by zero
+    if (Tau_eq != 0.0){
+      //Compute deviatroic stress direction
+      for (unsigned int p = 0; p < 3; p++){
+        for (unsigned int q = 0; q < 3; q++){
+          N(p,q) = _sigma_d_old[_qp](p,q) / Tau_eq;
+        }
+      }
+    }
+
+    //get Dp_shear
+    Real shear_rate_nu = std::pow(_B_old[_qp],_m1) * std::pow(Tau_eq,_m2);
+    
+    Dp_shear = shear_rate_nu * N;
+
+    //if add dilatancy
+    if (_add_dilatancy){
+
+      //----------------------------------Dp_dilatancy----------------------------------//
+      //compute plastic volumetric strain
+      Real eta = _eps_p_old[_qp](0,0) + _eps_p_old[_qp](1,1) + _eps_p_old[_qp](2,2); 
+      
+      //compute dilatancy function beta
+      const Real eta_ratio = std::max(0.0, 1.0 - eta / _anand_param_eta_cv_mat);
+      Real dilatancy_function_beta = _anand_param_go_mat * std::pow(eta_ratio, _anand_param_p_mat);
+      
+      //get Dp_dilatancy
+      Dp_dilatancy = dilatancy_function_beta * shear_rate_nu * RankTwoTensor::Identity();
+
+      //update plastic strain
+      eps_p = _eps_p_old[_qp] + _dt * (Dp_shear + Dp_dilatancy);
+
+    }
+    else if(_add_temperature){
+
+      //-----------------------------------Dp_thermal-----------------------------------//
+      //compute thermal-induced plastic strain rate
+      const Real thermal_T = (*_thermal_T_prop)[_qp];
+      if (thermal_T < 0.0){
+        mooseError("thermal_T material property must be positive");
+      }
+      Dp_thermal = _thermal_A * std::pow(Tau_eq, _thermal_n) * N *
+                   std::exp(-_thermal_Q / (_thermal_R * thermal_T));
+
+      //update plastic strain
+      eps_p = _eps_p_old[_qp] + _dt * (Dp_shear + Dp_thermal);
+
+    }
+    //only shear induced
+    else{
+
+      //update plastic strain
+      eps_p = _eps_p_old[_qp] + _dt * (Dp_shear);      
+    
+    }
+
     /* compute strain */
-    RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_old[_qp],_m1) * _sigma_d_old[_qp];
+    //RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_old[_qp],_m1) * _sigma_d_old[_qp]; //replaced by different situation
     RankTwoTensor eps_t_inc = _mechanical_strain[_qp] - _mechanical_strain_old[_qp];
     RankTwoTensor eps_total = _eps_total_old[_qp] + eps_t_inc;
     RankTwoTensor eps_e = eps_total - eps_p;
@@ -311,7 +448,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpStress()
 }
 
 Real 
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computegammar()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::computegammar()
 {
   // Calculate each part of the expression
   Real term1 = -_xi_0 * (-_lambda_o * pow(_xi_0, 2) + 6 * _lambda_o + 2 * _shear_modulus_o);
@@ -328,7 +465,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computegammar()
 }
 
 std::vector<Real>
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computecoefficients(Real gamma_damaged_r)
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::computecoefficients(Real gamma_damaged_r)
 {
 
   //compute xi_1
@@ -375,7 +512,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computecoefficients(Real gam
 
 // Function for alpha_func_root1
 Real 
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::alphacr_root1(Real xi, Real gamma_damaged_r) {
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::alphacr_root1(Real xi, Real gamma_damaged_r) {
     Real term1 = _lambda_o * pow(xi, 3) - 6 * _lambda_o * _xi_0 + 6 * _shear_modulus_o * xi - 8 * _shear_modulus_o * _xi_0;
     Real term2 = std::sqrt(_lambda_o * _lambda_o * pow(xi, 6) 
                              - 12 * _lambda_o * _lambda_o * pow(xi, 3) * _xi_0 
@@ -393,12 +530,12 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::alphacr_root1(Real xi, Real 
 
 // Function for alpha_func_root2
 Real 
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::alphacr_root2(Real xi, Real gamma_damaged_r) {
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::alphacr_root2(Real xi, Real gamma_damaged_r) {
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(RankFourTensor & tangent, 
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::computeQpTangentModulus(RankFourTensor & tangent, 
                                                       Real I1, 
                                                       Real I2, 
                                                       Real xi, 
@@ -424,7 +561,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(Rank
 
   // Check for limiting case: alpha = 0, B = 0 (should return elasticity tensor)
   // if (std::abs(_alpha_damagedvar_aux[_qp]) < 1e-12 && std::abs(_B_damagedvar_aux[_qp]) < 1e-12) {
-  //   // Standard elasticity tensor: C_ijkl = λ δ_ij δ_kl + μ (δ_ik δ_jl + δ_il δ_jk)
+  //   // Standard elasticity tensor: C_ijkl = lambda * delta_ij * delta_kl + mu * (delta_ik * delta_jl + delta_il * delta_jk)
   //   tangent.zero();
   //   for (unsigned int i = 0; i < 3; ++i) {
   //     for (unsigned int j = 0; j < 3; ++j) {
@@ -439,9 +576,9 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(Rank
   //   return;
   // }
 
-  // Corrected derivative: ∂ξ/∂E_kl = ∂(I1/√I2)/∂E_kl
-  // = (∂I1/∂E_kl * √I2 - I1 * ∂I2/∂E_kl / (2√I2)) / I2
-  // where ∂I1/∂E_kl = δ_kl and ∂I2/∂E_kl = 2*E_kl
+  // Corrected derivative: d(xi)/dE_kl = d(I1/sqrt(I2))/dE_kl
+  // = (dI1/dE_kl * sqrt(I2) - I1 * dI2/dE_kl / (2 * sqrt(I2))) / I2
+  // where dI1/dE_kl = delta_kl and dI2/dE_kl = 2 * E_kl
   RankTwoTensor dxidE_tensor;
   for (unsigned int k = 0; k < 3; ++k) {
     for (unsigned int l = 0; l < 3; ++l) {
@@ -449,7 +586,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(Rank
     }
   }
 
-  // ∂(1/ξ)/∂E = -1/ξ² * ∂ξ/∂E
+  // d(1/xi)/dE = -1/xi^2 * d(xi)/dE
   const RankTwoTensor dxim1dE_tensor = dxidE_tensor * (-1.0 / (xi * xi));
 
   // Compute solid phase tangent (dSs/dE)
@@ -460,22 +597,23 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(Rank
   dSsdE.zero();
   
   // CORRECTED: Complete implementation of solid phase tangent
-  // ∂S^s_ij/∂E_kl = (-γ ∂ξ^(-1)/∂E_kl)I_1 δ_ij + (λ - γ/ξ) ∂I_1/∂E_kl δ_ij + (-γ ∂ξ/∂E_kl)E_ij + (2μ - γξ) ∂E_ij/∂E_kl
+  // dS^s_ij/dE_kl = (-gamma * d(xi^-1)/dE_kl) * I1 * delta_ij + (lambda - gamma/xi) * dI1/dE_kl * delta_ij
+  //                 + (-gamma * d(xi)/dE_kl) * E_ij + (2*mu - gamma*xi) * dE_ij/dE_kl
   for (unsigned int i = 0; i < 3; ++i) {
     for (unsigned int j = 0; j < 3; ++j) {
       for (unsigned int k = 0; k < 3; ++k) {
         for (unsigned int l = 0; l < 3; ++l) {
-          // Term 1a: (λ - γ/ξ) * ∂I1/∂E_kl * δ_ij = (λ - γ/ξ) * δ_kl * δ_ij
+          // Term 1a: (lambda - gamma/xi) * dI1/dE_kl * delta_ij = (lambda - gamma/xi) * delta_kl * delta_ij
           dSsdE(i, j, k, l) += lambda_term * identity(i, j) * identity(k, l);
           
-          // Term 1b: (-γ ∂ξ^(-1)/∂E_kl) * I1 * δ_ij - PREVIOUSLY MISSING
+          // Term 1b: (-gamma * d(xi^-1)/dE_kl) * I1 * delta_ij - PREVIOUSLY MISSING
           dSsdE(i, j, k, l) -= gamma_damaged_out * dxim1dE_tensor(k, l) * I1 * identity(i, j);
           
-          // Term 2a: (2μ - γξ) * ∂E_ij/∂E_kl
+          // Term 2a: (2*mu - gamma*xi) * dE_ij/dE_kl
           Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
           dSsdE(i, j, k, l) += shear_term * I4_ijkl;
           
-          // Term 2b: (-γ ∂ξ/∂E_kl) * E_ij
+          // Term 2b: (-gamma * d(xi)/dE_kl) * E_ij
           dSsdE(i, j, k, l) -= gamma_damaged_out * dxidE_tensor(k, l) * Ee(i, j);
         }
       }
@@ -489,31 +627,33 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(Rank
   RankFourTensor dSbdE;
   dSbdE.zero();
   
- // CORRECTED: Complete implementation of granular phase tangent
-  // ∂S^b_ij/∂E_kl = (a_1 ∂ξ^(-1)/∂E_kl + 3a_3 ∂ξ/∂E_kl)I_1 δ_ij + (2a_2 + a_1/ξ + 3a_3ξ) ∂I_1/∂E_kl δ_ij
-  //                + (a_1 ∂ξ/∂E_kl - a_3 ∂ξ^3/∂E_kl)E_ij + (2a_0 + a_1ξ - a_3ξ^3) ∂E_ij/∂E_kl
+  // Complete implementation of granular phase tangent
+  // dS^b_ij/dE_kl = (a1 * d(xi^-1)/dE_kl + 3 * a3 * d(xi)/dE_kl) * I1 * delta_ij
+  //               + (2 * a2 + a1/xi + 3 * a3 * xi) * dI1/dE_kl * delta_ij
+  //               + (a1 * d(xi)/dE_kl - a3 * d(xi^3)/dE_kl) * E_ij
+  //               + (2 * a0 + a1 * xi - a3 * xi^3) * dE_ij/dE_kl
   for (unsigned int i = 0; i < 3; ++i) {
     for (unsigned int j = 0; j < 3; ++j) {
       for (unsigned int k = 0; k < 3; ++k) {
         for (unsigned int l = 0; l < 3; ++l) {
-          // Term 1a: (2a_2 + a_1/ξ + 3a_3ξ) * ∂I1/∂E_kl * δ_ij = coeff2_b * δ_kl * δ_ij
+          // Term 1a: (2 * a2 + a1/xi + 3 * a3 * xi) * dI1/dE_kl * delta_ij = coeff2_b * delta_kl * delta_ij
           dSbdE(i, j, k, l) += coeff2_b * identity(i, j) * identity(k, l);
           
-          // Term 1b: a_1 * ∂ξ^(-1)/∂E_kl * I1 * δ_ij - PREVIOUSLY MISSING
+          // Term 1b: a1 * d(xi^-1)/dE_kl * I1 * delta_ij - PREVIOUSLY MISSING
           dSbdE(i, j, k, l) += a1 * dxim1dE_tensor(k, l) * I1 * identity(i, j);
           
-          // Term 1c: 3a_3 * ∂ξ/∂E_kl * I1 * δ_ij
+          // Term 1c: 3 * a3 * d(xi)/dE_kl * I1 * delta_ij
           dSbdE(i, j, k, l) += 3.0 * a3 * dxidE_tensor(k, l) * I1 * identity(i, j);
           
-          // Term 2a: (2a_0 + a_1ξ - a_3ξ^3) * ∂E_ij/∂E_kl
+          // Term 2a: (2 * a0 + a1 * xi - a3 * xi^3) * dE_ij/dE_kl
           Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
           dSbdE(i, j, k, l) += coeff4_b * I4_ijkl;
           
-          // Term 2b: a_1 * ∂ξ/∂E_kl * E_ij
+          // Term 2b: a1 * d(xi)/dE_kl * E_ij
           dSbdE(i, j, k, l) += a1 * dxidE_tensor(k, l) * Ee(i, j);
           
-          // Term 2c: -a_3 * ∂ξ^3/∂E_kl * E_ij
-          // ∂ξ^3/∂E_kl = 3ξ^2 * ∂ξ/∂E_kl
+          // Term 2c: -a3 * d(xi^3)/dE_kl * E_ij
+          // d(xi^3)/dE_kl = 3 * xi^2 * d(xi)/dE_kl
           dSbdE(i, j, k, l) -= a3 * 3.0 * xi * xi * dxidE_tensor(k, l) * Ee(i, j);
         }
       }
@@ -526,7 +666,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpTangentModulus(Rank
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::setupInitial()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::setupInitial()
 {
 
   // Real gamma_damaged_r = computegammar();
@@ -641,7 +781,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::setupInitial()
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeDeviatroicStrainRateTensor()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::computeDeviatroicStrainRateTensor()
 {
   //Compute strain rate E_dot = F^T * D * F
   RankTwoTensor E_dot = (_eps_total[_qp] - _eps_total_old[_qp]) / _dt;
@@ -659,7 +799,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeDeviatroicStrainRateT
 }
 
 void 
-ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeStrainRateCd()
+ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv::computeStrainRateCd()
 {
   //_m_exponent: constant value - default value = 0.8
   //_strain_rate_hat: constant value - default value = 1e-4
