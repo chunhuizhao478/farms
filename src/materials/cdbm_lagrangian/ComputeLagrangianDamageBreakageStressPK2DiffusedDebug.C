@@ -156,12 +156,13 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpPK1Stress()
   // Precompute the 4D tensor dFpdF_tensor[i][j][k][l] = dFpdF(i,j,k,l)
   // where dFpdF(i,j,k,l) = 0 if _dt==0 or if either Fp_dot(i,j) or F_dot(k,l) vanish;
   // otherwise dFpdF = Fp_dot(i,j)/F_dot(k,l)
+  const Real tol_fdot = 1e-20; // tolerance to avoid division by near-zero values
   Real dFpdF_tensor[3][3][3][3];
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
-          if (_dt == 0.0 || _Fp_dot[_qp](i,j) == 0.0 || _F_dot[_qp](k,l) == 0.0)
+          if (_dt == 0.0 || std::abs(_Fp_dot[_qp](i,j)) < tol_fdot || std::abs(_F_dot[_qp](k,l)) < tol_fdot)
             dFpdF_tensor[i][j][k][l] = 0.0;
           else
             dFpdF_tensor[i][j][k][l] = _Fp_dot[_qp](i,j) / _F_dot[_qp](k,l);
