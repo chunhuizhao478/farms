@@ -19,8 +19,8 @@ xmax_fault = 15000 #xmax of fault
 density = 2670 #density
 lambda_o = 3.204e10 #first lame constant
 shear_modulus_o = 3.204e10 #second lame constant
-Cs = '${fparse shear_modulus_o / density }' #shear wave speed
-Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
+Cs = '${fparse sqrt(shear_modulus_o / density) }'
+Cp = '${fparse sqrt((lambda_o + 2 * shear_modulus_o) / density) }'
 ##-------------------------##
 
 ##Slip weakening parameters##
