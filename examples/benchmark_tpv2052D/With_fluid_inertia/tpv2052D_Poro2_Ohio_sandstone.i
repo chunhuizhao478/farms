@@ -513,7 +513,7 @@
 [Outputs]
   #  file_base = '$ENV{WORK}/tpv2052D_results/simulation'
     exodus = true
-    time_step_interval = 5
+    time_step_interval = 20
     show = 'disp_x disp_y fluid_vel_x fluid_vel_y p vel_x vel_y traction_x traction_y jump_x jump_y jump_vel_x jump_vel_y normal_traction tangent_traction normal_jump tangent_jump'
 []
 
