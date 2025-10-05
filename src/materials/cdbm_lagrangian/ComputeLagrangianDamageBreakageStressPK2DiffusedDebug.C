@@ -162,10 +162,10 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpPK1Stress()
     for (unsigned int j = 0; j < 3; j++){
       for (unsigned int k = 0; k < 3; k++){
         for (unsigned int l = 0; l < 3; l++){
-          if (_dt == 0.0 || std::abs(_Fp_dot[_qp](i,j)) < tol_fdot || std::abs(_F_dot[_qp](k,l)) < tol_fdot)
+          //if (_dt == 0.0 || std::abs(_Fp_dot[_qp](i,j)) < tol_fdot || std::abs(_F_dot[_qp](k,l)) < tol_fdot)
             dFpdF_tensor[i][j][k][l] = 0.0;
-          else
-            dFpdF_tensor[i][j][k][l] = _Fp_dot[_qp](i,j) / _F_dot[_qp](k,l);
+          //else
+          //  dFpdF_tensor[i][j][k][l] = _Fp_dot[_qp](i,j) / _F_dot[_qp](k,l);
         }
       }
     }
