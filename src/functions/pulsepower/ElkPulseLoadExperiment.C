@@ -14,6 +14,7 @@ ElkPulseLoadExperiment::validParams()
   params.addRequiredParam<Real>("gap","the gap distance of which the discharge takes place");
   params.addRequiredParam<Real>("convert_efficiency","convert efficiency eta (EB = eta EM)");
   params.addRequiredParam<Real>("fitting_param_alpha","fitting parameter for peak pressure");
+  params.addParam<Real>("base_factor", 9000.0, "Base factor for peak pressure calculation (default: 9000)");
   params.addRequiredParam<std::vector<Real>>("discharge_center", "discharge center (x,y,z) (m)");
   params.addRequiredParam<int>("number_of_pulses","number of pulse, assume pulses are continuous");
   params.addParam<Real>("peak_pressure", 0.0, "The peak value of pressure, if not specified, it will be calculated based on the Dsensor.");
@@ -32,6 +33,7 @@ ElkPulseLoadExperiment::ElkPulseLoadExperiment(const InputParameters & parameter
   _EM(getParam<Real>("EM")),
   _gap(getParam<Real>("gap")),
   _fitting_param_alpha(getParam<Real>("fitting_param_alpha")),
+  _base_factor(getParam<Real>("base_factor")),
   _discharge_center(getParam<std::vector<Real>>("discharge_center")),
   _number_of_pulses(getParam<int>("number_of_pulses")),
   _peak_pressure(getParam<Real>("peak_pressure")),
@@ -67,7 +69,7 @@ ElkPulseLoadExperiment::value(Real t, const Point & p) const
   }
 
   // Estimate peak pressure (bar mm KJ) -> Pp (bar -> Pa)
-  Real Pp = (0.1 * 1e6) * 9000 * 1.0 / Dsensor * std::pow(_convert_efficiency*_EM,_fitting_param_alpha);
+  Real Pp = (0.1 * 1e6) * _base_factor * 1.0 / Dsensor * std::pow(_convert_efficiency*_EM,_fitting_param_alpha);
 
   // Check if the peak pressure is specified
   if (_peak_pressure > 0.0){

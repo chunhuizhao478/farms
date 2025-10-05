@@ -25,6 +25,7 @@ public:
   Real _EM;
   Real _gap;
   Real _fitting_param_alpha;
+  Real _base_factor;
   std::vector<Real> _discharge_center;
   int  _number_of_pulses;
 

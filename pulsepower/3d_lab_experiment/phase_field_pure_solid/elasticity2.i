@@ -1,7 +1,7 @@
 E = 50e9
 nu = 0.373
 # ft = 25.5e6
-Gc_const = 10
+Gc_const = 40
 density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
@@ -224,7 +224,7 @@ top_right1 = '0.002 4e-4 0.06'
   []
   #get pulse load aux
   [get_pulse_load_aux]
-    type = FunctionAux 
+    type = FunctionAux
     variable = pulse_load_aux
     function = func_tri_pulse
     execute_on = timestep_end
@@ -298,7 +298,7 @@ top_right1 = '0.002 4e-4 0.06'
 []
 
 [Functions]
-  # [func_tri_pulse] 
+  # [func_tri_pulse]
   #   type = ElkPulseLoadExperimentWu2022Paper #need to adopt function
   #   shape_param_alpha = 4.658e5
   #   shape_param_beta = 4.661e5
@@ -320,7 +320,8 @@ top_right1 = '0.002 4e-4 0.06'
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     discharge_center = '0 0 0.03'
-    number_of_pulses = 10
+    number_of_pulses = 2
+    base_factor = 18000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
@@ -337,8 +338,8 @@ top_right1 = '0.002 4e-4 0.06'
       save_in_disp_x = fx
       save_in_disp_y = fy
       save_in_disp_z = fz
-    []             
-  []   
+    []
+  []
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -390,7 +391,7 @@ top_right1 = '0.002 4e-4 0.06'
     p_wave_speed = ${Cp}
     density = ${density}
     save_in = fdampy
-  []  
+  []
   [damp_outer_z]
     type = FarmsNonReflectDashpotBC
     variable = disp_z
@@ -406,7 +407,7 @@ top_right1 = '0.002 4e-4 0.06'
     p_wave_speed = ${Cp}
     density = ${density}
     save_in = fdampz
-  [] 
+  []
 []
 
 [Materials]
@@ -473,7 +474,7 @@ top_right1 = '0.002 4e-4 0.06'
   nl_max_its = 30
 
   # dt = 0.5e-7
-  end_time = 10e-5
+  end_time = 2e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
