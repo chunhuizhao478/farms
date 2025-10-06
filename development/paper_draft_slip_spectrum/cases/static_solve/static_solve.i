@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_large.msh'
+        file = '../mesh/mesh_test.msh'
     []
     [./sidesets]
         input = msh
@@ -16,8 +16,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-480000 -480000 0;
-                 480000 -480000 0'
+        coord = '-30000 -30000 0;
+                 30000 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -27,25 +27,25 @@
 [GlobalParams]
 
     displacements = 'disp_x disp_y'
-    
+
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
     lambda_o = 32.04e9
-        
+
     #initial shear modulus value (FIRST lame constant) [Pa]
     shear_modulus_o = 32.04e9
-    
+
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
-    
+
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
-    
+
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
     #may need a bit space, use 1.5 as boundary
     xi_max = 1.8
-    
+
     #<strain invariants ratio: minimum allowable value>: set boundary
     #Xu_etal_P15-2D
     xi_min = -1.8
@@ -69,19 +69,19 @@
 
     #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     beta_width = 0.03 #1e-3
-    
+
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-10
-    
+
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
-    
+
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
     m2 = 1
-    
+
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
-    
+
 []
 
 [Variables]
@@ -169,7 +169,7 @@
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
         build_param_len_of_fault = 28000
-    [] 
+    []
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
         large_kinematics = true
@@ -194,7 +194,7 @@
         output_properties = 'shear_stress_perturbation damage_perturbation'
         outputs = exodus
     []
-[]  
+[]
 
 [Preconditioning]
     [smp]
@@ -202,7 +202,7 @@
       full = true
     []
 []
-  
+
 [Executioner]
     type = Steady
     solve_type = 'NEWTON'
@@ -228,10 +228,10 @@
     # line_search = 'bt'
     # dt = 1e-8
     # steady_state_detection = true
-[]  
+[]
 
 [Outputs]
-    exodus = true       
+    exodus = true
     show = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
 []
 
@@ -249,8 +249,8 @@
         variable = disp_x
         value = 13e6
         boundary = top
-    [] 
-    # 
+    []
+    #
     [static_pressure_top]
         type = NeumannBC
         variable = disp_y
@@ -264,21 +264,21 @@
         boundary = bottom
         value = 50e6
         displacements = 'disp_x disp_y'
-    []       
+    []
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
         boundary = left
         value = 50e6
         displacements = 'disp_x disp_y'
-    []  
+    []
     [static_pressure_right]
         type = NeumannBC
         variable = disp_x
         boundary = right
         value = -50e6
         displacements = 'disp_x disp_y'
-    []       
+    []
     # fix left ptr
     [./fix_cptr1_x]
         type = DirichletBC
@@ -291,5 +291,5 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    []   
+    []
 []

@@ -15,8 +15,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-480000 -480000 0;
-                 480000 -480000 0'
+        coord = '-30000 -30000 0;
+                 30000 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -26,43 +26,43 @@
 [GlobalParams]
 
     displacements = 'disp_x disp_y'
-    
+
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
     lambda_o = 32.04e9
-        
+
     #initial shear modulus value (FIRST lame constant) [Pa]
     shear_modulus_o = 32.04e9
-    
+
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
-    
+
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
-    
+
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-14
-    
+    C_g = 1e-10
+
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
-    
+
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Equation 18
     m2 = 1
-    
+
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
-    
+
 []
 
 
 [Variables]
     [disp_x]
         order = FIRST
-        family = LAGRANGE     
+        family = LAGRANGE
     []
     [disp_y]
         order = FIRST
-        family = LAGRANGE    
+        family = LAGRANGE
     []
 []
 
@@ -151,19 +151,19 @@
     []
     #outputs
     [pk2_stress_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [green_lagrange_elastic_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
     [plastic_strain_01]
-        order = FIRST
-        family = MONOMIAL       
+        order = CONSTANT
+        family = MONOMIAL
     []
     [total_lagrange_strain_01]
-        order = FIRST
+        order = CONSTANT
         family = MONOMIAL
     []
 []
@@ -211,7 +211,7 @@
         variable = I2_aux
         property = second_elastic_strain_invariant
         block = '1 3'
-    [] 
+    []
     [get_deviatroic_strain_rate]
         type = MaterialRealAux
         variable = deviatroic_strain_rate_aux
@@ -253,7 +253,7 @@
         property = plastic_strain
         i = 0
         j = 1
-        block = '1 3'   
+        block = '1 3'
     []
     [get_total_lagrange_strain_01]
         type = MaterialRankTwoTensorAux
@@ -295,7 +295,7 @@
         beta = 0.25
         gamma = 0.5
         eta = 0
-    []     
+    []
 []
 
 [Functions]
@@ -345,7 +345,7 @@
         vel_z = vel_z
         #use cg
         # use_spatial_cg = true
-    [] 
+    []
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
         large_kinematics = true
@@ -355,8 +355,8 @@
     []
     [dummy_initial_damage]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation'
-        prop_values = '0.0 0.0 0.0'
+        prop_names = 'initial_damage shear_stress_perturbation damage_perturbation mean_stress_perturbation'
+        prop_values = '0.0 0.0 0.0 0.0'
     []
     #elastic material
     [elastic_tensor]
@@ -373,7 +373,7 @@
     []
     #strain invariant ratio
     [comp_strain_invariant_ratio]
-        type = ComputeXi 
+        type = ComputeXi
         output_properties = 'strain_invariant_ratio'
         outputs = exodus
         block = '2'
@@ -385,7 +385,7 @@
         output_properties = 'eqstrain_nonlocal'
         outputs = exodus
     []
-[] 
+[]
 
 [UserObjects]
     [eqstrain_averaging]
@@ -431,7 +431,7 @@
     variable = vel_z
   []
 []
-  
+
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
@@ -486,8 +486,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 20
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01'
+      time_step_interval = 200
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
         type = CSV
@@ -495,7 +495,7 @@
     [../]
     [out]
         type = Checkpoint
-        time_step_interval = 200
+        time_step_interval = 2000
         num_files = 2
     []
 []
@@ -514,8 +514,8 @@
         variable = disp_x
         value = 13e6
         boundary = top
-    [] 
-    # 
+    []
+    #
     [static_pressure_top]
         type = NeumannBC
         variable = disp_y
@@ -529,21 +529,21 @@
         boundary = bottom
         value = 50e6
         displacements = 'disp_x disp_y'
-    []       
+    []
     [static_pressure_left]
         type = NeumannBC
         variable = disp_x
         boundary = left
         value = 50e6
         displacements = 'disp_x disp_y'
-    []  
+    []
     [static_pressure_right]
         type = NeumannBC
         variable = disp_x
         boundary = right
         value = -50e6
         displacements = 'disp_x disp_y'
-    []       
+    []
     # fix left ptr
     [./fix_cptr1_x]
         type = DirichletBC
@@ -556,7 +556,7 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    [] 
+    []
     #add dampers
     [damp_top_x]
         type = FarmsNonReflectDashpotBC
@@ -669,14 +669,14 @@
         shear_wave_speed = 3464
         p_wave_speed = 6000
         density = 2700
-    []   
+    []
 []
 
 [MultiApps]
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub.i'
+        input_files = 'dynamic_solve_sub3.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
@@ -741,11 +741,11 @@
         variable = alpha_damagedvar_aux
         solution_uo = init_sol_components
         from_variable = alpha_damagedvar_output
-    []  
+    []
     [B_damagedvar_sub_ic]
         type = SolutionIC
         variable = B_damagedvar_aux
         solution_uo = init_sol_components
         from_variable = B_damagedvar_output
-    [] 
+    []
 []
