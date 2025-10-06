@@ -1,7 +1,5 @@
-# Verification of Benchmark Problem TPV205-2D from the SCEC Dynamic Rupture Validation exercises #
-# Reference: #
-# Harris, R. M.-P.-A. (2009). The SCEC/USGS Dynamic Earthquake Rupture Code Verification Exercise. Seismological Research Letters, vol. 80, no. 1, pages 119-126. #
-# [Note]: This serves as a test file, to run the full problem, please extend the domain size by modifying nx, ny, xmin, xmax, ymin, ymax
+# Example: Using PML (Perfectly Matched Layer) for absorbing boundaries
+# This is a modified version of dynamic_solve_elastic.i with PML instead of dashpot BCs
 
 #parameters
 
@@ -19,7 +17,7 @@ xmax_fault = 15000 #xmax of fault
 density = 2670 #density
 lambda_o = 3.204e10 #first lame constant
 shear_modulus_o = 3.204e10 #second lame constant
-Cs = '${fparse sqrt(shear_modulus_o / density) }'
+#Cs = '${fparse sqrt(shear_modulus_o / density) }'
 Cp = '${fparse sqrt((lambda_o + 2 * shear_modulus_o) / density) }'
 ##-------------------------##
 
@@ -35,19 +33,19 @@ xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
 xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = -1 #coefficient gives positive damage evolution
-use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
+Cd_constant = 0 #coefficient gives positive damage evolution
+use_strain_rate_dependent_Cd = false #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
 strain_rate_hat = 1e-7 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
-CBH_constant = 1e4 #coefficient of healing for breakage evolution
-C_1 = 300 #coefficient of healing for damage evolution
+CBH_constant = 0 #coefficient of healing for breakage evolution
+C_1 = 0 #coefficient of healing for damage evolution
 C_2 = 0.05 #coefficient of healing for damage evolution
 beta_width = 0.05 #coefficient gives width of transitional region
-C_g = 1e-12 #material parameter: compliance or fluidity of the fine grain granular material
+C_g = 1e-10 #material parameter: compliance or fluidity of the fine grain granular material
 m1 = 10 #coefficient of power law indexes
 m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
@@ -57,6 +55,16 @@ chi = 0.8 #energy ratio
 peak_shear_stress = 81.6e6 #peak shear stress for nucleation (Pa)
 nucl_center = '0 0' #nucleation center (x z)
 nucl_radius = 1500 #nucleation radius (m)
+##-------------------------##
+
+##PML parameters##
+# Physical domain: -35km to +35km in x, -15km to +15km in y
+# PML layer: 5km thick on all sides
+pml_xmin_inner = -35000  # Inner edge of PML (physical domain boundary)
+pml_xmax_inner = 35000
+pml_ymin_inner = -15000
+pml_ymax_inner = 15000
+pml_thickness = 5000     # 5km PML layer
 ##-------------------------##
 
 ##model parameters##
@@ -78,10 +86,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       dim = 2
       nx = 800
       ny = 400
-      xmin = -40000
-      xmax = 40000
-      ymin = -20000
-      ymax = 20000
+      # EXTENDED DOMAIN to include PML layer
+      xmin = -40000  # pml_xmin_inner - pml_thickness
+      xmax = 40000   # pml_xmax_inner + pml_thickness
+      ymin = -20000  # pml_ymin_inner - pml_thickness
+      ymax = 20000   # pml_ymax_inner + pml_thickness
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
@@ -256,6 +265,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       order = FIRST
       family = MONOMIAL
     []
+    ###
+    # PML damping coefficient visualization
+    [pml_damping_aux]
+      order = FIRST
+      family = MONOMIAL
+    []
   []
 
   [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -410,6 +425,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       property = deviatoric_strain_rate
       execute_on = 'TIMESTEP_END'
     []
+    ###
+    # Visualize PML damping coefficient
+    [get_pml_damping]
+      type = MaterialRealAux
+      variable = pml_damping_aux
+      property = pml_damping_coeff
+      execute_on = 'TIMESTEP_END'
+    []
   []
 
   [Kernels]
@@ -432,6 +455,16 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       type = StiffPropDamping
       variable = 'disp_y'
       component = '1'
+    []
+    ###
+    # PML damping kernels (replaces dashpot BCs)
+    [./pml_damping_x]
+      type = PMLDamping
+      variable = disp_x
+    []
+    [./pml_damping_y]
+      type = PMLDamping
+      variable = disp_y
     []
   []
 
@@ -487,6 +520,20 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                             func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
         output_properties = 'static_initial_stress_tensor'
         outputs = exodus
+    [../]
+    ###
+    # PML damping coefficient material
+    [./pml_coeff]
+      type = PMLCoefficientMaterial
+      pml_xmin = ${pml_xmin_inner}
+      pml_xmax = ${pml_xmax_inner}
+      pml_ymin = ${pml_ymin_inner}
+      pml_ymax = ${pml_ymax_inner}
+      pml_thickness = ${pml_thickness}
+      ref_wave_speed = ${Cp}  # Use P-wave speed for scaling
+      exponent = 3.0          # Cubic damping profile (good balance)
+      # d_max is auto-computed for ~1% reflection
+      outputs = exodus
     [../]
   []
 
@@ -590,7 +637,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [exodus]
       type = Exodus
       execute_on = 'timestep_end'
-      show = 'vel_slipweakening_x vel_slipweakening_y disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux initial_damage_aux initial_damage'
+      show = 'vel_slipweakening_x vel_slipweakening_y disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux initial_damage_aux initial_damage pml_damping_aux'
       time_step_interval = ${exodus_time_step_interval}
     []
     [out]
@@ -601,90 +648,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [sample_snapshots]
       type = Exodus
       execute_on = 'timestep_end'
-      show = 'vel_slipweakening_x vel_slipweakening_y  disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+      show = 'vel_slipweakening_x vel_slipweakening_y  disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux pml_damping_aux'
       time_step_interval = ${sample_snapshots_time_step_interval}
-    []
-  []
-
-  [BCs]
-    [./dashpot_top_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = top
-    []
-    [./dashpot_top_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = top
-    []
-    [./dashpot_bottom_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = bottom
-    []
-    [./dashpot_bottom_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = bottom
-    []
-    [./dashpot_left_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = left
-    []
-    [./dashpot_left_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = left
-    []
-    [./dashpot_right_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = right
-    []
-    [./dashpot_right_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = right
     []
   []
