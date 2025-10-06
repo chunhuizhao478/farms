@@ -22,25 +22,25 @@
 []
 
 [GlobalParams]
-    
+
     ##----continuum damage breakage model----##
     #initial lambda value (FIRST lame constant) [Pa]
     lambda_o = 32.04e9
-        
+
     #initial shear modulus value (FIRST lame constant) [Pa]
     shear_modulus_o = 32.04e9
-    
+
     #<strain invariants ratio: onset of damage evolution>: relate to internal friction angle, refer to "note_mar25"
     xi_0 = -0.8
-    
+
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.9
-    
+
     #<strain invariants ratio: maximum allowable value>: set boundary
     #Xu_etal_P15-2D
     #may need a bit space, use 1.5 as boundary
     xi_max = 1.8
-    
+
     #<strain invariants ratio: minimum allowable value>: set boundary
     #Xu_etal_P15-2D
     xi_min = -1.8
@@ -50,7 +50,7 @@
 
     #strain rate dependent Cd options
     m_exponent = 0.8
-    strain_rate_hat = 1e-4
+    strain_rate_hat = 1e-8
     cd_hat = 1e3
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -78,11 +78,11 @@
 [Variables]
     [alpha_damagedvar_sub]
         order = FIRST
-        family = LAGRANGE     
+        family = LAGRANGE
     []
     [B_damagedvar_sub]
         order = FIRST
-        family = LAGRANGE    
+        family = LAGRANGE
     []
 []
 
@@ -242,8 +242,8 @@
         sigma_divisor = 2.0
         # output_properties = 'shear_stress_perturbation damage_perturbation'
         # outputs = exodus
-    [] 
-[] 
+    []
+[]
 
 [Preconditioning]
     [smp]
@@ -251,7 +251,7 @@
       full = true
     []
 []
-  
+
 [Executioner]
     type = Transient
     solve_type = 'NEWTON'
@@ -292,7 +292,7 @@
         variable = alpha_damagedvar_sub
         solution_uo = init_sol_components
         from_variable = alpha_damagedvar_output
-    []  
+    []
     [B_damagedvar_sub_ic]
         type = SolutionIC
         variable = B_damagedvar_sub
