@@ -14,6 +14,11 @@ elem_size = 100 #!!! element size near the fault, need to be consistent with the
 xmin_fault = -15000 #xmin of fault
 xmax_fault = 15000 #xmax of fault
 
+##block
+elastic_block_len = 30000
+elastic_block_name = '10'
+damaged_block_name = '0 1 2'
+
 ##-------------------------##
 ##material properties##
 density = 2670 #density
@@ -25,7 +30,7 @@ Cp = '${fparse sqrt((lambda_o + 2 * shear_modulus_o) / density) }'
 
 ##Slip weakening parameters##
 Dc = 0.4 #characteristic length (m)
-q = 0.1 #damping ratio
+q = 0.2 #damping ratio
 mu_s = 0.677 #static friction coefficient
 mu_d = 0.525 #dynamic friction coefficient
 ##-------------------------##
@@ -47,7 +52,7 @@ CBH_constant = 1e4 #coefficient of healing for breakage evolution
 C_1 = 300 #coefficient of healing for damage evolution
 C_2 = 0.05 #coefficient of healing for damage evolution
 beta_width = 0.05 #coefficient gives width of transitional region
-C_g = 1e-12 #material parameter: compliance or fluidity of the fine grain granular material
+C_g = 1e-10 #material parameter: compliance or fluidity of the fine grain granular material
 m1 = 10 #coefficient of power law indexes
 m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
@@ -60,15 +65,15 @@ nucl_radius = 1500 #nucleation radius (m)
 ##-------------------------##
 
 ##model parameters##
-dt = 0.0025 #time step size
+dt = 0.005 #time step size
 
-end_time = 100.0 #end time for simulation
+end_time = 3600 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 40 #time step interval for output
-sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
+# sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 # csv_time_step_interval = 2 #time step interval for csv output
-checkpoint_time_step_interval = 40 #time step interval for checkpoint output
+checkpoint_time_step_interval = 400 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
@@ -77,22 +82,30 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       type = GeneratedMeshGenerator
       dim = 2
       nx = 800
-      ny = 400
+      ny = 800
       xmin = -40000
       xmax = 40000
-      ymin = -20000
-      ymax = 20000
+      ymin = -40000
+      ymax = 40000
+    []
+    [./elastic_block]
+        type = SubdomainBoundingBoxGenerator
+        block_id = ${elastic_block_name}
+        bottom_left = '${fparse -1 * elastic_block_len} ${fparse -1 * elastic_block_len} 0'
+        top_right = '${fparse 1 * elastic_block_len} ${fparse 1 * elastic_block_len} 0'
+        input = msh
+        location = 'outside'
     []
     [./new_block_1]
       type = ParsedSubdomainMeshGenerator
-      input = msh
-      combinatorial_geometry = 'y>0 & x>${xmin_fault} & x<${xmax_fault}'
+      input = elastic_block
+      combinatorial_geometry = 'y>0 & x>${xmin_fault} & x<${xmax_fault} & y<${fparse 1 * elastic_block_len}'
       block_id = 1
     []
     [./new_block_2]
       type = ParsedSubdomainMeshGenerator
       input = new_block_1
-      combinatorial_geometry = 'y<0 & x>${xmin_fault} & x<${xmax_fault}'
+      combinatorial_geometry = 'y<0 & x>${xmin_fault} & x<${xmax_fault} & y>${fparse -1 * elastic_block_len}'
       block_id = 2
     []
     [./split]
@@ -262,7 +275,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [./czm_ik]
       boundary = 'Block1_Block2'
       strain = SMALL
-      generate_output='traction_x traction_y jump_x jump_y'
+      generate_output='jump_x'
     [../]
   []
 
@@ -273,7 +286,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
           strain = SMALL
           add_variables = true
           planar_formulation = PLANE_STRAIN
-          generate_output = 'stress_xx stress_yy stress_xy'
+          #generate_output = 'stress_xx stress_yy stress_xy'
           extra_vector_tags = 'restore_tag'
         []
       []
@@ -341,60 +354,63 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       boundary = 'Block1_Block2'
       execute_on = 'TIMESTEP_END'
     []
-    [get_jump_x_rate_aux]
-      type = FDCompVarRate
-      variable = jump_x_rate_aux
-      coupled = jump_x
-      execute_on = 'TIMESTEP_END'
-      boundary = 'Block1_Block2'
-    []
-    [get_traction_x_aux]
-      type = MaterialRealAux
-      property = traction_x
-      variable = traction_x_aux
-      boundary = 'Block1_Block2'
-      execute_on = 'TIMESTEP_END'
-    []
+    #[get_jump_x_rate_aux]
+    #  type = FDCompVarRate
+    #  variable = jump_x_rate_aux
+    #  coupled = jump_x
+    #  execute_on = 'TIMESTEP_END'
+    #  boundary = 'Block1_Block2'
+    #[]
+    #[get_traction_x_aux]
+    #  type = MaterialRealAux
+    #  property = traction_x
+    #  variable = traction_x_aux
+    #  boundary = 'Block1_Block2'
+    #  execute_on = 'TIMESTEP_END'
+    #[]
     ### slip weakening normal direction
-    [get_jump_y_aux]
-      type = MaterialRealAux
-      property = jump_y
-      variable = jump_y_aux
-      boundary = 'Block1_Block2'
-      execute_on = 'TIMESTEP_END'
-    []
-    [get_jump_y_rate_aux]
-      type = FDCompVarRate
-      variable = jump_y_rate_aux
-      coupled = jump_y
-      execute_on = 'TIMESTEP_END'
-      boundary = 'Block1_Block2'
-    []
-    [get_traction_y_aux]
-      type = MaterialRealAux
-      property = traction_y
-      variable = traction_y_aux
-      boundary = 'Block1_Block2'
-      execute_on = 'TIMESTEP_END'
-    []
+    #[get_jump_y_aux]
+    #  type = MaterialRealAux
+    #  property = jump_y
+    #  variable = jump_y_aux
+    #  boundary = 'Block1_Block2'
+    #  execute_on = 'TIMESTEP_END'
+    #[]
+    #[get_jump_y_rate_aux]
+    #  type = FDCompVarRate
+    #  variable = jump_y_rate_aux
+    #  coupled = jump_y
+    #  execute_on = 'TIMESTEP_END'
+    #  boundary = 'Block1_Block2'
+    #[]
+    #[get_traction_y_aux]
+    #  type = MaterialRealAux
+    #  property = traction_y
+    #  variable = traction_y_aux
+    # boundary = 'Block1_Block2'
+    # execute_on = 'TIMESTEP_END'
+    #[]
     ### get CDB model properties
     [get_alpha_damagedvar]
       type = MaterialRealAux
       variable = alpha_damagedvar_aux
       property = alpha_damagedvar
       execute_on = 'TIMESTEP_END'
+      block = ${damaged_block_name}
     []
     [get_B]
       type = MaterialRealAux
       variable = B_aux
       property = B
       execute_on = 'TIMESTEP_END'
+      block = ${damaged_block_name}
     []
     [get_xi]
       type = MaterialRealAux
       variable = xi_aux
       property = xi
       execute_on = 'TIMESTEP_END'
+      block = ${damaged_block_name}
     []
     [get_initial_damage]
       type = SolutionAux
@@ -409,6 +425,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       variable = deviatoric_strain_rate_aux
       property = deviatoric_strain_rate
       execute_on = 'TIMESTEP_END'
+      block = ${damaged_block_name}
     []
   []
 
@@ -439,13 +456,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     #damage breakage model
     [stress_medium]
         type = ComputeDamageBreakageStress3DSlipWeakening
-        output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
+        output_properties = 'B alpha_damagedvar xi deviatoric_strain_rate shear_modulus eps_p'
         use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
         m_exponent = ${m_exponent}
         strain_rate_hat = ${strain_rate_hat}
         cd_hat = ${cd_hat}
         zero_Cd_below_threshold = true
         outputs = exodus
+        block = ${damaged_block_name}
     []
     [dummy_material]
         type = GenericConstantMaterial
@@ -457,7 +475,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       property_name = 'initial_damage'
       coupled_variables = initial_damage_aux
       expression = 'initial_damage_aux'
-      outputs = exodus
+      #outputs = exodus
     []
     [./czm_mat]
         type = SlipWeakeningFrictionczm2dCDBM
@@ -476,8 +494,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         tensor_functions = 'func_initial_strain_xx   func_initial_strain_xy      func_initial_strain_xz
                             func_initial_strain_xy   func_initial_strain_yy      func_initial_strain_yz
                             func_initial_strain_xz   func_initial_strain_yz      func_initial_strain_zz'
-        output_properties = 'static_initial_strain_tensor'
-        outputs = exodus
+        #output_properties = 'static_initial_strain_tensor'
+        #outputs = exodus
     [../]
     [./static_initial_stress_tensor] #this is used in the SlipWeakeningFrictionczm3dCDBM
         type = GenericFunctionRankTwoTensor
@@ -485,9 +503,20 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                             func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                             func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
-        output_properties = 'static_initial_stress_tensor'
-        outputs = exodus
+        #output_properties = 'static_initial_stress_tensor'
+        #outputs = exodus
     [../]
+    ##elastic domain
+    [elasticity]
+        type = ComputeIsotropicElasticityTensor
+        lambda = 32.04e9
+        shear_modulus = 32.04e9
+        use_displaced_mesh = false
+    []
+    [stress]
+        type = ComputeLinearElasticStress
+        block = ${elastic_block_name}
+    []
   []
 
   [Functions]
@@ -578,7 +607,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = Transient
     dt = ${dt}
     end_time = ${end_time}
-    # num_steps = ${num_steps}
+    #num_steps = 10
     [TimeIntegrator]
       type = CentralDifference
       solve_type = lumped
@@ -590,7 +619,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [exodus]
       type = Exodus
       execute_on = 'timestep_end'
-      show = 'vel_slipweakening_x vel_slipweakening_y disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux initial_damage_aux initial_damage'
+      show = 'vel_slipweakening_x vel_slipweakening_y disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux deviatoric_strain_rate_aux shear_modulus eps_p_00 eps_p_01 eps_p_11 jump_x_aux'
       time_step_interval = ${exodus_time_step_interval}
     []
     [out]
@@ -598,12 +627,19 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       time_step_interval = ${checkpoint_time_step_interval}
       num_files = ${checkpoint_num_files}
     []
-    [sample_snapshots]
-      type = Exodus
-      execute_on = 'timestep_end'
-      show = 'vel_slipweakening_x vel_slipweakening_y  disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
-      time_step_interval = ${sample_snapshots_time_step_interval}
-    []
+    #[sample_snapshots]
+    #  type = Exodus
+    #  execute_on = 'timestep_end'
+    #  show = 'vel_slipweakening_x vel_slipweakening_y  disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+    #  time_step_interval = ${sample_snapshots_time_step_interval}
+    #[]
+    #[pgraph]
+    #    type = PerfGraphOutput
+    #    execute_on = 'initial final'  # Default is "final"
+    #    level = 2                     # Default is 1
+    #    heaviest_branch = true        # Default is false
+    #    heaviest_sections = 7         # Default is 0
+    #[]
   []
 
   [BCs]

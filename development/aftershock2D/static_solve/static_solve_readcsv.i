@@ -2,8 +2,8 @@
 
 ##mesh parameters
 ###need to check gmsh file for changing the parameters here
-bottom_nodes_coord1 = '-40000 -20000 0'
-bottom_nodes_coord2 = ' 40000 -20000 0'
+bottom_nodes_coord1 = '-40000 -40000 0'
+bottom_nodes_coord2 = ' 40000 -40000 0'
 
 # xmin_fault = -15000 #xmin of fault
 # xmax_fault = 15000 #xmax of fault
@@ -54,11 +54,11 @@ sigmaxy = 70e6 #initial shear stress (Pa)
     type = GeneratedMeshGenerator
     dim = 2
     nx = 800
-    ny = 400
+    ny = 800
     xmin = -40000
     xmax = 40000
-    ymin = -20000
-    ymax = 20000
+    ymin = -40000
+    ymax = 40000
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -80,7 +80,7 @@ sigmaxy = 70e6 #initial shear stress (Pa)
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
   lambda_o = ${lambda_o}
-  
+
   #initial shear modulus value (second lame constant) [Pa]
   shear_modulus_o = ${shear_modulus_o}
 
@@ -160,7 +160,7 @@ sigmaxy = 70e6 #initial shear stress (Pa)
       variable = correlated_randalpha_o
       function = node_randalpha_o
       execute_on = 'INITIAL'
-  [] 
+  []
   [get_alpha_damagedvar]
     type = MaterialRealAux
     variable = alpha_damagedvar_aux
@@ -183,7 +183,7 @@ sigmaxy = 70e6 #initial shear stress (Pa)
   [../]
   [strain]
     type = ComputeSmallStrain
-    eigenstrain_names = ini_stress
+    #eigenstrain_names = ini_stress
     outputs = exodus
   []
   [stress_medium]
@@ -205,7 +205,7 @@ sigmaxy = 70e6 #initial shear stress (Pa)
   []
   [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
     type = ComputeDamageBreakageEigenstrainFromInitialStress
-    initial_stress = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
+    initial_stress = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                       func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                       func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
     eigenstrain_name = ini_stress
@@ -216,12 +216,12 @@ sigmaxy = 70e6 #initial shear stress (Pa)
   [./static_initial_stress_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening, SlipWeakeningFrictionczm3dCDBM
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
-      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
+      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                           func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                           func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
       output_properties = 'static_initial_stress_tensor'
       outputs = exodus
-  [../]    
+  [../]
   [./comp_xi]
     type = ComputeXi
     output_properties = 'strain_invariant_ratio'
@@ -236,14 +236,14 @@ sigmaxy = 70e6 #initial shear stress (Pa)
       boundary = left
       function = func_pos_xx_stress
       displacements = 'disp_x disp_y'
-  []  
+  []
   [static_pressure_right]
       type = FunctionNeumannBC
       variable = disp_x
       boundary = right
       function = func_neg_xx_stress
       displacements = 'disp_x disp_y'
-  [] 
+  []
   #
   [static_pressure_bottom]
       type = FunctionNeumannBC
@@ -251,14 +251,14 @@ sigmaxy = 70e6 #initial shear stress (Pa)
       boundary = bottom
       function = func_pos_yy_stress
       displacements = 'disp_x disp_y'
-  []  
+  []
   [static_pressure_top]
       type = FunctionNeumannBC
       variable = disp_y
       boundary = top
       function = func_neg_yy_stress
       displacements = 'disp_x disp_y'
-  [] 
+  []
   #
   [static_pressure_bottom_shear]
       type = FunctionNeumannBC
@@ -266,28 +266,28 @@ sigmaxy = 70e6 #initial shear stress (Pa)
       boundary = bottom
       function = func_neg_xy_stress
       displacements = 'disp_x disp_y'
-  []  
+  []
   [static_pressure_top_shear]
       type = FunctionNeumannBC
       variable = disp_x
       boundary = top
       function = func_pos_xy_stress
       displacements = 'disp_x disp_y'
-  [] 
+  []
   [static_pressure_left_shear]
       type = FunctionNeumannBC
       variable = disp_y
       boundary = left
       function = func_neg_xy_stress
       displacements = 'disp_x disp_y'
-  []  
+  []
   [static_pressure_right_shear]
       type = FunctionNeumannBC
       variable = disp_y
       boundary = right
       function = func_pos_xy_stress
       displacements = 'disp_x disp_y'
-  []   
+  []
   #
   [fix_node1_x]
     type = DirichletBC
@@ -406,13 +406,13 @@ sigmaxy = 70e6 #initial shear stress (Pa)
 [Executioner]
   solve_type = NEWTON
   type = Steady
-  nl_abs_tol = 1E-12
-  nl_rel_tol = 1E-12
+  nl_abs_tol = 1E-8
+  nl_rel_tol = 1E-6
   l_tol = 1E-7
   l_max_its = 200
   nl_max_its = 400
   line_search  = 'basic'
-  automatic_scaling = true
+  #automatic_scaling = true
   verbose = true
   petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
   petsc_options_value = ' asm      2              hypre             gmres     200'
@@ -420,4 +420,4 @@ sigmaxy = 70e6 #initial shear stress (Pa)
 
 [Outputs]
   exodus = true
-[]    
+[]
