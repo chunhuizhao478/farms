@@ -319,9 +319,10 @@ top_right1 = '0.002 4e-4 0.06'
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
+    fitting_param_exponent = 0.50
     discharge_center = '0 0 0.03'
     number_of_pulses = 2
-    base_factor = 18000
+    base_factor = 8000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []

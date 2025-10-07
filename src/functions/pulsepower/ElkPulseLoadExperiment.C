@@ -20,6 +20,7 @@ ElkPulseLoadExperiment::validParams()
   params.addParam<Real>("peak_pressure", 0.0, "The peak value of pressure, if not specified, it will be calculated based on the Dsensor.");
   params.addParam<Real>("minimum_applied_pressure", 0.0, "Minimum applied pressure to mimic the effect of water pressure");
   params.addParam<bool>("use_minimum_applied_pressure", false, "Flag to use minimum applied pressure");
+  params.addParam<Real>("fitting_param_exponent", 1.0, "Exponent for peak pressure calculation");
   return params;
 }
 
@@ -38,7 +39,8 @@ ElkPulseLoadExperiment::ElkPulseLoadExperiment(const InputParameters & parameter
   _number_of_pulses(getParam<int>("number_of_pulses")),
   _peak_pressure(getParam<Real>("peak_pressure")),
   _minimum_applied_pressure(getParam<Real>("minimum_applied_pressure")),
-  _use_minimum_applied_pressure(getParam<bool>("use_minimum_applied_pressure")) 
+  _use_minimum_applied_pressure(getParam<bool>("use_minimum_applied_pressure")),
+  _fitting_param_exponent(getParam<Real>("fitting_param_exponent"))
 {
   if (_use_minimum_applied_pressure == true && _use_minimum_applied_pressure < 0.0){
     mooseError("Minimum applied pressure must be non-negative");
@@ -50,7 +52,7 @@ ElkPulseLoadExperiment::value(Real t, const Point & p) const
 {
 
   // Peak stress Pp
-  
+
   // Get coordinate
   Real xcoord = p(0); //along the x direction
   Real ycoord = p(1); //along the y direction
@@ -69,7 +71,7 @@ ElkPulseLoadExperiment::value(Real t, const Point & p) const
   }
 
   // Estimate peak pressure (bar mm KJ) -> Pp (bar -> Pa)
-  Real Pp = (0.1 * 1e6) * _base_factor * 1.0 / Dsensor * std::pow(_convert_efficiency*_EM,_fitting_param_alpha);
+  Real Pp = (0.1 * 1e6) * _base_factor * 1.0 / std::pow(Dsensor, _fitting_param_exponent) * std::pow(_convert_efficiency*_EM,_fitting_param_alpha);
 
   // Check if the peak pressure is specified
   if (_peak_pressure > 0.0){
@@ -85,11 +87,11 @@ ElkPulseLoadExperiment::value(Real t, const Point & p) const
   Real mod_time = std::fmod(t, PULSE_DURATION_US); // Time within the current pulse period
 
   Real total_duration_s = TOTAL_PULSES * PULSE_DURATION_US; // Total duration in seconds
-  
+
   Real pulse_load = 0.0;
-  
+
   if ( t <= total_duration_s ){
-    pulse_load = PEAK_MAGNITUDE * (std::exp(-_shape_param_alpha * mod_time) - std::exp(-_shape_param_beta * mod_time)) / 
+    pulse_load = PEAK_MAGNITUDE * (std::exp(-_shape_param_alpha * mod_time) - std::exp(-_shape_param_beta * mod_time)) /
                   (std::exp(-_shape_param_alpha * _rise_time) - std::exp(-_shape_param_beta * _rise_time));
   }
   else{

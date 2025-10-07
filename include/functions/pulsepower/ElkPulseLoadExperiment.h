@@ -36,4 +36,6 @@ public:
   Real _minimum_applied_pressure;
   bool _use_minimum_applied_pressure;
 
+  Real _fitting_param_exponent;
+
 };
