@@ -87,7 +87,12 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
   _initial_theta0_mat(getMaterialProperty<Real>("initial_theta0_mat")),
   //---------------------------------------------------------------------------------------------//
   //add mean stress perturbation
-  _mean_stress_perturbation(getMaterialPropertyByName<Real>("mean_stress_perturbation"))
+  _mean_stress_perturbation(getMaterialPropertyByName<Real>("mean_stress_perturbation")),
+  //---------------------------------------------------------------------------------------------//
+  //calculate equivalent plastic strain
+  _epsp_eq(declareProperty<Real>("equiv_plastic_strain")),
+  _epsp_eq_old(getMaterialPropertyOld<Real>("equiv_plastic_strain")),
+  _epsp_eq_rate(declareProperty<Real>("equiv_plastic_strain_rate"))
 {
 }
 
@@ -95,7 +100,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::ComputeLagrangianDamageBreakag
 //Only the object that declares the material property can assign values to it.
 //Objects can request material properties, gaining read-only access to their values.
 //When any object (including the object that declares it) requests the old value of a material property, that property becomes "stateful".
-//All stateful material properties must be initialized within the initQpStatefulProperties call. 
+//All stateful material properties must be initialized within the initQpStatefulProperties call.
 //
 void
 ComputeLagrangianDamageBreakageStressPK2Diffused::initQpStatefulProperties()
@@ -128,7 +133,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
   computeQpPK2Stress();
 
   _Jp[_qp] = _Fp[_qp].det();
-  
+
   RankTwoTensor Fpinv = _Fp[_qp].inverse();
 
   // Compute Fp_dot, F_dot
@@ -139,8 +144,8 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK1Stress()
 
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
-        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt; 
-        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ); 
+        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt;
+        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) );
         for (unsigned int m = 0; m < 3; m++){
           F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j);
           Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
@@ -329,14 +334,6 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpPK2Stress()
   /* Compute E */
   RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + Ep;
 
-  // /* convert stress perturbation to strain perturbation */
-  // Real shear_strain_perturbation = 0.0;
-  // if (_shear_stress_perturbation[_qp] != 0){
-  //   shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
-  //   Ee(0,1) += shear_strain_perturbation;
-  //   Ee(1,0) += shear_strain_perturbation;
-  // }  
-
   /* Compute I1 */
   Real I1 = Ee.trace();
 
@@ -417,7 +414,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
     }
   }
 
-  Tau_eq = std::sqrt(Tau_eq); 
+  Tau_eq = std::sqrt(Tau_eq);
 
   //Get deviatroic stress direction
   RankTwoTensor N; N.zero();
@@ -432,7 +429,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
   }
 
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
-  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N; 
+  RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N;
 
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;
@@ -443,14 +440,30 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpFp()
   //Save Plastic Deformation Rate Tensor
   _Dp[_qp] = Dp;
 
+  //---------------------------------------------------------------------//
+  //--- Equivalent plastic strain rate and accumulation (monotone) ------
+  RankTwoTensor Dp_dev = Dp;
+  Dp_dev.addIa(-Dp_dev.trace() / 3.0); // deviatoric part
+
+  // Guard against tiny roundoff
+  const Real ep_dot_eq = std::sqrt(std::max(0.0,
+      (2.0/3.0) * Dp_dev.doubleContraction(Dp_dev)));
+
+  // Expose rate (optional, handy for debugging/plots)
+  _epsp_eq_rate[_qp] = ep_dot_eq;
+
+  // Accumulate (monotone by construction)
+  _epsp_eq[_qp] = _epsp_eq_old[_qp] + ep_dot_eq * _dt;
+  //---------------------------------------------------------------------//
+
   return Fp_updated;
 }
 
 void
-ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFourTensor & tangent, 
-                                                                  Real I1, 
-                                                                  Real I2, 
-                                                                  Real xi, 
+ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFourTensor & tangent,
+                                                                  Real I1,
+                                                                  Real I2,
+                                                                  Real xi,
                                                                   RankTwoTensor Ee)
 {
 
@@ -479,7 +492,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
   //     for (unsigned int j = 0; j < 3; ++j) {
   //       for (unsigned int k = 0; k < 3; ++k) {
   //         for (unsigned int l = 0; l < 3; ++l) {
-  //           tangent(i, j, k, l) = _lambda_o * identity(i, j) * identity(k, l) + 
+  //           tangent(i, j, k, l) = _lambda_o * identity(i, j) * identity(k, l) +
   //                                 _shear_modulus_o * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
   //         }
   //       }
@@ -507,7 +520,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
 
   RankFourTensor dSsdE;
   dSsdE.zero();
-  
+
   // CORRECTED: Complete implementation of solid phase tangent
   // ∂S^s_ij/∂E_kl = (-γ ∂ξ^(-1)/∂E_kl)I_1 δ_ij + (λ - γ/ξ) ∂I_1/∂E_kl δ_ij + (-γ ∂ξ/∂E_kl)E_ij + (2μ - γξ) ∂E_ij/∂E_kl
   for (unsigned int i = 0; i < 3; ++i) {
@@ -516,14 +529,14 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
         for (unsigned int l = 0; l < 3; ++l) {
           // Term 1a: (λ - γ/ξ) * ∂I1/∂E_kl * δ_ij = (λ - γ/ξ) * δ_kl * δ_ij
           dSsdE(i, j, k, l) += lambda_term * identity(i, j) * identity(k, l);
-          
+
           // Term 1b: (-γ ∂ξ^(-1)/∂E_kl) * I1 * δ_ij - PREVIOUSLY MISSING
           dSsdE(i, j, k, l) -= gamma_damaged_out * dxim1dE_tensor(k, l) * I1 * identity(i, j);
-          
+
           // Term 2a: (2μ - γξ) * ∂E_ij/∂E_kl
           Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
           dSsdE(i, j, k, l) += shear_term * I4_ijkl;
-          
+
           // Term 2b: (-γ ∂ξ/∂E_kl) * E_ij
           dSsdE(i, j, k, l) -= gamma_damaged_out * dxidE_tensor(k, l) * Ee(i, j);
         }
@@ -537,7 +550,7 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
 
   RankFourTensor dSbdE;
   dSbdE.zero();
-  
+
  // CORRECTED: Complete implementation of granular phase tangent
   // ∂S^b_ij/∂E_kl = (a_1 ∂ξ^(-1)/∂E_kl + 3a_3 ∂ξ/∂E_kl)I_1 δ_ij + (2a_2 + a_1/ξ + 3a_3ξ) ∂I_1/∂E_kl δ_ij
   //                + (a_1 ∂ξ/∂E_kl - a_3 ∂ξ^3/∂E_kl)E_ij + (2a_0 + a_1ξ - a_3ξ^3) ∂E_ij/∂E_kl
@@ -547,20 +560,20 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
         for (unsigned int l = 0; l < 3; ++l) {
           // Term 1a: (2a_2 + a_1/ξ + 3a_3ξ) * ∂I1/∂E_kl * δ_ij = coeff2_b * δ_kl * δ_ij
           dSbdE(i, j, k, l) += coeff2_b * identity(i, j) * identity(k, l);
-          
+
           // Term 1b: a_1 * ∂ξ^(-1)/∂E_kl * I1 * δ_ij - PREVIOUSLY MISSING
           dSbdE(i, j, k, l) += a1 * dxim1dE_tensor(k, l) * I1 * identity(i, j);
-          
+
           // Term 1c: 3a_3 * ∂ξ/∂E_kl * I1 * δ_ij
           dSbdE(i, j, k, l) += 3.0 * a3 * dxidE_tensor(k, l) * I1 * identity(i, j);
-          
+
           // Term 2a: (2a_0 + a_1ξ - a_3ξ^3) * ∂E_ij/∂E_kl
           Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
           dSbdE(i, j, k, l) += coeff4_b * I4_ijkl;
-          
+
           // Term 2b: a_1 * ∂ξ/∂E_kl * E_ij
           dSbdE(i, j, k, l) += a1 * dxidE_tensor(k, l) * Ee(i, j);
-          
+
           // Term 2c: -a_3 * ∂ξ^3/∂E_kl * E_ij
           // ∂ξ^3/∂E_kl = 3ξ^2 * ∂ξ/∂E_kl
           dSbdE(i, j, k, l) -= a3 * 3.0 * xi * xi * dxidE_tensor(k, l) * Ee(i, j);
@@ -570,11 +583,11 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeQpTangentModulus(RankFo
   }
 
   // Combine: tangent = (1-B)*dSs/dE + B*dSb/dE
-  tangent = dSsdE * (1.0 - _B_breakagevar[_qp]) + dSbdE * _B_breakagevar[_qp]; 
+  tangent = dSsdE * (1.0 - _B_breakagevar[_qp]) + dSbdE * _B_breakagevar[_qp];
 
 }
 
-void 
+void
 ComputeLagrangianDamageBreakageStressPK2Diffused::computeDmatrix()
 {
   //Compute deformation rate D
@@ -588,13 +601,13 @@ ComputeLagrangianDamageBreakageStressPK2Diffused::computeDeviatroicStrainRateTen
   computeDmatrix();
   //Compute strain rate E_dot = F^T * D * F
   RankTwoTensor E_dot = _F[_qp].transpose() * _D[_qp] * _F[_qp];
-  //Compute deviatoric strain rate tensor E_dev_dot 
+  //Compute deviatoric strain rate tensor E_dev_dot
   RankTwoTensor E_dev_dot = E_dot - (1.0/3.0) * E_dot.trace() * RankTwoTensor::Identity();
   //Compute J2_dot = 1/2 * E_dev_dot(i,j) * E_dev_dot(i,j)
   Real J2_dot = 0.0;
   for (unsigned int i = 0; i < 3; ++i){
     for (unsigned int j = 0; j < 3; ++j){
-      J2_dot += 0.5 * E_dev_dot(i,j) * E_dev_dot(i,j);
+      J2_dot += E_dev_dot(i,j) * E_dev_dot(i,j);
     }
   }
   //Compute equivalent strain rate

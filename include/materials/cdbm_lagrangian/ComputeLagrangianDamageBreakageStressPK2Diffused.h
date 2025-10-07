@@ -92,7 +92,7 @@ protected:
   MaterialProperty<Real> & _eta;
   // Dilatancy Function
   MaterialProperty<Real> & _dilatancy_function_beta;
-  // Shear-rate 
+  // Shear-rate
   MaterialProperty<Real> & _shear_rate_nu;
   // Effective shear modulus of the solid skeleton
   MaterialProperty<Real> & _effective_solid_shear_modulus;
@@ -110,7 +110,7 @@ protected:
   const MaterialProperty<Real> & _damaged_modulus;
   /// Breakage Variable
   const MaterialProperty<Real> & _B_breakagevar;
-  
+
   /* Get Old Material Properties */
   /// Breakage Variable
   const MaterialProperty<Real> & _B_breakagevar_old;
@@ -124,10 +124,10 @@ protected:
   const MaterialProperty<RankTwoTensor> & _Ep_old;
   /// Plastic Volume Change
   const MaterialProperty<Real> & _eta_old;
-  
+
   /* Get Constant Parameters */
   /// material parameter: compliance or fluidity of the fine grain granular material
-  const MaterialProperty<Real> & _C_g; 
+  const MaterialProperty<Real> & _C_g;
   /// coefficient of power law indexes
   const MaterialProperty<Real> & _m1;
   /// coefficient of power law indexes
@@ -136,7 +136,7 @@ protected:
   const MaterialProperty<Real> & _a0;
   const MaterialProperty<Real> & _a1;
   const MaterialProperty<Real> & _a2;
-  const MaterialProperty<Real> & _a3;  
+  const MaterialProperty<Real> & _a3;
   /// dimension of the problem
   //const unsigned int _dim;
 
@@ -158,4 +158,12 @@ protected:
 
   /* add mean stress perturbation */
   const MaterialProperty<Real> & _mean_stress_perturbation;
+
+  // --- Accumulated equivalent plastic strain (monotone) ---
+  MaterialProperty<Real> & _epsp_eq;                 // current step
+  const MaterialProperty<Real> & _epsp_eq_old;       // previous step
+
+  // Optional: rate for plotting/debug
+  MaterialProperty<Real> & _epsp_eq_rate;
+
 };

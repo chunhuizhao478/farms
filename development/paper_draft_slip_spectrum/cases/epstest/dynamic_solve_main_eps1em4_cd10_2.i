@@ -347,7 +347,7 @@
         # use_spatial_cg = true
     []
     [stress_medium]
-        type = ComputeLagrangianDamageBreakageStressPK2Diffused
+        type = ComputeLagrangianDamageBreakageStressPK2DiffusedDebug
         large_kinematics = true
         output_properties = 'equiv_plastic_strain equiv_plastic_strain_rate'
         outputs = exodus
@@ -676,7 +676,7 @@
     [./sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_eps1em4_cd10.i'
+        input_files = 'dynamic_solve_sub_eps1em4_cd10_2.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
