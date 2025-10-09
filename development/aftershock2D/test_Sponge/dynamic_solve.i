@@ -11,11 +11,11 @@
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##main fault parameters
-xmin_fault = -15000 #xmin of fault
-xmax_fault = 15000 #xmax of fault
+xmin_fault = -10000 #xmin of fault
+xmax_fault = 10000 #xmax of fault
 
 ##block
-elastic_block_len = 30000
+elastic_block_len = 14000
 elastic_block_name = '10'
 damaged_block_name = '0 1 2'
 
@@ -40,8 +40,8 @@ xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
 xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = -1 #coefficient gives positive damage evolution
-use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
+Cd_constant = 0 #coefficient gives positive damage evolution
+use_strain_rate_dependent_Cd = false #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
 strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
@@ -64,13 +64,21 @@ nucl_center = '0 0' #nucleation center (x z)
 nucl_radius = 1500 #nucleation radius (m)
 ##-------------------------##
 
+##Sochacki sponge parameters##
+sponge_s_max = 5.0 #maximum attenuation at the outer sponge boundary
+sponge_exp_rate = 4.0 #controls exponential ramp steepness
+sponge_gaussian_rate = 6.0 #controls gaussian ramp steepness
+sponge_exponent_power = 2.0 #power-law exponent for exponent profile
+sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, gaussian
+##-------------------------##
+
 ##model parameters##
 dt = 0.005 #time step size
 
 end_time = 3600 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 160 #time step interval for output
+exodus_time_step_interval = 1 #time step interval for output
 # sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 # csv_time_step_interval = 2 #time step interval for csv output
 checkpoint_time_step_interval = 400 #time step interval for checkpoint output
@@ -81,12 +89,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [./msh]
       type = GeneratedMeshGenerator
       dim = 2
-      nx = 800
-      ny = 800
-      xmin = -40000
-      xmax = 40000
-      ymin = -40000
-      ymax = 40000
+      nx = 400
+      ny = 400
+      xmin = -20000
+      xmax = 20000
+      ymin = -20000
+      ymax = 20000
     []
     [./elastic_block]
         type = SubdomainBoundingBoxGenerator
@@ -450,6 +458,22 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       variable = 'disp_y'
       component = '1'
     []
+    [./sponge_damping_x]
+      type = SochackiSpongeDamping
+      variable = disp_x
+      block = 10
+      density = density
+      sochacki_damping = sochacki_damping
+      damping_scale = 2.0
+    []
+    [./sponge_damping_y]
+      type = SochackiSpongeDamping
+      variable = disp_y
+      block = 10
+      density = density
+      sochacki_damping = sochacki_damping
+      damping_scale = 2.0
+    []
   []
 
   [Materials]
@@ -469,6 +493,23 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         type = GenericConstantMaterial
         prop_names = 'initial_breakage damage_perturbation density'
         prop_values = '0 0 ${density}'
+    []
+    [sochacki_sponge]
+        type = SochackiSpongeMaterial
+        block = 10
+        inner_xmin = ${fparse -1 * elastic_block_len}
+        inner_xmax = ${fparse 1 * elastic_block_len}
+        inner_ymin = ${fparse -1 * elastic_block_len}
+        inner_ymax = ${fparse 1 * elastic_block_len}
+        outer_xmin = -20000
+        outer_xmax = 20000
+        outer_ymin = -20000
+        outer_ymax = 20000
+        s_max = ${sponge_s_max}
+        profile = ${sponge_profile}
+        exponent_power = ${sponge_exponent_power}
+        exp_rate = ${sponge_exp_rate}
+        gaussian_rate = ${sponge_gaussian_rate}
     []
     [initial_damage_surround]
       type = ParsedMaterial
@@ -643,84 +684,5 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
 
   [BCs]
-    [./dashpot_top_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = top
-    []
-    [./dashpot_top_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = top
-    []
-    [./dashpot_bottom_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = bottom
-    []
-    [./dashpot_bottom_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = bottom
-    []
-    [./dashpot_left_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = left
-    []
-    [./dashpot_left_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = left
-    []
-    [./dashpot_right_x]
-        type = NonReflectDashpotBC
-        component = 0
-        variable = disp_x
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = right
-    []
-    [./dashpot_right_y]
-        type = NonReflectDashpotBC
-        component = 1
-        variable = disp_y
-        disp_x = disp_x
-        disp_y = disp_y
-        p_wave_speed = ${Cp}
-        shear_wave_speed = ${Cs}
-        boundary = right
-    []
+    # Sponge layer handles wave absorption; retain free boundaries.
   []
