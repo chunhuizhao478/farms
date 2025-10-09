@@ -418,14 +418,15 @@
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
-    [TimeStepper]
-        type = FarmsIterationAdaptiveDT
-        dt = 1
-        cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
-        growth_factor = 1.25
-        max_time_step_bound = 10
-    []
+    dt = 1
+   # [TimeStepper]
+   #     type = FarmsIterationAdaptiveDT
+   #     dt = 1
+   #     cutback_factor_at_failure = 0.5
+   #     optimal_iterations = 10
+   #     growth_factor = 1.25
+   #     max_time_step_bound = 10
+   #s []
     [./TimeIntegrator]
         type = NewmarkBeta
         beta = 0.25
