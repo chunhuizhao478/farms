@@ -7,14 +7,14 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ComputePoroDamageBreakageStress3DSlipWeakening.h"
+#include "ComputeDamageBreakageStress3DDynamicCDBM.h"
 #include "NestedSolve.h"
 #include "FEProblem.h"
 
-registerMooseObject("farmsApp", ComputePoroDamageBreakageStress3DSlipWeakening);
+registerMooseObject("farmsApp", ComputeDamageBreakageStress3DDynamicCDBM);
 
 InputParameters
-ComputePoroDamageBreakageStress3DSlipWeakening::validParams()
+ComputeDamageBreakageStress3DDynamicCDBM::validParams()
 { 
   //Note: lambda_o, shear_modulus_o is defined in "ComputeGeneralDamageBreakageStressBase"
   //to initialize _lambda, _shear_modulus material properties
@@ -38,6 +38,12 @@ ComputePoroDamageBreakageStress3DSlipWeakening::validParams()
   params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
   params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
   params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
+  params.addRequiredParam<Real>(    "D", "D value");
+
+  //variable parameters
+  params.addRequiredCoupledVar("alpha_grad_x", "damage variable gradient component in x computed from subApp");
+  params.addRequiredCoupledVar("alpha_grad_y", "damage variable gradient component in y computed from subApp");
+  params.addRequiredCoupledVar("alpha_grad_z", "damage variable gradient component in z computed from subApp");
 
   //Poroelastic properties
   params.addParam<Real>("permeability_solid_o", "permeability of solid meterial");
@@ -71,7 +77,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::validParams()
   return params;
 }
 
-ComputePoroDamageBreakageStress3DSlipWeakening::ComputePoroDamageBreakageStress3DSlipWeakening(const InputParameters & parameters)
+ComputeDamageBreakageStress3DDynamicCDBM::ComputeDamageBreakageStress3DDynamicCDBM(const InputParameters & parameters)
   : ComputeDamageBreakageStressBase3D(parameters),
     _xi_0(getParam<Real>("xi_0")),
     _xi_d(getParam<Real>("xi_d")),
@@ -94,13 +100,8 @@ ComputePoroDamageBreakageStress3DSlipWeakening::ComputePoroDamageBreakageStress3
     _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _eps_e_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_e")),
     _sigma_d_old(getMaterialPropertyOldByName<RankTwoTensor>("sigma_d")),
-    _sts_total_old(getMaterialPropertyOldByName<RankTwoTensor>("sts_total")),
-    _static_initial_stress_tensor(getMaterialProperty<RankTwoTensor>("static_initial_stress_tensor")),
-    _static_initial_strain_tensor(getMaterialProperty<RankTwoTensor>("static_initial_strain_tensor")),
-    _sts_initial_tensor_old(getMaterialPropertyOldByName<RankTwoTensor>("sts_initial_tensor")),
     _initial_damage(getMaterialPropertyByName<Real>("initial_damage")),
     _initial_breakage(getMaterialPropertyByName<Real>("initial_breakage")),
-    _damage_perturbation(getMaterialPropertyByName<Real>("damage_perturbation")),
     _Cd_constant(getParam<Real>("Cd_constant")),
     _C1(getParam<Real>("C_1")),
     _C2(getParam<Real>("C_2")),
@@ -117,6 +118,10 @@ ComputePoroDamageBreakageStress3DSlipWeakening::ComputePoroDamageBreakageStress3
     _m_exponent(getParam<Real>("m_exponent")),
     _strain_rate_hat(getParam<Real>("strain_rate_hat")),
     _cd_hat(getParam<Real>("cd_hat")),
+    _alpha_grad_x(coupledValue("alpha_grad_x")),
+    _alpha_grad_y(coupledValue("alpha_grad_y")),
+    _alpha_grad_z(coupledValue("alpha_grad_z")),
+    _D(getParam<Real>("D")),
     _zero_Cd_below_threshold(getParam<bool>("zero_Cd_below_threshold")),
     _Biot_coeff_s(declareProperty<Real>("Biot_coefficient_solid")),
     _Biot_coeff_g(declareProperty<Real>("Biot_coefficient_granular")),
@@ -154,12 +159,11 @@ ComputePoroDamageBreakageStress3DSlipWeakening::ComputePoroDamageBreakageStress3
     _deps_p_dp(declareProperty<RankTwoTensor>("deps_p_dp")),
     _deps_p_deps(declareProperty<RankFourTensor>("deps_p_deps"))
 
-
 {
 }
 
 void
-ComputePoroDamageBreakageStress3DSlipWeakening::initialSetup()
+ComputeDamageBreakageStress3DDynamicCDBM::initialSetup()
 {
   // _base_name + "unstabilized_deformation_gradient" is only declared if we're
   // using the Lagrangian kernels.  It's okay to invoke this small strain
@@ -174,7 +178,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::initialSetup()
 }
 
 void
-ComputePoroDamageBreakageStress3DSlipWeakening::initQpStatefulProperties()
+ComputeDamageBreakageStress3DDynamicCDBM::initQpStatefulProperties()
 {
   _elastic_strain[_qp].zero();
   _stress[_qp].zero();
@@ -186,7 +190,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::initQpStatefulProperties()
 }
 
 void
-ComputePoroDamageBreakageStress3DSlipWeakening::computeQpStress()
+ComputeDamageBreakageStress3DDynamicCDBM::computeQpStress()
 { 
   
   /*
@@ -199,20 +203,11 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeQpStress()
   Real a2 = avec[2];
   Real a3 = avec[3];
 
-  // std::cout << "gamma_damaged_r: " << gamma_damaged_r << std::endl;
-  // std::cout << "a0: " << a0 << ", a1: " << a1 << ", a2: " << a2 << ", a3: " << a3 << std::endl;
+  /* 
+  compute alpha and B parameters
+  */
 
-  if (_step == 1){
-    setupInitial();
-    _stress[_qp].zero();
-  }
-  else{
-    
-    /* 
-    compute alpha and B parameters
-    */
-
-    //compute Cd
+  //compute Cd
     if (_use_strain_rate_dependent_Cd) // strain rate dependent Cd
       computeStrainRateCd();
     else // constant Cd
@@ -240,7 +235,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeQpStress()
     else{}       
 
     //check below initial damage (fix initial damage)
-    if ( alpha_out < _initial_damage[_qp] + _damage_perturbation[_qp]){ alpha_out = _initial_damage[_qp] + _damage_perturbation[_qp]; }
+    if ( alpha_out < _initial_damage[_qp]){ alpha_out = _initial_damage[_qp]; }
     else{}
 
     _alpha_damagedvar[_qp] = alpha_out;
@@ -469,18 +464,11 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeQpStress()
     _xi[_qp] = xi;
     _sigma_d[_qp] = sigma_d_eff;
 
-    // Rotate the stress state to the current configuration
-    // Here the stress increments are feed into the stress tensor
-    _stress[_qp] = sigma_total - _sts_initial_tensor_old[_qp];
+  // Rotate the stress state to the current configuration
+  _stress[_qp] = sigma_total;
 
-    // Also save the total stress tensor
-    _sts_total[_qp] = sigma_total;
-
-    // Always take the old value of initial stress tensor
-    _sts_initial_tensor[_qp] = _sts_initial_tensor_old[_qp];
-
-    // Assign value for elastic strain, which is equal to the mechanical strain
-    _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
+  // Assign value for elastic strain, which is equal to the mechanical strain
+  _elastic_strain[_qp] = eps_e;
 
     // Compute tangent
     RankFourTensor tangent;
@@ -488,17 +476,21 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeQpStress()
                             a0,a1,a2,a3,gamma_damaged_r);
     _Jacobian_mult[_qp] = tangent;
 
-    //Compute deviatoric strain rate tensor
+  //Compute equivalent strain rate
+  RankTwoTensor epsilon_rate = (eps_p - _eps_p_old[_qp])/_dt;
+  Real epsilon_eq = sqrt(2/3*(epsilon_rate(0,0)*epsilon_rate(0,0)+epsilon_rate(1,1)*epsilon_rate(1,1)+epsilon_rate(2,2)*epsilon_rate(2,2)+2*epsilon_rate(0,1)*epsilon_rate(0,1)+2*epsilon_rate(0,2)*epsilon_rate(0,2)+2*epsilon_rate(1,2)*epsilon_rate(1,2)));
+  _epsilon_eq[_qp] = epsilon_eq;
+
+      //Compute deviatoric strain rate tensor
     computeDeviatroicStrainRateTensor();
 
     // Compute simplified derivatives using finite differences
     computeSimplifiedPlasticDerivatives(eps_p, eps_p_dot);
-  }
 
 }
 
 Real 
-ComputePoroDamageBreakageStress3DSlipWeakening::computegammar()
+ComputeDamageBreakageStress3DDynamicCDBM::computegammar()
 {
   // Calculate each part of the expression
   Real term1 = -_xi_0 * (-_lambda_o * pow(_xi_0, 2) + 6 * _lambda_o + 2 * _shear_modulus_o);
@@ -515,13 +507,11 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computegammar()
 }
 
 std::vector<Real>
-ComputePoroDamageBreakageStress3DSlipWeakening::computecoefficients(Real gamma_damaged_r)
+ComputeDamageBreakageStress3DDynamicCDBM::computecoefficients(Real gamma_damaged_r)
 {
 
   //compute xi_1
   Real _xi_1 = _xi_0 + sqrt( pow(_xi_0 , 2) + 2 * _shear_modulus_o / _lambda_o );
-
-  // std::cout << "xi_1: " << _xi_1 << std::endl;
 
   //compute alpha_cr | xi = 0
   Real alpha_cr_xi0 = alphacr_root1(0, gamma_damaged_r);
@@ -562,7 +552,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computecoefficients(Real gamma_d
 
 // Function for alpha_func_root1
 Real 
-ComputePoroDamageBreakageStress3DSlipWeakening::alphacr_root1(Real xi, Real gamma_damaged_r) {
+ComputeDamageBreakageStress3DDynamicCDBM::alphacr_root1(Real xi, Real gamma_damaged_r) {
     Real term1 = _lambda_o * pow(xi, 3) - 6 * _lambda_o * _xi_0 + 6 * _shear_modulus_o * xi - 8 * _shear_modulus_o * _xi_0;
     Real term2 = std::sqrt(_lambda_o * _lambda_o * pow(xi, 6) 
                              - 12 * _lambda_o * _lambda_o * pow(xi, 3) * _xi_0 
@@ -580,12 +570,12 @@ ComputePoroDamageBreakageStress3DSlipWeakening::alphacr_root1(Real xi, Real gamm
 
 // Function for alpha_func_root2
 Real 
-ComputePoroDamageBreakageStress3DSlipWeakening::alphacr_root2(Real xi, Real gamma_damaged_r) {
+ComputeDamageBreakageStress3DDynamicCDBM::alphacr_root2(Real xi, Real gamma_damaged_r) {
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
 }
 
 void
-ComputePoroDamageBreakageStress3DSlipWeakening::computeQpTangentModulus(RankFourTensor & tangent, 
+ComputeDamageBreakageStress3DDynamicCDBM::computeQpTangentModulus(RankFourTensor & tangent, 
                                                       Real I1, 
                                                       Real I2, 
                                                       Real xi, 
@@ -746,159 +736,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeQpTangentModulus(RankFour
 }
 
 void
-ComputePoroDamageBreakageStress3DSlipWeakening::setupInitial()
-{
-
-  // Real gamma_damaged_r = computegammar();
-
-  // /// lambda (first lame const)
-  // _lambda[_qp] = _lambda_o;
-  // /// mu (shear modulus)
-  // _shear_modulus[_qp] = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * gamma_damaged_r;
-  // /// gamma_damaged (damage modulus)
-  // _gamma_damaged[_qp] = _initial_damage[_qp] * gamma_damaged_r;
-
-  // //allpha, B
-  // _alpha_damagedvar[_qp] = _initial_damage[_qp];
-  // _B[_qp] = _initial_breakage[_qp];
-
-  // //Get stress components
-  // RankTwoTensor stress_initial = _static_initial_stress_tensor[_qp];
-  // RankTwoTensor strain_initial = _static_initial_strain_tensor[_qp];
-
-  // //Compute strain components using Hooke's Law
-  // Real eps11_init = strain_initial(0,0);
-  // Real eps22_init = strain_initial(1,1);
-  // Real eps12_init = strain_initial(0,1);
-  // Real eps13_init = strain_initial(0,2);
-  // Real eps23_init = strain_initial(1,2);
-  // Real eps33_init = strain_initial(2,2);
-  
-  // //Compute xi, I1, I2
-  // Real I1_init = eps11_init + eps22_init + eps33_init;
-  // Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + eps33_init * eps33_init + 2 * eps12_init * eps12_init + 2 * eps13_init * eps13_init + 2 * eps23_init * eps23_init;
-  // Real xi_init = I1_init / sqrt( I2_init );
-
-  // //Compute eps
-  // //eps_p
-  // _eps_p[_qp](0,0) = 0.0; _eps_p[_qp](0,1) = 0.0; _eps_p[_qp](0,2) = 0.0;
-  // _eps_p[_qp](1,0) = 0.0; _eps_p[_qp](1,1) = 0.0; _eps_p[_qp](1,2) = 0.0;
-  // _eps_p[_qp](2,0) = 0.0; _eps_p[_qp](2,1) = 0.0; _eps_p[_qp](2,2) = 0.0;
-  // //eps_e
-  // _eps_e[_qp](0,0) = eps11_init; _eps_e[_qp](0,1) = eps12_init; _eps_e[_qp](0,2) = eps13_init;
-  // _eps_e[_qp](1,0) = eps12_init; _eps_e[_qp](1,1) = eps22_init; _eps_e[_qp](1,2) = eps23_init;
-  // _eps_e[_qp](2,0) = eps13_init; _eps_e[_qp](2,1) = eps23_init; _eps_e[_qp](2,2) = eps33_init;
-  // //eps_total
-  // _eps_total[_qp](0,0) = eps11_init; _eps_total[_qp](0,1) = eps12_init; _eps_total[_qp](0,2) = eps13_init;
-  // _eps_total[_qp](1,0) = eps12_init; _eps_total[_qp](1,1) = eps22_init; _eps_total[_qp](1,2) = eps23_init;
-  // _eps_total[_qp](2,0) = eps13_init; _eps_total[_qp](2,1) = eps23_init; _eps_total[_qp](2,2) = eps33_init;
-  // //sts_total
-  // _sts_total[_qp] = stress_initial;
-
-  // //I1
-  // _I1[_qp] = I1_init;
-  // //I2
-  // _I2[_qp] = I2_init;
-  // //xi
-  // _xi[_qp] = xi_init;
-
-  Real gamma_damaged_r = computegammar();
-  std::vector<Real> avec = computecoefficients(gamma_damaged_r);
-  Real a0 = avec[0];
-  Real a1 = avec[1];
-  Real a2 = avec[2];
-  Real a3 = avec[3];
-
-  /// lambda (first lame const)
-  _lambda[_qp] = _lambda_o;
-  /// mu (shear modulus)
-  _shear_modulus[_qp] = _shear_modulus_o + _initial_damage[_qp] * _xi_0 * gamma_damaged_r;
-  /// gamma_damaged (damage modulus)
-  _gamma_damaged[_qp] = _initial_damage[_qp] * gamma_damaged_r;
-
-  RankTwoTensor eps_e = _static_initial_strain_tensor[_qp];
-
-  const Real epsilon = 1e-12;
-  Real I1 = epsilon + eps_e(0,0) + eps_e(1,1) + eps_e(2,2);
-  Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
-  Real xi = I1/std::sqrt(I2);
-
-
-  /* poroelastic properties solid and granular phase */
-
-  // Solid bulk modulus (constant for solid grains)
-  Real K_s = _solid_bulk_modulus_s;
-
-  // Fluid bulk modulus
-  Real K_f = _fluid_bulk_modulus;
-    
-  // Compute drained bulk modulus K_d of solid phase
-  Real K_d = _lambda[_qp] + (2.0/3.0) * _shear_modulus[_qp] - (2.0/3.0) * _gamma_damaged[_qp] * xi;
-
-  // Compute Biot coefficient for solid phase
-  Real alpha_s = 1.0 - K_d/K_s;
-    
-  // Compute porosity evolution for solid phase
-  Real porosity_s = _porosity_solid_o;
-
-  // Compute Biot modulus for solid phase
-  Real one_over_Storage_s = (K_s*K_f)/(porosity_s * K_f + (alpha_s - porosity_s) * K_s);
-
-  // Compute permeability for solid phase
-  Real perm_s = _permeability_solid_o;
-
-  // Save solid phase properties
-  _Biot_coeff_s[_qp] = alpha_s;
-  _Biot_modulus_s[_qp] = one_over_Storage_s;
-  _perm_s[_qp] = (1 - _B[_qp]) * perm_s / _initial_viscosity_fluid;
-
-  Real term22 = (1 - _B[_qp]) * _Biot_coeff_s[_qp] * _Biot_modulus_s[_qp];
-  Real term33 = (1 - _B[_qp]) * _Biot_modulus_s[_qp];
-  
-  //Represent sigma (solid(s) + granular(b))
-  RankTwoTensor sigma_s;
-  RankTwoTensor sigma_b;
-  RankTwoTensor fluid_contribution;
-  RankTwoTensor sigma_total;
-  RankTwoTensor sigma_eff;
-  RankTwoTensor sigma_d_eff;
-  const auto I = RankTwoTensor::Identity();
-
-  /* Compute stress */
-  sigma_s = (_lambda[_qp] - _gamma_damaged[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi) * eps_e;
-  sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
-  fluid_contribution = - term22 / term33 * _pore_pressure[_qp] * RankTwoTensor::Identity();
-  sigma_total = (1 - _B[_qp]) * sigma_s + _B[_qp] * sigma_b + fluid_contribution;
-
-  sigma_eff = sigma_total +  _pore_pressure[_qp] * RankTwoTensor::Identity();
-    
-  sigma_d_eff = sigma_eff - 0.3333 * (sigma_eff(0,0) + sigma_eff(1,1) + sigma_eff(2,2)) * I;
-
-  _eps_total[_qp] = eps_e;
-  _eps_p[_qp].zero(); // Initialize plastic strain to zero
-  _eps_e[_qp] = eps_e;
-  _I1[_qp] = I1;
-  _I2[_qp] = I2;
-  _xi[_qp] = xi;
-  _sigma_d[_qp] = sigma_d_eff;
-
-  // Rotate the stress state to the current configuration
-  // Here the stress increments are feed into the stress tensor
-  //_stress[_qp] = sigma_total - _static_initial_stress_tensor[_qp];
-
-  // Also save the total stress tensor
-  _sts_total[_qp] = sigma_total;
-
-  // Also save in the sts_initial_tensor
-  _sts_initial_tensor[_qp] = sigma_total;
-
-  // Assign value for elastic strain, which is equal to the mechanical strain
-  _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
-
-}
-
-void
-ComputePoroDamageBreakageStress3DSlipWeakening::computeDeviatroicStrainRateTensor()
+ComputeDamageBreakageStress3DDynamicCDBM::computeDeviatroicStrainRateTensor()
 {
   //Compute strain rate E_dot = F^T * D * F
   RankTwoTensor E_dot = (_eps_total[_qp] - _eps_total_old[_qp]) / _dt;
@@ -916,7 +754,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeDeviatroicStrainRateTenso
 }
 
 void 
-ComputePoroDamageBreakageStress3DSlipWeakening::computeStrainRateCd()
+ComputeDamageBreakageStress3DDynamicCDBM::computeStrainRateCd()
 {
   //_m_exponent: constant value - default value = 0.8
   //_strain_rate_hat: constant value - default value = 1e-4
@@ -932,7 +770,7 @@ ComputePoroDamageBreakageStress3DSlipWeakening::computeStrainRateCd()
 }
 
 void
-ComputePoroDamageBreakageStress3DSlipWeakening::computeSimplifiedPlasticDerivatives(
+ComputeDamageBreakageStress3DDynamicCDBM::computeSimplifiedPlasticDerivatives(
     const RankTwoTensor & eps_p,
     const RankTwoTensor & eps_p_dot)
 {
