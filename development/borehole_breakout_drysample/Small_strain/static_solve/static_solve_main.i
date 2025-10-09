@@ -250,7 +250,6 @@
     [./darcy_flow]
         type = SmallStrainFluidDiffusion
         variable = porepressure
-        large_kinematics = false
         block = '3'
     []
     [./darcy_flow_granular]
