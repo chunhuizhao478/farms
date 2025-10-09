@@ -436,7 +436,7 @@
 [Outputs] 
     exodus = true
     time_step_interval = 20
-    show = 'stress_22 porepressure B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z'
+    show = 'stress_22 B alpha_damagedvar xi eps_e_22 disp_x disp_y disp_z porepressure'
     [out]
         type = Checkpoint
         time_step_interval = 20
