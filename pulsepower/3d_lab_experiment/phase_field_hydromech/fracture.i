@@ -42,11 +42,11 @@
 
 [Bounds]
   [irreversibility_first_step]
-    type = ConstantBounds
+    type = VariableConstantIrreversibleBounds
     variable = bounds_dummy
     bounded_variable = d
     bound_type = lower
-    bound_value = 0
+    bound_value = initial_damage_aux
   []
   [upper]
     type = ConstantBounds

@@ -818,7 +818,7 @@ hht_alpha = 0
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
+    time_step_interval = 10
     show = 'd vel_x vel_y vel_z pp'
   [../]
   [checkpoint]
