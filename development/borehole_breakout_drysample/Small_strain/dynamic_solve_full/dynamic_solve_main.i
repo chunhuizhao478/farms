@@ -238,7 +238,6 @@
     [./darcy_flow]
         type = SmallStrainFluidDiffusion
         variable = porepressure
-        large_kinematics = false
         block = '3'
     []
     [./darcy_flow_granular]
@@ -319,7 +318,7 @@
         variable = porepressure
         block = '1 2' 
   [../]
-  [./darcy_flow]
+  [./darcy_flow2]
         type = CoefDiffusion
         variable = porepressure
         coef = 1E-17
