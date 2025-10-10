@@ -127,6 +127,18 @@
         order = FIRST
         family = LAGRANGE
     []
+    [accel_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_z]
+        order = FIRST
+        family = LAGRANGE
+    []
     [alpha_grad_x]
     []
     [alpha_grad_y]
