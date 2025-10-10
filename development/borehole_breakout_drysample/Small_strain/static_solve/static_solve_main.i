@@ -407,7 +407,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 20
+    nl_max_its = 50
     nl_abs_tol = 1e-8
      petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
      petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -418,7 +418,7 @@
     # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
-    dt = 1
+    dt = 2.024
    # [TimeStepper]
    #     type = FarmsIterationAdaptiveDT
    #     dt = 1
