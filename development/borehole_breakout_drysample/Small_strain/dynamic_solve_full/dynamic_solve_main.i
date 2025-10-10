@@ -526,7 +526,7 @@
         from_variable = disp_z
     []
     [strain_invariant_ratio_ic]
-      type = SolutionICs
+      type = SolutionIC
       variable = xi_aux
       solution_uo = init_sol_components
       from_variable = initial_xi_aux
