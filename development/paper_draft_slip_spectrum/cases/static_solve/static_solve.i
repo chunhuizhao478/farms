@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_test_outerblock.msh'
     []
     [./sidesets]
         input = msh

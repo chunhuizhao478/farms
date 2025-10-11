@@ -87,6 +87,9 @@ FarmsIterationAdaptiveDT::validParams()
   params.addParam<Real>("max_time_step_bound",
                         1,
                         "Maximum time step allowed");
+  params.addParam<PostprocessorName>("max_time_step_bound_postprocessor",
+                                     "Optional postprocessor providing adaptive time step bound. "
+                                     "If specified, this overrides the constant max_time_step_bound value.");
   params.addParam<PostprocessorName>("max_vel", "Maximum velocity postprocessor");
   params.addParam<Real>("vel_increase_factor", 2.0, "Maximum allowed ratio of velocity increase");  
   // The following parameter is only used if 'max_vel' is specified
@@ -147,6 +150,9 @@ FarmsIterationAdaptiveDT::FarmsIterationAdaptiveDT(const InputParameters & param
     _reject_large_step(getParam<bool>("reject_large_step")),
     _large_step_rejection_threshold(getParam<Real>("reject_large_step_threshold")),
     _max_time_step_bound(getParam<Real>("max_time_step_bound")),
+    _max_time_step_bound_pp(isParamValid("max_time_step_bound_postprocessor")
+                                ? &getPostprocessorValue("max_time_step_bound_postprocessor")
+                                : nullptr),
     // START New velocity-based timestep modifiers:
     // New velocity-based timestep modifiers:
     _constrain_by_velocity(getParam<bool>("constrain_by_velocity")),
@@ -586,13 +592,14 @@ FarmsIterationAdaptiveDT::computeAdaptiveDT(Real & dt, bool allowToGrow, bool al
 
   if (allowToGrow && (_nl_its < growth_nl_its && _l_its < growth_l_its))
   {
-    
+
     // Grow the timestep
     dt *= _growth_factor;
 
-    // Apply the maximum time step bound
-    if (dt > _max_time_step_bound)
-      dt = _max_time_step_bound;
+    // Apply the maximum time step bound (use postprocessor if available, otherwise constant)
+    Real max_bound = _max_time_step_bound_pp ? *_max_time_step_bound_pp : _max_time_step_bound;
+    if (dt > max_bound)
+      dt = max_bound;
 
     if (_verbose)
       _console << "Growing dt: nl its = " << _nl_its << " < " << growth_nl_its

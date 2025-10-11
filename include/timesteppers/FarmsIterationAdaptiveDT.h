@@ -113,8 +113,11 @@ protected:
   /// Threshold used to detect whether we need to reject a step
   double _large_step_rejection_threshold;
 
-  /// Maximum time step bound
+  /// Maximum time step bound (constant value)
   const Real & _max_time_step_bound;
+
+  /// Optional postprocessor for adaptive maximum time step bound
+  const PostprocessorValue * _max_time_step_bound_pp;
 
   //---------------------------------------------------//
   // New velocity-based timestep constraint members:   //
