@@ -76,7 +76,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.024 0.024 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -391,14 +391,21 @@ top_right2 = '2e-4 0.0025 0'
 
   solve_type = NEWTON
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  # Direct solver - can fail with zero columns when damage regions form
+  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  #petsc_options_value = 'lu       superlu_dist                 '
 
+  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  #petsc_options_value = ' lu       mumps       100'
+
+  # Iterative solver - more robust for phase-field with material degradation
   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
   petsc_options_value = 'gmres     hypre  boomeramg True'
 
-  automatic_scaling = true #useful for large problems
-  line_search = 'basic'
+  #automatic_scaling = true #useful for large problems
+  line_search = 'bt'
+
+  l_abs_tol = 1e-7
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
@@ -406,7 +413,7 @@ top_right2 = '2e-4 0.0025 0'
   # Add more iterations before failure
   nl_max_its = 30
 
-  # dt = 0.5e-7
+  #dt = 1e-7
   end_time = 100e-5
 
   fixed_point_max_its = 10
@@ -416,7 +423,7 @@ top_right2 = '2e-4 0.0025 0'
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 1e-8
+    dt = 1e-7 #dt too small, then the linear solver may not converge in the few first steps
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20

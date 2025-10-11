@@ -137,7 +137,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.024 0.024 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -787,7 +787,7 @@ top_right2 = '2e-4 0.0025 0'
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 1e-8
+    dt = 1e-7 #dt too small, then the linear solver may not converge in the few first steps
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20

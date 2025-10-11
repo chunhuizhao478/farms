@@ -13,7 +13,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.024 0.024 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -35,43 +35,6 @@ top_right2 = '2e-4 0.0025 0'
     input = subdomain_id
   []
 []
-
-# [Adaptivity]
-#   max_h_level = 3
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#         block = 2
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.5
-#         block = 2
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#         block = 2
-#       []
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#         block = 2
-#       []
-#   []
-# []
 
 [Variables]
   [d]
@@ -151,16 +114,16 @@ top_right2 = '2e-4 0.0025 0'
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l'
-    prop_values = '${l}'
+    prop_names = 'l Gc'
+    prop_values = '${l} ${Gc_const}'
   []
-  [Gc_var]
-    type = ADParsedMaterial
-    property_name = Gc
-    coupled_variables = 'Gc_var'
-    expression = 'Gc_var'
-    # outputs = exodus
-  []
+  # [Gc_var]
+  #   type = ADParsedMaterial
+  #   property_name = Gc
+  #   coupled_variables = 'Gc_var'
+  #   expression = 'Gc_var'
+  #   # outputs = exodus
+  # []
   [degradation]
     type = PowerDegradationFunction
     property_name = g
@@ -250,22 +213,22 @@ top_right2 = '2e-4 0.0025 0'
   print_linear_residuals = false
 []
 
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${Gc_const} #lambda
-    location = 0
-  []
-[]
+# [Distributions]
+#   #typically for granite
+#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
+#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
+#   [weibull]
+#     type = Weibull
+#     shape = 15.0 #k
+#     scale = ${Gc_const} #lambda
+#     location = 0
+#   []
+# []
 
-[ICs]
-  [./gc_var]
-    type =  RandomIC
-    variable = Gc_var
-    distribution = weibull
-  []
-[]
+# [ICs]
+#   [./gc_var]
+#     type =  RandomIC
+#     variable = Gc_var
+#     distribution = weibull
+#   []
+# []
