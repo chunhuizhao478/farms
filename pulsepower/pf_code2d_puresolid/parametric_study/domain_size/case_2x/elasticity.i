@@ -72,7 +72,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../../../2dmeshfile/fieldscale_test1_2d_extend2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -397,7 +397,7 @@ top_right2 = '2e-4 0.0025 0'
   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
   petsc_options_value = 'gmres     hypre  boomeramg True'
 
-  # automatic_scaling = true
+  automatic_scaling = true #useful for large problems
   line_search = 'basic'
 
   nl_rel_tol = 1e-6
