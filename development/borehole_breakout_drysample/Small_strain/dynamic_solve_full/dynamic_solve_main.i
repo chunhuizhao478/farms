@@ -406,7 +406,7 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = 0
+    start_time = 1e-12
     end_time = 4000 #extend the time
     # num_steps = 1
     l_max_its = 100
@@ -427,7 +427,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.25
-        max_time_step_bound = 10
+        max_time_step_bound = 3
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -438,7 +438,7 @@
 
 [Outputs] 
     exodus = true
-    time_step_interval = 20
+    time_step_interval = 5
     show = 'stress_22 porepressure B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z'
     [./csv]
         type = CSV
