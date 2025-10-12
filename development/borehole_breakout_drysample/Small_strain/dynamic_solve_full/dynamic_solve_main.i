@@ -152,6 +152,26 @@
         order = FIRST
         family = MONOMIAL
     []
+    [B]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [alpha_damagedvar]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [xi]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [eps_e_22]
+        order = CONSTANT
+        family = MONOMIAL
+    []
+    [stress_22]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -212,6 +232,39 @@
         property = I2
         block = '3'
     [] 
+    [get_B]
+        type = MaterialRealAux
+        variable = B
+        property = B
+        block = '3'
+    []
+    [get_alpha]
+        type = MaterialRealAux
+        variable = alpha_damagedvar
+        property = alpha_damagedvar
+        block = '3'
+    []
+    [get_xi_output]
+        type = MaterialRealAux
+        variable = xi
+        property = xi
+        block = '3'
+    []
+    [get_eps_e_22]
+        type = MaterialRankTwoTensorAux
+        variable = eps_e_22
+        property = eps_e
+        row = 2
+        column = 2
+        block = '3'
+    []
+    [get_stress_22]
+        type = MaterialRankTwoTensorAux
+        variable = stress_22
+        property = stress
+        row = 2
+        column = 2
+    []
 []
 
 [Kernels]
