@@ -404,10 +404,10 @@
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
-    l_tol = 1e-7
-    nl_rel_tol = 1e-6
-    nl_max_its = 40
-    nl_abs_tol = 1e-8
+    l_tol = 1e-6
+    nl_rel_tol = 1e-5
+    nl_max_its = 50
+    nl_abs_tol = 1e-7
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -423,7 +423,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
+        optimal_iterations = 30
         growth_factor = 1.25
         max_time_step_bound = 10
     []
