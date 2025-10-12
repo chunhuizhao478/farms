@@ -110,7 +110,6 @@
     [porepressure]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E9
     []
 []
 
@@ -418,7 +417,7 @@
     # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname = '-ksp_type -pc_type'
     petsc_options_value = 'gmres     hypre'
-    # automatic_scaling = true
+    automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'none'
     [TimeStepper]
