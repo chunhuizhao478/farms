@@ -164,14 +164,6 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    [eps_e_22]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [stress_22]
-        order = CONSTANT
-        family = MONOMIAL
-    []
 []
 
 [AuxKernels]
@@ -249,21 +241,6 @@
         variable = xi
         property = xi
         block = '3'
-    []
-    [get_eps_e_22]
-        type = MaterialRankTwoTensorAux
-        variable = eps_e_22
-        property = eps_e
-        i = 2  # Change from 'row' to 'i'
-        j = 2  # Change from 'column' to 'j'
-        block = '3'
-    []
-    [get_stress_22]
-        type = MaterialRankTwoTensorAux
-        variable = stress_22
-        property = stress
-        i = 2  # Change from 'row' to 'i'
-        j = 2  # Change from 'column' to 'j'
     []
 []
 
@@ -459,7 +436,7 @@
 [Outputs] 
     exodus = true
     time_step_interval = 5
-    show = 'stress_22 porepressure B alpha_damagedvar xi eps_e_22 disp_z'
+    show = 'porepressure B alpha_damagedvar xi disp_z'
     [./csv]
         type = CSV
         time_step_interval = 1
