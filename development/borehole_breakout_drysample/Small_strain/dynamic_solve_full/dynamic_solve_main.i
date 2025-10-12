@@ -331,7 +331,6 @@
         alpha_grad_z = alpha_grad_z
         output_properties = 'B alpha_damagedvar xi eps_p eps_e I1 I2 stress'
         block = '3'
-        outputs = exodus
     [] 
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
@@ -346,7 +345,6 @@
         type = ComputePoroStVenantKirchhoffStress
         large_kinematics = true
         output_properties = 'green_lagrange_strain pk2_stress'
-        outputs = exodus
         block = '1 2'
     []
     [dummy_matprop]
@@ -410,7 +408,7 @@
 [Outputs] 
     exodus = true
     time_step_interval = 5
-    show = 'stress_22 porepressure B alpha_damagedvar xi eps_e_22 vel_x vel_y vel_z'
+    show = 'stress_22 porepressure B alpha_damagedvar xi eps_e_22 disp_z'
     [./csv]
         type = CSV
         time_step_interval = 1
