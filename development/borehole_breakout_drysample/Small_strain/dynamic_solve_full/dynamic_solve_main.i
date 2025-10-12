@@ -532,7 +532,7 @@
     [./react_z]
       type = SidesetReaction
       direction = '0 0 1'
-      stress_tensor = stress
+      stress_tensor = pk2_stress
       boundary = 6
     [../]
     [./strain_z]
