@@ -329,7 +329,6 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-        output_properties = 'B alpha_damagedvar xi eps_p eps_e I1 I2 stress'
         block = '3'
     [] 
     [elastic_tensor]
@@ -344,7 +343,6 @@
     [compute_stress]
         type = ComputePoroStVenantKirchhoffStress
         large_kinematics = true
-        output_properties = 'green_lagrange_strain pk2_stress'
         block = '1 2'
     []
     [dummy_matprop]
