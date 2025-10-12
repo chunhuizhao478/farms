@@ -390,7 +390,8 @@
     petsc_options_value = 'gmres     hypre'
     automatic_scaling = true
     # nl_forced_its = 3
-    line_search = 'none'
+    line_search = 'bt'
+    verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
         dt = 1
@@ -398,6 +399,7 @@
         optimal_iterations = 10
         growth_factor = 1.25
         max_time_step_bound = 3
+        verbose = true
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -415,6 +417,24 @@
         time_step_interval = 1
         show = 'strain_z react_z'
     [../]
+
+    # ADD THIS CONSOLE OUTPUT:
+    [console]
+        type = Console
+        perf_log = true  # Performance logging
+        print_mesh_changed_info = true
+        print_linear_residuals = true
+        
+        # ADD THESE - shows memory usage:
+        output_screen = true
+        show_var_residual_norms = true
+        
+        # This is key - tracks memory per object:
+        perf_graph_live = true
+        perf_graph_live_mem_limit = 10  # Show top 10 memory consumers
+        perf_graph_live_time_limit = 10
+    []
+
     [out]
         type = Checkpoint
         time_step_interval = 20
