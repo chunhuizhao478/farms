@@ -406,7 +406,7 @@
     type = Transient
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
-    start_time = 1e-12
+    start_time = -1e-12
     end_time = 4000 #extend the time
     # num_steps = 1
     l_max_its = 100
