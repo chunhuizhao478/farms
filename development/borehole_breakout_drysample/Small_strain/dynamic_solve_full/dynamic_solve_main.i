@@ -314,12 +314,12 @@
         prop_names = 'density'
         prop_values = '2640'
     []
-    [strain]
+    [strain3]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
         block = '3'
     [] 
-    [strain]
+    [strain12]
         type = ComputeLagrangianStrain
         large_kinematics = false
         block = '1 2'
