@@ -239,17 +239,14 @@
     [./mass1]
         type = SmallStrainFluidSolidCoupling
         variable = porepressure
-        block = '3'
     [../]
     [./mass2]
         type = SmallStrainPorePressureTimeDerivative
         variable = porepressure
-        block = '3'
     [../]
     [./darcy_flow]
         type = SmallStrainFluidDiffusion
         variable = porepressure
-        block = '3'
     []
     [./darcy_flow_granular]
         type = SmallStrainFluidDiffusionGranular
@@ -324,17 +321,6 @@
         component = 2
         block = '1 2'    
   [../]
-  [./poro_timederiv]
-        type = PoroFullSatTimeDerivative
-        variable = porepressure
-        block = '1 2' 
-  [../]
-  [./darcy_flow2]
-        type = CoefDiffusion
-        variable = porepressure
-        coef = 1E-17
-        block = '1 2' 
-  [../]
 []
 
 [Materials]
@@ -369,15 +355,10 @@
         youngs_modulus = 48.5e9
         poissons_ratio = 0.22
     []
-    [./poro_material]
-        type = PoroFullSatMaterial
+    [porous_prop]
+        type =   IntactPorousSolidProperties
         block = '1 2'
-        porosity0 = 0.008
-        biot_coefficient = 0.4264
-        solid_bulk_compliance = 1.984914649E-11
-        fluid_bulk_compliance = 4.545454545E-10
-        constant_porosity = true
-    [../]
+    []
     [dummy_matprop]
         type = GenericConstantMaterial
         prop_names = 'initial_damage initial_breakage shear_stress_perturbation'
