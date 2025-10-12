@@ -254,16 +254,16 @@
         type = MaterialRankTwoTensorAux
         variable = eps_e_22
         property = eps_e
-        row = 2
-        column = 2
+        i = 2  # Change from 'row' to 'i'
+        j = 2  # Change from 'column' to 'j'
         block = '3'
     []
     [get_stress_22]
         type = MaterialRankTwoTensorAux
         variable = stress_22
         property = stress
-        row = 2
-        column = 2
+        i = 2  # Change from 'row' to 'i'
+        j = 2  # Change from 'column' to 'j'
     []
 []
 
