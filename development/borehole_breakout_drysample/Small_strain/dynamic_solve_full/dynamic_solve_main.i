@@ -344,10 +344,6 @@
         outputs = exodus
         block = '1 2'
     []
-    [porous_prop]
-        type =   IntactPorousSolidProperties
-        block = '1 2'
-    []
     [dummy_matprop]
         type = GenericConstantMaterial
         prop_names = 'initial_damage initial_breakage shear_stress_perturbation'
