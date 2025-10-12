@@ -285,42 +285,27 @@
         gamma = 0.5
         eta = 0
     []
-    [./grad_stress_x]
-        type = StressDivergenceTensors
+    [grad_stress_x]
+        type = TotalLagrangianTotalStressDivergence
         variable = disp_x
         component = 0
+        large_kinematics = false
         block = '1 2'
-  [../]
-  [./grad_stress_y]
-        type = StressDivergenceTensors
+    []
+    [grad_stress_y]
+        type = TotalLagrangianTotalStressDivergence
         variable = disp_y
         component = 1
+        large_kinematics = false
         block = '1 2'
-  [../]
-  [./grad_stress_z]
-        type = StressDivergenceTensors
+    []
+    [grad_stress_z]
+        type = TotalLagrangianTotalStressDivergence
         variable = disp_z
         component = 2
+        large_kinematics = false
         block = '1 2'
-  [../]
-  [./poro_x]
-        type = PoroMechanicsCoupling
-        variable = disp_x
-        component = 0
-        block = '1 2'    
-  [../]
-  [./poro_y]
-        type = PoroMechanicsCoupling
-        variable = disp_y
-        component = 1
-        block = '1 2'    
-  [../]
-  [./poro_z]
-        type = PoroMechanicsCoupling
-        variable = disp_z
-        component = 2
-        block = '1 2'    
-  [../]
+    []
 []
 
 [Materials]
@@ -343,17 +328,21 @@
         block = '3'
         outputs = exodus
     [] 
-    [stress_elastic]
-        type = ComputeLinearElasticStress
-        block = '1 2'
-        output_properties = 'elastic_strain stress'
-        outputs = exodus
-    []
-    [elasticity_tensor]
+    [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
-        block = '1 2'
         youngs_modulus = 48.5e9
         poissons_ratio = 0.22
+    []
+    [porous_prop]
+        type =   IntactPorousSolidProperties
+        block = '1 2'
+    []
+    [compute_stress]
+        type = ComputePoroStVenantKirchhoffStress
+        large_kinematics = true
+        output_properties = 'green_lagrange_strain pk2_stress'
+        outputs = exodus
+        block = '1 2'
     []
     [porous_prop]
         type =   IntactPorousSolidProperties
