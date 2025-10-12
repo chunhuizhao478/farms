@@ -317,8 +317,13 @@
     [strain]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        # outputs = exodus
+        block = '3'
     [] 
+    [strain]
+        type = ComputeLagrangianStrain
+        large_kinematics = false
+        block = '1 2'
+    []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBM
         alpha_grad_x = alpha_grad_x
