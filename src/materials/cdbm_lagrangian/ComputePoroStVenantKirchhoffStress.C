@@ -35,6 +35,7 @@ ComputePoroStVenantKirchhoffStress::ComputePoroStVenantKirchhoffStress(const Inp
     _C(declareProperty<RankFourTensor>(_base_name + "pk2_jacobian")),
     _pk1_off_diag_jacobian(declareProperty<RankTwoTensor>(_base_name + "pk1_off_diag_jacobian")),
     _I1(declareProperty<Real>(_base_name + "first_elastic_strain_invariant")),
+    _I1_small(declareProperty<Real>(_base_name + "I1")), 
     _dI1dF(declareProperty<RankTwoTensor>(_base_name + "first_elastic_strain_invariant_derivative")), 
     _biot_coeff_eff(getMaterialProperty<Real>(_base_name + "biot_coefficient_effective"))
 {
@@ -76,6 +77,7 @@ ComputePoroStVenantKirchhoffStress::computeQpPK2Stress()
     strain = 0.5 * (_F[_qp] + _F[_qp].transpose()) - RankTwoTensor::Identity();
 
   _I1[_qp] = strain.trace();
+  _I1_small[_qp] = _I1[_qp];
 
   // The stress update is linear with the correct strains/frame
   _S[_qp] = _C[_qp] * strain - _biot_coeff_eff[_qp] * _pore_pressure[_qp] * RankTwoTensor::Identity();
