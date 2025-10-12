@@ -420,18 +420,8 @@
     # ADD THIS CONSOLE OUTPUT:
     [console]
         type = Console
-        perf_log = true  # Performance logging
-        print_mesh_changed_info = true
-        print_linear_residuals = true
-        
-        # ADD THESE - shows memory usage:
+        perf_log = true
         output_screen = true
-        show_var_residual_norms = true
-        
-        # This is key - tracks memory per object:
-        perf_graph_live = true
-        perf_graph_live_mem_limit = 10  # Show top 10 memory consumers
-        perf_graph_live_time_limit = 10
     []
 
     [out]
