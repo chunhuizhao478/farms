@@ -66,6 +66,9 @@ protected:
   /// First Elastic Strain Invariant
   MaterialProperty<Real> & _I1;
 
+  /// First Elastic Strain Invariant for small strain case
+  MaterialProperty<Real> & _I1_small;
+
   /// derivative of the lagrarangian strain with respect to deformation gradient
   MaterialProperty<RankTwoTensor> & _dI1dF;
   
