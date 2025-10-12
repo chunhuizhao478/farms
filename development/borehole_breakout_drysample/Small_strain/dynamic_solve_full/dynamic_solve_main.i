@@ -399,7 +399,6 @@
         optimal_iterations = 10
         growth_factor = 1.25
         max_time_step_bound = 3
-        verbose = true
     []
     [./TimeIntegrator]
         type = NewmarkBeta
