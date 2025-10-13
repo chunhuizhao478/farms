@@ -31,6 +31,7 @@ SochackiSpongeDamping::validParams()
 SochackiSpongeDamping::SochackiSpongeDamping(const InputParameters & parameters)
   : Kernel(parameters),
     _u_dot(dot()),
+    _du_dot_du(dotDu()),
     _density(getMaterialProperty<Real>(getParam<MaterialPropertyName>("density"))),
     _sponge_coeff(getMaterialProperty<Real>(getParam<MaterialPropertyName>("sochacki_damping"))),
     _damping_scale(getParam<Real>("damping_scale"))
@@ -46,6 +47,8 @@ SochackiSpongeDamping::computeQpResidual()
 Real
 SochackiSpongeDamping::computeQpJacobian()
 {
-  // Damping term depends on du/dt; for explicit central difference the Jacobian is zero.
-  return 0.0;
+  // For implicit time integration, the Jacobian must account for the derivative
+  // of the velocity (du/dt) with respect to the displacement (u).
+  // The term is: ∂R/∂u = 2 * A(x,y) * ρ * ∂(du/dt)/∂u
+  return _test[_i][_qp] * _damping_scale * _sponge_coeff[_qp] * _density[_qp] * _du_dot_du[_qp] * _phi[_j][_qp];
 }

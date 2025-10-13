@@ -20,6 +20,7 @@ protected:
 
 private:
   const VariableValue & _u_dot;
+  const VariableValue & _du_dot_du;
   const MaterialProperty<Real> & _density;
   const MaterialProperty<Real> & _sponge_coeff;
   const Real _damping_scale;
