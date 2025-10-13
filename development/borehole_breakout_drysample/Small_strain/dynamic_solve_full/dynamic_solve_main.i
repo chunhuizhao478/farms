@@ -156,14 +156,6 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    [alpha_damagedvar]
-        order = CONSTANT
-        family = MONOMIAL
-    []
-    [xi]
-        order = CONSTANT
-        family = MONOMIAL
-    []
 []
 
 [AuxKernels]
@@ -229,19 +221,6 @@
         variable = B
         property = B
         block = '3'
-    []
-    [get_alpha]
-        type = MaterialRealAux
-        variable = alpha_damagedvar
-        property = alpha_damagedvar
-        block = '3'
-    []
-    [get_xi_output]
-        type = MaterialRealAux
-        variable = xi
-        property = xi
-        block = '3'
-    []
 []
 
 [Kernels]
@@ -436,7 +415,7 @@
 [Outputs] 
     exodus = true
     time_step_interval = 5
-    show = 'porepressure B alpha_damagedvar xi disp_z'
+    show = 'B'
     [./csv]
         type = CSV
         time_step_interval = 1
