@@ -221,6 +221,7 @@
         variable = B
         property = B
         block = '3'
+    []
 []
 
 [Kernels]
