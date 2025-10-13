@@ -284,7 +284,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
     []
 
     # DYNAMIC MODE: Inertia terms (disabled initially, enabled when strain rate > 1e-5)
-    # RESTRICTED TO INNER REGION ONLY (blocks 2, 3) - prevents boundary wave pollution
+    # APPLIED TO ALL REGIONS (blocks 1, 2, 3) - block 2 needs inertia for sponge to work
     [inertia_x]
         type = InertialForce
         variable = disp_x
@@ -294,7 +294,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         gamma = 0.5
         eta = 0
         enable = false
-        block = '1 3'  # Inner region only
+        block = '1 2 3'  # All regions - sponge layer needs wave propagation
     []
     [inertia_y]
         type = InertialForce
@@ -305,7 +305,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         gamma = 0.5
         eta = 0
         enable = false
-        block = '1 3'  # Inner region only
+        block = '1 2 3'  # All regions - sponge layer needs wave propagation
     []
 
     # QUASI-DYNAMIC MODE: Radiation damping
@@ -325,21 +325,22 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         block = '1 3'
     []
 
-    # Outer region (block 1): ALWAYS ACTIVE - prevents boundary wave pollution
-    [rad_damp_x_outer]
-        type = FarmsRadiationDamping
-        variable = disp_x
-        eta_constant = 1.85e7
-        enable = true
-        block = '2'
-    []
-    [rad_damp_y_outer]
-        type = FarmsRadiationDamping
-        variable = disp_y
-        eta_constant = 1.85e7
-        enable = true
-        block = '2'
-    []
+    # Outer region (block 2): REMOVED - conflicts with sponge damping
+    # The Sochacki sponge will handle wave absorption in block 2
+    # [rad_damp_x_outer]
+    #     type = FarmsRadiationDamping
+    #     variable = disp_x
+    #     eta_constant = 1.85e7
+    #     enable = true
+    #     block = '2'
+    # []
+    # [rad_damp_y_outer]
+    #     type = FarmsRadiationDamping
+    #     variable = disp_y
+    #     eta_constant = 1.85e7
+    #     enable = true
+    #     block = '2'
+    # []
 
     # Always active: Rayleigh damping for numerical stability
     [rayleigh_damp_x]
@@ -582,9 +583,9 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
     []
 
     # BIDIRECTIONAL SWITCHING: Based on deviatoric strain rate
-    # When max(strain_rate) > 1e-5: Switch INNER REGION to DYNAMIC mode
-    # When max(strain_rate) <= 1e-5: Switch INNER REGION to QUASI-DYNAMIC mode
-    # OUTER REGION (block 1): Always remains quasi-dynamic
+    # When max(strain_rate) > 1e-5: Switch ALL REGIONS to DYNAMIC mode
+    # When max(strain_rate) <= 1e-5: Switch INNER REGIONS to QUASI-DYNAMIC mode
+    # NOTE: Sponge layer (block 2) now has inertia enabled for proper wave absorption
     [strain_rate_switch]
         type = FarmsConditionalPostprocessorEnableControl
         postprocessor = max_dev_strain_rate
@@ -592,7 +593,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         threshold = 1e-5
         reverse_on_false = true
 
-        # Enable when strain rate > 1e-5 (DYNAMIC mode in INNER region)
+        # Enable when strain rate > 1e-5 (DYNAMIC mode in ALL regions including sponge)
         enable_objects = 'Kernels/inertia_x Kernels/inertia_y
                           AuxKernels/accel_x_aux AuxKernels/accel_y_aux
                           AuxKernels/vel_x_aux_dynamic AuxKernels/vel_y_aux_dynamic'
@@ -686,7 +687,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
     [sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_eps1em5_cd10_cycle.i'
+        input_files = 'dynamic_solve_sub_eps1em4_cd10_cycle.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
