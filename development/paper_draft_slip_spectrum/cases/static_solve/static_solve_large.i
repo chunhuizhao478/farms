@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../../mesh/mesh_local.msh'
+        file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -16,7 +16,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -30000 0'
+        coord = '-480000 -480000 0;
+                 480000 -480000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -167,7 +168,7 @@
         build_param_use_initial_damage_time_dependent_mat = true
         build_param_peak_value = 0.7
         build_param_sigma = 5e2
-        build_param_len_of_fault = 8000
+        build_param_len_of_fault = 28000
     []
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Debug
@@ -179,6 +180,19 @@
         type = GenericConstantMaterial
         prop_names = 'initial_damage'
         prop_values = '0.0'
+    []
+    #shear stress perturbation
+    [damage_perturbation]
+        type = PerturbationRadial
+        nucl_center = '0 0 0'
+        peak_value = 0
+        thickness = 200
+        length = 2000
+        duration = 1.0
+        perturbation_type = 'shear_stress'
+        sigma_divisor = 2.0
+        output_properties = 'shear_stress_perturbation damage_perturbation'
+        outputs = exodus
     []
 []
 
@@ -222,11 +236,19 @@
 []
 
 [BCs]
-    [bc_fix_bottom_y]
-        type = DirichletBC
-        variable = disp_y
-        value = 0
-        boundary = bottom
+    # fix bottom boundary
+    # [fix_bottom_y]
+    #     type = DirichletBC
+    #     variable = disp_y
+    #     boundary = bottom
+    #     value = 0
+    # []
+    #add initial shear stress
+    [initial_shear_stress_top]
+        type = NeumannBC
+        variable = disp_x
+        value = 13e6
+        boundary = top
     []
     #
     [static_pressure_top]
@@ -234,6 +256,13 @@
         variable = disp_y
         boundary = top
         value = -50e6
+        displacements = 'disp_x disp_y'
+    []
+    [static_pressure_bottom]
+        type = NeumannBC
+        variable = disp_y
+        boundary = bottom
+        value = 50e6
         displacements = 'disp_x disp_y'
     []
     [static_pressure_left]
@@ -250,7 +279,7 @@
         value = -50e6
         displacements = 'disp_x disp_y'
     []
-    # fix ptr
+    # fix left ptr
     [./fix_cptr1_x]
         type = DirichletBC
         variable = disp_x
@@ -262,13 +291,5 @@
         variable = disp_y
         boundary = corner_ptr
         value = 0
-    []
-    #
-    #add initial shear stress
-    [./initial_shear_stress]
-        type = NeumannBC
-        variable = disp_x
-        value = 12e6
-        boundary = top
     []
 []

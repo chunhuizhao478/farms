@@ -91,11 +91,15 @@ ThreadedElkRadialAverageLoop::operator()(const QPDataRange & qpdata_range)
           break;
         /*-------------------------------------------------------------------------------------------------*/
         case ElkRadialAverage::WeightsType::BAZANT:
-          weight = std::exp(-4.0 * std::pow(std::abs(radius - std::sqrt(ret_matches[j].second)), 2) / std::pow(length_scale,2.0));        
+          // Bazant nonlocal weight: exp(-4 * r^2 / l^2)
+          // ret_matches[j].second is already distance^2
+          weight = std::exp(-4.0 * ret_matches[j].second / std::pow(length_scale, 2.0));
           break;
        /*--------------------------------------------------------------------------------------------------*/
         case ElkRadialAverage::WeightsType::BAZANT3D:
-          weight = std::exp(-std::pow(6.0*std::sqrt(3.1415926),2.0/3.0) * std::pow(std::abs(radius - std::sqrt(ret_matches[j].second)), 2) / std::pow(length_scale,2.0));        
+          // Bazant 3D nonlocal weight: exp(-k * r^2 / l^2) where k = (6*sqrt(pi))^(2/3)
+          // ret_matches[j].second is already distance^2
+          weight = std::exp(-std::pow(6.0*std::sqrt(3.1415926), 2.0/3.0) * ret_matches[j].second / std::pow(length_scale, 2.0));
           break;
        /*--------------------------------------------------------------------------------------------------*/
       }

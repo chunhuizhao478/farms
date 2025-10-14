@@ -1,11 +1,3 @@
-##Sochacki sponge parameters##
-sponge_s_max = 5.0 #maximum attenuation at the outer sponge boundary
-sponge_exp_rate = 4.0 #controls exponential ramp steepness
-sponge_gaussian_rate = 6.0 #controls gaussian ramp steepness
-sponge_exponent_power = 2.0 #power-law exponent for exponent profile
-sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, gaussian
-##-------------------------##
-
 #implicit continuum damage-breakage model with adaptive dynamic/quasi-dynamic switching
 #Switches based on deviatoric strain rate threshold (1e-5 1/s)
 [Mesh]
@@ -284,7 +276,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
     []
 
     # DYNAMIC MODE: Inertia terms (disabled initially, enabled when strain rate > 1e-5)
-    # APPLIED TO ALL REGIONS (blocks 1, 2, 3) - block 2 needs inertia for sponge to work
+    # APPLIED TO ALL REGIONS (blocks 1, 2, 3)
     [inertia_x]
         type = InertialForce
         variable = disp_x
@@ -294,7 +286,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         gamma = 0.5
         eta = 0
         enable = false
-        block = '1 2 3'  # All regions - sponge layer needs wave propagation
+        block = '1 2 3'
     []
     [inertia_y]
         type = InertialForce
@@ -305,7 +297,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         gamma = 0.5
         eta = 0
         enable = false
-        block = '1 2 3'  # All regions - sponge layer needs wave propagation
+        block = '1 2 3'
     []
 
     # QUASI-DYNAMIC MODE: Radiation damping
@@ -315,32 +307,15 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         variable = disp_x
         eta_constant = 1.85e7  # 2 * mu / c_s
         enable = true
-        block = '1 3'
+        block = '1 2 3'
     []
     [rad_damp_y_inner]
         type = FarmsRadiationDamping
         variable = disp_y
         eta_constant = 1.85e7
         enable = true
-        block = '1 3'
+        block = '1 2 3'
     []
-
-    # Outer region (block 2): REMOVED - conflicts with sponge damping
-    # The Sochacki sponge will handle wave absorption in block 2
-    # [rad_damp_x_outer]
-    #     type = FarmsRadiationDamping
-    #     variable = disp_x
-    #     eta_constant = 1.85e7
-    #     enable = true
-    #     block = '2'
-    # []
-    # [rad_damp_y_outer]
-    #     type = FarmsRadiationDamping
-    #     variable = disp_y
-    #     eta_constant = 1.85e7
-    #     enable = true
-    #     block = '2'
-    # []
 
     # Always active: Rayleigh damping for numerical stability
     [rayleigh_damp_x]
@@ -354,24 +329,6 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         variable = disp_y
         component = 1
         zeta = 0.04
-    []
-
-    #
-    [./sponge_damping_x]
-      type = SochackiSpongeDamping
-      variable = disp_x
-      block = 2
-      density = density
-      sochacki_damping = sochacki_damping
-      damping_scale = 2.0
-    []
-    [./sponge_damping_y]
-      type = SochackiSpongeDamping
-      variable = disp_y
-      block = 2
-      density = density
-      sochacki_damping = sochacki_damping
-      damping_scale = 2.0
     []
 []
 
@@ -456,23 +413,6 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         output_properties = 'eqstrain_nonlocal'
         outputs = exodus
     []
-    [sochacki_sponge]
-        type = SochackiSpongeMaterial
-        block = 2
-        inner_xmin = -20000
-        inner_xmax = 20000
-        inner_ymin = -20000
-        inner_ymax = 20000
-        outer_xmin = -30000
-        outer_xmax = 30000
-        outer_ymin = -30000
-        outer_ymax = 30000
-        s_max = ${sponge_s_max}
-        profile = ${sponge_profile}
-        exponent_power = ${sponge_exponent_power}
-        exp_rate = ${sponge_exp_rate}
-        gaussian_rate = ${sponge_gaussian_rate}
-    []
 []
 
 [UserObjects]
@@ -480,7 +420,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         type = ElkRadialAverage
         length_scale = 200
         prop_name = strain_invariant_ratio
-        radius = 200
+        radius = 400
         weights = BAZANT
         execute_on = TIMESTEP_END
     []
@@ -561,7 +501,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         # Use adaptive time step bound from postprocessor
         max_time_step_bound_postprocessor = adaptive_dt_bound
         # Fallback constant value (not used when postprocessor is active)
-        max_time_step_bound = 5.0
+        max_time_step_bound = 100.0
     []
 
     [TimeIntegrator]
@@ -584,8 +524,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
 
     # BIDIRECTIONAL SWITCHING: Based on deviatoric strain rate
     # When max(strain_rate) > 1e-5: Switch ALL REGIONS to DYNAMIC mode
-    # When max(strain_rate) <= 1e-5: Switch INNER REGIONS to QUASI-DYNAMIC mode
-    # NOTE: Sponge layer (block 2) now has inertia enabled for proper wave absorption
+    # When max(strain_rate) <= 1e-5: Switch ALL REGIONS to QUASI-DYNAMIC mode
     [strain_rate_switch]
         type = FarmsConditionalPostprocessorEnableControl
         postprocessor = max_dev_strain_rate
@@ -593,12 +532,12 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         threshold = 1e-5
         reverse_on_false = true
 
-        # Enable when strain rate > 1e-5 (DYNAMIC mode in ALL regions including sponge)
+        # Enable when strain rate > 1e-5 (DYNAMIC mode in ALL regions)
         enable_objects = 'Kernels/inertia_x Kernels/inertia_y
                           AuxKernels/accel_x_aux AuxKernels/accel_y_aux
                           AuxKernels/vel_x_aux_dynamic AuxKernels/vel_y_aux_dynamic'
 
-        # Disable when strain rate > 1e-5 (turn off QUASI-DYNAMIC in INNER region only)
+        # Disable when strain rate > 1e-5 (turn off QUASI-DYNAMIC in ALL regions)
         disable_objects = 'Kernels/rad_damp_x_inner Kernels/rad_damp_y_inner
                            AuxKernels/vel_x_aux_quasi AuxKernels/vel_y_aux_quasi'
     []
@@ -615,7 +554,7 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
     []
     [csv]
         type = CSV
-        time_step_interval = 2
+        time_step_interval = 10
         execute_on = 'timestep_end'
     []
     [out]
@@ -627,11 +566,14 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
 
 [BCs]
     # Loading boundary conditions
-    [load_top_bc]
-        type = FunctionNeumannBC
-        variable = disp_x
+    [preset_displacements]
+        type = PresetDisplacement
         boundary = top
-        function = tectonic_shear_stress
+        variable = disp_x
+        beta = 0.25
+        velocity = vel_x
+        acceleration = accel_x
+        function = func_top_bc
     []
     [initial_shear_stress_top]
         type = NeumannBC
@@ -680,6 +622,119 @@ sponge_profile = 'gaussian' #available: linear, exponent, cubic, exponential, ga
         variable = disp_y
         boundary = corner_ptr
         value = 0
+    []
+    #add dampers
+    [damp_top_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_top_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = top
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+   [damp_bottom_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = bottom
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_bottom_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = bottom
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_left_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_left_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = left
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_right_x]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_x
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 0
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
+    []
+    [damp_right_y]
+        type = FarmsNonReflectDashpotBC
+        variable = disp_y
+        displacements = 'disp_x disp_y'
+        velocities = 'vel_x vel_y'
+        accelerations = 'accel_x accel_y'
+        component = 1
+        boundary = right
+        beta = 0.25
+        gamma = 0.5
+        shear_wave_speed = 3464
+        p_wave_speed = 6000
+        density = 2700
     []
 []
 
