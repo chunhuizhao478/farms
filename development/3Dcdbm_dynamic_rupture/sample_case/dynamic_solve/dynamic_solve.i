@@ -61,6 +61,20 @@ m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
 ##-------------------------##
 
+### poroelastic properties
+   
+fluid_bulk_modulus = 2.2e9   # Water bulk modulus (2.2 GPa)    
+permeability_solid_o = 1e-20 # Initial permeability (1 milli-darcy) 
+porosity_solid_o = 0.008 # Initial porosity (8%)  
+solid_bulk_modulus_g = 50.38e9 # Granular bulk modulus (50.3 GPa)      
+solid_bulk_modulus_s = 50.38e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
+permeability_evolution_with_damage = 3
+initial_grain_size = 1.3
+ultimate_grain_size = 0.25
+initial_viscosity_fluid = 1e-3
+anand_param_go_mat = 0.25
+anand_param_eta_cv_mat = 0.01
+anand_param_p_mat = 1    
 
 ##initial stress parameters##
 #background stress 
@@ -145,6 +159,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
   ##------------slip weakening------------##
   displacements = 'disp_x disp_y disp_z'
+  porepressure = 'porepressure'
   
   #damping ratio
   q = ${q}
@@ -202,7 +217,53 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
   # energy ratio
   chi = ${chi}
+
+  # Water bulk modulus (2.2 GPa)
+  fluid_bulk_modulus = ${fluid_bulk_modulus}     
+
+  # Initial permeability (1 milli-darcy) 
+  permeability_solid_o = ${permeability_solid_o}  
+
+  # Initial porosity (15%)
+  porosity_solid_o = ${porosity_solid_o}  
+     
+  # Granular bulk modulus (15 GPa)      
+  solid_bulk_modulus_g = ${solid_bulk_modulus_g}  
+
+  # Solid grains bulk modulus (36 GPa - typical for quartz)  
+  solid_bulk_modulus_s = ${solid_bulk_modulus_s}   
+
+  permeability_evolution_with_damage = ${permeability_evolution_with_damage}  
+  initial_grain_size = ${initial_grain_size}  
+  ultimate_grain_size = ${ultimate_grain_size}  
+  initial_viscosity_fluid = ${initial_viscosity_fluid}  
+
+  anand_param_go_mat = ${anand_param_go_mat}  
+  anand_param_eta_cv_mat = ${anand_param_eta_cv_mat}  
+  anand_param_p_mat = ${anand_param_p_mat}  
+
 []
+
+[Variables]
+    [disp_x]
+        order = FIRST
+        family = LAGRANGE     
+    []
+    [disp_y]
+        order = FIRST
+        family = LAGRANGE    
+    []
+    [disp_z]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [porepressure]
+        order = FIRST
+        family = LAGRANGE
+        scaling = 1E9
+    []
+[]
+
 
 [AuxVariables]
   ###
@@ -228,6 +289,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       family = LAGRANGE
   [../]
   [./resid_slipweakening_z]
+      order = FIRST
+      family = LAGRANGE
+  [../]
+  [./resid_pressure_x]
+      order = FIRST
+      family = LAGRANGE
+  [../]
+  [./resid_pressure_y]
+      order = FIRST
+      family = LAGRANGE
+  [../]
+  [./resid_pressure_z]
       order = FIRST
       family = LAGRANGE
   [../]
@@ -334,19 +407,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     strain = SMALL
     generate_output='traction_x traction_y traction_z jump_x jump_y jump_z'
   [../]
-[]
-
-[Physics]
-  [SolidMechanics]
-    [QuasiStatic]
-      [all]
-        strain = SMALL
-        add_variables = true
-        generate_output = 'stress_xx stress_yy stress_xy'
-        extra_vector_tags = 'restore_tag'
-      []
-    []
-  []
 []
 
 [Problem]
@@ -542,6 +602,47 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Kernels]
+  [dispkernel_x]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_x
+      component = 0
+      extra_vector_tags = 'restore_tag'
+  []
+  [dispkernel_y]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_y
+      component = 1
+      extra_vector_tags = 'restore_tag'
+  []
+  [dispkernel_z]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_z
+      component = 2
+      extra_vector_tags = 'restore_tag'
+  []
+  [./mass1]
+      type = SmallStrainFluidSolidCoupling
+      variable = porepressure
+  [../]
+  [./mass2]
+      type = SmallStrainPorePressureTimeDerivative
+      variable = porepressure
+  [../]
+  [./darcy_flow]
+      type = SmallStrainFluidDiffusion
+      variable = porepressure
+  []
+  [./darcy_flow_granular]
+      type = SmallStrainFluidDiffusionGranular
+      variable = porepressure
+  []
+  [./plastic_volumetric]
+      type = SmallStrainPlasticVolumetricStrainCoupling
+      variable = porepressure
+  []
   [./inertia_x]
     type = InertialForce
     use_displaced_mesh = false
@@ -577,12 +678,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Materials]
   #damage breakage model
   [stress_medium]
-      type = ComputeDamageBreakageStress3DSlipWeakening
+      type = ComputePoroDamageBreakageStress3DSlipWeakening
       output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
       use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
       m_exponent = ${m_exponent}
       strain_rate_hat = ${strain_rate_hat}
       cd_hat = ${cd_hat}
+      use_dilatancy = true
       outputs = exodus
   []
   [dummy_material]
@@ -605,6 +707,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       reaction_slipweakening_x = resid_slipweakening_x
       reaction_slipweakening_y = resid_slipweakening_y
       reaction_slipweakening_z = resid_slipweakening_z
+      reaction_pressure_x = reaction_pressure_x
+      reaction_pressure_y = reaction_pressure_y
+      reaction_pressure_z = reaction_pressure_z
       #---------------------------------------------#
       use_forced_rupture = true
       t0 = ${t0}
@@ -697,6 +802,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     solution = init_sol_components
     from_variable = 'stress_22'
   []
+  [./func_initial__porepressure]
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'porepressure'
+  []
   ###fluid pressure###
   [./func_fluid_pressure]
     type = InitialStressStrainTPV26
@@ -743,7 +853,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     mesh = '../static_solve/static_solve_out.e'
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
-                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22'
+                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22
+                        porepressure'
     timestep = LATEST
     force_preaux = true
     execute_on = 'INITIAL'
@@ -757,8 +868,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   # num_steps = ${num_steps}
   [TimeIntegrator]
     type = CentralDifference
-    solve_type = lumped
-    use_constant_mass = true
   []
 []
 
@@ -766,7 +875,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
@@ -782,7 +891,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [sample_snapshots]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux porepressure'
     time_step_interval = ${sample_snapshots_time_step_interval}
   []
 []    
@@ -790,13 +899,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [VectorPostprocessors]
   [on_fault]
     type = SideValueSampler
-    variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux jump_y_aux jump_z_aux jump_x_rate_aux jump_y_rate_aux jump_z_rate_aux traction_x_aux traction_y_aux traction_z_aux alpha_damagedvar_aux B_aux xi_aux' 
+    variable = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z jump_x_aux jump_y_aux jump_z_aux jump_x_rate_aux jump_y_rate_aux jump_z_rate_aux traction_x_aux traction_y_aux traction_z_aux alpha_damagedvar_aux B_aux xi_aux porepressure' 
     boundary = 'Block100_Block200'
     sort_by = x
   []
   [off_fault]
     type = PositionsFunctorValueSampler
-    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
+    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z porepressure'
     positions = 'pos'
     sort_by = x
     execute_on = TIMESTEP_END

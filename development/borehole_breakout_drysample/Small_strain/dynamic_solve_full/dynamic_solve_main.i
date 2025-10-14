@@ -351,8 +351,8 @@
         block = '1 2'
     []
     [compute_stress]
-        type = ComputePoroStVenantKirchhoffStress
-        large_kinematics = true
+        type = ComputePoroLinearElasticStress
+        large_kinematics = false
         block = '1 2'
     []
     [dummy_matprop]
