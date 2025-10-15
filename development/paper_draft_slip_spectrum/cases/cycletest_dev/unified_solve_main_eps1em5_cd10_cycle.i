@@ -529,7 +529,7 @@
         type = FarmsConditionalPostprocessorEnableControl
         postprocessor = max_dev_strain_rate
         comparison_type = greater_than
-        threshold = 1e-5
+        threshold = 1e-4
         reverse_on_false = true
 
         # Enable when strain rate > 1e-5 (DYNAMIC mode in ALL regions)
