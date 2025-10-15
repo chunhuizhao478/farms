@@ -230,21 +230,18 @@
         displacements = 'disp_x disp_y disp_z'
         variable = disp_x
         component = 0
-        block = '3'
     []
     [dispkernel_y]
         type = TotalStressDivergenceTensor
         displacements = 'disp_x disp_y disp_z'
         variable = disp_y
         component = 1
-        block = '3'
     []
     [dispkernel_z]
         type = TotalStressDivergenceTensor
         displacements = 'disp_x disp_y disp_z'
         variable = disp_z
         component = 2
-        block = '3'
     []
     [./mass1]
         type = SmallStrainFluidSolidCoupling
@@ -295,27 +292,6 @@
         gamma = 0.5
         eta = 0
     []
-    [grad_stress_x]
-        type = TotalLagrangianTotalStressDivergence
-        variable = disp_x
-        component = 0
-        large_kinematics = false
-        block = '1 2'
-    []
-    [grad_stress_y]
-        type = TotalLagrangianTotalStressDivergence
-        variable = disp_y
-        component = 1
-        large_kinematics = false
-        block = '1 2'
-    []
-    [grad_stress_z]
-        type = TotalLagrangianTotalStressDivergence
-        variable = disp_z
-        component = 2
-        large_kinematics = false
-        block = '1 2'
-    []
 []
 
 [Materials]
@@ -327,13 +303,7 @@
     [strain3]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-        block = '3'
     [] 
-    [strain12]
-        type = ComputeLagrangianStrain
-        large_kinematics = false
-        block = '1 2'
-    []
     [stress_medium]
         type = ComputeDamageBreakageStress3DDynamicCDBM
         alpha_grad_x = alpha_grad_x
@@ -352,7 +322,6 @@
     []
     [compute_stress]
         type = ComputePoroLinearElasticStress
-        large_kinematics = false
         block = '1 2'
     []
     [dummy_matprop]
