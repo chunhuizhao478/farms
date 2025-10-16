@@ -256,16 +256,16 @@
         type = SmallStrainFluidDiffusion
         variable = porepressure
     []
-    [./darcy_flow_granular]
-        type = SmallStrainFluidDiffusionGranular
-        variable = porepressure
-        block = '3'
-    []
-    [./plastic_volumetric]
-        type = SmallStrainPlasticVolumetricStrainCoupling
-        variable = porepressure
-        block = '3'
-    []
+  #  [./darcy_flow_granular]
+  #      type = SmallStrainFluidDiffusionGranular
+  #      variable = porepressure
+  #      block = '3'
+  #  []
+  #  [./plastic_volumetric]
+  #      type = SmallStrainPlasticVolumetricStrainCoupling
+  #      variable = porepressure
+  #      block = '3'
+  #  []
     [./inertia_x]
         type = InertialForce
         variable = disp_x
