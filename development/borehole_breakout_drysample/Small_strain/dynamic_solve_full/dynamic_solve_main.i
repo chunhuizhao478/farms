@@ -205,24 +205,24 @@
         gamma = 0.5
         execute_on = 'TIMESTEP_END'
     []  
-    [get_xi]
-        type = MaterialRealAux
-        variable = xi_aux
-        property = xi
-        block = '3'
-    []
-    [get_I2]
-        type = MaterialRealAux
-        variable = I2_aux
-        property = I2
-        block = '3'
-    [] 
-    [get_B]
-        type = MaterialRealAux
-        variable = B
-        property = B
-        block = '3'
-    []
+ #   [get_xi]
+ #       type = MaterialRealAux
+ #       variable = xi_aux
+ #       property = xi
+ #       block = '3'
+  #  []
+  #  [get_I2]
+  #      type = MaterialRealAux
+   #     variable = I2_aux
+   #     property = I2
+  #      block = '3'
+  #  [] 
+  #  [get_B]
+  #      type = MaterialRealAux
+  #      variable = B
+  #      property = B
+  #      block = '3'
+  #  []
 []
 
 [Kernels]
