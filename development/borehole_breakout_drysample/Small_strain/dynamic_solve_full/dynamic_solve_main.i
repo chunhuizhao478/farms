@@ -84,7 +84,7 @@
     solid_bulk_modulus_s = 50.38e9 
 
     permeability_evolution_with_damage = 3
-    #initial_grain_size = 1.3
+    initial_grain_size = 1.3
     ultimate_grain_size = 0.25
     initial_viscosity_fluid = 1e-3
 
