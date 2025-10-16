@@ -3,7 +3,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test_outerblock.msh'
+        file = '../mesh/mesh_large.msh'
     []
     [./sidesets]
         input = msh
@@ -16,8 +16,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '-30000 -30000 0;
-                 30000 -30000 0'
+        coord = '-480000 -480000 0;
+                 480000 -480000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -482,7 +482,7 @@
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 30
-    nl_abs_tol = 1e-8
+    nl_abs_tol = 1e-10
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
     automatic_scaling = true
@@ -529,7 +529,7 @@
         type = FarmsConditionalPostprocessorEnableControl
         postprocessor = max_dev_strain_rate
         comparison_type = greater_than
-        threshold = 1e-4
+        threshold = 1e-5
         reverse_on_false = true
 
         # Enable when strain rate > 1e-5 (DYNAMIC mode in ALL regions)
@@ -769,7 +769,7 @@
 [UserObjects]
     [init_sol_components]
         type = SolutionUserObject
-        mesh = '../static_solve/static_solve_out.e'
+        mesh = '../static_solve/static_solve_large_out.e'
         system_variables = 'disp_x disp_y xi_output I2_output alpha_damagedvar_output B_damagedvar_output'
         timestep = LATEST
         force_preaux = true

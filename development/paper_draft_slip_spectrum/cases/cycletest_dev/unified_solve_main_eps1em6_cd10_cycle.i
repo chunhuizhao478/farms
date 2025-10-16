@@ -742,7 +742,7 @@
     [sub_app]
         type = TransientMultiApp
         positions = '0 0 0'
-        input_files = 'dynamic_solve_sub_eps1em3_cd10_cycle.i'
+        input_files = 'dynamic_solve_sub_eps1em6_cd10_cycle.i'
         execute_on = 'TIMESTEP_END'
         sub_cycling = true
         clone_parent_mesh = true
