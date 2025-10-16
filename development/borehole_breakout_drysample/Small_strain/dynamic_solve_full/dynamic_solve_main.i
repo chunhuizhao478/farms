@@ -86,7 +86,7 @@
    # permeability_evolution_with_damage = 3
     #initial_grain_size = 1.3
    # ultimate_grain_size = 0.25
-   # initial_viscosity_fluid = 1e-3
+    initial_viscosity_fluid = 1e-3
 
    # anand_param_go_mat = 0.25
    # anand_param_eta_cv_mat = 0.01
