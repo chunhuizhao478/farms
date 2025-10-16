@@ -110,6 +110,7 @@
     [porepressure]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E9 
     []
 []
 
@@ -304,13 +305,13 @@
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
     [] 
-    [stress_medium]
-        type = ComputeDamageBreakageStress3DDynamicCDBM
-        alpha_grad_x = alpha_grad_x
-        alpha_grad_y = alpha_grad_y
-        alpha_grad_z = alpha_grad_z
-        block = '3'
-    [] 
+  #  [stress_medium]
+  #      type = ComputeDamageBreakageStress3DDynamicCDBM
+  #      alpha_grad_x = alpha_grad_x
+  #      alpha_grad_y = alpha_grad_y
+  #      alpha_grad_z = alpha_grad_z
+  #      block = '3'
+  #  [] 
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         youngs_modulus = 48.5e9
@@ -318,11 +319,11 @@
     []
     [porous_prop]
         type =   IntactPorousSolidProperties
-        block = '1 2'
+        block = '1 2 3'
     []
     [compute_stress]
         type = ComputePoroLinearElasticStress
-        block = '1 2'
+        block = '1 2 3'
     []
     [dummy_matprop]
         type = GenericConstantMaterial
@@ -363,7 +364,7 @@
     # petsc_options_value = 'lu       NONZERO'
     petsc_options_iname = '-ksp_type -pc_type'
     petsc_options_value = 'gmres     hypre'
-    automatic_scaling = true
+    # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
     verbose = true
