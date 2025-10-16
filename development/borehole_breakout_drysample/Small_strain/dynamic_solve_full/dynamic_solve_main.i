@@ -65,7 +65,7 @@
   #  chi = 0.8
     
     #
-    D = 0
+   # D = 0
 
 
     # Water bulk modulus (2.2 GPa)
