@@ -350,23 +350,22 @@
   
 [Executioner]
     type = Transient
-    solve_type = 'PJFNK'  # Change from NEWTON to PJFNK
+    solve_type = 'NEWTON'
+    # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 4000
+    end_time = 4000 #extend the time
+    # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 30
     nl_abs_tol = 1e-8
-    
-    # Use simpler preconditioner with PJFNK
-    petsc_options_iname = '-ksp_type -pc_type'
-    petsc_options_value = 'gmres     bjacobi'
-    
-    # OR even simpler - just use default with PJFNK
-    # petsc_options_iname = '-pc_type'
-    # petsc_options_value = 'bjacobi'
-    
+    petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-ksp_type -pc_type'
+    # petsc_options_value = 'gmres     hypre'
+    # automatic_scaling = true
+    # nl_forced_its = 3
     line_search = 'bt'
     verbose = true
     [TimeStepper]
