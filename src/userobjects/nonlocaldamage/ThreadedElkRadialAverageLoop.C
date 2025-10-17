@@ -77,30 +77,38 @@ ThreadedElkRadialAverageLoop::operator()(const QPDataRange & qpdata_range)
     for (std::size_t j = 0; j < n_result; ++j)
     {
       const auto & other_qp = qp_data[ret_matches[j].first];
+      const Real distance_sq = ret_matches[j].second;
+      const Real distance = std::sqrt(distance_sq);
+
       switch (weights_type)
       {
         case ElkRadialAverage::WeightsType::CONSTANT:
           break;
 
         case ElkRadialAverage::WeightsType::LINEAR:
-          weight = radius - std::sqrt(ret_matches[j].second);
+          weight = radius - distance;
           break;
 
         case ElkRadialAverage::WeightsType::COSINE:
-          weight = std::cos(std::sqrt(ret_matches[j].second) / radius * libMesh::pi) + 1.0;
+          weight = std::cos(distance / radius * libMesh::pi) + 1.0;
           break;
         /*-------------------------------------------------------------------------------------------------*/
         case ElkRadialAverage::WeightsType::BAZANT:
-          // Bazant nonlocal weight: exp(-4 * r^2 / l^2)
-          // ret_matches[j].second is already distance^2
-          weight = std::exp(-4.0 * ret_matches[j].second / std::pow(length_scale, 2.0));
+        {
+          // Bažant nonlocal kernel (Eq. (4) in Bažant & Pijaudier-Cabot, 1988): exp[-(2 r / l)^2]
+          const Real inv_l2 = 1.0 / (length_scale * length_scale);
+          weight = std::exp(-4.0 * distance_sq * inv_l2);
           break;
+        }
        /*--------------------------------------------------------------------------------------------------*/
         case ElkRadialAverage::WeightsType::BAZANT3D:
-          // Bazant 3D nonlocal weight: exp(-k * r^2 / l^2) where k = (6*sqrt(pi))^(2/3)
-          // ret_matches[j].second is already distance^2
-          weight = std::exp(-std::pow(6.0*std::sqrt(3.1415926), 2.0/3.0) * ret_matches[j].second / std::pow(length_scale, 2.0));
+        {
+          // 3D Bažant kernel (Eq. (5) in Bažant & Pijaudier-Cabot, 1988): exp[-(k r / l)^2] with k^2 = (6 sqrt(pi))^{2/3}
+          static const Real bazant3d_coeff = std::pow(6.0 * std::sqrt(libMesh::pi), 2.0 / 3.0);
+          const Real inv_l2 = 1.0 / (length_scale * length_scale);
+          weight = std::exp(-bazant3d_coeff * distance_sq * inv_l2);
           break;
+        }
        /*--------------------------------------------------------------------------------------------------*/
       }
 
