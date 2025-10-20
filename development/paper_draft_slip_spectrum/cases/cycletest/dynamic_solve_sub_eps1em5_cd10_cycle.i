@@ -2,7 +2,7 @@
 [Mesh]
     [./msh]
         type = FileMeshGenerator
-        file = '../mesh/mesh_test.msh'
+        file = '../mesh/mesh_test_outerblock.msh'
     []
     [./sidesets]
         input = msh
@@ -15,7 +15,8 @@
     []
     [./extranodeset1]
         type = ExtraNodesetGenerator
-        coord = '0 -480000 0'
+        coord = '-30000 -30000 0;
+                 30000 -30000 0'
         new_boundary = corner_ptr
         input = sidesets
     []
@@ -50,7 +51,7 @@
 
     #strain rate dependent Cd options
     m_exponent = 0.8
-    strain_rate_hat = 1e-4
+    strain_rate_hat = 1e-5
     cd_hat = 10
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
@@ -58,10 +59,10 @@
     CdCb_multiplier = 100
 
     #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    CBH_constant = 1e4
+    CBH_constant = 0
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf" #specify by auxiliary variable
-    C_1 = 1e-4
+    C_1 = 0
 
     #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
     C_2 = 0.05
@@ -70,7 +71,7 @@
     beta_width = 0.03 #1e-3
 
     #diffusion parameter #close the gradient
-    D_diffusion = 0
+    D_diffusion = ${fparse 0.25 * 200 * 200}
 
 []
 
@@ -162,6 +163,11 @@
         type = BreakageEvolutionConditionalForcing
         variable = B_damagedvar_sub
         coupled = alpha_damagedvar_sub
+        block = '1 3'
+    []
+    [diffusion_B]
+        type = BreakageEvolutionDiffusion
+        variable = B_damagedvar_sub
         block = '1 3'
     []
     [perturb_source_b]
@@ -278,7 +284,7 @@
 [UserObjects]
     [./init_sol_components]
       type = SolutionUserObject
-      mesh = '../static_solve/static_solve_out.e'
+      mesh = '../static_solve/static_solve_large_out.e'
       system_variables = 'alpha_damagedvar_output B_damagedvar_output'
       timestep = LATEST
       force_preaux = true

@@ -70,8 +70,8 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   //--------------------------------------------------------------//
   _lambda_o_mat(declareProperty<Real>("lambda_o")),
   _shear_modulus_o_mat(declareProperty<Real>("shear_modulus_o")),
-  _gamma_damaged_r_mat(declareProperty<Real>("gamma_damaged_r")), 
-  _xi_1_mat(declareProperty<Real>("xi_1")),  
+  _gamma_damaged_r_mat(declareProperty<Real>("gamma_damaged_r")),
+  _xi_1_mat(declareProperty<Real>("xi_1")),
   _xi_0_mat(declareProperty<Real>("xi_0")),
   _xi_d_mat(declareProperty<Real>("xi_d")),
   _xi_min_mat(declareProperty<Real>("xi_min")),
@@ -97,7 +97,7 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
   _xi_max_value(getParam<Real>("xi_max")),
   // _Cd_constant_value(getParam<Real>("Cd_constant")),
   _CdCb_multiplier_value(getParam<Real>("CdCb_multiplier")),
-  _CBH_constant_value(getParam<Real>("CBH_constant")), 
+  _CBH_constant_value(getParam<Real>("CBH_constant")),
   _beta_width_value(getParam<Real>("beta_width")),
   _C1_value(getParam<Real>("C_1")),
   _C2_value(getParam<Real>("C_2")),
@@ -147,9 +147,9 @@ DiffusedDamageBreakageMaterialSubApp::DiffusedDamageBreakageMaterialSubApp(const
 //Only the object that declares the material property can assign values to it.
 //Objects can request material properties, gaining read-only access to their values.
 //When any object (including the object that declares it) requests the old value of a material property, that property becomes "stateful".
-//All stateful material properties must be initialized within the initQpStatefulProperties call. 
+//All stateful material properties must be initialized within the initQpStatefulProperties call.
 //
-void 
+void
 DiffusedDamageBreakageMaterialSubApp::initQpStatefulProperties()
 {
   /* copmute _lambda_o_mat, _shear_modulus_o_mat*/
@@ -171,7 +171,7 @@ DiffusedDamageBreakageMaterialSubApp::initQpStatefulProperties()
   if (_use_spatial_cd)
     _Cd_mat[_qp] = _cd_aux[_qp];
   else
-    _Cd_mat[_qp] = _Cd_constant_value;
+    _Cd_mat[_qp] = std::max(0.0, _Cd_constant_value);
   _CdCb_multiplier_mat[_qp] = _CdCb_multiplier_value;
   _CBH_constant_mat[_qp] = _CBH_constant_value;
 
@@ -205,11 +205,11 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
 
   /* compute _xi_1_mat, xi_0_mat, _xi_d_mat, _xi_min_mat, _xi_max_mat */
   _xi_1_mat[_qp] = _xi_0_value + sqrt( pow(_xi_0_value , 2) + 2 * _shear_modulus_o_value / _lambda_o_value );
-  
+
   /* compute _xi_0_mat */
   if (_use_spatial_xio){acceptspatialxio();}
   else{_xi_0_mat[_qp] = _xi_0_value;}
-  
+
   /* compute _xi_d_mat */
   if (_use_spatial_xid){acceptspatialxid();}
   else{_xi_d_mat[_qp] = _xi_d_value;}
@@ -220,10 +220,10 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
   /* compute _Cd_mat, _CdCb_multiplier_mat, _CBH_constant_mat */
   // here we define different block id to identify strain rate increasing Cd or decreasing Cd
   if (_use_cd_strain_dependent){ //option to use strain rate dependent
-    
+
     //if block id is used
     if (_use_block_restricted_parameters){
-      
+
       // Get the block ID for the current element
       _block_id = _current_elem->subdomain_id();
 
@@ -246,7 +246,7 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
     else{ //else use increasing cd
       computeStrainRateCd();
     }
-    
+
   }
   else if (_use_spatial_cd){
     _Cd_mat[_qp] = _cd_aux[_qp];
@@ -254,7 +254,7 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
   else{ //else use constant Cd
     _Cd_mat[_qp] = _Cd_constant_value;
   }
-  
+
   _CdCb_multiplier_mat[_qp] = _CdCb_multiplier_value;
   _CBH_constant_mat[_qp] = _CBH_constant_value;
 
@@ -281,25 +281,25 @@ DiffusedDamageBreakageMaterialSubApp::computeQpProperties()
   _structural_stress_coefficient_mat[_qp] = 0.0;
 }
 
-void 
+void
 DiffusedDamageBreakageMaterialSubApp::computegammar()
 {
 
   // Calculate each part of the expression
   Real term1 = -_xi_0_value * (-_lambda_o_value * pow(_xi_0_value, 2) + 6 * _lambda_o_value + 2 * _shear_modulus_o_value);
-  Real term2_sqrt = sqrt((_lambda_o_value * pow(_xi_0_value, 2) + 2 * _shear_modulus_o_value) * 
+  Real term2_sqrt = sqrt((_lambda_o_value * pow(_xi_0_value, 2) + 2 * _shear_modulus_o_value) *
                             (_lambda_o_value * pow(_xi_0_value, 4) - 12 * _lambda_o_value * pow(_xi_0_value, 2) + 36 * _lambda_o_value
                             - 6 * _shear_modulus_o_value * pow(_xi_0_value, 2) + 24 * _shear_modulus_o_value));
   Real denominator = 2 * (pow(_xi_0_value, 2) - 3);
-  
+
   // Calculate gamma_r
   Real gamma_r = (term1 - term2_sqrt) / denominator;
-  
+
   //save
   _gamma_damaged_r_mat[_qp] = gamma_r;
 }
 
-void 
+void
 DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
 {
   //_m_exponent: constant value - default value = 0.8
@@ -315,7 +315,7 @@ DiffusedDamageBreakageMaterialSubApp::computeStrainRateCd()
   }
 }
 
-void 
+void
 DiffusedDamageBreakageMaterialSubApp::computeReverseStrainRateCd()
 {
   //_m_exponent: constant value - default value = 0.8
@@ -325,13 +325,13 @@ DiffusedDamageBreakageMaterialSubApp::computeReverseStrainRateCd()
   _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_strain_rate_hat/_strain_rate[_qp])) * _cd_hat;
 }
 
-void 
+void
 DiffusedDamageBreakageMaterialSubApp::acceptspatialxio()
 {
   _xi_0_mat[_qp] = _xio_aux[_qp];
 }
 
-void 
+void
 DiffusedDamageBreakageMaterialSubApp::acceptspatialxid()
 {
   _xi_d_mat[_qp] = _xid_aux[_qp];
