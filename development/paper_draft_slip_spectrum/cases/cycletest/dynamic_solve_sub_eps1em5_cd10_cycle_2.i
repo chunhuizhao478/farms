@@ -71,7 +71,7 @@
     beta_width = 0.03 #1e-3
 
     #diffusion parameter #close the gradient
-    D_diffusion = ${fparse 0.125 * 200 * 200}
+    D_diffusion = ${fparse 0.06 * 200 * 200}
 
 []
 
