@@ -5,7 +5,7 @@ top_right1 = '0.002 4e-4 0.06'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../3dmeshfile/cylinder_sample_coarse.msh'
+    file =  '../3dmeshfile/cylinder_sample.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -219,9 +219,9 @@ top_right1 = '0.002 4e-4 0.06'
 #     type = Weibull
 #     shape = 15.0 #k
 #     scale = ${Gc_const} #lambda
-#     location = 0 
+#     location = 0
 #   []
-# [] 
+# []
 
 # [ICs]
 #   [./gc_var]

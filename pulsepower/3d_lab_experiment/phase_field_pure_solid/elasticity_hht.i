@@ -6,7 +6,7 @@ density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  5e-4 #l = 5e-4, ft = 61 MPa
+l =  2e-4 #l = 5e-4, ft = 61 MPa
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -15,13 +15,13 @@ Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0 #match energy budget
+hht_alpha = 0.11 #match energy budget
 #----------------------------------------------------#
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture4.i
+    input_files = fracture_hht.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'INITIAL TIMESTEP_END'
     clone_parent_mesh = true
@@ -68,7 +68,7 @@ top_right1 = '0.002 4e-4 0.06'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../3dmeshfile/cylinder_sample_coarse.msh'
+    file =  '../3dmeshfile/cylinder_sample.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -319,9 +319,9 @@ top_right1 = '0.002 4e-4 0.06'
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    fitting_param_exponent = 0.10
+    fitting_param_exponent = 0.25
     discharge_center = '0 0 0.03'
-    number_of_pulses = 2
+    number_of_pulses = 10
     base_factor = 8000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
@@ -475,7 +475,7 @@ top_right1 = '0.002 4e-4 0.06'
   nl_max_its = 30
 
   # dt = 0.5e-7
-  end_time = 2e-5
+  end_time = 10e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -501,7 +501,7 @@ top_right1 = '0.002 4e-4 0.06'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 10
+    time_step_interval = 40
     show = 'd pulse_load_aux'
   [../]
   [checkpoint]

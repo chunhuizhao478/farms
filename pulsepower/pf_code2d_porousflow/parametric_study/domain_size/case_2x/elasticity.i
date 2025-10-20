@@ -1,6 +1,6 @@
-fluid_elastic_energy_total_static = 5.083536e-04
-solid_elastic_energy_total_static = 1.309285e-02
-full_input_energy_static = 1.360120e-02
+fluid_elastic_energy_total_static = 5.060183e-04
+solid_elastic_energy_total_static = 1.309529e-02
+full_input_energy_static = 1.360131e-02
 
 #solid properties
 #----------------------------------------------------#
@@ -10,7 +10,7 @@ Gc_const = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4 # length scale, m
+l =  2e-4 # length scale, m
 ft = '${fparse sqrt(3.0/8.0 * E*Gc_const/l)}'#137 MPa # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
@@ -403,12 +403,14 @@ top_right2 = '2e-4 0.0025 0'
     rise_time = 3e-6
     single_pulse_duration = 1e-5
     EM = 0.03
-    gap = 0.001
+    gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '0 0 0.0005'
-    number_of_pulses = 100
-    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
+    fitting_param_exponent = 0.25
+    discharge_center = '0 0 0'
+    number_of_pulses = 10
+    base_factor = 8000
+    # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -805,7 +807,7 @@ top_right2 = '2e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 40
-    show = 'd vel_x vel_y vel_z pp'
+    show = 'd vel_x vel_y vel_z stress_xx stress_yy stress_xy pp'
   [../]
   [checkpoint]
       type = Checkpoint

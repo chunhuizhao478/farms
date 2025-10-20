@@ -6,7 +6,7 @@ density = 2600
 
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4
+l =  2e-4
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -62,12 +62,12 @@ hht_alpha = 0 #match energy budget
 []
 
 #initial damage box 1
-bottom_left1 = '-0.0025 -2e-4 0'
-top_right1 = '0.0025 2e-4 0'
+bottom_left1 = '-0.0025 -3e-4 0'
+top_right1 = '0.0025 3e-4 0'
 
 #initial damage box 2
-bottom_left2 = '-2e-4 -0.0025 0'
-top_right2 = '2e-4 0.0025 0'
+bottom_left2 = '-3e-4 -0.0025 0'
+top_right2 = '3e-4 0.0025 0'
 
 [Mesh]
   [./msh]
@@ -274,12 +274,14 @@ top_right2 = '2e-4 0.0025 0'
     rise_time = 3e-6
     single_pulse_duration = 1e-5
     EM = 0.03
-    gap = 0.001
+    gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '0 0 0.0005'
-    number_of_pulses = 100
-    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
+    fitting_param_exponent = 0.25
+    discharge_center = '0 0 0'
+    number_of_pulses = 10
+    base_factor = 8000
+    # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -441,7 +443,7 @@ top_right2 = '2e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 40
-    show = 'd vel_x vel_y vel_z'
+    show = 'd vel_x vel_y vel_z stress_xx stress_yy stress_xy'
   [../]
   [checkpoint]
       type = Checkpoint

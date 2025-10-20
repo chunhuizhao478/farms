@@ -1,10 +1,10 @@
 #initial damage box 1
-bottom_left1 = '-0.0025 -2e-4 0'
-top_right1 = '0.0025 2e-4 0'
+bottom_left1 = '-0.0025 -3e-4 0'
+top_right1 = '0.0025 3e-4 0'
 
 #initial damage box 2
-bottom_left2 = '-2e-4 -0.0025 0'
-top_right2 = '2e-4 0.0025 0'
+bottom_left2 = '-3e-4 -0.0025 0'
+top_right2 = '3e-4 0.0025 0'
 
 [Mesh]
   [./msh]
