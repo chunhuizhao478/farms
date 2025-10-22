@@ -2,13 +2,13 @@
 SetFactory("OpenCASCADE");
 
 // Characteristic lengths
-lc0 = 0.001; // super-fine near hole
-lc = 0.001;  // fine transition
-lc2 = 0.005;  // coarse outer
+lc0 = 0.0002; // super-fine near hole
+lc = 0.0002;  // fine transition
+lc2 = 0.0002;  // coarse outer
 
-radius_outer = 0.125;
-radius_refined = 0.025;
-radius_inner = 0.020;
+radius_outer = 0.0125;
+radius_refined = 0.0025;
+radius_inner = 0.0020;
 
 //---- Center point (for arc definitions + distance field) ----
 Point(13) = {0.0, 0.0, 0.0, lc0};
