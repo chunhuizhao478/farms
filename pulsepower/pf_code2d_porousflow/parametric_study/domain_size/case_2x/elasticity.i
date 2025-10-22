@@ -1,4 +1,4 @@
-fluid_elastic_energy_total_static = 5.083495e-04
+fluid_elastic_energy_total_static = 5.083494e-04
 solid_elastic_energy_total_static = 1.309044e-02
 full_input_energy_static = 1.359879e-02
 
@@ -807,7 +807,7 @@ top_right2 = '2e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 40
-    show = 'd vel_x vel_y vel_z stress_xx stress_yy stress_xy pp'
+    show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01 pp'
   [../]
   [checkpoint]
       type = Checkpoint
