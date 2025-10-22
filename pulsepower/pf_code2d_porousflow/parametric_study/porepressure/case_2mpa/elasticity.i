@@ -1,6 +1,6 @@
-fluid_elastic_energy_total_static = 1.316548e-03
-solid_elastic_energy_total_static = 3.838192e-01
-full_input_energy_static = 3.851357e-01
+fluid_elastic_energy_total_static = 2.525387e-02
+solid_elastic_energy_total_static = 3.338144e-01
+full_input_energy_static = 3.590683e-01
 
 #solid properties
 #----------------------------------------------------#
