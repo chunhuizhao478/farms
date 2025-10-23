@@ -408,7 +408,7 @@ top_right2 = '2e-4 0.0025 0'
     fitting_param_alpha = 0.35
     fitting_param_exponent = 0.25
     discharge_center = '0 0 0'
-    number_of_pulses = 10
+    number_of_pulses = 100
     base_factor = 8000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
