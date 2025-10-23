@@ -2,14 +2,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
-
-total_energy = 20
+import os
 
 DATASETS = {
     # Format: "Label": (path, linestyle, color)
-    "Confinement: 1MPa": ("./case_1mpa/elasticity_csv.csv", "-", "b"),
-    "Confinement: 5MPa": ("./case_5mpa/elasticity_csv.csv", "-", "r"),
-    "Confinement: 10MPa": ("./case_10mpa/elasticity_csv.csv", "-", "g"),
+    "Confinement Pressure: 1MPa": ("./case_1mpa/elasticity_csv.csv", "-", "b"),
+    "Confinement Pressure: 5MPa": ("./case_5mpa/elasticity_csv.csv", "-", "r"),
+    "Confinement Pressure: 10MPa": ("./case_10mpa/elasticity_csv.csv", "-", "g"),
 }
 
 # Column filtering options (choose one approach):
@@ -32,7 +31,8 @@ t_max = 2e-5
 
 # Pulse efficiency calculation settings
 pulse_interval = 10e-6  # 10 microseconds in seconds
-energy_per_pulse = 10   # J/pulse
+energy_per_pulse = 10  # J/pulse
+num_pulses = 2
 
 # Create two subplots
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
@@ -42,7 +42,7 @@ color_map_column = {}  # Map for "by_column" mode
 color_map_case = {}  # Map for "by_case" mode
 
 # Marker styles for different cases in scatter plot
-markers = itertools.cycle(['o', 's', '^', 'D', 'v', '<', '>', 'p', '*', 'h'])
+markers = itertools.cycle(["o", "s", "^", "D", "v", "<", ">", "p", "*", "h"])
 marker_map = {}
 
 for label, (path, linestyle, user_color) in DATASETS.items():
@@ -114,16 +114,18 @@ for label, (path, linestyle, user_color) in DATASETS.items():
             pulse_numbers.append(i)
             pulse_efficiencies.append(efficiency)
 
-        # Plot 2: Scatter plot of per-pulse efficiency
-        ax2.scatter(
+        # Plot 2: Line plot with markers of per-pulse efficiency
+        ax2.plot(
             pulse_numbers,
             pulse_efficiencies,
             marker=marker_map[label],
-            s=100,
+            markersize=8,
+            linestyle=linestyle,
             color=plot_color,
             label=f"{label}",
-            edgecolors='black',
-            linewidths=1.0,
+            markeredgecolor="black",
+            markeredgewidth=1.0,
+            linewidth=2.0,
         )
 
 # Configure Plot 1 (Time history)
@@ -139,10 +141,19 @@ ax1.tick_params(axis="both", which="major", labelsize=14)
 ax2.set_xlabel("pulse number", fontsize=18)
 ax2.set_ylabel("efficiency (%)", fontsize=18)
 ax2.set_title("Per-Pulse Energy Efficiency", fontsize=20)
-ax2.grid(True, ls=":", alpha=0.6)
+ax2.set_yscale("log")  # Set y-axis to logarithmic scale
+ax2.grid(True, ls=":", alpha=0.6, which="both")
 ax2.legend(loc="best", ncol=1, fontsize=12)
 ax2.tick_params(axis="both", which="major", labelsize=14)
 ax2.set_xticks(range(1, num_pulses + 1))
 
 plt.tight_layout()
+
+# Save figure to folder
+output_folder = "figures"
+os.makedirs(output_folder, exist_ok=True)
+output_path = os.path.join(output_folder, "energy_efficiency.png")
+plt.savefig(output_path, dpi=300, bbox_inches="tight")
+print(f"Figure saved to: {output_path}")
+
 plt.show()
