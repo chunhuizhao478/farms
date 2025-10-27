@@ -33,7 +33,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant
-    Cd_constant = 70
+    Cd_constant = 65
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
@@ -310,21 +310,21 @@
         alpha_grad_x = alpha_grad_x
         alpha_grad_y = alpha_grad_y
         alpha_grad_z = alpha_grad_z
-  #      block = '3'
+        block = '3'
     [] 
- #   [elastic_tensor]
-#        type = ComputeIsotropicElasticityTensor
-#        youngs_modulus = 48.5e9
- #       poissons_ratio = 0.22
- #   []
- #   [porous_prop]
- #       type =   IntactPorousSolidProperties
- #       block = '1 2'
- #   []
- #   [compute_stress]
- #       type = ComputePoroLinearElasticStress
- #       block = '1 2'
- #   []
+    [elastic_tensor]
+        type = ComputeIsotropicElasticityTensor
+        youngs_modulus = 48.5e9
+        poissons_ratio = 0.22
+    []
+    [porous_prop]
+        type =   IntactPorousSolidProperties
+        block = '1 2'
+    []
+    [compute_stress]
+        type = ComputePoroLinearElasticStress
+        block = '1 2'
+    []
     [dummy_matprop]
         type = GenericConstantMaterial
         prop_names = 'initial_damage initial_breakage shear_stress_perturbation'
