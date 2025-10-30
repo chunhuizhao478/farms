@@ -85,7 +85,7 @@
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
-    ultimate_grain_size = 0.25
+    ultimate_grain_size = 1.3
     initial_viscosity_fluid = 1e-3
 
     anand_param_go_mat = 0.25
@@ -157,6 +157,10 @@
         order = CONSTANT
         family = MONOMIAL
     []
+    [alpha_damage]
+        order = CONSTANT
+        family = MONOMIAL
+    []
 []
 
 [AuxKernels]
@@ -221,6 +225,12 @@
         type = MaterialRealAux
         variable = B
         property = B
+        block = '3'
+    []
+    [alpha_damage_B]
+        type = MaterialRealAux
+        variable = alpha_damage
+        property = alpha_damagedvar
         block = '3'
     []
 []
@@ -374,7 +384,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.25
-        max_time_step_bound = 5
+        max_time_step_bound = 2.5
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -384,6 +394,11 @@
 []
 
 [Outputs] 
+    [./exodus]
+        type = Exodus
+        time_step_interval = 5 ###
+        show = 'disp_z porepressure I2_aux  xi_aux B alpha_damage'
+    [../]
     [./csv]
         type = CSV
         time_step_interval = 1
