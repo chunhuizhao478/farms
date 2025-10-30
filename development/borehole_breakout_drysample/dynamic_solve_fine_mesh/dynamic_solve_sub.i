@@ -38,7 +38,7 @@
     #strain rate dependent Cd options
      m_exponent = 0.8
      strain_rate_hat = 1e-4
-     cd_hat = 15
+     cd_hat = 13
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
