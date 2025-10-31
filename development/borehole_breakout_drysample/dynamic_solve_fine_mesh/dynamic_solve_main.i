@@ -56,6 +56,12 @@
     initial_grain_size = 1.3
     ultimate_grain_size = 1.3
     initial_viscosity_fluid = 1e-3
+
+    anand_param_go_mat = 0.25
+    anand_param_eta_cv_mat = 0.01
+    anand_param_p_mat = 1
+    alpha_compaction = 0.1
+    m_compaction = 1
     
 
 []
