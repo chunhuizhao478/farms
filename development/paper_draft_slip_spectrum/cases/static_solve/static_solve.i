@@ -247,7 +247,7 @@
     [initial_shear_stress_top]
         type = NeumannBC
         variable = disp_x
-        value = 13e6
+        value = 12e6
         boundary = top
     []
     #

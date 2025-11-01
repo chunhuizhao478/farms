@@ -52,8 +52,6 @@ protected:
   // /// @brief Compute plastic volume change
   // virtual void computeplasticvolumechange();
 
-  virtual RankTwoTensor computeQpFpRadial();
-
 protected:
   /* Declare Material Properties */
   /// Plastic Deformation Gradient
@@ -167,4 +165,5 @@ protected:
 
   // Optional: rate for plotting/debug
   MaterialProperty<Real> & _epsp_eq_rate;
+
 };

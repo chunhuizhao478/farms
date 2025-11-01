@@ -144,10 +144,10 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpPK1Stress()
 
   for (unsigned int i = 0; i < 3; i++){
     for (unsigned int j = 0; j < 3; j++){
-        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt;
-        //F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) );
+        // F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) ) / _dt;
+        F_dot(i,j)  = (_F[_qp](i,j) - _F_old[_qp](i,j) );
         for (unsigned int m = 0; m < 3; m++){
-          F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j);
+          // F_dot(i,j) += _D[_qp](i,m) * _F[_qp](m,j);
           Fp_dot(i,j) += _Dp[_qp](i,m) * _Fp[_qp](m,j);
         }
     }
@@ -320,8 +320,7 @@ void
 ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpPK2Stress()
 {
   /* Evaluate Fp */
-  //   RankTwoTensor Fp_updated = computeQpFp();
-  RankTwoTensor Fp_updated = computeQpFpRadial();
+  RankTwoTensor Fp_updated = computeQpFp();
 
   /* Compute Fe */
   RankTwoTensor Fe = _F[_qp] * Fp_updated.inverse();
@@ -334,14 +333,6 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpPK2Stress()
 
   /* Compute E */
   RankTwoTensor E = Fp_updated.transpose() * Ee * Fp_updated + Ep;
-
-  // /* convert stress perturbation to strain perturbation */
-  // Real shear_strain_perturbation = 0.0;
-  // if (_shear_stress_perturbation[_qp] != 0){
-  //   shear_strain_perturbation = _shear_stress_perturbation[_qp] / (2 * shear_modulus_out);
-  //   Ee(0,1) += shear_strain_perturbation;
-  //   Ee(1,0) += shear_strain_perturbation;
-  // }
 
   /* Compute I1 */
   Real I1 = Ee.trace();
@@ -384,13 +375,11 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpPK2Stress()
   _Ep[_qp] = Ep;
   _S[_qp] = sigma_total;
 
-  /* Compute plastic stress (Mandel Stress) */
-  RankTwoTensor M = Fe.transpose() * Fe * sigma_total;   // Mandel
-  RankTwoTensor M_sym = 0.5 * (M + M.transpose());       // <-- ensure symmetry
-  _Tp[_qp] = M_sym;                                      // (optional) store sym version
+  /* Compute plastic stress */
+  _Tp[_qp] = Fe.transpose() * Fe * sigma_total;
 
-  // Deviatoric Mandel
-  _Tau[_qp] = M_sym - (1.0/3.0) * M_sym.trace() * RankTwoTensor::Identity();
+  //compute deviatroic stress tensor //save
+  _Tau[_qp] = _Tp[_qp] - 0.3333 * ( _Tp[_qp].trace() ) * RankTwoTensor::Identity();
 
   /* Compute tangent */
   RankFourTensor tangent;
@@ -442,6 +431,18 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpFp()
   //Compute Plastic Deformation Rate Tensor Dp at t_{n+1} using quantities from t_{n}
   RankTwoTensor Dp = _C_g[_qp] * std::pow(_B_breakagevar_old[_qp],_m1[_qp]) * std::pow(Tau_eq,_m2[_qp]) * N;
 
+  //Apply state variable (theta) dependence if enabled
+  Real theta_factor = 1.0;
+  if (_use_state_var_evolution_mat[_qp]) {
+    // theta_factor = (theta/theta_o)^(-B/A)
+    Real theta_ratio = _Theta_old[_qp] / _const_theta_o_mat[_qp];
+    Real exponent = -_const_B_mat[_qp] / _const_A_mat[_qp];
+    theta_factor = std::pow(theta_ratio, exponent);
+
+    // Apply theta factor to Dp
+    Dp = Dp * theta_factor;
+  }
+
   //Compute Cp = I - Dp dt
   RankTwoTensor Cp = RankTwoTensor::Identity() - Dp * _dt;
 
@@ -449,170 +450,6 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpFp()
   RankTwoTensor Fp_updated = Cp.inverse() * _Fp_old[_qp];
 
   //Save Plastic Deformation Rate Tensor
-  _Dp[_qp] = Dp;
-
-  return Fp_updated;
-}
-
-RankTwoTensor
-ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpFpRadial()
-{
-  // ---- helpers ------------------------------------------------------------
-  const Real one_third = 1.0 / 3.0;
-  const Real eps_norm  = 1e-16;    // guard for tiny magnitudes
-  const RankTwoTensor I = RankTwoTensor::Identity();
-
-  auto sym = [](const RankTwoTensor & A) {
-    RankTwoTensor B = A;
-    B += A.transpose();
-    B *= 0.5;
-    return B;
-  };
-
-  auto dev = [&](const RankTwoTensor & A) {
-    RankTwoTensor B = sym(A);
-    B -= one_third * B.trace() * I;
-    return B;
-  };
-
-  auto j2_norm = [&](const RankTwoTensor & Adev) -> Real {
-    // J2 norm: sqrt(2/3 * Adev:Adev) — consistent with the rest of your code
-    Real AA = 0.0;
-    for (unsigned int i = 0; i < 3; ++i)
-      for (unsigned int j = 0; j < 3; ++j)
-        AA += Adev(i,j) * Adev(i,j);
-    return std::sqrt(std::max(0.0, (2.0/3.0) * AA));
-  };
-
-  // ---- (A) TRIAL ELASTIC STATE (Fp frozen at old value) -------------------
-  const RankTwoTensor Fp_old_inv = _Fp_old[_qp].inverse();
-  const RankTwoTensor Fe_tr = _F[_qp] * Fp_old_inv;
-
-  // Ee_tr = 1/2 (Fe_tr^T Fe_tr - I)
-  const RankTwoTensor Ce_tr = Fe_tr.transpose() * Fe_tr;
-  RankTwoTensor Ee_tr = Ce_tr;
-  Ee_tr -= I;
-  Ee_tr *= 0.5;
-
-  // Deviatoric Ee_tr and its J2 magnitude x_tr
-  RankTwoTensor Ee_tr_dev = Ee_tr - one_third * Ee_tr.trace() * I;
-  const Real x_tr = j2_norm(Ee_tr_dev);
-
-  // If no elastic deviatoric is available, do nothing
-  if (x_tr < eps_norm)
-  {
-    _Dp[_qp].zero();
-    return _Fp_old[_qp];
-  }
-
-  // Invariants for xi (ELASTIC invariants!)
-  Real I1_tr = Ee_tr.trace();
-  Real I2_tr = 0.0;
-  for (unsigned int i = 0; i < 3; ++i)
-    for (unsigned int j = 0; j < 3; ++j)
-      I2_tr += Ee_tr(i,j) * Ee_tr(i,j);
-  const Real I2_safe = std::max(I2_tr, 1e-12); // floor to keep xi bounded
-  const Real xi_tr   = I1_tr / std::sqrt(I2_safe);
-
-  // ---- (B) TRIAL STRESS (PK2) AND MANDEL DRIVER --------------------------
-  // solid phase PK2 (elastic part)
-  const Real lambda_out = _lambda_const[_qp];
-  const Real mu_out     = _shear_modulus[_qp];
-  const Real gamma_d    = _damaged_modulus[_qp];
-
-  RankTwoTensor sigma_s_tr =
-      (lambda_out - gamma_d / xi_tr) * I1_tr * I
-    + (2.0 * mu_out - gamma_d * xi_tr) * Ee_tr;
-
-  // granular phase PK2 (breakage part)
-  const Real a0 = _a0[_qp], a1 = _a1[_qp], a2 = _a2[_qp], a3 = _a3[_qp];
-  RankTwoTensor sigma_b_tr =
-      (2.0 * a2 + a1 / xi_tr + 3.0 * a3 * xi_tr) * I1_tr * I
-    + (2.0 * a0 + a1 * xi_tr - a3 * std::pow(xi_tr, 3)) * Ee_tr;
-
-  // mixture (current B, not old)
-  const Real B_now = _B_breakagevar[_qp];
-  const RankTwoTensor S_tr = (1.0 - B_now) * sigma_s_tr + B_now * sigma_b_tr;
-
-  // Trial Mandel stress and its symmetric deviator
-  const RankTwoTensor M_tr     = Ce_tr * S_tr;
-  const RankTwoTensor M_sym_tr = sym(M_tr);
-  const RankTwoTensor M_dev_tr = dev(M_sym_tr);
-
-  // J2 magnitude of the trial deviatoric Mandel
-  const Real m_tr = j2_norm(M_dev_tr);
-
-  // Direction N in deviatoric Mandel space (exactly deviatoric & symmetric)
-  RankTwoTensor N; N.zero();
-  if (m_tr > eps_norm)
-  {
-    for (unsigned int i = 0; i < 3; ++i)
-      for (unsigned int j = 0; j < 3; ++j)
-        N(i,j) = M_dev_tr(i,j) / m_tr;
-    // enforce exact deviatoric symmetry (protect against tiny numerics)
-    N = dev(N);
-  }
-  else
-  {
-    _Dp[_qp].zero();
-    return _Fp_old[_qp];
-  }
-
-  // Effective slope kappa_tr = m_tr / x_tr (dimensionally consistent)
-  const Real kappa_tr = m_tr / std::max(x_tr, eps_norm);
-
-  // ---- (C) SOLVE THE ONE-SCALAR BE EQUATION FOR x_{n+1} ------------------
-  // x_{n+1} = x_tr - dt * Cg * B^{m1} * (kappa_tr * x_{n+1})^{m2}
-  const Real Cg  = _C_g[_qp];
-  const Real m1  = _m1[_qp];
-  const Real m2  = _m2[_qp];
-  const Real K   = Cg * std::pow(B_now, m1) * std::pow(kappa_tr, m2); // effective coeff
-
-  Real x_np1 = x_tr; // initial guess
-  if (m2 == 1.0)
-  {
-    // closed form
-    x_np1 = x_tr / (1.0 + _dt * K);
-  }
-  else
-  {
-    // monotone Newton on g(x) = x + dt*K*x^{m2} - x_tr = 0   with  0 <= x <= x_tr
-    x_np1 = std::max(0.0, std::min(x_tr, x_tr / (1.0 + _dt * K))); // good starting point
-    for (unsigned int it = 0; it < 12; ++it)
-    {
-      const Real xm2   = std::pow(std::max(x_np1, eps_norm), m2);
-      const Real g     = x_np1 + _dt * K * xm2 - x_tr;
-      if (std::abs(g) < 1e-12 * (1.0 + x_tr)) break;
-      const Real gp    = 1.0 + _dt * K * m2 * std::pow(std::max(x_np1, eps_norm), m2 - 1.0);
-      Real step        = g / gp;
-      x_np1 -= step;
-      // clamp to the admissible interval [0, x_tr]
-      if (x_np1 < 0.0)   x_np1 = 0.0;
-      if (x_np1 > x_tr)  x_np1 = x_tr;
-    }
-  }
-  const Real r = (x_tr > eps_norm) ? (x_np1 / x_tr) : 1.0;   // 0 <= r <= 1 by construction
-
-  // New magnitude of deviatoric Mandel (frozen-slope update): m_{n+1} = kappa_tr * x_{n+1}
-  const Real m_np1 = kappa_tr * x_np1;
-
-  // ---- (D) BUILD Dp_{n+1} AND UPDATE Fp (BACKWARD EULER) ------------------
-  // Dp_{n+1} = Cg * B^{m1} * m_{n+1}^{m2} * N
-  RankTwoTensor Dp = N;
-  Dp *= Cg * std::pow(B_now, m1) * std::pow(std::max(m_np1, 0.0), m2);
-
-  // Backward-Euler update for \dot Fp = Dp Fp  =>  Fp_{n+1} = (I - dt Dp)^{-1} Fp_n
-  RankTwoTensor Cp = RankTwoTensor::Identity();
-  Cp -= Dp * _dt;
-
-  // (Optional) stability cap: avoid singular Cp if too large in one step
-  // You can uncomment the next lines if you ever see inverses failing
-  // const Real rho = j2_norm(Dp) * _dt;  // crude measure
-  // if (rho > 0.5) { Dp *= 0.5 / rho; Cp = RankTwoTensor::Identity() - Dp * _dt; }
-
-  const RankTwoTensor Fp_updated = Cp.inverse() * _Fp_old[_qp];
-
-  // Save plastic rate for diagnostics
   _Dp[_qp] = Dp;
 
   //---------------------------------------------------------------------//
@@ -629,6 +466,33 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeQpFpRadial()
 
   // Accumulate (monotone by construction)
   _epsp_eq[_qp] = _epsp_eq_old[_qp] + ep_dot_eq * _dt;
+  //---------------------------------------------------------------------//
+
+  //---------------------------------------------------------------------//
+  //--- Update state variable (theta) if enabled ------------------------
+  if (_use_state_var_evolution_mat[_qp]) {
+    // Compute magnitude of Dp tensor (Frobenius norm)
+    Real Dp_magnitude = 0.0;
+    for (unsigned int i = 0; i < 3; i++){
+      for (unsigned int j = 0; j < 3; j++){
+        Dp_magnitude += Dp(i,j) * Dp(i,j);
+      }
+    }
+    Dp_magnitude = std::sqrt(Dp_magnitude);
+
+    // Evolution equation: theta_dot = 1 - Dp_magnitude * theta
+    Real theta_dot = 1.0 - Dp_magnitude * _Theta_old[_qp];
+
+    // Update theta: theta_new = theta_old + dt * theta_dot
+    _Theta[_qp] = _Theta_old[_qp] + _dt * theta_dot;
+
+    // Ensure theta remains positive (optional safety check)
+    _Theta[_qp] = std::max(_Theta[_qp], 1e-12);
+  }
+  else {
+    // If not using state variable evolution, maintain theta at its old value
+    _Theta[_qp] = _Theta_old[_qp];
+  }
   //---------------------------------------------------------------------//
 
   return Fp_updated;
@@ -782,7 +646,7 @@ ComputeLagrangianDamageBreakageStressPK2DiffusedDebug::computeDeviatroicStrainRa
   Real J2_dot = 0.0;
   for (unsigned int i = 0; i < 3; ++i){
     for (unsigned int j = 0; j < 3; ++j){
-      J2_dot += 0.5 * E_dev_dot(i,j) * E_dev_dot(i,j);
+      J2_dot += E_dev_dot(i,j) * E_dev_dot(i,j);
     }
   }
   //Compute equivalent strain rate

@@ -51,7 +51,7 @@
     xi_d = -0.9
 
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-14
+    C_g = 1e-11
 
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -176,11 +176,6 @@
         order = CONSTANT
         family = MONOMIAL
     []
-    #state variable theta
-    [theta_aux]
-        order = FIRST
-        family = MONOMIAL
-    []
 []
 
 [AuxKernels]
@@ -272,13 +267,6 @@
         j = 1
         block = '0'
     []
-    #get theta state variable
-    [get_theta]
-        type = MaterialRealAux
-        variable = theta_aux
-        property = state_variable
-        block = '0'
-    []
 []
 
 [Kernels]
@@ -329,15 +317,15 @@
 [Functions]
     [applied_load_top]
         type = ParsedFunction
-        # Piecewise function with different rates every 100s
-        # t=0-100s:   rate = 1e-6,  disp = 1e-6 * t
-        # t=100-200s: rate = 3e-6,  disp = 1e-4 + 3e-6 * (t - 100)
-        # t=200-300s: rate = 10e-6, disp = 4e-4 + 10e-6 * (t - 200)
-        # t>300s:     rate = 30e-6, disp = 1.4e-3 + 30e-6 * (t - 300)
+        # Piecewise function with different rates every 200s
+        # t=0-200s:   rate = 1e-6,  disp = 1e-6 * t
+        # t=200-400s: rate = 3e-6,  disp = 2e-4 + 3e-6 * (t - 200)
+        # t=400-600s: rate = 10e-6, disp = 8e-4 + 10e-6 * (t - 400)
+        # t>600s:     rate = 30e-6, disp = 2.8e-3 + 30e-6 * (t - 600)
         expression = 'if(t <= 100, 1e-6 * t,
-                         if(t <= 200, 1e-4 + 3e-6 * (t - 100),
-                            if(t <= 300, 4e-4 + 10e-6 * (t - 200),
-                               1.4e-3 + 30e-6 * (t - 300))))'
+                         if(t <= 200, 2e-4 + 3e-6 * (t - 100),
+                            if(t <= 300, 8e-4 + 10e-6 * (t - 200),
+                               2.8e-3 + 30e-6 * (t - 300))))'
     []
 []
 
@@ -364,14 +352,6 @@
         vel_z = vel_z
         #use cg
         # use_spatial_cg = true
-        # Enable state variable evolution
-        use_state_var_evolution = true
-
-        # Rate-and-state parameters
-        const_A = ${fparse 0.02 * 100e6}         # Parameter A (typical range: 0.005-0.015)
-        const_B = ${fparse 0.01 * 100e6}         # Parameter B (typical range: 0.01-0.02)
-        const_theta_o = 4e3    # Reference state variable value
-        initial_theta0 = 4e3   # Initial value of theta
     []
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2DiffusedDebug
@@ -475,7 +455,7 @@
     [./exodus]
       type = Exodus
       time_step_interval = 10
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux theta_aux'
+      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
         type = CSV

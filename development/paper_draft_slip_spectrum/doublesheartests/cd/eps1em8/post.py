@@ -26,6 +26,8 @@ def main():
     p.add_argument("--logy", action="store_true", help="Log y scale")
     p.add_argument("--separate", action="store_true",
                    help="Plot each variable in its own subplot")
+    p.add_argument("--friction", action="store_true",
+                   help="Compute and plot friction coefficient (react_x / 0.05 / 100e6)")
     args = p.parse_args()
 
     path = Path(args.csv)
@@ -54,15 +56,33 @@ def main():
 
     t = df[time_col]
 
+    # Compute friction coefficient if requested
+    friction_col = None
+    if args.friction:
+        if 'react_x' not in df.columns:
+            print("Warning: 'react_x' column not found. Cannot compute friction coefficient.", file=sys.stderr)
+        else:
+            friction_col = 'friction_coefficient'
+            df[friction_col] = df['react_x'] / 0.05 / 100e6
+            print(f"Computed friction coefficient: {friction_col} = react_x / 0.05 / 100e6")
+
     if args.rolling > 1:
         df[plot_cols] = df[plot_cols].rolling(args.rolling, min_periods=1, center=True).mean()
+        if friction_col and friction_col in df.columns:
+            df[friction_col] = df[friction_col].rolling(args.rolling, min_periods=1, center=True).mean()
 
-    if args.separate:
-        n = len(plot_cols)
-        fig, axes = plt.subplots(n, 1, figsize=(8, 2.2 * n), sharex=True)
-        if n == 1:
+    # Determine number of subplots needed
+    n_plots = len(plot_cols)
+    if friction_col:
+        n_plots += 1
+
+    if args.separate or friction_col:
+        fig, axes = plt.subplots(n_plots, 1, figsize=(8, 2.2 * n_plots), sharex=True)
+        if n_plots == 1:
             axes = [axes]
-        for ax, col in zip(axes, plot_cols):
+
+        # Plot regular columns
+        for ax, col in zip(axes[:len(plot_cols)], plot_cols):
             ax.plot(t, df[col], label=col)
             ax.set_ylabel(col)
             if args.logy:
@@ -70,6 +90,15 @@ def main():
             if args.ylim:
                 ax.set_ylim(args.ylim)
             ax.grid(True, alpha=0.3)
+
+        # Plot friction coefficient in separate subplot if computed
+        if friction_col:
+            ax_friction = axes[len(plot_cols)]
+            ax_friction.plot(t, df[friction_col], label=friction_col, color='red')
+            ax_friction.set_ylabel('Friction Coefficient')
+            ax_friction.grid(True, alpha=0.3)
+            ax_friction.legend(fontsize="small")
+
         axes[-1].set_xlabel(time_col)
     else:
         plt.figure(figsize=(9, 5))
