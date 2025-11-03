@@ -207,26 +207,39 @@
     type = Transient
     solve_type = 'NEWTON'
     start_time = -1e-12
-    l_max_its = 100
-    l_tol = 1e-7
+    
+    # Linear solver - relaxed for fine mesh
+    l_max_its = 200
+    l_tol = 1e-4
+    
+    # Nonlinear solver
     nl_rel_tol = 1e-8
     nl_max_its = 40
     nl_abs_tol = 1e-10
-    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-    petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+    
+    # Improved solver settings for fine mesh
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type 
+                           -pc_hypre_boomeramg_strong_threshold
+                           -ksp_gmres_restart
+                           -snes_type'
+    petsc_options_value = 'gmres hypre boomeramg 
+                           0.5
+                           100
+                           vinewtonrsls'
+    
     verbose = true
+    
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 5
+        dt = 2.5
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
-        growth_factor = 1.25
-        max_time_step_bound = 10
+        growth_factor = 1.1
+        max_time_step_bound = 5
     []
+    
     [./TimeIntegrator]
         type = ImplicitEuler
-        # type = BDF2
-        # type = CrankNicolson
     [../]
 []
 
