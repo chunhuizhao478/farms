@@ -26,7 +26,7 @@ ElkPorousFlowEffectiveStressCoupling::validParams()
       "biot_coefficient", 1, "biot_coefficient>=0&biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
   params.addRequiredParam<unsigned int>("component",
                                         "The component (0 for x, 1 for y and 2 for z) of grad(P)");
-  params.addParam<bool>("use_damaged_biot", false, "Use biot_coefficient from material property 'biot_coefficient'");
+  params.addParam<bool>("use_damaged_biot", false, "Use biot_coefficient from material property 'biot_coefficient_damaged'");
   return params;
 }
 
@@ -36,7 +36,7 @@ ElkPorousFlowEffectiveStressCoupling::ElkPorousFlowEffectiveStressCoupling(
     _dictator(getUserObject<PorousFlowDictator>("PorousFlowDictator")),
     _coefficient_const(getParam<Real>("biot_coefficient")),
     _use_damaged_biot(getParam<bool>("use_damaged_biot")),
-    _biot_coeff_mp(_use_damaged_biot ? &getMaterialProperty<Real>("biot_coefficient") : nullptr),
+    _biot_coeff_mp(_use_damaged_biot ? &getMaterialProperty<Real>("biot_coefficient_damaged") : nullptr),
     _component(getParam<unsigned int>("component")),
     _pf(getMaterialProperty<Real>("PorousFlow_effective_fluid_pressure_qp")),
     _dpf_dvar(

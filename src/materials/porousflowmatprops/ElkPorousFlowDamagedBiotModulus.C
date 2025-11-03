@@ -9,6 +9,13 @@
 
 #include "ElkPorousFlowDamagedBiotModulus.h"
 
+#include "MooseError.h"
+#include "MooseException.h"
+
+#include <algorithm>
+#include <cmath>
+#include <string>
+
 registerMooseObject("farmsApp", ElkPorousFlowDamagedBiotModulus);
 
 InputParameters
@@ -16,20 +23,21 @@ ElkPorousFlowDamagedBiotModulus::validParams()
 {
   InputParameters params = PorousFlowMaterialVectorBase::validParams();
   params.addRangeCheckedParam<Real>(
-      "biot_coefficient", 1.0, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
-  params.addRangeCheckedParam<Real>("solid_bulk_compliance",
-                                    0.0,
-                                    "solid_bulk_compliance>=0.0",
-                                    "Reciprocal of the drained bulk modulus of the porous "
-                                    "skeleton.  If strain = C * stress, then solid_bulk_compliance "
-                                    "= de_ij de_kl C_ijkl.  If the grain bulk modulus is Kg then "
-                                    "1/Kg = (1 - biot_coefficient) * solid_bulk_compliance.");
+      "biot_coefficient", 0.4, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
   params.addRangeCheckedParam<Real>(
       "fluid_bulk_modulus", 2.0E9, "fluid_bulk_modulus>0", "Fluid bulk modulus");
-  params.addParam<bool>("use_damaged_biot", false, "Use biot_coefficient from material property 'biot_coefficient'");
+  params.addRequiredRangeCheckedParam<Real>(
+      "grain_bulk_modulus", "grain_bulk_modulus>0", "Solid grain bulk modulus (K_s)");
+  params.addParam<bool>("use_damaged_biot", false, "Use biot coefficient from material property 'biot_coefficient_damaged'.");
+  params.addParam<bool>("use_damaged_porosity", false, "Use porosity from material property 'PorousFlow_porosity_*_damaged' instead of constant value.");
+  params.addRangeCheckedParam<Real>(
+      "porosity",
+      0.008,
+      "porosity>=0 & porosity<=1",
+      "Constant porosity used when use_damaged_porosity=false.");
   params.addPrivateParam<std::string>("pf_material_type", "biot_modulus");
-  params.addClassDescription("Computes the Biot Modulus, which is assumed to be constant for all "
-                             "time.  Sometimes 1 / BiotModulus is called storativity");
+  params.addClassDescription("Computes the damage-dependent Biot modulus using the porosity and "
+                             "Biot coefficient relationships from the coupled phase-field model.");
   return params;
 }
 
@@ -37,35 +45,75 @@ ElkPorousFlowDamagedBiotModulus::ElkPorousFlowDamagedBiotModulus(const InputPara
   : PorousFlowMaterialVectorBase(parameters),
     _biot_coefficient_const(getParam<Real>("biot_coefficient")),
     _use_damaged_biot(getParam<bool>("use_damaged_biot")),
-    _biot_coefficient_matprop(_use_damaged_biot ? &getMaterialProperty<Real>("biot_coefficient")
-                                                : nullptr),
+    _biot_coefficient_damaged_matprop(nullptr),
     _fluid_bulk_modulus(getParam<Real>("fluid_bulk_modulus")),
-    _solid_bulk_compliance(getParam<Real>("solid_bulk_compliance")),
-    _porosity(_nodal_material ? getMaterialProperty<Real>("PorousFlow_porosity_nodal")
-                              : getMaterialProperty<Real>("PorousFlow_porosity_qp")),
+    _grain_bulk_modulus(getParam<Real>("grain_bulk_modulus")),
+    _use_damaged_porosity(getParam<bool>("use_damaged_porosity")),
+    _porosity_damaged_matprop(nullptr),
+    _porosity_const(getParam<Real>("porosity")),
     _biot_modulus(_nodal_material ? declareProperty<Real>("PorousFlow_constant_biot_modulus_nodal")
-                                  : declareProperty<Real>("PorousFlow_constant_biot_modulus_qp")),
-    _biot_modulus_old(_nodal_material
-                          ? getMaterialPropertyOld<Real>("PorousFlow_constant_biot_modulus_nodal")
-                          : getMaterialPropertyOld<Real>("PorousFlow_constant_biot_modulus_qp")),
-    _solid_bulk_compliance_damaged(getMaterialProperty<Real>("solid_bulk_compliance_damaged"))
+                                  : declareProperty<Real>("PorousFlow_constant_biot_modulus_qp"))
 {
+  if (_use_damaged_biot)
+  {
+    try
+    {
+      _biot_coefficient_damaged_matprop = &getMaterialProperty<Real>("biot_coefficient_damaged");
+    }
+    catch (const MooseException &)
+    {
+      mooseError("Requested damaged Biot coefficient but material property 'biot_coefficient_damaged' "
+                 "was not found for ",
+                 name(),
+                 ".");
+    }
+  }
+
+  if (_use_damaged_porosity)
+  {
+    try
+    {
+      _porosity_damaged_matprop =
+          _nodal_material ? &getMaterialProperty<Real>("PorousFlow_porosity_nodal_damaged")
+                          : &getMaterialProperty<Real>("PorousFlow_porosity_qp_damaged");
+    }
+    catch (const MooseException &)
+    {
+      mooseError("Requested damaged porosity but the property 'PorousFlow_porosity_*_damaged' "
+                 "was not found for ",
+                 name(),
+                 ".");
+    }
+  }
+  else
+  {
+    // Using constant porosity - validate range
+    if (_porosity_const < 0.0 || _porosity_const > 1.0)
+      mooseError("Parameter 'porosity' must be within [0,1] when use_damaged_porosity=false in ",
+                 name(),
+                 ".");
+  }
 }
 
 void
 ElkPorousFlowDamagedBiotModulus::initQpStatefulProperties()
 {
-  const Real alpha = _use_damaged_biot ? (*_biot_coefficient_matprop)[_qp] : _biot_coefficient_const;
-  _biot_modulus[_qp] = 1.0 / ((1.0 - alpha) * (alpha - _porosity[_qp]) *
-                                  _solid_bulk_compliance +
-                              _porosity[_qp] / _fluid_bulk_modulus);
+  computeQpProperties();
 }
 
 void
 ElkPorousFlowDamagedBiotModulus::computeQpProperties()
 {
-  const Real alpha = _use_damaged_biot ? (*_biot_coefficient_matprop)[_qp] : _biot_coefficient_const;
-  _biot_modulus[_qp] = 1.0 / ((1.0 - alpha) * (alpha - _porosity[_qp]) *
-                                  _solid_bulk_compliance_damaged[_qp] +
-                              _porosity[_qp] / _fluid_bulk_modulus);
+  //get biot coefficient
+  const Real alpha = _use_damaged_biot ? (*_biot_coefficient_damaged_matprop)[_qp]
+                                       : _biot_coefficient_const;
+
+  //get porosity
+  const Real phi = _use_damaged_porosity ? (*_porosity_damaged_matprop)[_qp]
+                                         : _porosity_const;
+
+  const Real denom =
+      phi / _fluid_bulk_modulus + (alpha - phi) / _grain_bulk_modulus;
+  const Real safe_denom = std::max(denom, _denominator_floor);
+  _biot_modulus[_qp] = 1.0 / safe_denom;
 }

@@ -25,7 +25,7 @@ ElkPorousFlowFullySaturatedMassTimeDerivative::validParams()
   params.addRangeCheckedParam<Real>(
       "biot_coefficient", 1.0, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
   params.addParam<bool>("use_damaged_biot", false,
-                        "Use biot_coefficient from material property 'biot_coefficient'");
+                        "Use biot_coefficient from material property 'biot_coefficient_damaged'");
   params.addParam<bool>("multiply_by_density",
                         true,
                         "If true, then this Kernel is the time derivative of the fluid mass; otherwise, derivative of the fluid volume");
@@ -49,7 +49,7 @@ ElkPorousFlowFullySaturatedMassTimeDerivative::ElkPorousFlowFullySaturatedMassTi
                          _coupling_type == CouplingTypeEnum::ThermoHydroMechanical),
     _biot_coefficient_const(getParam<Real>("biot_coefficient")),
     _use_damaged_biot(getParam<bool>("use_damaged_biot")),
-    _biot_coefficient_mp(_use_damaged_biot ? &getMaterialProperty<Real>("biot_coefficient")
+    _biot_coefficient_mp(_use_damaged_biot ? &getMaterialProperty<Real>("biot_coefficient_damaged")
                                            : nullptr),
     _biot_modulus(getMaterialProperty<Real>("PorousFlow_constant_biot_modulus_qp")),
     _thermal_coeff(_includes_thermal ? &getMaterialProperty<Real>(

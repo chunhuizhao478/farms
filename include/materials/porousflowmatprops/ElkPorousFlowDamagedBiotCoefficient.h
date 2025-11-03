@@ -13,12 +13,12 @@
 
 /**
  * Computes a (possibly damage-dependent) Biot coefficient
- *   alpha = 1 - K / K_s
- * where K is the (damaged) drained bulk modulus of the skeleton, obtained as
- *   K = 1 / solid_bulk_compliance_damaged
- * and K_s is the solid grain bulk modulus provided as input.
+ *   alpha = 1 - K(d) / K_s
+ * where the damaged bulk modulus K(d) is obtained from the intact modulus K_0
+ * through the degradation function g(d) = (1 - d)^2, with d the phase-field
+ * (damage) variable. K_s is the solid grain bulk modulus provided as input.
  *
- * Provides a MaterialProperty<Real> named "biot_coefficient".
+ * Provides MaterialProperty<Real>s named "biot_coefficient_damaged"
  */
 class ElkPorousFlowDamagedBiotCoefficient : public Material
 {
@@ -30,12 +30,18 @@ public:
 protected:
   virtual void computeQpProperties() override;
 
+  /// Damage / phase-field variable
+  const VariableValue & _damage;
+
+  /// Intact solid bulk modulus K_0 (computed from the supplied compliance)
+  const Real _bulk_modulus_intact;
+
   /// Solid grain bulk modulus K_s
   const Real _grain_bulk_modulus;
 
-  /// Damaged solid bulk compliance (1 / K)
-  const MaterialProperty<Real> & _solid_bulk_compliance_damaged;
+  /// Minimum allowable value for the degradation function g(c)
+  const Real _min_degradation;
 
-  /// Output Biot coefficient alpha
-  MaterialProperty<Real> & _biot_coefficient;
+  /// Damaged Biot coefficient alpha(c)
+  MaterialProperty<Real> & _biot_coefficient_damaged;
 };

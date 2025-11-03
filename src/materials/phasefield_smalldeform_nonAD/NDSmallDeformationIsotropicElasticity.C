@@ -46,11 +46,11 @@ NDSmallDeformationIsotropicElasticity::validParams()
       "model_type",
       "AT1",
       "The type of the model: AT1, AT2, PF_CZM");
-  
+
   params.addRequiredParam<Real>("eta", "Parameter in the degradation function");
   params.addParam<bool>("porous_flow_coupling", false, "Enable porous flow coupling");
   params.addParam<Real>("intrinsic_permeability", 5e-19, "Intrinsic permeability in m^2");
-  
+
   //Permeability models
   //Exponential permeability model
   params.addParam<bool>("exponential_permeability_model", false,
@@ -83,22 +83,22 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
 
     // model type
     _model_type(getParam<std::string>("model_type")),
-    
+
     // Only retrieve these properties if we're using PF_CZM model
-    _a1_prop(_model_type == "PF_CZM" ? 
+    _a1_prop(_model_type == "PF_CZM" ?
              &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a1")) : nullptr),
-    _a2_prop(_model_type == "PF_CZM" ? 
+    _a2_prop(_model_type == "PF_CZM" ?
              &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a2")) : nullptr),
-    _a3_prop(_model_type == "PF_CZM" ? 
+    _a3_prop(_model_type == "PF_CZM" ?
              &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a3")) : nullptr),
-    _p_prop(_model_type == "PF_CZM" ? 
+    _p_prop(_model_type == "PF_CZM" ?
              &getMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("p")) : nullptr),
     // Store the property names too (only used if model_type is PF_CZM)
     _a1_name(getParam<MaterialPropertyName>("a1")),
     _a2_name(getParam<MaterialPropertyName>("a2")),
     _a3_name(getParam<MaterialPropertyName>("a3")),
     _p_name(getParam<MaterialPropertyName>("p")),
-    
+
     // The phase-field variable
     _d(coupledValue("phase_field")),
 
@@ -128,7 +128,7 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     _effective_perm_old(getMaterialPropertyOldByName<RealTensorValue>("effective_perm")),
     _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
     _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
-    
+
     // Exponential permeability model
     _exponential_permeability_model(getParam<bool>("exponential_permeability_model")),
     _coeff_b(getParam<Real>("coeff_b")),
@@ -386,7 +386,7 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
     _d2g_dd2[_qp] = 2 * (1 - _eta);
   }
   else if (_model_type == "PF_CZM"){
-    
+
     // Reference: Gupta et al. (2022) An adaptive mesh refinement algorithm for phase-field fracture  models: Application to brittle, cohesive, and dynamic fracture
     // Get the parameters
     // a1, a2, a3, p, eta
@@ -426,7 +426,7 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
 
     // second derivative g''
     Real N2  = Up2*D  - U*Dpp;                    // numerator for N'
-    Real g0pp = (N2*D - 2*N1*Dp)/(D*D*D);         // g0'' 
+    Real g0pp = (N2*D - 2*N1*Dp)/(D*D*D);         // g0''
     Real d2g  = g0pp * (1-eta);                   // g''
 
     // store
@@ -436,13 +436,13 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
   else
     mooseError("Unknown model type: " + _model_type);
 
-  // Update damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
-  // Use a small floor on g to avoid division by zero when damage is nearly complete.
-  const Real g_eff = std::max(_g[_qp], 1e-12);
-  // K may be spatially varying; evaluate at current qp
-  const Real K_eff = _K[_qp] * g_eff;
-  // Declare/update property lazily via reference member
-  _solid_bulk_compliance_damaged[_qp] = 1.0 / std::max(K_eff, 1e-24);
+  // // Update damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
+  // // Use a small floor on g to avoid division by zero when damage is nearly complete.
+  // const Real g_eff = std::max(_g[_qp], 1e-12);
+  // // K may be spatially varying; evaluate at current qp
+  // const Real K_eff = _K[_qp] * g_eff;
+  // // Declare/update property lazily via reference member
+  // _solid_bulk_compliance_damaged[_qp] = 1.0 / std::max(K_eff, 1e-24);
 }
 
 void
@@ -492,7 +492,7 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
   RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
 
   // Initialize effective permeability new
-  // exponential permeability model 
+  // exponential permeability model
   if (_exponential_permeability_model){
     effective_perm_new = perm_intrinsic * std::exp( _d[_qp] * _coeff_b );
   }
@@ -500,7 +500,7 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
   else if (_darcy_poiseuille_permeability_model){
     //Compute crack opening
     //wc is the ultimate crack opening
-    Real w = _d[_qp] * _wc; 
+    Real w = _d[_qp] * _wc;
 
     //Compute permeability in the damage zone
     RankTwoTensor kf = std::pow(w, 2) / (12.0) * RankTwoTensor::Identity();

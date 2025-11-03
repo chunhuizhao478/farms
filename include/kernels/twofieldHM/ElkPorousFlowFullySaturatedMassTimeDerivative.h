@@ -15,7 +15,7 @@
 /**
  * Time derivative of fluid mass suitable for fully-saturated,
  * single-phase, single-component simulations.
- * Adds option to use damaged Biot coefficient from material property 'biot_coefficient'.
+ * Adds option to use damaged Biot coefficient from material property 'biot_coefficient_damaged'.
  */
 class ElkPorousFlowFullySaturatedMassTimeDerivative : public TimeKernel
 {

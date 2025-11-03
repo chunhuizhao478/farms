@@ -16,7 +16,7 @@
  * ElkPorousFlowEffectiveStressCoupling computes
  * -alpha*effective_porepressure*grad_component(test)
  * where alpha is either a constant parameter or a material property
- * named "biot_coefficient" when use_damaged_biot=true.
+ * named "biot_coefficient_damaged" when use_damaged_biot=true.
  */
 class ElkPorousFlowEffectiveStressCoupling : public Kernel
 {

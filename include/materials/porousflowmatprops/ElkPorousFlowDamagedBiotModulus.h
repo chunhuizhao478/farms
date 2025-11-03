@@ -12,14 +12,12 @@
 #include "PorousFlowMaterialVectorBase.h"
 
 /**
- * Material designed to provide a time-invariant
- * Biot Modulus, M, where
- * 1 / M = (1 - alpha) * (alpha - phi) * C + phi / Kf .
- * Here
- * alpha = Biot coefficient (assumed constant)
- * phi = initial value of porosity
- * C = drained porous-solid bulk compliance (1 / bulk modulus)
- * Kf = fluid bulk modulus (assumed constant)
+ * Computes the Biot modulus using the damage-dependent relationships:
+ *   alpha(c) = 1 - K_c / K_s ,
+ *   phi(c)   = phi_0 + (1 - phi_0)[1 - (1 - c)^2],
+ *   1/M(c)   = phi(c) / K_f + (alpha(c) - phi(c)) / K_s ,
+ * where c is the phase-field (damage) variable, K_c is the degraded drained
+ * bulk modulus, K_s is the solid grain bulk modulus, and K_f is the fluid bulk modulus.
  */
 class ElkPorousFlowDamagedBiotModulus : public PorousFlowMaterialVectorBase
 {
@@ -32,31 +30,33 @@ protected:
   virtual void initQpStatefulProperties() override;
   virtual void computeQpProperties() override;
 
-  /// Biot coefficient
+  /// Base-value Biot coefficient (used when damaged coefficient is not supplied)
   const Real _biot_coefficient_const;
 
   /// Toggle to read biot from material property instead of constant
   const bool _use_damaged_biot;
 
   /// Damaged Biot coefficient material property (if enabled)
-  const MaterialProperty<Real> * _biot_coefficient_matprop;
+  const MaterialProperty<Real> * _biot_coefficient_damaged_matprop;
 
   /// Fluid bulk modulus
   const Real _fluid_bulk_modulus;
 
-  /// Solid bulk compliance
-  const Real _solid_bulk_compliance;
+  /// Solid grain bulk modulus (K_s in the reference model)
+  const Real _grain_bulk_modulus;
 
-  /// porosity at the nodes or quadpoints.  Only the initial value is ever used
-  const MaterialProperty<Real> & _porosity;
+  /// Toggle to read porosity from material property instead of constant
+  const bool _use_damaged_porosity;
+
+  /// Damaged porosity material property (if enabled)
+  const MaterialProperty<Real> * _porosity_damaged_matprop;
+
+  /// Constant porosity value (used when use_damaged_porosity=false)
+  const Real _porosity_const;
 
   /// Computed Biot modulus
   MaterialProperty<Real> & _biot_modulus;
 
-  /// Old value of Biot modulus.  This variable is necessary in order to keep Biot modulus constant even if porosity is changing.
-  const MaterialProperty<Real> & _biot_modulus_old;
-
-  /// Solid bulk modulus compliance
-  const MaterialProperty<Real> & _solid_bulk_compliance_damaged;
-
+  /// Small floor for the denominator when inverting the storativity relation
+  const Real _denominator_floor = 1e-20;
 };

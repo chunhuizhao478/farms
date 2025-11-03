@@ -30,7 +30,9 @@ protected:
   virtual void computeQpProperties() override;
 
   // Input parameters/properties
-  const Real _biot_coefficient;                   // alpha
+  const Real _biot_coefficient;                   // alpha (constant)
+  const bool _use_damaged_biot;                   // flag to use damaged biot coefficient
+  const MaterialProperty<Real> * _biot_coefficient_mp; // damaged biot coefficient material property
   const MaterialProperty<Real> & _M;              // PorousFlow_constant_biot_modulus_qp
   const MaterialProperty<Real> & _eps_v;          // PorousFlow_total_volumetric_strain_qp
   const MaterialProperty<std::vector<Real>> & _p; // PorousFlow_porepressure_qp (per-phase vector)

@@ -247,6 +247,18 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
+  [biot_modulus_aux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [biot_coefficient_aux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [porosity_aux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
 []
 
 [AuxKernels]
@@ -368,6 +380,27 @@ top_right2 = '3e-4 0.0025 0'
     type = MaterialRealAux
     variable = psie_active_enhanced
     property = psie_active_enhanced
+    execute_on = 'TIMESTEP_END'
+  []
+  #### get biot modulus
+  [biot_modulus_aux_kernel]
+    type = MaterialRealAux
+    variable = biot_modulus_aux
+    property = PorousFlow_constant_biot_modulus_qp
+    execute_on = 'TIMESTEP_END'
+  []
+  #### get damaged biot coefficient
+  [biot_coefficient_aux_kernel]
+    type = MaterialRealAux
+    variable = biot_coefficient_aux
+    property = biot_coefficient_damaged
+    execute_on = 'TIMESTEP_END'
+  []
+  #### get damaged porosity
+  [porosity_aux_kernel]
+    type = MaterialRealAux
+    variable = porosity_aux
+    property = PorousFlow_porosity_qp_damaged
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -650,17 +683,17 @@ top_right2 = '3e-4 0.0025 0'
     phase_field = d
     solid_bulk_compliance = ${solid_bulk_modulus_compliance}
     grain_bulk_modulus = ${grain_bulk_modulus}
-    minimum_degradation = 1e-8
+    minimum_degradation = 1e-6 #this should be eta (shown in fracture.i)
   []
   #compute biot modulus #include damaged solid compliance
   [biot_modulus]
     type = ElkPorousFlowDamagedBiotModulus
     fluid_bulk_modulus = ${fluid_bulk_modulus}
     grain_bulk_modulus = ${grain_bulk_modulus}
-    biot_coefficient = ${biot_coefficient}
+    #biot_coefficient = ${biot_coefficient}
     use_damaged_biot = true
     use_damaged_porosity = true
-    porosity = ${porosity}
+    #porosity = ${porosity}
     output_properties = 'PorousFlow_constant_biot_modulus_qp'
     outputs = exodus
   []
@@ -813,7 +846,7 @@ top_right2 = '3e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 40
-    show = 'd vel_x vel_y vel_z pp'
+    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
       type = Checkpoint
