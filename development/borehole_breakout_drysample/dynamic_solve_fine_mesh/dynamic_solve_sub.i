@@ -210,18 +210,18 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-8
-    nl_max_its = 10
+    nl_max_its = 40
     nl_abs_tol = 1e-10
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
     petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 10
+        dt = 5
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
+        optimal_iterations = 20
         growth_factor = 1.25
-        max_time_step_bound = 100
+        max_time_step_bound = 10
     []
     [./TimeIntegrator]
         type = ImplicitEuler
