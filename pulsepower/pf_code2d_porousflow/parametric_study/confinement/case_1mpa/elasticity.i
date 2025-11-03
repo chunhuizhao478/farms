@@ -24,7 +24,8 @@ biot_coefficient = 0.4
 fluid_bulk_modulus = 1e+9
 viscosity = 1e-3
 porosity = 0.008
-solid_bulk_modulus_compliance = ${fparse 1.0/K}
+solid_bulk_modulus_compliance = ${fparse 1.0/K} #bulk modulus of solid grains
+grain_bulk_modulus = ${fparse K/(1.0 - biot_coefficient)} #solid grain bulk modulus derived from alpha: alpha = 1 - K / K_s
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
 
@@ -42,41 +43,6 @@ newmark_beta = 0.25
 newmark_gamma = 0.5
 hht_alpha = 0
 #----------------------------------------------------#
-
-#fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
-
-# [Adaptivity]
-#   max_h_level = 5
-#   marker = 'combo'
-#   cycles_per_step = 1
-#   [Markers]
-#       [./combo]
-#         type = FarmsComboMarker
-#         markers = 'damage_marker strain_energy_marker'
-#         meshsize_marker = 'meshsize_marker'
-#       [../]
-#       [damage_marker]
-#         type = ValueThresholdMarker
-#         variable = d
-#         refine = 0.01
-#       []
-#       [strain_energy_marker]
-#         type = ValueThresholdMarker
-#         variable = psie_active
-#         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []
-#       # if mesh_size > dxmin, refine
-#       # if mesh_size < dxmin/100, coarsen (which never happens)
-#       # otherwise, do nothing
-#       [meshsize_marker]
-#         type = ValueThresholdMarker
-#         variable = mesh_size
-#         refine = '${dx_min}'
-#         coarsen = '${fparse dx_min/100}'
-#         third_state = DO_NOTHING
-#       []
-#   []
-# []
 
 [MultiApps]
   [fracture]
@@ -99,7 +65,7 @@ hht_alpha = 0
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
     variable = 'psie_active mesh_size'
-    source_variable = 'psie_active mesh_size'
+    source_variable = 'psie_active_enhanced mesh_size'
   []
   [pp_transfer_dissipated_energy_total]
     type = MultiAppPostprocessorTransfer
@@ -277,6 +243,10 @@ top_right2 = '3e-4 0.0025 0'
   #   order = CONSTANT
   #   family = MONOMIAL
   # []
+  [psie_active_enhanced]
+    order = CONSTANT
+    family = MONOMIAL
+  []
 []
 
 [AuxKernels]
@@ -393,6 +363,13 @@ top_right2 = '3e-4 0.0025 0'
   #   i = 2
   #   j = 2
   # []
+  #### get enhanced history energy
+  [psie_active_enhanced_aux]
+    type = MaterialRealAux
+    variable = psie_active_enhanced
+    property = psie_active_enhanced
+    execute_on = 'TIMESTEP_END'
+  []
 []
 
 [Functions]
@@ -446,24 +423,27 @@ top_right2 = '3e-4 0.0025 0'
   []
   #pressure coupling on stress tensor
   [poro_x]
-      type = PorousFlowEffectiveStressCoupling
+      type = ElkPorousFlowEffectiveStressCoupling
       biot_coefficient = ${biot_coefficient}
       variable = disp_x
       component = 0
+      use_damaged_biot = true
   []
   [poro_y]
-      type = PorousFlowEffectiveStressCoupling
+      type = ElkPorousFlowEffectiveStressCoupling
       biot_coefficient = ${biot_coefficient}
       variable = disp_y
       component = 1
+      use_damaged_biot = true
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
-      type = PorousFlowFullySaturatedMassTimeDerivative
+      type = ElkPorousFlowFullySaturatedMassTimeDerivative
       biot_coefficient = ${biot_coefficient}
       coupling_type = HydroMechanical
       multiply_by_density = false
       variable = pp
+      use_damaged_biot = true
   []
   #flux * grad(test)
   [flux]
@@ -602,6 +582,17 @@ top_right2 = '3e-4 0.0025 0'
     output_properties = 'stress strain_increment'
     outputs = exodus
   []
+  #enhanced history energy with pressure-dependent term (from CMAME paper Appendix A)
+  [history_energy_enhanced]
+    type = ElkPorousFlowHistoryEnergyEnhanced
+    psie_active = psie_active
+    pore_pressure = pp
+    initial_porosity = ${porosity}
+    fluid_bulk_modulus = ${fluid_bulk_modulus}
+    grain_bulk_modulus = ${grain_bulk_modulus}
+    bulk_modulus = K
+    psie_active_enhanced = psie_active_enhanced
+  []
   #solid properties
   ##-------------------------------------------------------------------------##
   [density]
@@ -641,21 +632,35 @@ top_right2 = '3e-4 0.0025 0'
   [massfrac]
     type = PorousFlowMassFraction
   []
-  #compute porosity
-  [porosity]
-    type = PorousFlowPorosityConst # only the initial value of this is ever used
-    porosity = ${porosity}
+  #damage-dependent porosity (stored in *_damaged properties)
+  [porosity_damaged]
+    type = ElkPorousFlowDamagedPorosity
+    phase_field = d
+    initial_porosity = ${porosity}
+    porosity_lower_bound = 0.0
+    porosity_upper_bound = 0.999
   []
-  #comopute permeability
+  #compute permeability
   [permeability] #take effective_perm
     type = ElkPorousFlowPermeabilityDamaged
+  []
+  #damage-dependent Biot coefficient
+  [damaged_biot_coefficient]
+    type = ElkPorousFlowDamagedBiotCoefficient
+    phase_field = d
+    solid_bulk_compliance = ${solid_bulk_modulus_compliance}
+    grain_bulk_modulus = ${grain_bulk_modulus}
+    minimum_degradation = 1e-8
   []
   #compute biot modulus #include damaged solid compliance
   [biot_modulus]
     type = ElkPorousFlowDamagedBiotModulus
-    biot_coefficient = ${biot_coefficient}
-    solid_bulk_compliance = ${solid_bulk_modulus_compliance}
     fluid_bulk_modulus = ${fluid_bulk_modulus}
+    grain_bulk_modulus = ${grain_bulk_modulus}
+    biot_coefficient = ${biot_coefficient}
+    use_damaged_biot = true
+    use_damaged_porosity = true
+    porosity = ${porosity}
     output_properties = 'PorousFlow_constant_biot_modulus_qp'
     outputs = exodus
   []
@@ -689,6 +694,7 @@ top_right2 = '3e-4 0.0025 0'
   [flow_fluid_driving_energy]
     type = ElkPorousFlowFluidDrivingEnergy
     biot_coefficient = ${biot_coefficient}
+    use_damaged_biot = true
   []
 []
 

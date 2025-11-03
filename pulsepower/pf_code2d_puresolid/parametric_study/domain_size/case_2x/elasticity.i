@@ -4,6 +4,9 @@ nu = 0.373
 Gc_const = 100
 density = 2600
 
+##parametric study on confinement pressure##
+confinement_pressure = 1e6
+
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  2e-4
@@ -165,6 +168,12 @@ top_right2 = '3e-4 0.0025 0'
   []
   [fz]
   []
+  [fconfinementx]
+  []
+  [fconfinementy]
+  []
+  [fconfinementz]
+  []
   [fdampx]
   []
   [fdampy]
@@ -297,6 +306,15 @@ top_right2 = '3e-4 0.0025 0'
       save_in_disp_x = fx
       save_in_disp_y = fy
     []
+    #assign pressure on outer surface
+    [static_pressure_outer]
+      boundary = 1
+      factor = ${confinement_pressure}
+      displacements = 'disp_x disp_y'
+      use_displaced_mesh = false
+      save_in_disp_x = fconfinementx
+      save_in_disp_y = fconfinementy
+    []
   []
   # fix ptr
   [./fix_cptr1_x]
@@ -425,12 +443,12 @@ top_right2 = '3e-4 0.0025 0'
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 1e-7 #dt too small, then the linear solver may not converge in the few first steps
+    dt = 1e-8 #dt too small, then the linear solver may not converge in the few first steps
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 1e-7
+    max_time_step_bound = 1e-8
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -508,6 +526,11 @@ top_right2 = '3e-4 0.0025 0'
     boundary = '3'
     forces = 'fx fy fz'
   []
+  [confinement_work]
+    type = FarmsExternalWork
+    boundary = '1'
+    forces = 'fconfinementx fconfinementy fconfinementz'
+  []
   [damping_work]
     type = FarmsExternalWork
     boundary = '1'
@@ -518,8 +541,8 @@ top_right2 = '3e-4 0.0025 0'
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - damping_work'
-      pp_names = 'external_work damping_work'
+      expression = '-1 * external_work - confinement_work - damping_work'
+      pp_names = 'external_work confinement_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
