@@ -4,17 +4,19 @@ initial_pore_pressure = 0.0965e6
 #solid properties
 #----------------------------------------------------#
 E = 50e9
-nu = 0.373
+nu = 0.3
+K = '${fparse E/3.0/(1.0-2.0*nu)}' #bulk modulus of porous material
+K_s = 50e9 #bulk modulus of solid grains
 #----------------------------------------------------#
 
 #hydraulic properties
 #----------------------------------------------------#
 fluid_density = 1000
-biot_coefficient = 0.4
+biot_coefficient = ${fparse 1 - K/K_s}
 fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
-solid_bulk_modulus_compliance = 1.524e-11
+solid_bulk_modulus_compliance = ${fparse 1.0/K} #this is the bulk modulus of the porous medium
 permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 #----------------------------------------------------#
 
@@ -67,10 +69,12 @@ top_right2 = '2e-4 0.0025 0'
     [disp_x]
         order = FIRST
         family = LAGRANGE
+        scaling = 1e-6
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE
+        scaling = 1e-6
     []
     #pore pressure
     [pp]
@@ -276,7 +280,7 @@ top_right2 = '2e-4 0.0025 0'
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
 
-    line_search = 'none'
+    line_search = 'bt'
     # num_steps = 1
     l_max_its = 100
     nl_max_its = 10

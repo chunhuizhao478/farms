@@ -90,6 +90,7 @@ ElkPorousFlowHistoryEnergyEnhanced::computePressureCoefficient() const
   const Real inv_Kf = 1.0 / _fluid_bulk_modulus;
   const Real inv_Ks = 1.0 / _grain_bulk_modulus;
   const Real K_current = _K[_qp]; // Current solid bulk modulus at this quadrature point
+  //note this bulk modulus K_current is the intact bulk modulus, see derivation in Appendix A
   const Real Ks_squared = _grain_bulk_modulus * _grain_bulk_modulus;
 
   const Real coeff = phi_o_minus_1 * (inv_Kf - inv_Ks) - K_current / Ks_squared;

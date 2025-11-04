@@ -212,23 +212,3 @@ top_right2 = '3e-4 0.0025 0'
   # time_step_interval = 40
   print_linear_residuals = false
 []
-
-# [Distributions]
-#   #typically for granite
-#   #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-#   #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-#   [weibull]
-#     type = Weibull
-#     shape = 15.0 #k
-#     scale = ${Gc_const} #lambda
-#     location = 0
-#   []
-# []
-
-# [ICs]
-#   [./gc_var]
-#     type =  RandomIC
-#     variable = Gc_var
-#     distribution = weibull
-#   []
-# []

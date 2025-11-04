@@ -23,7 +23,7 @@ ElkPorousFlowDamagedBiotModulus::validParams()
 {
   InputParameters params = PorousFlowMaterialVectorBase::validParams();
   params.addRangeCheckedParam<Real>(
-      "biot_coefficient", 0.4, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
+      "biot_coefficient", 1.0, "biot_coefficient>=0 & biot_coefficient<=1", "Biot coefficient (constant, ignored if use_damaged_biot=true)");
   params.addRangeCheckedParam<Real>(
       "fluid_bulk_modulus", 2.0E9, "fluid_bulk_modulus>0", "Fluid bulk modulus");
   params.addRequiredRangeCheckedParam<Real>(
@@ -114,6 +114,10 @@ ElkPorousFlowDamagedBiotModulus::computeQpProperties()
 
   const Real denom =
       phi / _fluid_bulk_modulus + (alpha - phi) / _grain_bulk_modulus;
+  //note another form of biot modulus, as used in PorousFlowConstantBiotModulus:
+  //denom = phi / _fluid_bulk_modulus + (1 - alpha) * (alpha - phi) / _bulk_modulus;
+  //however both alpha and bulk modulus are functions of damage variable
+  //here _grain_bulk_modulus is material property
   const Real safe_denom = std::max(denom, _denominator_floor);
   _biot_modulus[_qp] = 1.0 / safe_denom;
 }

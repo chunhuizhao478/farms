@@ -1,14 +1,15 @@
-fluid_elastic_energy_total_static = 1.271812e-04
-solid_elastic_energy_total_static = 3.605239e-03
-full_input_energy_static = 3.732421e-03
+fluid_elastic_energy_total_static = 8.081664e-05
+solid_elastic_energy_total_static = 5.408951e-03
+full_input_energy_static = 5.489768e-03
 
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
-nu = 0.373 # Poisson's ratio
+nu = 0.3 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3
-K = '${fparse E/3.0/(1.0-2.0*nu)}'
+K = '${fparse E/3.0/(1.0-2.0*nu)}' #bulk modulus of porous material
+K_s = 50e9 #bulk modulus of solid grains, material property
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  2e-4 # length scale, m
 ft = '${fparse sqrt(3.0/8.0 * E*Gc_const/l)}'#137 MPa # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
@@ -20,12 +21,12 @@ confinement_pressure  = 1e6
 #hydraulic properties
 #----------------------------------------------------#
 fluid_density = 1000
-biot_coefficient = 0.4
-fluid_bulk_modulus = 1e+9
+#biot_coefficient = ${fparse 1 - K/K_s}
+fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
-solid_bulk_modulus_compliance = ${fparse 1.0/K} #bulk modulus of solid grains
-grain_bulk_modulus = ${fparse K/(1.0 - biot_coefficient)} #solid grain bulk modulus derived from alpha: alpha = 1 - K / K_s
+solid_bulk_modulus_compliance = ${fparse 1.0/K} #bulk modulus of porous medium
+grain_bulk_modulus = ${fparse K_s} #solid grain bulk modulus derived from alpha: alpha = 1 - K / K_s
 # permeability = '5e-19 0 0 0 5e-19 0 0 0 5e-19'
 intrinsic_permeability = 5e-19 # m^2
 
@@ -231,18 +232,6 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
-  # [strain_increment_00]
-  #   order = CONSTANT
-  #   family = MONOMIAL
-  # []
-  # [strain_increment_11]
-  #   order = CONSTANT
-  #   family = MONOMIAL
-  # []
-  # [strain_increment_22]
-  #   order = CONSTANT
-  #   family = MONOMIAL
-  # []
   [psie_active_enhanced]
     order = CONSTANT
     family = MONOMIAL
@@ -353,28 +342,6 @@ top_right2 = '3e-4 0.0025 0'
     fluid_phase = 0
     gravity = '0 0 0'
   []
-  # #### get strain increment
-  # [strain_increment_00]
-  #   type = MaterialRankTwoTensorAux
-  #   property = strain_increment
-  #   variable = strain_increment_00
-  #   i = 0
-  #   j = 0
-  # []
-  # [strain_increment_11]
-  #   type = MaterialRankTwoTensorAux
-  #   property = strain_increment
-  #   variable = strain_increment_11
-  #   i = 1
-  #   j = 1
-  # []
-  # [strain_increment_22]
-  #   type = MaterialRankTwoTensorAux
-  #   property = strain_increment
-  #   variable = strain_increment_22
-  #   i = 2
-  #   j = 2
-  # []
   #### get enhanced history energy
   [psie_active_enhanced_aux]
     type = MaterialRealAux
@@ -457,14 +424,12 @@ top_right2 = '3e-4 0.0025 0'
   #pressure coupling on stress tensor
   [poro_x]
       type = ElkPorousFlowEffectiveStressCoupling
-      biot_coefficient = ${biot_coefficient}
       variable = disp_x
       component = 0
       use_damaged_biot = true
   []
   [poro_y]
       type = ElkPorousFlowEffectiveStressCoupling
-      biot_coefficient = ${biot_coefficient}
       variable = disp_y
       component = 1
       use_damaged_biot = true
@@ -472,7 +437,6 @@ top_right2 = '3e-4 0.0025 0'
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
       type = ElkPorousFlowFullySaturatedMassTimeDerivative
-      biot_coefficient = ${biot_coefficient}
       coupling_type = HydroMechanical
       multiply_by_density = false
       variable = pp
@@ -690,27 +654,12 @@ top_right2 = '3e-4 0.0025 0'
     type = ElkPorousFlowDamagedBiotModulus
     fluid_bulk_modulus = ${fluid_bulk_modulus}
     grain_bulk_modulus = ${grain_bulk_modulus}
-    #biot_coefficient = ${biot_coefficient}
     use_damaged_biot = true
     use_damaged_porosity = true
     #porosity = ${porosity}
     output_properties = 'PorousFlow_constant_biot_modulus_qp'
     outputs = exodus
   []
-  ##----------------------------------------------------------##
-  #compute permeability
-  # [permeability_constant]
-  #     type = PorousFlowPermeabilityConst
-  #     permeability = ${permeability}
-  # []
-  #compute biot modulus
-  # [biot_modulus_constant]
-  #     type = PorousFlowConstantBiotModulus
-  #     biot_coefficient = ${biot_coefficient}
-  #     solid_bulk_compliance = ${solid_bulk_modulus_compliance}
-  #     fluid_bulk_modulus = ${fluid_bulk_modulus}
-  # []
-  ##----------------------------------------------------------##
   #Compute density and viscosity
   [simple_fluid_qp]
     type = PorousFlowSingleComponentFluid
@@ -726,7 +675,6 @@ top_right2 = '3e-4 0.0025 0'
   #Compute flow fluid driving energy
   [flow_fluid_driving_energy]
     type = ElkPorousFlowFluidDrivingEnergy
-    biot_coefficient = ${biot_coefficient}
     use_damaged_biot = true
   []
 []
@@ -812,7 +760,7 @@ top_right2 = '3e-4 0.0025 0'
   petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
-  line_search = 'basic'
+  line_search = 'bt'
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
@@ -845,7 +793,7 @@ top_right2 = '3e-4 0.0025 0'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
+    time_step_interval = 10
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
@@ -997,8 +945,8 @@ top_right2 = '3e-4 0.0025 0'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
-      expression = "0.5 * ${biot_coefficient} * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp biot_coefficient_aux'
+      expression = "0.5 * biot_coefficient_aux * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
   []
 []
 
@@ -1032,8 +980,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_incremental_elastic_energy_per_vol]
       type = ParsedAux
       variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
-      expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
+      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
   []
 []
 
@@ -1055,16 +1003,6 @@ top_right2 = '3e-4 0.0025 0'
 []
 ###############################################################################
 
-# fluid driving energy
-###############################################################################
-# [Postprocessors]
-#   [fluid_driving_energy_dynamic]
-#     type = ElementIntegralMaterialProperty
-#     mat_prop = fluid_driving_energy_density
-#   []
-# []
-###############################################################################
-
 # Full Energy
 ###############################################################################
 [Postprocessors]
@@ -1074,10 +1012,4 @@ top_right2 = '3e-4 0.0025 0'
     pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
   []
-  # [full_energy_2]
-  #   type = ParsedPostprocessor
-  #   expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_driving_energy_dynamic + ${fluid_elastic_energy_total_static}'
-  #   pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_driving_energy_dynamic'
-  #   execute_on = 'INITIAL TIMESTEP_END'
-  # []
 []
