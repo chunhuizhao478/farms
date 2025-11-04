@@ -27,8 +27,8 @@ SmallStrainFluidSolidCouplingExplicit::SmallStrainFluidSolidCouplingExplicit(con
   : Kernel(parameters),
     _ndisp(coupledComponents("displacements")),
     _disp_var(_ndisp),
-    _I1(getMaterialProperty<Real>(getParam<std::string>("base_name") + "I1")),
-    _I1_older(getMaterialPropertyOlder<Real>(getParam<std::string>("base_name") + "I1")),
+    _I1(getMaterialProperty<Real>(getParam<std::string>("base_name") + "first_elastic_strain_invariant")),
+    _I1_older(getMaterialPropertyOlder<Real>(getParam<std::string>("base_name") + "first_elastic_strain_invariant")),
     _fluid_solid_coupling(getMaterialProperty<Real>("fluid_solid_coupling"))
 {
   // Get displacement variable numbers for off-diagonal Jacobian

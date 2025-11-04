@@ -10,7 +10,7 @@
     displacements = 'disp_x disp_y disp_z'
     porepressure = 'porepressure'
       
-    ##----continuum damage breakage model----##
+       ##----continuum damage breakage model----##
     #initial lambda value (first lame constant) [Pa]
     lambda_o = 15.62e9
         
@@ -23,35 +23,6 @@
     #<strain invariants ratio: onset of breakage healing>: tunable param, see ggw183.pdf
     xi_d = -0.8073
     
-    #<strain invariants ratio: maximum allowable value>: set boundary
-    #Xu_etal_P15-2D
-    #may need a bit space, use 1.5 as boundary
-    xi_max = 1.8
-    
-    #<strain invariants ratio: minimum allowable value>: set boundary
-    #Xu_etal_P15-2D
-    xi_min = -1.8
-
-    #if option 2, use Cd_constant
-    Cd_constant = 65
-
-    #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd
-    CdCb_multiplier = 100
-
-    #<coefficient of healing for breakage evolution>: refer to "Lyakhovsky_Ben-Zion_P14" (10 * C_B)
-    # CBCBH_multiplier = 0.0
-    CBH_constant = 0
-
-    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_1 = 0
-
-    #<coefficient of healing for damage evolution>: refer to "ggw183.pdf"
-    C_2 = 0.05
-
-    #<coefficient gives width of transitional region>: see P(alpha), refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    beta_width = 0.05  #1e-3
-    
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     C_g = 1e-12 #
     
@@ -63,10 +34,6 @@
     
     #coefficient of energy ratio Fb/Fs = chi < 1
     chi = 0.8
-    
-    #
-    D = 0
-
 
     # Water bulk modulus (2.2 GPa)
     fluid_bulk_modulus = 2.2e9      
@@ -127,24 +94,16 @@
         order = FIRST
         family = LAGRANGE
     []
-    [accel_x]
+    #
+    [alpha_damagedvar_aux]
         order = FIRST
         family = LAGRANGE
     []
-    [accel_y]
+    [B_damagedvar_aux]
         order = FIRST
         family = LAGRANGE
     []
-    [accel_z]
-        order = FIRST
-        family = LAGRANGE
-    []
-    [alpha_grad_x]
-    []
-    [alpha_grad_y]
-    []    
-    [alpha_grad_z]
-    []
+    #
     [I2_aux]
         order = FIRST
         family = MONOMIAL
@@ -153,12 +112,31 @@
         order = FIRST
         family = MONOMIAL
     []
-    [B]
+    [deviatroic_strain_rate_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [structural_stress_coefficient_aux]
+        order = FIRST
+        family = MONOMIAL
+    []
+    #
+    [gradx_alpha_damagedvar]
         order = CONSTANT
         family = MONOMIAL
     []
-    [alpha_damage]
+    [grady_alpha_damagedvar]
         order = CONSTANT
+        family = MONOMIAL
+    []
+    #spatial damage parameters
+    [cg_aux]
+        order = FIRST
+        family = LAGRANGE
+    []
+    #
+    [nonlocal_xi]
+        order = FIRST
         family = MONOMIAL
     []
 []
@@ -212,26 +190,26 @@
     [get_xi]
         type = MaterialRealAux
         variable = xi_aux
-        property = xi
+        property = strain_invariant_ratio
         block = '3'
     []
     [get_I2]
         type = MaterialRealAux
         variable = I2_aux
-        property = I2
+        property = second_elastic_strain_invariant
         block = '3'
     [] 
-    [get_B]
+    [get_deviatroic_strain_rate]
         type = MaterialRealAux
-        variable = B
-        property = B
+        variable = deviatroic_strain_rate_aux
+        property = deviatroic_strain_rate
         block = '3'
     []
-    [alpha_damage_B]
+    #
+    [get_nonlocal_xi]
         type = MaterialRealAux
-        variable = alpha_damage
-        property = alpha_damagedvar
-        block = '3'
+        variable = nonlocal_xi
+        property = eqstrain_nonlocal
     []
 []
 
@@ -316,12 +294,13 @@
         displacements = 'disp_x disp_y disp_z'
     [] 
     [stress_medium]
-        type = ComputeDamageBreakageStress3DDynamicCDBM
-        alpha_grad_x = alpha_grad_x
-        alpha_grad_y = alpha_grad_y
-        alpha_grad_z = alpha_grad_z
+        type = ComputeDamageBreakageStress3DDynamicCDBMDiffused
+        alpha_damagedvar_aux = alpha_damagedvar_aux
+        B_damagedvar_aux = B_damagedvar_aux
+        output_properties = 'stress elastic_strain_tensor plastic_strain_tensor total_strain_tensor strain_invariant_ratio'
+        outputs = exodus
         block = '3'
-    [] 
+    []
     [elastic_tensor]
         type = ComputeIsotropicElasticityTensor
         youngs_modulus = 48.5e9
@@ -334,13 +313,37 @@
     [compute_stress]
         type = ComputePoroLinearElasticStress
         block = '1 2'
+    [] 
+    [comp_strain_invariant_ratio]
+        type = ComputeXi 
+        output_properties = 'strain_invariant_ratio'
+        outputs = exodus
+        block = '1 2'
     []
-    [dummy_matprop]
+    #nonlocal eqstrain
+    [nonlocal_eqstrain]
+        type = ElkNonlocalEqstrain
+        average_UO = eqstrain_averaging
+        output_properties = 'eqstrain_nonlocal'
+        outputs = exodus
+    []
+    [dummy_material]
         type = GenericConstantMaterial
-        prop_names = 'initial_damage initial_breakage shear_stress_perturbation'
-        prop_values = '0.0 0.0 0.0'  
-    []    
+        prop_names = 'shear_stress_perturbation damage_perturbation'
+        prop_values = '0.0 0.0'
+    []
 []  
+
+[UserObjects]
+    [eqstrain_averaging] #length scale = radius = grain size 
+        type = ElkRadialAverage
+        length_scale = 0.0013
+        prop_name = strain_invariant_ratio
+        radius = 0.0013
+        weights = BAZANT
+        execute_on = LINEAR
+    []
+[]
 
 #18.2e6 * 0.1 / 48.5e9 = 3.7525e-5 applied displacement (seating load)
 [Functions]
@@ -363,15 +366,15 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 4000 #extend the time
-    # num_steps = 1
+    end_time = 1e10
+    # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 40
+    nl_max_its = 20
     nl_abs_tol = 1e-8
-    petsc_options_iname = '-pc_type -pc_factor_shift_type'
-    petsc_options_value = 'lu       NONZERO'
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+    petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-ksp_type -pc_type'
     # petsc_options_value = 'gmres     hypre'
     # automatic_scaling = true
@@ -384,7 +387,7 @@
         cutback_factor_at_failure = 0.5
         optimal_iterations = 20
         growth_factor = 1.25
-        max_time_step_bound = 2.5
+        max_time_step_bound = 5
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -397,7 +400,7 @@
     [./exodus]
         type = Exodus
         time_step_interval = 5 ###
-        show = 'disp_z porepressure I2_aux  xi_aux B alpha_damage'
+        show = 'disp_z porepressure I2_aux  xi_aux alpha_damagedvar_aux B_damagedvar_aux'
     [../]
     [./csv]
         type = CSV
@@ -465,6 +468,35 @@
           function = 3.4e6
     []
 []
+
+[MultiApps]
+    [./sub_app]
+        type = TransientMultiApp
+        positions = '0 0 0'
+        input_files = 'dynamic_solve_sub.i'
+        execute_on = 'TIMESTEP_BEGIN'
+        sub_cycling = true
+        clone_parent_mesh = true
+    [../]
+[]
+
+[Transfers]
+    [pull_resid]
+        type = MultiAppCopyTransfer
+        from_multi_app = sub_app
+        source_variable = 'alpha_damagedvar_sub B_damagedvar_sub structural_stress_coefficient_sub'
+        variable = 'alpha_damagedvar_aux B_damagedvar_aux structural_stress_coefficient_aux'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+    [push_disp]
+        type = MultiAppCopyTransfer
+        to_multi_app = sub_app
+        source_variable = 'I2_aux nonlocal_xi deviatroic_strain_rate_aux'
+        variable = 'I2_sub_aux xi_sub_aux deviatroic_strain_rate_sub_aux'
+        execute_on = 'TIMESTEP_BEGIN'
+    []
+[]
+
 
 [UserObjects]
     [./init_sol_components]

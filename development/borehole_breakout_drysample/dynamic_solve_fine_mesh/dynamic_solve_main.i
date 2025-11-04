@@ -83,6 +83,7 @@
     [porepressure]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E9 
     []
     
 []
@@ -222,7 +223,7 @@
     [get_deviatroic_strain_rate]
         type = MaterialRealAux
         variable = deviatroic_strain_rate_aux
-        property = deviatroic_strain_rate
+        property = deviatoric_strain_rate
         block = '3'
     []
     #
@@ -402,7 +403,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-5
-    nl_max_its = 40
+    nl_max_its = 50
     nl_abs_tol = 1e-7
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -410,7 +411,7 @@
     # petsc_options_value = 'lu       NONZERO'
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
-    automatic_scaling = true
+    # automatic_scaling = true
     # nl_forced_its = 3
     line_search = 'bt'
     # dt = 10
@@ -419,7 +420,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 20
+        optimal_iterations = 22
         growth_factor = 1.25
         max_time_step_bound = 10
     []

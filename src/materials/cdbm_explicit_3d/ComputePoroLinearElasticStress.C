@@ -27,7 +27,7 @@ ComputePoroLinearElasticStress::ComputePoroLinearElasticStress(const InputParame
     _elasticity_tensor_name(_base_name + "elasticity_tensor"),
     _elasticity_tensor(getMaterialPropertyByName<RankFourTensor>(_elasticity_tensor_name)),
     _pore_pressure(coupledValue("porepressure")),
-    _I1(declareProperty<Real>(_base_name + "I1")),
+    _I1(declareProperty<Real>(_base_name + "first_elastic_strain_invariant")),
     _stress_off_diag_jacobian(declareProperty<RankTwoTensor>(_base_name + "stress_off_diag_jacobian")),
     _biot_coeff_eff(getMaterialProperty<Real>(_base_name + "biot_coefficient_effective"))
 {
