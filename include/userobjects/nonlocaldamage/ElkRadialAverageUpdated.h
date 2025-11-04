@@ -30,12 +30,12 @@ class ThreadedElkRadialAverageLoop;
  * RadialGreensConvolution in MAGPIE. This code does not include support for
  * periodic BCs, but RadialGreensConvolution shows how that can be supported.
  */
-class ElkRadialAverage : public ElementUserObject
+class ElkRadialAverageUpdated : public ElementUserObject
 {
 public:
   static InputParameters validParams();
 
-  ElkRadialAverage(const InputParameters & parameters);
+  ElkRadialAverageUpdated(const InputParameters & parameters);
 
   virtual void initialSetup() override;
 
@@ -137,7 +137,7 @@ protected:
   PerfID _perf_finalize;
   //@}
 
-  friend class ThreadedElkRadialAverageLoop;
+  friend class ThreadedElkRadialAverageLoopUpdated;
 };
 
 namespace TIMPI
