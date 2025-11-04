@@ -82,7 +82,7 @@
 []
 
 [AuxVariables]
-    [vel_x]
+     [vel_x]
         order = FIRST
         family = LAGRANGE
     []
@@ -91,6 +91,18 @@
         family = LAGRANGE
     []
     [vel_z]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_x]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_y]
+        order = FIRST
+        family = LAGRANGE
+    []
+    [accel_z]
         order = FIRST
         family = LAGRANGE
     []
