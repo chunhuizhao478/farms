@@ -71,7 +71,7 @@ public:
 
 protected:
   void updateCommunicationLists();
-
+  
   /*------------------------------*/
   /// distance based weight function
   enum class WeightsType
