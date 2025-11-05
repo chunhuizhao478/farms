@@ -71,25 +71,25 @@ InitialStressStrainTPV26::InitialStressStrainTPV26(const InputParameters & param
 Real
 InitialStressStrainTPV26::value(Real /*t*/, const Point & p) const
 {
-  
+
   //Define variable takes the value
-  Real var = 0.0; 
+  Real var = 0.0;
 
   //Compute the initial stress
   //the coordinate follows benchmark
   Real x_coord = p(0); //along the strike direction
   Real y_coord = p(1); //along the normal direction
   Real z_coord = p(2); //along the dip direction
-  
+
   //define the parameters
   Real lambda_o = _lambda_o; //Pa
   Real shear_modulus_o = _shear_modulus_o; //Pa
   Real fluid_density = _fluid_density; //kg/m^3 fluid density
   Real rock_density = _rock_density; //kg/m^3 rock density
   Real gravity = _gravity; //m/s^2
-  Real bxx = _bxx; 
+  Real bxx = _bxx;
   Real byy = _byy;
-  Real bxy = _bxy; 
+  Real bxy = _bxy;
 
   //define stress components
   Real sigmazz = 0;
@@ -97,7 +97,7 @@ InitialStressStrainTPV26::value(Real /*t*/, const Point & p) const
   Real sigmayy = 0;
   Real sigmaxy = 0;
   Real sigmaxz = 0;
-  Real sigmayz = 0; 
+  Real sigmayz = 0;
 
   //Pf
   Real Pf = 0.0; //fluid pressure, will be computed later
@@ -162,6 +162,11 @@ InitialStressStrainTPV26::value(Real /*t*/, const Point & p) const
 
   //sigmaxy
   sigmaxy = Omega * ( bxy * ( sigmazz + Pf ) );
+
+  //convert total stress to effective stress
+  sigmaxx = sigmaxx + Pf;
+  sigmayy = sigmayy + Pf;
+  sigmazz = sigmazz + Pf;
 
   //Compute the initial strain components
   Real sigma_mean = (sigmaxx + sigmayy + sigmazz);

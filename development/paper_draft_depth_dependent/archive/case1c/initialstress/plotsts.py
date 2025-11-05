@@ -18,9 +18,9 @@ Pf = density_fluid * g * depths
 sigma_zz = -rho * g * depths
 
 # Coefficients for horizontal and shear stresses
-b_xx = 0.926793
+b_xx = 0.4
 b_yy = 1.073206
-b_xy = -0.6 #
+b_xy = -0.8
 
 # Piecewise definitions
 # Define tapering coefficient Omega(depth)
@@ -38,9 +38,9 @@ mask = depths <= 4000
 c = np.where(mask, 0.4e6 + (0.00072e6) * (5000 - depths), 0.4e6)  # cohesion in Pa
 
 # shear strength
-mu_s = 0.6 #
+mu_s = 0.8
 static_shear_strength = c + abs( mu_s * (sigma_yy + Pf) )
-mu_d = 0.52 #
+mu_d = 0.6
 residual_shear_strength = c + abs( mu_d * (sigma_yy + Pf) )
 
 # ------------------------

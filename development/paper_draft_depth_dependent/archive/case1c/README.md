@@ -1,4 +1,5 @@
-Setup similar as TPV26
-Created By Chunhui Zhao, Jul 18th, 2025
+Created By Chunhui Zhao, Jul 27th, 2025
 
-Raise initial shear stress bxy = -0.3
+With initial damage zone 
+
+(1) Uniform high damage tabular zone (alpha = 0.1)

@@ -8,11 +8,11 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 50 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##main fault parameters
-xmin_fault = -15000 #xmin of fault
-xmax_fault = 15000 #xmax of fault
+xmin_fault = -20000 #xmin of fault
+xmax_fault = 20000 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
@@ -26,10 +26,10 @@ shear_modulus_o = 3.204e10 #second lame constant
 ##-------------------------##
 
 ##Slip weakening parameters##
-Dc = 1.0 #characteristic length (m)
+Dc = 0.8 #characteristic length (m)
 q = 0.4 #damping ratio
 mu_s = 0.8 #static friction coefficient
-mu_d = 0.4 #dynamic friction coefficient
+mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
@@ -40,7 +40,7 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 
 ##CDB model parameters##
 xi_0 = -1.1 #strain invariants ratio: onset of damage evolution
-xi_d = -1.2 #strain invariants ratio: onset of breakage healing
+xi_d = -1.1 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
@@ -66,7 +66,7 @@ chi = 0.8 #energy ratio
 #background stress 
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.926793
+bxx = 0.4
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -84,7 +84,7 @@ overpressure_depth_B = 8000 #overpressure depth B (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -10000 #nucleation center x coordinate
+nucl_center_x = -16000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -107,7 +107,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_50m_cutstrike.msh'
+    file = '../../mesh/tpv26_100m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator

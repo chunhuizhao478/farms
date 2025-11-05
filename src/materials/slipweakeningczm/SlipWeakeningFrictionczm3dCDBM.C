@@ -108,7 +108,7 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
       _disp_slipweakening_x[_qp] - _disp_slipweakening_neighbor_x[_qp],
       _disp_slipweakening_y[_qp] - _disp_slipweakening_neighbor_y[_qp],
       _disp_slipweakening_z[_qp] - _disp_slipweakening_neighbor_z[_qp]);
-  
+
   // Global Displacement Jump Old
   RealVectorValue displacement_jump_old_global(
     _disp_slipweakening_x_old[_qp] - _disp_slipweakening_neighbor_x_old[_qp],
@@ -203,7 +203,7 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     {
       tau_f = _mu_d * (-T2);
     }
-  
+
   }
   //Forced rupture nucleation
   else{
@@ -238,9 +238,8 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     Real Pf = _fluid_pressure_aux[_qp]; // fluid pressure
 
     //tau_f
-    //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
-    //treat tension on the fault the same as if the effective normal stress equals zero.
-    Real effective_stress = (-T2) - Pf;
+    //T2: now every stress component passed is effective stress (which will be taken in solid skeleton only)
+    Real effective_stress = (-T2);
     tau_f = _cohesion_aux[_qp] + mu * std::max(effective_stress,0.0);
 
   }
@@ -269,7 +268,7 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   // Save traction in local coordinate
   _traction_strike[_qp] = T1; // strike direction
   _traction_normal[_qp] = T2; // normal direction
-  _traction_dip[_qp] = T3;  // dip direction  
+  _traction_dip[_qp] = T3;  // dip direction
 
   // Assign back traction in CZM
   RealVectorValue traction(T2 + T2_o, -T1 + T1_o, -T3 + T3_o);

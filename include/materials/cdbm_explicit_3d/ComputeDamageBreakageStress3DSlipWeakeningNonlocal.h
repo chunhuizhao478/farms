@@ -156,12 +156,18 @@ protected:
   Real _strain_rate_hat;
   Real _cd_hat;
 
+  /// option: set Cd = 0 when strain rate < strain_rate_hat (default: false -> use cd_hat)
+  bool _zero_Cd_below_threshold;
+
   /// nonlocal equivalent strain
   bool _use_nonlocal_eqstrain;
   const MaterialProperty<Real> & _eqstrain_nonlocal_old;
 
   /// blocks where nonlocal equivalent strain is enabled; empty means all blocks
   const std::vector<unsigned int> _nonlocal_eqstrain_blocks;
+
+  /// static solve flag
+  bool _static_solve_flag;
 
   /// helper: whether nonlocal eqstrain should be used on the current element
   inline bool useNonlocalEqStrainHere() const

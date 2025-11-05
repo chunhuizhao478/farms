@@ -8,11 +8,11 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 50 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##main fault parameters
-xmin_fault = -15000 #xmin of fault
-xmax_fault = 15000 #xmax of fault
+xmin_fault = -20000 #xmin of fault
+xmax_fault = 20000 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
@@ -26,10 +26,10 @@ shear_modulus_o = 3.204e10 #second lame constant
 ##-------------------------##
 
 ##Slip weakening parameters##
-Dc = 1.0 #characteristic length (m)
+Dc = 0.8 #characteristic length (m)
 q = 0.4 #damping ratio
 mu_s = 0.8 #static friction coefficient
-mu_d = 0.4 #dynamic friction coefficient
+mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
@@ -46,13 +46,13 @@ xi_d = -1.2 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-4 #strain rate dependent parameters
+strain_rate_hat = 1e-5 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
 CdCb_multiplier = 100 #multiplier between Cd and Cb
 CBH_constant = 1e4 #coefficient of healing for breakage evolution
-C_1 = 300 #coefficient of healing for damage evolution
+C_1 = 1e-4 #coefficient of healing for damage evolution
 C_2 = 0.05 #coefficient of healing for damage evolution
 beta_width = 0.05 #coefficient gives width of transitional region
 C_g = 1e-10 #material parameter: compliance or fluidity of the fine grain granular material
@@ -66,7 +66,7 @@ chi = 0.8 #energy ratio
 #background stress 
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.926793
+bxx = 0.75
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -78,7 +78,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -10000 #nucleation center x coordinate
+nucl_center_x = -16000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -93,6 +93,7 @@ end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 40 #time step interval for output
+sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 40 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
@@ -101,7 +102,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_50m_cutstrike.msh'
+    file = '../../mesh/tpv26_100m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -320,6 +321,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       order = FIRST
       family = MONOMIAL
   [] 
+  ###
+  [deviatoric_strain_rate_aux]
+    order = FIRST
+    family = MONOMIAL
+  []  
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -527,6 +533,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
   ###
+  [get_deviatoric_strain_rate]
+    type = MaterialRealAux
+    variable = deviatoric_strain_rate_aux
+    property = deviatoric_strain_rate
+    execute_on = 'TIMESTEP_END'
+  []
 []
 
 [Kernels]
@@ -754,7 +766,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
@@ -766,6 +778,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = Checkpoint
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
+  []
+  [sample_snapshots]
+    type = Exodus
+    execute_on = 'timestep_end'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux'
+    time_step_interval = ${sample_snapshots_time_step_interval}
   []
 []    
 
