@@ -35,7 +35,7 @@ intrinsic_permeability = 5e-19 # m^2
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
 wc = ${fparse Gc_const / ft } # m
-perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
+perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
@@ -385,7 +385,7 @@ top_right2 = '3e-4 0.0025 0'
     fitting_param_alpha = 0.35
     fitting_param_exponent = 0.25
     discharge_center = '0 0 0'
-    number_of_pulses = 10
+    number_of_pulses = 100
     base_factor = 8000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
@@ -767,7 +767,7 @@ top_right2 = '3e-4 0.0025 0'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 10e-5
+  end_time = 100e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
