@@ -144,11 +144,11 @@ namespace TIMPI
 {
 
 template <>
-class StandardType<ElkRadialAverage::QPData> : public DataType
+class StandardType<ElkRadialAverageUpdated::QPData> : public DataType
 {
 public:
-  explicit StandardType(const ElkRadialAverage::QPData * example = nullptr);
-  StandardType(const StandardType<ElkRadialAverage::QPData> & t);
+  explicit StandardType(const ElkRadialAverageUpdated::QPData * example = nullptr);
+  StandardType(const StandardType<ElkRadialAverageUpdated::QPData> & t);
   ~StandardType() { this->free(); }
 };
 

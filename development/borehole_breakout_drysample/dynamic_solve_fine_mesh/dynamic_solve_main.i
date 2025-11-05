@@ -376,7 +376,7 @@
 
 [UserObjects]
     [eqstrain_averaging] #length scale = radius = grain size 
-        type = ElkRadialAverage
+        type = ElkRadialAverageUpdated
         length_scale = 0.0013
         prop_name = strain_invariant_ratio
         radius = 0.0013
