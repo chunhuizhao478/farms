@@ -31,12 +31,12 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    # Cd_constant = 80
+    Cd_constant = 65
 
     #strain rate dependent Cd options
-     m_exponent = 0.8
-     strain_rate_hat = 1e-4
-     cd_hat = 12.5
+    # m_exponent = 0.8
+    # strain_rate_hat = 1e-8
+    # cd_hat = 1e4
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -183,7 +183,7 @@
         I2_aux = I2_sub_aux
         xi_aux = xi_sub_aux
         initial_damage_aux = initial_damage_sub_aux
-        use_cd_strain_dependent = true
+        #use_cd_strain_dependent = true
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
@@ -207,20 +207,26 @@
     start_time = -1e-12
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-7
+    nl_rel_tol = 1e-8
     nl_max_its = 15
-    nl_abs_tol = 1e-9
-    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-    petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
-    #verbose = true
-    dt = 1
+    nl_abs_tol = 1e-10
+    petsc_options_iname = '-snes_type'
+    petsc_options_value = 'vinewtonrsls'
+    verbose = true
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 10
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 10
+        growth_factor = 1.25
+        max_time_step_bound = 100
+    []
     [./TimeIntegrator]
         type = ImplicitEuler
         # type = BDF2
         # type = CrankNicolson
     [../]
 []
-
 [Outputs]
     [./exodus]
         type = Exodus

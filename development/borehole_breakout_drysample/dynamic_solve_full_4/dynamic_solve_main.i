@@ -55,13 +55,15 @@
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
-    ultimate_grain_size = 0.2
+    ultimate_grain_size = 0.25
     initial_viscosity_fluid = 1e-3
+
     anand_param_go_mat = 0.25
     anand_param_eta_cv_mat = 0.01
     anand_param_p_mat = 1
-    alpha_compaction = 0.1
-    m_compaction = 1
+
+    alpha_compaction = 0
+    m_compaction = 0
     
 
 []
@@ -71,21 +73,19 @@
     [disp_x]
         order = FIRST
         family = LAGRANGE     
-        scaling = 1e-6 
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE    
-        scaling = 1e-6 
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
-        scaling = 1e-6 
     []
     [porepressure]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E9 
     []
     
 []
@@ -264,9 +264,8 @@
         variable = porepressure
     [../]
     [./darcy_flow]
-        type = FluidDiffusion
+        type = FluidDiffusion2
         variable = porepressure
-        large_kinematics = false
     []
     [./darcy_flow_granular]
         type = FluidDiffusionGranular
@@ -406,7 +405,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-6
-    nl_max_its = 50
+    nl_max_its = 30
     nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
@@ -423,9 +422,9 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 25
+        optimal_iterations = 15
         growth_factor = 1.25
-        max_time_step_bound = 10
+        max_time_step_bound = 5
     []
     [./TimeIntegrator]
         type = NewmarkBeta
@@ -487,6 +486,18 @@
         boundary = 6
         function = applied_load_top
     [] 
+    [fix_top_x]
+        type = DirichletBC
+        variable = disp_x
+        boundary = 6
+        value = 0
+    []
+    [fix_top_y]
+        type = DirichletBC
+        variable = disp_y
+        boundary = 6
+        value = 0
+    []
     #applied confining pressure on the outer boundary
     [./Pressure]
         [./outer_boundary]

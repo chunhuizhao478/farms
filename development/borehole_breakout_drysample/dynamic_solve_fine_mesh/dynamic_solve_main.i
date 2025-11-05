@@ -380,7 +380,7 @@
         length_scale = 0.0013
         prop_name = strain_invariant_ratio
         radius = 0.0013
-        weights = BAZANT
+        weights = BAZANT3D
         execute_on = LINEAR
     []
 []

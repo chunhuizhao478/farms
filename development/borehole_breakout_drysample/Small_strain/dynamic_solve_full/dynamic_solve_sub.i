@@ -132,12 +132,6 @@
         coupled = B_damagedvar_sub
         block = '3'
     []
-    # [perturb_source_alpha]
-    #     type = PerturbationSource
-    #     variable = alpha_damagedvar_sub
-    #     damage_source = 'damage_perturbation'
-    #     block = '3'
-    # []
     #breakagevar
     [time_derivative_B]
         type = TimeDerivative
@@ -192,18 +186,11 @@
         strain_rate = deviatroic_strain_rate_sub_aux
     []
     #add shear perturbation to the system
-    [damage_perturbation]
-        type = PerturbationRadialSource
-        nucl_center = '0 0 0'
-        peak_value = 0.0
-        thickness = 200
-        length = 2000
-        duration = 1.0
-        perturbation_type = 'damage'
-        sigma_divisor = 2.0
-        output_properties = 'shear_stress_perturbation damage_perturbation'
-        outputs = exodus
-    [] 
+    [dummy_material]
+        type = GenericConstantMaterial
+        prop_names = 'shear_stress_perturbation damage_perturbation'
+        prop_values = '0.0 0.0'
+    []
 [] 
 
 [Preconditioning]
@@ -220,7 +207,7 @@
     l_max_its = 100
     l_tol = 1e-7
     nl_rel_tol = 1e-8
-    nl_max_its = 10
+    nl_max_its = 15
     nl_abs_tol = 1e-10
     petsc_options_iname = '-snes_type'
     petsc_options_value = 'vinewtonrsls'
