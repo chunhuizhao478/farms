@@ -35,7 +35,7 @@ intrinsic_permeability = 5e-19 # m^2
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
 wc = ${fparse Gc_const / ft } # m
-perm_exponent = 50 # exponent for the Darcy-Poiseuille model for the effective permeability
+perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
 #finite element properties
@@ -634,8 +634,8 @@ top_right2 = '3e-4 0.0025 0'
     type = ElkPorousFlowDamagedPorosity
     phase_field = d
     initial_porosity = ${porosity}
-    porosity_lower_bound = 0.0
-    porosity_upper_bound = 0.999
+    porosity_lower_bound = 0.008
+    porosity_upper_bound = 0.03
   []
   #compute permeability
   [permeability] #take effective_perm
