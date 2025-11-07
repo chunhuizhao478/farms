@@ -55,14 +55,14 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
-xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.0 #strain invariants ratio: onset of breakage healing
+xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-4 #strain rate dependent parameters
+strain_rate_hat = 1e-7 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -82,7 +82,7 @@ chi = 0.8 #energy ratio
 #background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.926793
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -686,17 +686,17 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
   #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
   [nonlocal_eqstrain_block1]
-    type = ElkNonlocalEqstrain
+    type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block1
     block = ${nonlocal_eqstrain_blocks_1}
   []
   [nonlocal_eqstrain_block2]
-    type = ElkNonlocalEqstrain
+    type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block2
     block = ${nonlocal_eqstrain_blocks_2}
   []
   [nonlocal_eqstrain_block3]
-    type = ElkNonlocalEqstrain
+    type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block3
     block = ${nonlocal_eqstrain_blocks_3}
   []

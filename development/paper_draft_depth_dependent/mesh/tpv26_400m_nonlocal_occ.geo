@@ -14,7 +14,7 @@ SetFactory("OpenCASCADE"); // Required for Boolean operations
 lc = 2e4;
 lc_fault = 400; // fine size near fault
 
-Fault_length = 40e3;
+Fault_length = 45e3;
 Fault_width = 20e3;
 Fault_dip = 90*Pi/180.;
 transition_length = 1.5e3; // 2 km halo around fault
