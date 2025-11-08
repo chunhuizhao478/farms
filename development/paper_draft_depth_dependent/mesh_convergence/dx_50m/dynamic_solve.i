@@ -432,10 +432,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         static_solve_flag = false
         outputs = exodus
     []
+    #note: eqstrain_nonlocal_initial is responsible for give a initial value to nonlocal equvialent strain,
+    #if set zero and Cd is constant, it could promote damage in the first step
     [dummy_material]
         type = GenericConstantMaterial
         prop_names = 'eqstrain_nonlocal_initial initial_damage initial_breakage damage_perturbation density'
-        prop_values = '0 0 0 0 ${density}'
+        prop_values = '-0.92 0 0 0 ${density}'
     []
     #[initial_damage_surround]
     #  type = ParsedMaterial
