@@ -40,7 +40,7 @@ FluidDiffusion2::computeQpResidual()
   
   // // 2. Compute permeability tensors in reference configuration
   // // K_ref = J * F^(-1) * (kappa/mu) * F^(-T)
-  // RankTwoTensor K_s_ref;
+  RankTwoTensor K_s_ref;
   // if (_large_kinematics){
   //    K_s_ref = J * F_inv * _perm_s[_qp]  * F_inv_T;
   // }
@@ -66,16 +66,16 @@ FluidDiffusion2::computeQpJacobian()
   RankTwoTensor F_inv_T = F_inv.transpose();
   Real J = _F[_qp].det();
   
-  // 2. Compute permeability tensors
+  // // 2. Compute permeability tensors
+  // RankTwoTensor K_s_ref;
+  // if (_large_kinematics){
+  //    K_s_ref = J * F_inv * _perm_s[_qp]  * F_inv_T;
+  // }
+  // else{
+  //    K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
+  // }
   RankTwoTensor K_s_ref;
-  if (_large_kinematics){
-     K_s_ref = J * F_inv * _perm_s[_qp]  * F_inv_T;
-  }
-  else{
-     K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
-  }
- 
-  // K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
+  K_s_ref = _perm_s[_qp] * RankTwoTensor::Identity();
 
   // 3. Compute Jacobian components
   // Solid phase Jacobian: ∂q_s/∂p = K_s_ref * grad(φ)
