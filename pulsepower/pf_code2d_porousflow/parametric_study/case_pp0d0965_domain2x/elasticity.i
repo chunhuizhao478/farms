@@ -1,6 +1,6 @@
-fluid_elastic_energy_total_static = 8.081664e-05
-solid_elastic_energy_total_static = 5.408951e-03
-full_input_energy_static = 5.489768e-03
+fluid_elastic_energy_total_static = 1.636871e-03
+solid_elastic_energy_total_static = 5.186749e-01
+full_input_energy_static = 5.203118e-01
 
 #solid properties
 #----------------------------------------------------#
@@ -379,7 +379,7 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.01
+    EM = 0.005
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
