@@ -54,6 +54,10 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::validParams()
   params.addParam<std::vector<unsigned int>>("nonlocal_eqstrain_blocks", {},
                         "REQUIRED when use_nonlocal_eqstrain=true. Subdomain/Block IDs where nonlocal equivalent strain is enabled (e.g., 100 200)");
 
+  //use nonlocal strain rate for Cd calculation
+  params.addParam<bool>("use_nonlocal_strain_rate", false,
+                        "Use nonlocal averaged strain rate for Cd calculation (default: false)");
+
   //static solve flag
   params.addParam<bool>("static_solve_flag", true,
                         "Flag to determine which part of setupInitial() to use (default: true)");
@@ -112,6 +116,10 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::ComputeDamageBreakageStress3
     _use_nonlocal_eqstrain(getParam<bool>("use_nonlocal_eqstrain")),
     _eqstrain_nonlocal_old(getMaterialPropertyOldByName<Real>("eqstrain_nonlocal")),
     _nonlocal_eqstrain_blocks(getParam<std::vector<unsigned int>>("nonlocal_eqstrain_blocks")),
+    //use nonlocal strain rate for Cd calculation
+    _use_nonlocal_strain_rate(getParam<bool>("use_nonlocal_strain_rate")),
+    _strain_rate_nonlocal_old(_use_nonlocal_strain_rate ?
+        &getMaterialPropertyOld<Real>("strain_rate_nonlocal") : nullptr),
     //static solve flag
     _static_solve_flag(getParam<bool>("static_solve_flag"))
 {
@@ -726,11 +734,27 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeStrainRateCd()
   //_strain_rate_hat: constant value - default value = 1e-4
   //_cd_hat: constant value - default value = 1
   //_strain_rate: deviatoric strain rate, variable value passed from main app
-  if (_deviatroic_strain_rate_old[_qp] < _strain_rate_hat){
+
+  // Use NONLOCAL strain rate if enabled, otherwise use LOCAL strain rate
+  Real effective_strain_rate;
+
+  if (_use_nonlocal_strain_rate && useNonlocalEqStrainHere())
+  {
+    // Use nonlocal averaged strain rate (mesh-independent)
+    effective_strain_rate = (*_strain_rate_nonlocal_old)[_qp];
+  }
+  else
+  {
+    // Use local strain rate (mesh-dependent due to dt)
+    effective_strain_rate = _deviatroic_strain_rate_old[_qp];
+  }
+
+  // Compute Cd based on effective strain rate
+  if (effective_strain_rate < _strain_rate_hat){
     // if deviatoric strain rate is less than strain_rate_hat, Cd = 0 (optional) or Cd_hat (default)
     _Cd_mat[_qp] = _zero_Cd_below_threshold ? 0.0 : _cd_hat;
   }
   else{
-    _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(_deviatroic_strain_rate_old[_qp]/_strain_rate_hat)) * _cd_hat;
+    _Cd_mat[_qp] = pow(10, 1 + _m_exponent * std::log10(effective_strain_rate/_strain_rate_hat)) * _cd_hat;
   }
 }

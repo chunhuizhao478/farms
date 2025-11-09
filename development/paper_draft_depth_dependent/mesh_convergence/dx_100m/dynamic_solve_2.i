@@ -50,7 +50,7 @@ xi_d = -0.9 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 2.5e-9 #strain rate dependent parameters
+strain_rate_hat = 5e-9 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ##-------------------------##
 
@@ -275,6 +275,10 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       order = FIRST
       family = MONOMIAL
     []
+    [strain_rate_nonlocal_aux]
+      order = FIRST
+      family = MONOMIAL
+    []
   []
 
   [Modules/TensorMechanics/CohesiveZoneMaster]
@@ -392,6 +396,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       property = deviatoric_strain_rate
       execute_on = 'TIMESTEP_END'
     []
+    [get_strain_rate_nonlocal]
+      type = MaterialRealAux
+      variable = strain_rate_nonlocal_aux
+      property = strain_rate_nonlocal
+      execute_on = 'TIMESTEP_END'
+    []
   []
 
   [Kernels]
@@ -428,14 +438,15 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         cd_hat = ${cd_hat}
         use_nonlocal_eqstrain = true
         nonlocal_eqstrain_blocks = ${nonlocal_eqstrain_blocks}
+        use_nonlocal_strain_rate = true
         zero_Cd_below_threshold = true
         static_solve_flag = false
         outputs = exodus
     []
     [dummy_material]
         type = GenericConstantMaterial
-        prop_names = 'eqstrain_nonlocal_initial initial_damage initial_breakage damage_perturbation density'
-        prop_values = '0 0 0 0 ${density}'
+        prop_names = 'eqstrain_nonlocal_initial initial_damage initial_breakage damage_perturbation density strain_rate_nonlocal_initial'
+        prop_values = '0 0 0 0 ${density} 0'
     []
     #[initial_damage_surround]
     #  type = ParsedMaterial
@@ -486,13 +497,17 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     #[]
     #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
     [nonlocal_eqstrain_block1]
-        type = ElkNonlocalEqstrainUpdated
+        type = ElkNonlocalQuantityUpdated
         average_UO = eqstrain_averaging_block1
+        nonlocal_property_name = 'eqstrain_nonlocal'
+        initial_property_name = 'eqstrain_nonlocal_initial'
         block = ${nonlocal_eqstrain_blocks_1}
     []
     [nonlocal_eqstrain_block2]
-        type = ElkNonlocalEqstrainUpdated
+        type = ElkNonlocalQuantityUpdated
         average_UO = eqstrain_averaging_block2
+        nonlocal_property_name = 'eqstrain_nonlocal'
+        initial_property_name = 'eqstrain_nonlocal_initial'
         block = ${nonlocal_eqstrain_blocks_2}
     []
     #for the block outside the region, nonlocal strain is equal to the local strain
@@ -501,6 +516,29 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         property_name = eqstrain_nonlocal
         coupled_variables = 'xi_aux'
         expression = 'xi_aux'
+        block = ${local_eqstrain_blocks}
+    []
+    #nonlocal strain rate for damage blocks
+    [nonlocal_strainrate_block1]
+        type = ElkNonlocalQuantityUpdated
+        average_UO = strainrate_averaging_block1
+        nonlocal_property_name = 'strain_rate_nonlocal'
+        initial_property_name = 'strain_rate_nonlocal_initial'
+        block = ${nonlocal_eqstrain_blocks_1}
+    []
+    [nonlocal_strainrate_block2]
+        type = ElkNonlocalQuantityUpdated
+        average_UO = strainrate_averaging_block2
+        nonlocal_property_name = 'strain_rate_nonlocal'
+        initial_property_name = 'strain_rate_nonlocal_initial'
+        block = ${nonlocal_eqstrain_blocks_2}
+    []
+    #for the block outside the region, nonlocal strain rate is equal to the local strain rate
+    [nonlocal_strainrate_elastic]
+        type = ParsedMaterial
+        property_name = strain_rate_nonlocal
+        coupled_variables = 'deviatoric_strain_rate_aux'
+        expression = 'deviatoric_strain_rate_aux'
         block = ${local_eqstrain_blocks}
     []
   []
@@ -558,6 +596,24 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         execute_on = TIMESTEP_END
         block = ${nonlocal_eqstrain_blocks_2}
     []
+    [strainrate_averaging_block1]
+        type = ElkRadialAverageUpdated
+        length_scale = ${nonlocal_averaging_length_scale}
+        prop_name = deviatoric_strain_rate
+        radius = ${nonlocal_averaging_radius}
+        weights = BAZANT
+        execute_on = TIMESTEP_END
+        block = ${nonlocal_eqstrain_blocks_1}
+    []
+    [strainrate_averaging_block2]
+        type = ElkRadialAverageUpdated
+        length_scale = ${nonlocal_averaging_length_scale}
+        prop_name = deviatoric_strain_rate
+        radius = ${nonlocal_averaging_radius}
+        weights = BAZANT
+        execute_on = TIMESTEP_END
+        block = ${nonlocal_eqstrain_blocks_2}
+    []
   []
 
   [Executioner]
@@ -576,7 +632,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [exodus]
       type = Exodus
       execute_on = 'timestep_end'
-      show = 'vel_slipweakening_x vel_slipweakening_y disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux eqstrain_nonlocal_aux deviatoric_strain_rate_aux'
+      show = 'vel_slipweakening_x vel_slipweakening_y disp_slipweakening_x disp_slipweakening_y  alpha_damagedvar_aux B_aux xi_aux eqstrain_nonlocal_aux deviatoric_strain_rate_aux strain_rate_nonlocal_aux'
       time_step_interval = ${exodus_time_step_interval}
     []
     [out]

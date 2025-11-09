@@ -166,6 +166,10 @@ protected:
   /// blocks where nonlocal equivalent strain is enabled; empty means all blocks
   const std::vector<unsigned int> _nonlocal_eqstrain_blocks;
 
+  /// nonlocal strain rate for Cd calculation
+  bool _use_nonlocal_strain_rate;
+  const MaterialProperty<Real> * _strain_rate_nonlocal_old;
+
   /// static solve flag
   bool _static_solve_flag;
 
