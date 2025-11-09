@@ -22,7 +22,7 @@ confinement_pressure  = 1e6
 #----------------------------------------------------#
 fluid_density = 1000
 #biot_coefficient = ${fparse 1 - K/K_s}
-fluid_bulk_modulus = 2.24e+9
+fluid_bulk_modulus = 5e+8
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = ${fparse 1.0/K} #bulk modulus of porous medium
@@ -635,7 +635,7 @@ top_right2 = '3e-4 0.0025 0'
     phase_field = d
     initial_porosity = ${porosity}
     porosity_lower_bound = 0.008
-    porosity_upper_bound = 0.03
+    porosity_upper_bound = 0.999
   []
   #compute permeability
   [permeability] #take effective_perm
