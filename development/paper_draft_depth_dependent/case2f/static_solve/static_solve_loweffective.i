@@ -74,6 +74,8 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 use_overpressure = true #use overpressure for initial stress
 overpressure_depth_A = 6000 #overpressure depth A (m)
 overpressure_depth_B = 8000 #overpressure depth B (m)
+overpressure_loweffective = true #flag to use low effective stress overpressure (quadratic transition, lambda_pp scaling)
+lambda_pp = 0.9 #pore pressure ratio for low effective stress overpressure
 ##------------------------------------------------------------------##
 
 #nucleation parameters
@@ -201,6 +203,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
 []
 
@@ -355,6 +359,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   [./func_pos_xx_stress]
     type = CompositeFunction
@@ -386,6 +392,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   [./func_pos_xy_stress]
     type = CompositeFunction
@@ -417,6 +425,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   ##
   [./func_initial_stress_yy]
@@ -438,6 +448,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   [./func_pos_yy_stress]
     type = CompositeFunction
@@ -469,6 +481,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   [./func_initial_stress_zz]
     type = InitialStressStrainTPV26
@@ -489,6 +503,8 @@ t0 = 0.5 #nucleation time (s)
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
     overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   [./func_pos_zz_stress]
     type = CompositeFunction

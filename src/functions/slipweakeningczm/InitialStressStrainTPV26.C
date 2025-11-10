@@ -27,6 +27,8 @@ InitialStressStrainTPV26::validParams()
   params.addParam<bool>("use_overpressure", false, "flag to use overpressure in the stress calculation, default is false");
   params.addParam<Real>("overpressure_depth_A", -1, "depth at which overpressure starts to be applied");
   params.addParam<Real>("overpressure_depth_B", -1, "depth at which overpressure stops to be applied");
+  params.addParam<bool>("overpressure_loweffective", false, "flag to use low effective stress overpressure (quadratic transition, lambda_pp scaling), default is false. Requires use_overpressure = true");
+  params.addParam<Real>("lambda_pp", 0.9, "pore pressure ratio for low effective stress overpressure (Pf = lambda_pp * rho * g * z below depth B), default is 0.9");
   return params;
 }
 
@@ -51,7 +53,9 @@ InitialStressStrainTPV26::InitialStressStrainTPV26(const InputParameters & param
   _tapering_depth_B(getParam<Real>("tapering_depth_B")),
   _use_overpressure(getParam<bool>("use_overpressure")),
   _overpressure_depth_A(getParam<Real>("overpressure_depth_A")),
-  _overpressure_depth_B(getParam<Real>("overpressure_depth_B"))
+  _overpressure_depth_B(getParam<Real>("overpressure_depth_B")),
+  _overpressure_loweffective(getParam<bool>("overpressure_loweffective")),
+  _lambda_pp(getParam<Real>("lambda_pp"))
 {
   //some checks for parameters
   if (_get_initial_stress && _get_initial_strain) {
@@ -65,6 +69,12 @@ InitialStressStrainTPV26::InitialStressStrainTPV26(const InputParameters & param
   }
   if (_use_overpressure && (_overpressure_depth_A < 0 || _overpressure_depth_B < 0 || _overpressure_depth_A >= _overpressure_depth_B)) {
     mooseError("When use_overpressure is true, overpressure_depth_A and overpressure_depth_B must be provided and A must be less than B.");
+  }
+  if (_overpressure_loweffective && !_use_overpressure) {
+    mooseError("When overpressure_loweffective is true, use_overpressure must also be true.");
+  }
+  if (_overpressure_loweffective && (_lambda_pp <= 0.0 || _lambda_pp > 1.0)) {
+    mooseError("When overpressure_loweffective is true, lambda_pp must be in the range (0, 1]. Typical values: 0.9 (10% effective stress), 0.95 (5%), 0.98 (2%).");
   }
 }
 
@@ -104,7 +114,34 @@ InitialStressStrainTPV26::value(Real /*t*/, const Point & p) const
   if (!_use_overpressure){
     Pf = fluid_density * gravity * abs(z_coord);
   }
+  else if (_overpressure_loweffective){
+    // Low effective stress overpressure model (quadratic transition, lambda_pp scaling)
+    // Region 1: Hydrostatic (depth <= A)
+    if ( abs(z_coord) <= _overpressure_depth_A) {
+      Pf = fluid_density * gravity * abs(z_coord);
+    }
+    // Region 2: Quadratic transition (A < depth <= B)
+    // Transition from Pf_A to lambda_pp * rho * g * B
+    /*
+      Pf_A = density_fluid * g * A
+      Pf_B_target = lambda_pp * rho * g * B
+      s = (z - A) / (B - A)  # normalized depth parameter [0, 1]
+      Pf = Pf_A + (Pf_B_target - Pf_A) * s**2
+    */
+    else if ( abs(z_coord) > _overpressure_depth_A && abs(z_coord) <= _overpressure_depth_B) {
+      Real Pf_A = fluid_density * gravity * _overpressure_depth_A;
+      Real Pf_B_target = _lambda_pp * rock_density * gravity * _overpressure_depth_B;
+      Real s = (abs(z_coord) - _overpressure_depth_A) / (_overpressure_depth_B - _overpressure_depth_A);
+      Pf = Pf_A + (Pf_B_target - Pf_A) * s * s; // quadratic interpolation
+    }
+    // Region 3: Over-pressured below B (lambda_pp fraction of overburden)
+    // Pf = lambda_pp * rho * g * z
+    else if ( abs(z_coord) > _overpressure_depth_B) {
+      Pf = _lambda_pp * rock_density * gravity * abs(z_coord);
+    }
+  }
   else{
+    // Standard overpressure model (linear transition, full lithostatic)
     //depth <= A, rho * g * z
     if ( abs(z_coord) <= _overpressure_depth_A) {
       Pf = fluid_density * gravity * abs(z_coord);

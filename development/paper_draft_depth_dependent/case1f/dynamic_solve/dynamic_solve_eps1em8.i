@@ -21,8 +21,8 @@ nonlocal_eqstrain_blocks_3 = '200'
 local_eqstrain_blocks = '11'
 
 ##main fault parameters
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
@@ -62,7 +62,7 @@ xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-7 #strain rate dependent parameters
+strain_rate_hat = 1e-8 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -94,7 +94,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -16000 #nucleation center x coordinate
+nucl_center_x = -22100 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)

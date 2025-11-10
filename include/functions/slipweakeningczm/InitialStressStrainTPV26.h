@@ -37,5 +37,7 @@ public:
   bool _use_overpressure; //flag to use overpressure in the stress calculation
   Real _overpressure_depth_A; //depth at which overpressure starts to transition from hydrostatic to lithostatic
   Real _overpressure_depth_B; //depth at which overpressure stops to transition from hydrostatic to lithostatic
+  bool _overpressure_loweffective; //flag to use low effective stress overpressure (quadratic transition, lambda_pp scaling)
+  Real _lambda_pp; //pore pressure ratio for low effective stress overpressure (Pf = lambda_pp * rho * g * z below depth B)
 
 };

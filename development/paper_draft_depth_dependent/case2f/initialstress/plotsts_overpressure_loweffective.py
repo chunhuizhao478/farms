@@ -57,6 +57,13 @@ density_fluid = 1_000.0  # (kg/m³) pore-fluid density
 rho = 2_670.0  # (kg/m³) bulk rock density (lithostatic)
 g = 9.8  # (m/s²) gravitational acceleration
 
+# Pore pressure ratio for depth > B
+# Controls how much overburden is supported by pore fluid:
+#   0.95 = 95% supported by fluid, 5% effective stress (low effective stress)
+#   0.98 = 98% supported by fluid, 2% effective stress (very low)
+#   0.99 = 99% supported by fluid, 1% effective stress (extremely low)
+lambda_pp = 0.98  # Pore pressure ratio below 8 km (HIGH for low effective stress)
+
 # Stress coefficients (unchanged)
 b_xx = 0.926793  # 0.4
 b_yy = 1.073206
@@ -83,19 +90,20 @@ Pf = np.empty_like(depths)
 mask1 = depths <= A
 Pf[mask1] = density_fluid * g * depths[mask1]
 
-# Region 2: Linear-gradient transition A < z ≤ B
+# Region 2: Quadratic transition A < z ≤ B
+# Transition from hydrostatic (Pf_A) to lambda_pp * overburden (Pf_B_target)
 mask2 = (depths > A) & (depths <= B)
 z2 = depths[mask2]
 Pf_A = density_fluid * g * A
-Pf[mask2] = Pf_A + g * (
-    density_fluid * (z2 - A) + 0.5 * delta_rho * (z2 - A) ** 2 / (B - A)
-)
+Pf_B_target = lambda_pp * rho * g * B  # Target pore pressure at B
+# Quadratic interpolation from Pf_A to Pf_B_target (gradual then steeper)
+s = (z2 - A) / (B - A)  # Normalized depth parameter [0, 1]
+Pf[mask2] = Pf_A + (Pf_B_target - Pf_A) * s**2
 
-# Region 3: Over-pressured below B
+# Region 3: Over-pressured below B (lambda_pp fraction of overburden)
 mask3 = depths > B
 z3 = depths[mask3]
-Pf_B = density_fluid * g * B + 0.5 * g * delta_rho * (B - A)
-Pf[mask3] = Pf_B + rho * g * (z3 - B)
+Pf[mask3] = lambda_pp * rho * g * z3
 
 # -------------------------------------------------------------------
 # VERTICAL STRESS (compression negative)

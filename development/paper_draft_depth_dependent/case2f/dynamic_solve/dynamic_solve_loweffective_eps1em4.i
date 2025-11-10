@@ -18,11 +18,11 @@ nonlocal_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
-local_eqstrain_blocks = '11' 
+local_eqstrain_blocks = '11'
 
 ##main fault parameters
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
@@ -55,14 +55,14 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
-xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.0 #strain invariants ratio: onset of breakage healing
+xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -79,10 +79,10 @@ chi = 0.8 #energy ratio
 
 
 ##initial stress parameters##
-#background stress 
+#background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.926793
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -97,10 +97,12 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 use_overpressure = true #use overpressure for initial stress
 overpressure_depth_A = 6000 #overpressure depth A (m)
 overpressure_depth_B = 8000 #overpressure depth B (m)
+overpressure_loweffective = true #flag to use low effective stress overpressure (quadratic transition, lambda_pp scaling)
+lambda_pp = 0.9 #pore pressure ratio for low effective stress overpressure
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -16000 #nucleation center x coordinate
+nucl_center_x = -22100 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -137,13 +139,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     input = new_block_1
     combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
-  []       
+  []
   [./split_1]
     type = BreakMeshByBlockGenerator
     input = new_block_2
     split_interface = true
     block_pairs = '100 200'
-  []      
+  []
   [./sidesets]
     input = split_1
     type = SideSetsFromNormalsGenerator
@@ -154,7 +156,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                 0 0 -1
                 0 0 1'
     new_boundary = 'left right bottom top back front'
-  [] 
+  []
   [./extranodeset1]
       type = ExtraNodesetGenerator
       coord = ${bottom_nodes_coord}
@@ -167,14 +169,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
   ##------------slip weakening------------##
   displacements = 'disp_x disp_y disp_z'
-  
+
   #damping ratio
   q = ${q}
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
   lambda_o = ${lambda_o}
-  
+
   #initial shear modulus value (second lame constant) [Pa]
   shear_modulus_o = ${shear_modulus_o}
 
@@ -304,7 +306,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [traction_strike_aux]
     order = FIRST
     family = MONOMIAL
-  [] 
+  []
   [jump_normal_aux]
     order = FIRST
     family = MONOMIAL
@@ -328,7 +330,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [traction_dip_aux]
     order = FIRST
     family = MONOMIAL
-  []   
+  []
   ###
   #output CDB model properties
   [alpha_damagedvar_aux]
@@ -342,7 +344,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [xi_aux]
       order = FIRST
       family = MONOMIAL
-  [] 
+  []
   ###
   [deviatoric_strain_rate_aux]
     order = FIRST
@@ -351,7 +353,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   ##
   [eqstrain_nonlocal_aux]
     order = FIRST
-    family = MONOMIAL    
+    family = MONOMIAL
   []
   ##
   [eqstrain_nonlocal_initial_aux]
@@ -674,7 +676,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_strain_tensor
-      tensor_functions = 'func_initial_strain_xx   func_initial_strain_xy      func_initial_strain_xz 
+      tensor_functions = 'func_initial_strain_xx   func_initial_strain_xy      func_initial_strain_xz
                           func_initial_strain_xy   func_initial_strain_yy      func_initial_strain_yz
                           func_initial_strain_xz   func_initial_strain_yz      func_initial_strain_zz'
       output_properties = 'static_initial_strain_tensor'
@@ -683,7 +685,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./static_initial_stress_tensor] #this is used in the SlipWeakeningFrictionczm3dCDBM
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
-      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
+      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                           func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                           func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
       output_properties = 'static_initial_stress_tensor'
@@ -705,7 +707,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = ElkNonlocalEqstrain
     average_UO = eqstrain_averaging_block3
     block = ${nonlocal_eqstrain_blocks_3}
-  []      
+  []
   #for the block outside the region, nonlocal strain is equal to the local strain
   [nonlocal_eqstrain_block]
     type = ParsedMaterial
@@ -796,7 +798,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     tapering_depth_B = ${tapering_depth_B}
     use_overpressure = ${use_overpressure}
     overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}    
+    overpressure_depth_B = ${overpressure_depth_B}
+    overpressure_loweffective = ${overpressure_loweffective}
+    lambda_pp = ${lambda_pp}
   []
   ###cohesion###
   [./func_cohesion]
@@ -825,7 +829,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   [./init_sol_components]
     type = SolutionUserObject
-    mesh = '../static_solve/static_solve_out.e'
+    mesh = '../static_solve/static_solve_loweffective_out.e'
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
                         stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 xi'
@@ -898,7 +902,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux'
     time_step_interval = ${sample_snapshots_time_step_interval}
   []
-[]      
+[]
 
 [VectorPostprocessors]
   [main_fault]
@@ -932,8 +936,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                  8000 -1000 0
                  12000 -1000 0
                  16000 -1000 0
-                 20000 -1000 0 
-                 24000 -1000 0 
+                 20000 -1000 0
+                 24000 -1000 0
                  -24000 -2000 0
                  -20000 -2000 0
                  -16000 -2000 0
@@ -945,8 +949,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                  8000 -2000 0
                  12000 -2000 0
                  16000 -2000 0
-                 20000 -2000 0 
-                 24000 -2000 0 
+                 20000 -2000 0
+                 24000 -2000 0
                  -24000 -3000 0
                  -20000 -3000 0
                  -16000 -3000 0
@@ -958,7 +962,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                  8000 -3000 0
                  12000 -3000 0
                  16000 -3000 0
-                 20000 -3000 0 
+                 20000 -3000 0
                  24000 -3000 0
                  -24000 -4000 0
                  -20000 -4000 0
@@ -971,7 +975,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                  8000 -4000 0
                  12000 -4000 0
                  16000 -4000 0
-                 20000 -4000 0 
+                 20000 -4000 0
                  24000 -4000 0'
   []
 []

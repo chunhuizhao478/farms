@@ -21,8 +21,8 @@ nonlocal_eqstrain_blocks_3 = '200'
 local_eqstrain_blocks = '11'
 
 ##main fault parameters
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
@@ -55,14 +55,14 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
-xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.0 #strain invariants ratio: onset of breakage healing
+xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 5e-9 #strain rate dependent parameters
+strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -82,7 +82,7 @@ chi = 0.8 #energy ratio
 #background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.926793
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -100,7 +100,7 @@ overpressure_depth_B = 8000 #overpressure depth B (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -16000 #nucleation center x coordinate
+nucl_center_x = -22100 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -114,7 +114,7 @@ dt = 0.005 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 40 #time step interval for output
+exodus_time_step_interval = 20 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 2 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
