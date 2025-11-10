@@ -80,7 +80,7 @@ end_time = 3600 #end time for simulation
 exodus_time_step_interval = 160 #time step interval for output
 # sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 # csv_time_step_interval = 2 #time step interval for csv output
-checkpoint_time_step_interval = 400 #time step interval for checkpoint output
+checkpoint_time_step_interval = 160 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
