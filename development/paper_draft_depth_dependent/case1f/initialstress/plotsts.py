@@ -70,6 +70,12 @@ sigma_xy = Omega * (b_xy * (sigma_zz + Pf))
 
 # note: sigma_zz+Pf (convert to effective stress) -Pf (convert to total stress)
 
+# Save total stress values before converting to effective stress
+sigma_xx_total = sigma_xx.copy()
+sigma_yy_total = sigma_yy.copy()
+sigma_zz_total = sigma_zz.copy()
+sigma_xy_total = sigma_xy.copy()
+
 # Convert total stress to effective stress (what solid skeleton is holding)
 sigma_xx = sigma_xx + Pf
 sigma_yy = sigma_yy + Pf
@@ -79,10 +85,14 @@ sigma_zz = sigma_zz + Pf
 mask = depths <= 4000
 c = np.where(mask, 0.4e6 + (0.00072e6) * (5000 - depths), 0.4e6)  # cohesion in Pa
 
-# shear strength
+# shear strength for total stress (for plotting)
 mu_s = 0.8
-static_shear_strength = c + abs(mu_s * (sigma_yy))
+static_shear_strength_total = c + abs(mu_s * (sigma_yy_total + Pf))
 mu_d = 0.6
+residual_shear_strength_total = c + abs(mu_d * (sigma_yy_total + Pf))
+
+# shear strength for effective stress
+static_shear_strength = c + abs(mu_s * (sigma_yy))
 residual_shear_strength = c + abs(mu_d * (sigma_yy))
 
 # constant material properties
@@ -90,25 +100,28 @@ vs = 3464 * np.ones_like(depths)  # m/s
 vp = 6000 * np.ones_like(depths)  # m/s
 rho_depth = 2670 * np.ones_like(depths)  # kg/m^3
 # ------------------------
-# Plot depth variation of Vs, Vp, and density
+# Combined figure with seismic properties, effective stress, and strain invariants
 # ------------------------
-plt.figure(figsize=(6, 8))
-(line_vs,) = plt.plot(vs / 1e3, depths / 1e3, label="Vs (km/s)")
-(line_vp,) = plt.plot(vp / 1e3, depths / 1e3, label="Vp (km/s)")
-(line_rho,) = plt.plot(
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 8))
+tick_prop = mpl.font_manager.FontProperties(family="DejaVu Sans", size=16)
+
+# Left subplot: Seismic Properties
+(line_vs,) = ax1.plot(vs / 1e3, depths / 1e3, label="Vs (km/s)")
+(line_vp,) = ax1.plot(vp / 1e3, depths / 1e3, label="Vp (km/s)")
+(line_rho,) = ax1.plot(
     rho_depth / 1e3, depths / 1e3, label="Density (g/cc)", linestyle="--"
-)  # 1 g/cc = 1000 kg/m^3
+)
 
 # Add text labels near the lines with their values
 vs_val = float(np.mean(vs) / 1e3)
 vp_val = float(np.mean(vp) / 1e3)
 rho_val = float(np.mean(rho_depth) / 1e3)
-x_off = 0.05  # small horizontal offset so text doesn't sit on the line
+x_off = 0.05
 
 # Choose distinct depths (in km) for annotations to avoid overlap
 y_vs, y_vp, y_rho = 2.0, 5.0, 8.0
 
-plt.text(
+ax1.text(
     vs_val + x_off,
     y_vs,
     f"Vs = {vs_val:.2f} km/s",
@@ -119,7 +132,7 @@ plt.text(
     fontsize=12,
     bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor="none"),
 )
-plt.text(
+ax1.text(
     vp_val + x_off,
     y_vp,
     f"Vp = {vp_val:.2f} km/s",
@@ -130,7 +143,7 @@ plt.text(
     fontsize=12,
     bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor="none"),
 )
-plt.text(
+ax1.text(
     rho_val + x_off,
     y_rho,
     f"ρ = {rho_val:.2f} g/cc",
@@ -141,56 +154,27 @@ plt.text(
     fontsize=12,
     bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor="none"),
 )
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (km)", fontsize=20)
-plt.xlabel("Value (km/s or g/cc)", fontsize=20)
-plt.title("Seismic Properties vs Depth", fontsize=20)
-plt.legend(loc="best", fontsize=18)
-ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(
-    family="DejaVu Sans", size=16
-)  # e.g., 'Arial', 'Helvetica'
-for lab in ax.get_xticklabels() + ax.get_yticklabels():
+ax1.invert_yaxis()
+ax1.set_ylabel("Depth (km)", fontsize=20)
+ax1.set_xlabel("Value (km/s or g/cc)", fontsize=20)
+ax1.set_title("Seismic Properties vs Depth", fontsize=20)
+ax1.legend(loc="best", fontsize=10)
+for lab in ax1.get_xticklabels() + ax1.get_yticklabels():
     lab.set_fontproperties(tick_prop)
-plt.tight_layout()
-plt.savefig("seismic_properties_vs_depth.png", dpi=300)
-plt.show()
 
-# ------------------------
-# Plot Stress Components
-# ------------------------
-# plt.figure(figsize=(6, 8))
-# plt.plot(Pf/1e6, depths/1e3, label=r'$P_f$')
-# plt.plot(abs(sigma_zz)/1e6, depths/1e3, label=r'$\sigma_{zz}$') #when plotting, we use positive values for compression
-# plt.plot(abs(sigma_xx)/1e6, depths/1e3, label=r'$\sigma_{xx}$')
-# plt.plot(abs(sigma_yy)/1e6, depths/1e3, label=r'$\sigma_{yy}$')
-# plt.plot(sigma_xy/1e6, depths/1e3, label=r'$\sigma_{xy}$')
-# plt.plot(static_shear_strength/1e6, depths/1e3, label='Static Shear Strength', linestyle='--', color='orange')
-# plt.plot(residual_shear_strength/1e6, depths/1e3, label='Residual Shear Strength', linestyle='--', color='red')
-# plt.gca().invert_yaxis()
-# plt.ylabel('Depth (km)')
-# plt.xlabel('Stress (MPa)')
-# plt.title('Stress Components vs Depth')
-# plt.legend(loc='best')
-# plt.grid(True)
-# plt.tight_layout()
-# plt.savefig('stress_components_vs_depth.png', dpi=300)
-# plt.show()
-
-plt.figure(figsize=(6, 8))
-plt.plot(Pf / 1e6, depths / 1e3, label=r"$P_f$")
-plt.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}$")
-plt.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}$")
-plt.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}$")
-plt.plot(sigma_xy / 1e6, depths / 1e3, label=r"$\sigma_{xy}$")
-plt.plot(
+# Middle subplot: Effective Stress Components
+ax2.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}'$")
+ax2.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}'$")
+ax2.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}'$")
+ax2.plot(sigma_xy / 1e6, depths / 1e3, label=r"$\sigma_{xy}'$")
+ax2.plot(
     static_shear_strength / 1e6,
     depths / 1e3,
     label="Static Shear Strength",
     linestyle="--",
     alpha=0.8,
 )
-plt.plot(
+ax2.plot(
     residual_shear_strength / 1e6,
     depths / 1e3,
     label="Residual Shear Strength",
@@ -198,22 +182,14 @@ plt.plot(
     alpha=0.8,
 )
 
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (km)", fontsize=20)
-plt.xlabel("Stress (MPa)", fontsize=20)
-plt.title("Stress Components vs Depth", fontsize=20)
-# plt.legend(loc='best',fontsize = 18)
-plt.grid(True, which="both", linestyle=":")
-# Set tick label font family and size
-ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(
-    family="DejaVu Sans", size=16
-)  # e.g., 'Arial', 'Helvetica'
-for lab in ax.get_xticklabels() + ax.get_yticklabels():
+ax2.invert_yaxis()
+ax2.set_ylabel("Depth (km)", fontsize=20)
+ax2.set_xlabel("Stress (MPa)", fontsize=20)
+ax2.set_title("Effective Stress Components vs Depth", fontsize=20)
+ax2.grid(True, which="both", linestyle=":")
+ax2.legend(loc="best", fontsize=10)
+for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
     lab.set_fontproperties(tick_prop)
-plt.tight_layout()
-plt.savefig("stress_components_vs_depth.png", dpi=300)
-plt.show()
 
 # ------------------------
 # Compute Strains
@@ -241,21 +217,24 @@ I1 = np.trace(strain, axis1=1, axis2=2)
 I2 = np.einsum("nij,nij->n", strain, strain)
 xi = I1 / np.sqrt(I2)
 
+# Right subplot: Strain Invariants
 # ------------------------
-# Plot Strain Invariants
-# ------------------------
-plt.figure(figsize=(6, 8))
-plt.plot(I1, depths, label=r"$I_1$")
-plt.plot(I2, depths, label=r"$I_2$")
-plt.plot(xi, depths, label=r"$\xi$")
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (m)")
-plt.xlabel("Invariant values")
-plt.title("Strain Invariants vs Depth")
-plt.legend(loc="best")
-plt.grid(True)
+# ax3.plot(I1, depths / 1e3, label=r"$I_1$")
+# ax3.plot(I2, depths / 1e3, label=r"$I_2$")
+ax3.plot(xi, depths / 1e3, label=r"$\xi$")
+ax3.invert_yaxis()
+ax3.set_ylabel("Depth (km)", fontsize=20)
+ax3.set_xlabel("Invariant values", fontsize=20)
+ax3.set_title("Strain Invariants vs Depth", fontsize=20)
+ax3.set_xlim(-1.74, 0)
+ax3.legend(loc="best", fontsize=10)
+ax3.grid(True, which="both", linestyle=":")
+for lab in ax3.get_xticklabels() + ax3.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+
+# Save combined figure
 plt.tight_layout()
-plt.savefig("strain_invariants_vs_depth.png", dpi=300)
+plt.savefig("stress_and_strain_combined.png", dpi=300)
 plt.show()
 
 # -----------------------------------------------------------
@@ -324,45 +303,45 @@ for i in range(len(depths)):
     S_Hmax[i] = eigvals[0]  # most compressive (most negative, larger magnitude)
     S_hmin[i] = eigvals[1]  # less compressive (less negative, smaller magnitude)
 
-# ------------------------
-# Plot Principal Stresses - Combined Figure
-# ------------------------
-plt.figure(figsize=(6, 8))
-plt.plot(
-    np.abs(S_Hmax) / 1e6,
-    depths / 1e3,
-    linewidth=2,
-    label="S$_{Hmax}$",
-    color=THEME_ACCENTS[0],
-)
-plt.plot(
-    np.abs(Sv) / 1e6, depths / 1e3, linewidth=2, label="S$_v$", color=THEME_ACCENTS[2]
-)
-plt.plot(
-    np.abs(S_hmin) / 1e6,
-    depths / 1e3,
-    linewidth=2,
-    label="S$_{hmin}$",
-    color=THEME_ACCENTS[1],
-)
-plt.plot(
-    Pf / 1e6,
-    depths / 1e3,
-    linewidth=2,
-    label="P$_p$",
-    linestyle="--",
-    color=THEME_ACCENTS[3],
-)
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (km)", fontsize=20)
-plt.xlabel("Stress (MPa)", fontsize=20)
-plt.title("Principal Stresses vs Depth", fontsize=20)
-plt.legend(loc="best", fontsize=18)
-plt.grid(True, which="both", linestyle=":")
-ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(family="DejaVu Sans", size=16)
-for lab in ax.get_xticklabels() + ax.get_yticklabels():
-    lab.set_fontproperties(tick_prop)
-plt.tight_layout()
-plt.savefig("principal_stresses_combined_vs_depth.png", dpi=300)
-plt.show()
+# # ------------------------
+# # Plot Principal Stresses - Combined Figure
+# # ------------------------
+# plt.figure(figsize=(6, 8))
+# plt.plot(
+#     np.abs(S_Hmax) / 1e6,
+#     depths / 1e3,
+#     linewidth=2,
+#     label="S$_{Hmax}$",
+#     color=THEME_ACCENTS[0],
+# )
+# plt.plot(
+#     np.abs(Sv) / 1e6, depths / 1e3, linewidth=2, label="S$_v$", color=THEME_ACCENTS[2]
+# )
+# plt.plot(
+#     np.abs(S_hmin) / 1e6,
+#     depths / 1e3,
+#     linewidth=2,
+#     label="S$_{hmin}$",
+#     color=THEME_ACCENTS[1],
+# )
+# plt.plot(
+#     Pf / 1e6,
+#     depths / 1e3,
+#     linewidth=2,
+#     label="P$_p$",
+#     linestyle="--",
+#     color=THEME_ACCENTS[3],
+# )
+# plt.gca().invert_yaxis()
+# plt.ylabel("Depth (km)", fontsize=20)
+# plt.xlabel("Stress (MPa)", fontsize=20)
+# plt.title("Principal Stresses vs Depth", fontsize=20)
+# plt.legend(loc="best", fontsize=18)
+# plt.grid(True, which="both", linestyle=":")
+# ax = plt.gca()
+# tick_prop = mpl.font_manager.FontProperties(family="DejaVu Sans", size=16)
+# for lab in ax.get_xticklabels() + ax.get_yticklabels():
+#     lab.set_fontproperties(tick_prop)
+# plt.tight_layout()
+# plt.savefig("principal_stresses_combined_vs_depth.png", dpi=300)
+# plt.show()

@@ -136,45 +136,69 @@ static_shear_strength = c + np.abs(mu_s * (sigma_yy + Pf))
 residual_shear_strength = c + np.abs(mu_d * (sigma_yy + Pf))
 
 # -------------------------------------------------------------------
-# PLOT: Stress Components
+# Combined figure with seismic properties, effective stress, and strain invariants
 # -------------------------------------------------------------------
-plt.figure(figsize=(6, 8))
-plt.plot(Pf / 1e6, depths / 1e3, label=r"$P_f$")
-plt.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}$")
-plt.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}$")
-plt.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}$")
-plt.plot(sigma_xy / 1e6, depths / 1e3, label=r"$\sigma_{xy}$")
-plt.plot(
-    static_shear_strength / 1e6,
-    depths / 1e3,
-    label="Static Shear Strength",
-    linestyle="--",
-    alpha=0.8,
-)
-plt.plot(
-    residual_shear_strength / 1e6,
-    depths / 1e3,
-    label="Residual Shear Strength",
-    linestyle="--",
-    alpha=0.8,
+fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 8))
+tick_prop = mpl.font_manager.FontProperties(family="DejaVu Sans", size=16)
+
+# Left subplot: Seismic Properties (constant for this case)
+vs = 3464 * np.ones_like(depths)  # m/s
+vp = 6000 * np.ones_like(depths)  # m/s
+rho_depth_plot = 2670 * np.ones_like(depths)  # kg/m^3
+
+(line_vs,) = ax1.plot(vs / 1e3, depths / 1e3, label="Vs (km/s)")
+(line_vp,) = ax1.plot(vp / 1e3, depths / 1e3, label="Vp (km/s)")
+(line_rho,) = ax1.plot(
+    rho_depth_plot / 1e3, depths / 1e3, label="Density (g/cc)", linestyle="--"
 )
 
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (km)", fontsize=20)
-plt.xlabel("Stress (MPa)", fontsize=20)
-plt.title("Total Stress Components vs Depth", fontsize=20)
-plt.legend(loc="best", fontsize=18)
-# plt.grid(True, which='both', linestyle=':')
-# Set tick label font family and size
-ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(
-    family="DejaVu Sans", size=16
-)  # e.g., 'Arial', 'Helvetica'
-for lab in ax.get_xticklabels() + ax.get_yticklabels():
+# Add text labels
+vs_val = float(np.mean(vs) / 1e3)
+vp_val = float(np.mean(vp) / 1e3)
+rho_val = float(np.mean(rho_depth_plot) / 1e3)
+x_off = 0.05
+y_vs, y_vp, y_rho = 2.0, 5.0, 8.0
+
+ax1.text(
+    vs_val + x_off,
+    y_vs,
+    f"Vs = {vs_val:.2f} km/s",
+    color=line_vs.get_color(),
+    va="center",
+    ha="center",
+    rotation=90,
+    fontsize=12,
+    bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor="none"),
+)
+ax1.text(
+    vp_val + x_off,
+    y_vp,
+    f"Vp = {vp_val:.2f} km/s",
+    color=line_vp.get_color(),
+    va="center",
+    ha="center",
+    rotation=90,
+    fontsize=12,
+    bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor="none"),
+)
+ax1.text(
+    rho_val + x_off,
+    y_rho,
+    f"ρ = {rho_val:.2f} g/cc",
+    color=line_rho.get_color(),
+    va="center",
+    ha="center",
+    rotation=90,
+    fontsize=12,
+    bbox=dict(facecolor=THEME_LT1, alpha=0.6, edgecolor="none"),
+)
+ax1.invert_yaxis()
+ax1.set_ylabel("Depth (km)", fontsize=20)
+ax1.set_xlabel("Value (km/s or g/cc)", fontsize=20)
+ax1.set_title("Seismic Properties vs Depth", fontsize=20)
+ax1.legend(loc="best", fontsize=10)
+for lab in ax1.get_xticklabels() + ax1.get_yticklabels():
     lab.set_fontproperties(tick_prop)
-plt.tight_layout()
-plt.savefig("total_stress_components_vs_depth.png", dpi=300)
-plt.show()
 
 # -------------------------------------------------------------------
 # Effective stress plot
@@ -185,23 +209,21 @@ sigma_zz = sigma_zz + Pf
 static_shear_strength = c + np.abs(mu_s * (sigma_yy))
 residual_shear_strength = c + np.abs(mu_d * (sigma_yy))
 
+# Middle subplot: Effective Stress Components
 # -------------------------------------------------------------------
-# PLOT: Stress Components
-# -------------------------------------------------------------------
-plt.figure(figsize=(6, 8))
-# plt.plot(Pf / 1e6, depths / 1e3, label=r"$P_f$")
-plt.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}$")
-plt.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}$")
-plt.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}$")
-plt.plot(sigma_xy / 1e6, depths / 1e3, label=r"$\sigma_{xy}$")
-plt.plot(
+# ax2.plot(Pf / 1e6, depths / 1e3, label=r"$P_f$")
+ax2.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}$")
+ax2.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}$")
+ax2.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}$")
+ax2.plot(sigma_xy / 1e6, depths / 1e3, label=r"$\sigma_{xy}$")
+ax2.plot(
     static_shear_strength / 1e6,
     depths / 1e3,
     label="Static Shear Strength",
     linestyle="--",
     alpha=0.8,
 )
-plt.plot(
+ax2.plot(
     residual_shear_strength / 1e6,
     depths / 1e3,
     label="Residual Shear Strength",
@@ -209,22 +231,14 @@ plt.plot(
     alpha=0.8,
 )
 
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (km)", fontsize=20)
-plt.xlabel("Stress (MPa)", fontsize=20)
-plt.title("Stress Components vs Depth", fontsize=20)
-plt.legend(loc="best", fontsize=18)
-# plt.grid(True, which='both', linestyle=':')
-# Set tick label font family and size
-ax = plt.gca()
-tick_prop = mpl.font_manager.FontProperties(
-    family="DejaVu Sans", size=16
-)  # e.g., 'Arial', 'Helvetica'
-for lab in ax.get_xticklabels() + ax.get_yticklabels():
+ax2.invert_yaxis()
+ax2.set_ylabel("Depth (km)", fontsize=20)
+ax2.set_xlabel("Stress (MPa)", fontsize=20)
+ax2.set_title("Effective Stress Components vs Depth", fontsize=20)
+ax2.legend(loc="best", fontsize=10)
+ax2.grid(True, which="both", linestyle=":")
+for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
     lab.set_fontproperties(tick_prop)
-plt.tight_layout()
-plt.savefig("effective_stress_components_vs_depth.png", dpi=300)
-plt.show()
 
 # -------------------------------------------------------------------
 # STRAIN COMPUTATION (constant μ, λ here)
@@ -249,28 +263,27 @@ I1 = np.trace(strain, axis1=1, axis2=2)
 I2 = np.einsum("nij,nij->n", strain, strain)
 xi = I1 / np.sqrt(I2)
 
+# Right subplot: Strain Invariants
 # ------------------------
-# Plot Strain Invariants
-# ------------------------
-plt.figure(figsize=(6, 8))
-# plt.plot(I1, depths, label=r'$I_1$')
-# plt.plot(I2, depths, label=r'$I_2$')
-plt.plot(xi, depths / 1e3, label=r"$\xi$")
-plt.gca().invert_yaxis()
-plt.ylabel("Depth (km)", fontsize=20)
-plt.xlabel("Invariant values", fontsize=20)
-plt.title("Strain Invariants vs Depth", fontsize=20)
-plt.grid(True, which="both", linestyle=":")
-ax2 = plt.gca()
+# ax3.plot(I1, depths / 1e3, label=r'$I_1$')
+# ax3.plot(I2, depths / 1e3, label=r'$I_2$')
+ax3.plot(xi, depths / 1e3, label=r"$\xi$")
+ax3.invert_yaxis()
+ax3.set_ylabel("Depth (km)", fontsize=20)
+ax3.set_xlabel("Invariant values", fontsize=20)
+ax3.set_title("Strain Invariants vs Depth", fontsize=20)
+ax3.grid(True, which="both", linestyle=":")
 # Fixed ticks for xi as requested (-1.5 to 1.5)
-ax2.set_xticks([-1.73, -1.075, -0.5, 0.0])
+ax3.set_xticks([-1.73, -1.075, -0.5, 0.0])
 # Optionally enforce symmetric x-limits if xi range narrower
-current_xlim = ax2.get_xlim()
+current_xlim = ax3.get_xlim()
 if current_xlim[0] > -1.5 or current_xlim[1] < 1.5:
-    ax2.set_xlim(-1.8, 0)
-for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
+    ax3.set_xlim(-1.8, 0)
+for lab in ax3.get_xticklabels() + ax3.get_yticklabels():
     lab.set_fontproperties(tick_prop)
-plt.legend(loc="best", fontsize=14)
+ax3.legend(loc="best", fontsize=10)
+
+# Save combined figure
 plt.tight_layout()
-plt.savefig("strain_invariants_vs_depth.png", dpi=300)
+plt.savefig("stress_and_strain_combined_loweffective.png", dpi=300)
 plt.show()

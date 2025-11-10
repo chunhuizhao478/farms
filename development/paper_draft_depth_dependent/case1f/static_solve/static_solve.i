@@ -7,8 +7,8 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                       60000 60000  -60000;
                      -60000 60000  -60000'
 
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file

@@ -7,8 +7,8 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                       60000 60000  -60000;
                      -60000 60000  -60000'
 
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
@@ -36,8 +36,8 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
-xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.0 #strain invariants ratio: onset of breakage healing
+xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = 0 #coefficient gives positive damage evolution
@@ -56,10 +56,10 @@ chi = 0.8 #energy ratio
 
 ##initial stress parameters##
 
-#background stress 
+#background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.926793
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -90,8 +90,8 @@ fault_center = '0 0 -10000'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
-  []   
+    file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
+  []
   [./sidesets]
     input = msh
     type = SideSetsFromNormalsGenerator
@@ -102,7 +102,7 @@ fault_center = '0 0 -10000'
                 0 0 -1
                 0 0 1'
     new_boundary = 'left right back front bottom top'
-  [] 
+  []
   [./extranodeset1]
       type = ExtraNodesetGenerator
       coord = ${bottom_nodes_coord}
@@ -117,7 +117,7 @@ fault_center = '0 0 -10000'
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
   lambda_o = ${lambda_o}
-  
+
   #initial shear modulus value (second lame constant) [Pa]
   shear_modulus_o = ${shear_modulus_o}
 
@@ -195,10 +195,9 @@ fault_center = '0 0 -10000'
     displacements = 'disp_x disp_y disp_z'
   [../]
   [gravity_z]
-    type = CoupledBodyForce
+    type = BodyForce
     variable = disp_z
-    value = ${fparse -1 * gravity}
-    density_property_name = density
+    value = ${fparse -1 * density * gravity + 1 * fluid_density * gravity}
   []
 []
 
@@ -244,7 +243,7 @@ fault_center = '0 0 -10000'
     len_of_fault_strike = ${len_of_fault_strike}
     len_of_fault_dip = ${len_of_fault_dip}
     nucl_center = ${fault_center}
-    output_properties = 'initial_damage'      
+    output_properties = 'initial_damage'
     outputs = exodus
   []
   [dummy_material]
@@ -254,7 +253,7 @@ fault_center = '0 0 -10000'
   []
   [./static_initial_strain_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening
     type = ComputeEigenstrainFromInitialStress
-    initial_stress = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
+    initial_stress = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                       func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                       func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
     eigenstrain_name = ini_stress
@@ -262,12 +261,12 @@ fault_center = '0 0 -10000'
   [./static_initial_stress_tensor] #this is used in the ComputeDamageBreakageStress3DSlipWeakening, SlipWeakeningFrictionczm3dCDBM
       type = GenericFunctionRankTwoTensor
       tensor_name = static_initial_stress_tensor
-      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz 
+      tensor_functions = 'func_initial_stress_xx   func_initial_stress_xy      func_initial_stress_xz
                           func_initial_stress_xy   func_initial_stress_yy      func_initial_stress_yz
                           func_initial_stress_xz   func_initial_stress_yz      func_initial_stress_zz'
       output_properties = 'static_initial_stress_tensor'
       outputs = exodus
-  [../]    
+  [../]
   [./comp_xi]
     type = ComputeXi
     output_properties = 'strain_invariant_ratio'
@@ -288,14 +287,14 @@ fault_center = '0 0 -10000'
       boundary = left
       function = func_pos_xx_stress
       displacements = 'disp_x disp_y disp_z'
-  []  
+  []
   [static_pressure_right]
       type = FunctionNeumannBC
       variable = disp_x
       boundary = right
       function = func_neg_xx_stress
       displacements = 'disp_x disp_y disp_z'
-  [] 
+  []
   #
   [static_pressure_front]
       type = FunctionNeumannBC
@@ -303,14 +302,14 @@ fault_center = '0 0 -10000'
       boundary = front
       function = func_neg_yy_stress
       displacements = 'disp_x disp_y disp_z'
-  []  
+  []
   [static_pressure_back]
       type = FunctionNeumannBC
       variable = disp_y
       boundary = back
       function = func_pos_yy_stress
       displacements = 'disp_x disp_y disp_z'
-  [] 
+  []
   #
   [static_pressure_front_shear]
       type = FunctionNeumannBC
@@ -318,28 +317,28 @@ fault_center = '0 0 -10000'
       boundary = front
       function = func_pos_xy_stress
       displacements = 'disp_x disp_y disp_z'
-  []  
+  []
   [static_pressure_back_shear]
       type = FunctionNeumannBC
       variable = disp_x
       boundary = back
       function = func_neg_xy_stress
       displacements = 'disp_x disp_y disp_z'
-  [] 
+  []
   [static_pressure_left_shear]
       type = FunctionNeumannBC
       variable = disp_y
       boundary = left
       function = func_neg_xy_stress
       displacements = 'disp_x disp_y disp_z'
-  []  
+  []
   [static_pressure_right_shear]
       type = FunctionNeumannBC
       variable = disp_y
       boundary = right
       function = func_pos_xy_stress
       displacements = 'disp_x disp_y disp_z'
-  []   
+  []
   #
   [fix_node_x]
     type = DirichletBC
@@ -537,4 +536,4 @@ fault_center = '0 0 -10000'
 
 [Outputs]
   exodus = true
-[]    
+[]

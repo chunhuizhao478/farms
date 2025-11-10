@@ -194,6 +194,11 @@ InitialStressStrainTPV26VaryingDensity::value(Real /*t*/, const Point & p) const
   sigmayy = Omega * (byy * (sigmazz + Pf) - Pf) + (1.0 - Omega) * sigmazz;
   sigmaxy = Omega * (bxy * (sigmazz + Pf));
 
+  //convert total stress to effective stress
+  sigmaxx = sigmaxx + Pf;
+  sigmayy = sigmayy + Pf;
+  sigmazz = sigmazz + Pf;
+
   // Strain via inverse Hooke's law with constant lambda_o, shear_modulus_o (as in original)
   const Real sigma_mean = (sigmaxx + sigmayy + sigmazz);
   const Real first = (1.0 / (2.0 * shear_modulus_o));
