@@ -44,7 +44,6 @@ PoroSlipWeakeningFrictionczm3dCDBM::validParams()
                         "time at which the forced rupture starts, default is 0.1");
   params.addCoupledVar("cohesion_aux", "auxiliary variable for cohesion");
   params.addCoupledVar("forced_rupture_aux", "auxiliary variable for forced rupture");
-  params.addCoupledVar("fluid_pressure_aux", "auxiliary variable for reference pressure");
   params.addRequiredCoupledVar("fault_pressure", "variable for fluid pressure");
 
   return params;
@@ -102,7 +101,6 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
     _t0(getParam<Real>("t0")),
     _cohesion_aux(coupledValue("cohesion_aux")),
     _forced_rupture_aux(coupledValue("forced_rupture_aux")),
-    _fluid_pressure_aux(coupledValue("fluid_pressure_aux")),
     _fault_pressure(coupledValue("fault_pressure"))
 {
 
@@ -210,9 +208,6 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   //!!! rotation matrix is not applied here !!!
   Real T1_o = _static_initial_stress_tensor[_qp](0, 1); // shear stress in t dir
   Real T2_o = -1.0 * _static_initial_stress_tensor[_qp](1, 1); // normal stress in n dir
-
-  // Real T2_o = -1.0 * _static_initial_stress_tensor[_qp](1, 1) - alpha * _fluid_pressure_aux[_qp]; // normal stress in n dir
-
   Real T3_o = _static_initial_stress_tensor[_qp](0, 2); // shear stress in d dir
 
   // Compute sticking stress
@@ -224,16 +219,28 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
                 (2 * A) +
             ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
 
+  Real Pf = _fault_pressure[_qp]; // fluid pressure
+
+  //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
+  //treat tension on the fault the same as if the effective normal stress equals zero.
+  Real effective_stress = (-T2) - Pf;
+
+
   // Overstress nucleation
   if (!_use_forced_rupture){
 
+    //tau_f
+    //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
+    //treat tension on the fault the same as if the effective normal stress equals zero.
+
+
     // Compute fault traction
-    if (T2 < 0)
+    if (effective_stress < 0)
     {
     }
     else
     {
-      T2 = 0;
+      effective_stress = 0;
     }
 
     // Compute friction strength
@@ -241,11 +248,11 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     if (slip_total < _Dc)
     {
       tau_f = (_mu_s - (_mu_s - _mu_d) * slip_total / _Dc) *
-              (-T2); // square for shear component
+              (-effective_stress); // square for shear component
     }
     else
     {
-      tau_f = _mu_d * (-T2);
+      tau_f = _mu_d * (-effective_stress);
     }
   
   }
@@ -278,15 +285,6 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     }
 
     Real mu = _mu_s + ( _mu_d - _mu_s ) * std::max(f1,f2);
-
-    Real Pf = _fault_pressure[_qp]; // fluid pressure
-
-    //tau_f
-    //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
-    //treat tension on the fault the same as if the effective normal stress equals zero.
-    Real effective_stress = (-T2) - Pf;
-
-//  Real effective_stress = (-T2) + Pf;
 
     tau_f = _cohesion_aux[_qp] + mu * std::max(effective_stress,0.0);
 

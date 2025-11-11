@@ -40,6 +40,14 @@ ComputeDamageBreakageStress3DStatic::validParams()
   params.addRequiredParam<Real>(      "beta_width", "coefficient gives width of transitional region");
   params.addRequiredParam<Real>( "CdCb_multiplier", "multiplier between Cd and Cb");
   params.addRequiredParam<Real>(    "CBH_constant", "constant CBH value");
+  params.addParam<Real>("permeability_solid_o", "permeability of solid meterial");
+  params.addParam<Real>("initial_viscosity_fluid", "fluid viscosity");
+  params.addParam<Real>("solid_bulk_modulus_s", "solid bulk modulus of solid grains");
+  params.addParam<Real>("fluid_bulk_modulus", "fluid bulk modulus"); 
+  params.addParam<Real>("porosity_solid_o", "initial prosoity of solid phase"); 
+
+  //Porepressure variable
+  params.addCoupledVar("porepressure", 0.0, "The pore pressure variable");
 
   //strain rate dependent Cd parameters
   params.addParam<bool>("use_strain_rate_dependent_Cd", false,
@@ -94,7 +102,17 @@ ComputeDamageBreakageStress3DStatic::ComputeDamageBreakageStress3DStatic(const I
     _use_strain_rate_dependent_Cd(getParam<bool>("use_strain_rate_dependent_Cd")),
     _m_exponent(getParam<Real>("m_exponent")),
     _strain_rate_hat(getParam<Real>("strain_rate_hat")),
-    _cd_hat(getParam<Real>("cd_hat"))
+    _cd_hat(getParam<Real>("cd_hat")),
+    _permeability_solid_o(getParam<Real>("permeability_solid_o")),
+    _solid_bulk_modulus_s(getParam<Real>("solid_bulk_modulus_s")),
+    _fluid_bulk_modulus(getParam<Real>("fluid_bulk_modulus")),
+    _porosity_solid_o(getParam<Real>("porosity_solid_o")),
+    _initial_viscosity_fluid(getParam<Real>("initial_viscosity_fluid")),
+    _pore_pressure(coupledValue("porepressure")),
+    _stress_off_diag_jacobian(declareProperty<RankTwoTensor>(_base_name + "stress_off_diag_jacobian")),
+    _Biot_coeff_s(declareProperty<Real>("Biot_coefficient_solid")),
+    _perm_s(declareProperty<Real>("permeability_solid"))
+
 {
 }
 
@@ -227,6 +245,7 @@ ComputeDamageBreakageStress3DStatic::computeQpStress()
   _shear_modulus[_qp] = shear_modulus_out;
   _gamma_damaged[_qp] = gamma_damaged_out;
 
+
   /* compute strain */
   RankTwoTensor eps_p = _eps_p_old[_qp] + _dt * _C_g * std::pow(_B_old[_qp],_m1) * _sigma_d_old[_qp];
   RankTwoTensor eps_t_inc = _mechanical_strain[_qp] - _mechanical_strain_old[_qp];
@@ -238,19 +257,46 @@ ComputeDamageBreakageStress3DStatic::computeQpStress()
   Real I2 = epsilon + eps_e(0,0) * eps_e(0,0) + eps_e(1,1) * eps_e(1,1) + eps_e(2,2) * eps_e(2,2) + 2 * eps_e(0,1) * eps_e(0,1) + 2 * eps_e(0,2) * eps_e(0,2) + 2 * eps_e(1,2) * eps_e(1,2);
   Real xi = I1/std::sqrt(I2);
 
+  // Solid bulk modulus (constant for solid grains)
+    Real K_s = _solid_bulk_modulus_s;
+
+    // Fluid bulk modulus
+    Real K_f = _fluid_bulk_modulus;
+    
+    // Compute drained bulk modulus K_d of solid phase
+    Real K_d = _lambda[_qp] + (2.0/3.0) * _shear_modulus[_qp] - (2.0/3.0) * _gamma_damaged[_qp] * xi;
+     
+    // Compute Biot coefficient for solid phase
+    Real alpha_s = 1.0 - K_d/K_s;
+
+    // Compute porosity evolution for solid phase
+    Real porosity_s = _porosity_solid_o;
+
+    // Compute Biot modulus for solid phase
+    Real one_over_Storage_s = (K_s*K_f)/(porosity_s * K_f + (alpha_s - porosity_s) * K_s);
+
+    // Compute permeability for solid phase
+    Real perm_s = _permeability_solid_o;
+
+    // Save solid phase properties
+    _Biot_coeff_s[_qp] = alpha_s;
+    _perm_s[_qp] = (1 - _B[_qp]) * perm_s / _initial_viscosity_fluid;
+
   //Represent sigma (solid(s) + granular(b))
   RankTwoTensor sigma_s;
   RankTwoTensor sigma_b;
   RankTwoTensor sigma_total;
   RankTwoTensor sigma_d;
+  RankTwoTensor sigma_eff;
   const auto I = RankTwoTensor::Identity();
 
   /* Compute stress */
   sigma_s = (lambda_out - gamma_damaged_out / xi) * I1 * RankTwoTensor::Identity() + (2 * shear_modulus_out - gamma_damaged_out * xi) * eps_e;
   sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
-  sigma_total = (1 - B_out) * sigma_s + B_out * sigma_b;
+  sigma_total = (1 - B_out) * sigma_s + B_out * sigma_b - _Biot_coeff_s[_qp] * _pore_pressure[_qp] * RankTwoTensor::Identity();
 
-  sigma_d = sigma_total - 0.3333 * (sigma_total(0,0) + sigma_total(1,1) + sigma_total(2,2)) * I;
+  sigma_eff = sigma_total +  _pore_pressure[_qp] * RankTwoTensor::Identity();
+  sigma_d = sigma_eff - 0.3333 * (sigma_eff(0,0) + sigma_eff(1,1) + sigma_eff(2,2)) * I;
 
   _eps_total[_qp] = eps_p + eps_e;
   _eps_p[_qp] = eps_p;
@@ -492,6 +538,9 @@ ComputeDamageBreakageStress3DStatic::computeQpTangentModulus(RankFourTensor & ta
 
   // Combine: tangent = (1-B)*dSs/dE + B*dSb/dE
   tangent = dSsdE * (1.0 - _B[_qp]) + dSbdE * _B[_qp]; 
+
+  // Final derivative: dS/dp = -α_eff * I
+  _stress_off_diag_jacobian[_qp] = -_Biot_coeff_s[_qp] * RankTwoTensor::Identity();
 
 }
 

@@ -76,6 +76,8 @@ anand_param_go_mat = 0.25
 anand_param_eta_cv_mat = 0.01
 anand_param_p_mat = 1    
 
+##------------------------------------------------------------------##
+
 ##initial stress parameters##
 #background stress 
 fluid_density = 1000
@@ -624,11 +626,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       extra_vector_tags = 'restore_tag'
   []
   [./mass1]
-      type = SmallStrainFluidSolidCoupling
+      type = SmallStrainFluidSolidCouplingExplicit
       variable = porepressure
   [../]
   [./mass2]
-      type = SmallStrainPorePressureTimeDerivative
+      type = SmallStrainPorePressureTimeDerivativeExplicit
       variable = porepressure
   [../]
   [./darcy_flow]
@@ -693,7 +695,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       prop_values = '0 0 0 ${density}'
   []
   [./czm_mat]
-      type = SlipWeakeningFrictionczm3dCDBM
+      type = PoroSlipWeakeningFrictionczm3dCDBM
       mu_s = ${mu_s}
       mu_d = ${mu_d}
       Dc = ${Dc}
@@ -707,15 +709,15 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       reaction_slipweakening_x = resid_slipweakening_x
       reaction_slipweakening_y = resid_slipweakening_y
       reaction_slipweakening_z = resid_slipweakening_z
-      reaction_pressure_x = reaction_pressure_x
-      reaction_pressure_y = reaction_pressure_y
-      reaction_pressure_z = reaction_pressure_z
+      reaction_pressure_x = resid_pressure_x
+      reaction_pressure_y = resid_pressure_y
+      reaction_pressure_z = resid_pressure_z
+      fault_pressure = porepressure
       #---------------------------------------------#
       use_forced_rupture = true
       t0 = ${t0}
       cohesion_aux = cohesion_aux
       forced_rupture_aux = forced_rupture_aux
-      fluid_pressure_aux = fluid_pressure_aux
       #---------------------------------------------#
       boundary = 'Block100_Block200'
   [../]
@@ -805,7 +807,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./func_initial__porepressure]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = 'porepressure'
+    from_variable = 'initial_porepressure'
   []
   ###fluid pressure###
   [./func_fluid_pressure]
@@ -854,11 +856,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
                         stress_00 stress_01 stress_02 stress_11 stress_12 stress_22
-                        porepressure'
+                        initial_porepressure'
     timestep = LATEST
     force_preaux = true
     execute_on = 'INITIAL'
   [../]
+[]
+
+[Preconditioning]
+    [smp]
+      type = SMP
+      full = true
+    []
 []
 
 [Executioner]

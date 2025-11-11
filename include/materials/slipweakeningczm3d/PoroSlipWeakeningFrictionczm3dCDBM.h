@@ -90,6 +90,5 @@ protected:
   Real _t0;
   const VariableValue & _cohesion_aux;
   const VariableValue & _forced_rupture_aux;
-  const VariableValue & _fluid_pressure_aux;
   const VariableValue & _fault_pressure;
 };

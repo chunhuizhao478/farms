@@ -152,4 +152,31 @@ protected:
   Real _strain_rate_hat;
   Real _cd_hat;
 
+  /// initial permeability of solid material
+  Real _permeability_solid_o;
+
+  /// solid bulk modulus of solid grains
+  Real _solid_bulk_modulus_s;
+
+  /// fluid bulk modulus
+  Real _fluid_bulk_modulus;
+
+  /// initial porosity of solid phase
+  Real _porosity_solid_o;
+
+  /// initial fluid viscosity
+  Real _initial_viscosity_fluid;
+
+   /// pore pressure coupled variable
+  const VariableValue & _pore_pressure;
+
+  /// PK1 off-diagonal Jacobian
+  MaterialProperty<RankTwoTensor> & _stress_off_diag_jacobian;
+
+  /// Biot coefficient for solid phase
+  MaterialProperty<Real> & _Biot_coeff_s;
+
+  /// permeability of solid phase
+  MaterialProperty<Real> & _perm_s;
+
 };

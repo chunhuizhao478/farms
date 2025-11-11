@@ -15,7 +15,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 ##-------------------------##
 
 ##material properties##
-density = 2670 #density
+density = 2670 #density   
 lambda_o = 3.204e10 #first lame constant
 shear_modulus_o = 3.204e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
@@ -53,6 +53,13 @@ m1 = 10 #coefficient of power law indexes
 m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
 ##-------------------------##
+
+
+  fluid_bulk_modulus = 2.2e9   # Water bulk modulus (2.2 GPa)    
+  permeability_solid_o = 1e-20 # Initial permeability (1 milli-darcy) 
+  porosity_solid_o = 0.008 # Initial porosity (8%)     
+  solid_bulk_modulus_s = 50.38e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
+  initial_viscosity_fluid = 1e-3
 
 ##initial stress parameters##
 
@@ -105,6 +112,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 
 [GlobalParams]
   displacements = 'disp_x disp_y disp_z'
+  porepressure = 'porepressure'
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
@@ -159,6 +167,23 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 
   # energy ratio
   chi = ${chi}
+
+    # Water bulk modulus (2.2 GPa)
+  fluid_bulk_modulus = ${fluid_bulk_modulus}     
+
+  # Initial permeability (1 milli-darcy) 
+  permeability_solid_o = ${permeability_solid_o}  
+
+  # Initial porosity 
+  porosity_solid_o = ${porosity_solid_o}  
+     
+  # Viscosity      
+  initial_viscosity_fluid = ${initial_viscosity_fluid}  
+
+  # Solid grains bulk modulus (36 GPa - typical for quartz)  
+  solid_bulk_modulus_s = ${solid_bulk_modulus_s}   
+
+
 []
 
 [Variables]
@@ -174,6 +199,11 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
     order = FIRST
     family = LAGRANGE
   []
+  [porepressure]
+        order = FIRST
+        family = LAGRANGE
+        scaling = 1E9
+  []
 []
 
 [AuxVariables]
@@ -183,9 +213,28 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 []
 
 [Kernels]
-  [SolidMechanics]
-    displacements = 'disp_x disp_y disp_z'
-  [../]
+  [dispkernel_x]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_x
+      component = 0
+  []
+  [dispkernel_y]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_y
+      component = 1
+  []
+  [dispkernel_z]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_z
+      component = 2
+  []
+  [./darcy_flow]
+      type = SmallStrainFluidDiffusion
+      variable = porepressure
+  []
   [gravity_z]
     type = BodyForce
     variable = disp_z
