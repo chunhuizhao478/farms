@@ -23,8 +23,8 @@ Date: 2025-11-08
 """
 
 import argparse
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # ==============================================================================
 # CONFIGURATION - Modify these parameters as needed
@@ -48,38 +48,32 @@ INPUT_FILE = "elasticity.i"
 
 # SLURM Parameters (defaults)
 SLURM_DEFAULTS = {
-    'partition': 'normal',          # Queue name
-    'nodes': 8,                      # Number of nodes
-    'ntasks': 200,                   # Total number of MPI tasks
-    'time': '48:00:00',              # Wall time (hh:mm:ss)
-    'account': 'EAR20006',           # Project/Allocation name
-    'mail_user': 'chunhui3@illinois.edu',  # Email for notifications
-    'mail_type': 'all',              # Email notification type
+    "partition": "normal",  # Queue name
+    "nodes": 4,  # Number of nodes
+    "ntasks": 200,  # Total number of MPI tasks
+    "time": "24:00:00",  # Wall time (hh:mm:ss)
+    "account": "ASC25056",  # Project/Allocation name
+    "mail_user": "chunhui3@illinois.edu",  # Email for notifications
+    "mail_type": "all",  # Email notification type
 }
 
 # Module loading commands (customize for your HPC system)
 MODULE_COMMANDS = """# Load necessary modules
-module swap intel gcc
-#module swap impi mvapich2-x
-module load cuda
-export CXXFLAGS=-I/opt/apps/gcc/9.1.0/include/c++/9.1.0/
+ml reset
+ml gcc/11.2.0
+ml impi/19.0.9
+ml cuda/12.0
+ml eigen/3.4.0
+ml hdf5/1.14.6
+ml netcdf/4.9.2
+ml cmake/4.1.1
+
+echo $CC $CXX $FC $F90 $F77
 export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77
 
-# Set compilers and flags
-export CC=mpicc
-export CXX=mpicxx
-export FC=mpif90
-export F90=mpif90
-export F77=mpif77
-
-export CXXFLAGS=-I/opt/apps/gcc/9.1.0/include/c++/9.1.0/
-export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77
-
-# Enable MPI debugging
-export MV2_DEBUG=1
-export MV2_SHOW_ENV_INFO=1
-
-export MOOSE_JOBS=6 METHODS=opt"""
+export MOOSE_DIR=/work/10024/zhaochun/ls6/projects/moose-src
+export PETSC_DIR=$MOOSE_DIR/petsc
+export PETSC_ARCH=arch-moose"""
 
 # Additional SLURM flags (optional)
 ADDITIONAL_FLAGS = [
@@ -115,6 +109,7 @@ ibrun {executable} -i {input_path} --allow-unused
 # HELPER FUNCTIONS
 # ==============================================================================
 
+
 def find_case_folders(pattern=None):
     """
     Find case folders in the parametric study directory.
@@ -148,7 +143,7 @@ def generate_job_name(case_name, input_file):
         str: Job name
     """
     # Remove .i extension from input file
-    input_prefix = input_file.replace('.i', '')
+    input_prefix = input_file.replace(".i", "")
 
     # Create job name
     job_name = f"{case_name}_{input_prefix}"
@@ -184,17 +179,17 @@ def generate_slurm_script(case_folder, input_file, slurm_params):
     # Fill in the template
     script_content = SLURM_TEMPLATE.format(
         job_name=job_name,
-        partition=slurm_params['partition'],
-        nodes=slurm_params['nodes'],
-        ntasks=slurm_params['ntasks'],
-        time=slurm_params['time'],
-        mail_type=slurm_params['mail_type'],
-        account=slurm_params['account'],
-        mail_user=slurm_params['mail_user'],
+        partition=slurm_params["partition"],
+        nodes=slurm_params["nodes"],
+        ntasks=slurm_params["ntasks"],
+        time=slurm_params["time"],
+        mail_type=slurm_params["mail_type"],
+        account=slurm_params["account"],
+        mail_user=slurm_params["mail_user"],
         additional_flags=additional_flags,
         module_commands=MODULE_COMMANDS,
         executable=EXECUTABLE,
-        input_path=input_path
+        input_path=input_path,
     )
 
     return script_content
@@ -213,12 +208,12 @@ def write_slurm_script(case_folder, script_content, input_file):
         Path: Path to the written script file
     """
     # Generate script filename
-    input_prefix = input_file.replace('.i', '')
+    input_prefix = input_file.replace(".i", "")
     script_filename = f"submit_{input_prefix}.sh"
     script_path = case_folder / script_filename
 
     # Write the script
-    with open(script_path, 'w') as f:
+    with open(script_path, "w") as f:
         f.write(script_content)
 
     # Make it executable
@@ -231,41 +226,77 @@ def write_slurm_script(case_folder, script_content, input_file):
 # MAIN EXECUTION
 # ==============================================================================
 
+
 def main():
     parser = argparse.ArgumentParser(
-        description='Generate SLURM job submission scripts for parametric cases'
+        description="Generate SLURM job submission scripts for parametric cases"
     )
 
     # Case selection
     case_group = parser.add_mutually_exclusive_group()
-    case_group.add_argument('--case', type=str,
-                           help='Generate for a specific case folder (e.g., case_cf1_domain1x)')
-    case_group.add_argument('--pattern', type=str,
-                           help='Generate for all cases matching pattern (e.g., "case_cf*")')
+    case_group.add_argument(
+        "--case",
+        type=str,
+        help="Generate for a specific case folder (e.g., case_cf1_domain1x)",
+    )
+    case_group.add_argument(
+        "--pattern",
+        type=str,
+        help='Generate for all cases matching pattern (e.g., "case_cf*")',
+    )
 
     # SLURM parameters
-    parser.add_argument('--nodes', type=int, default=SLURM_DEFAULTS['nodes'],
-                       help=f'Number of nodes (default: {SLURM_DEFAULTS["nodes"]})')
-    parser.add_argument('--ntasks', '-n', type=int, default=SLURM_DEFAULTS['ntasks'],
-                       help=f'Total number of MPI tasks (default: {SLURM_DEFAULTS["ntasks"]})')
-    parser.add_argument('--time', '-t', type=str, default=SLURM_DEFAULTS['time'],
-                       help=f'Wall time in hh:mm:ss (default: {SLURM_DEFAULTS["time"]})')
-    parser.add_argument('--partition', '-p', type=str, default=SLURM_DEFAULTS['partition'],
-                       help=f'Queue/partition name (default: {SLURM_DEFAULTS["partition"]})')
-    parser.add_argument('--account', '-A', type=str, default=SLURM_DEFAULTS['account'],
-                       help=f'Project/Allocation name (default: {SLURM_DEFAULTS["account"]})')
-    parser.add_argument('--input-file', '-i', type=str, default=INPUT_FILE,
-                       help=f'Input file to run (default: {INPUT_FILE})')
+    parser.add_argument(
+        "--nodes",
+        type=int,
+        default=SLURM_DEFAULTS["nodes"],
+        help=f"Number of nodes (default: {SLURM_DEFAULTS['nodes']})",
+    )
+    parser.add_argument(
+        "--ntasks",
+        "-n",
+        type=int,
+        default=SLURM_DEFAULTS["ntasks"],
+        help=f"Total number of MPI tasks (default: {SLURM_DEFAULTS['ntasks']})",
+    )
+    parser.add_argument(
+        "--time",
+        "-t",
+        type=str,
+        default=SLURM_DEFAULTS["time"],
+        help=f"Wall time in hh:mm:ss (default: {SLURM_DEFAULTS['time']})",
+    )
+    parser.add_argument(
+        "--partition",
+        "-p",
+        type=str,
+        default=SLURM_DEFAULTS["partition"],
+        help=f"Queue/partition name (default: {SLURM_DEFAULTS['partition']})",
+    )
+    parser.add_argument(
+        "--account",
+        "-A",
+        type=str,
+        default=SLURM_DEFAULTS["account"],
+        help=f"Project/Allocation name (default: {SLURM_DEFAULTS['account']})",
+    )
+    parser.add_argument(
+        "--input-file",
+        "-i",
+        type=str,
+        default=INPUT_FILE,
+        help=f"Input file to run (default: {INPUT_FILE})",
+    )
 
     args = parser.parse_args()
 
     # Update SLURM parameters from command line
     slurm_params = SLURM_DEFAULTS.copy()
-    slurm_params['nodes'] = args.nodes
-    slurm_params['ntasks'] = args.ntasks
-    slurm_params['time'] = args.time
-    slurm_params['partition'] = args.partition
-    slurm_params['account'] = args.account
+    slurm_params["nodes"] = args.nodes
+    slurm_params["ntasks"] = args.ntasks
+    slurm_params["time"] = args.time
+    slurm_params["partition"] = args.partition
+    slurm_params["account"] = args.account
 
     # Print header
     print("=" * 80)
@@ -313,7 +344,9 @@ def main():
     generated_scripts = []
     for case_folder in case_folders:
         # Generate script content
-        script_content = generate_slurm_script(case_folder, args.input_file, slurm_params)
+        script_content = generate_slurm_script(
+            case_folder, args.input_file, slurm_params
+        )
 
         # Write script to file
         script_path = write_slurm_script(case_folder, script_content, args.input_file)
@@ -340,7 +373,9 @@ def main():
         print("   1a. Transfer files to HPC")
         print("   1b. Submit static solve jobs:")
         print(f"       cd {HPC_PROJECT_ROOT}/{RELATIVE_STUDY_PATH}")
-        print(f"       for dir in case_*/; do cd \"$dir\" && sbatch submit_static_solve.sh && cd ..; done")
+        print(
+            f'       for dir in case_*/; do cd "$dir" && sbatch submit_static_solve.sh && cd ..; done'
+        )
         print("   1c. Wait for completion and verify results")
         print("   1d. Run update script locally to extract energy values:")
         print("       python3 run_static_solve_and_update.py --all --skip-simulation")
@@ -350,13 +385,17 @@ def main():
         print("   2b. Transfer updated files to HPC")
         print("   2c. Submit elasticity jobs:")
         print(f"       cd {HPC_PROJECT_ROOT}/{RELATIVE_STUDY_PATH}")
-        print(f"       for dir in case_*/; do cd \"$dir\" && sbatch submit_elasticity.sh && cd ..; done")
+        print(
+            f'       for dir in case_*/; do cd "$dir" && sbatch submit_elasticity.sh && cd ..; done'
+        )
 
     print("\n" + "=" * 80)
     print("Submission Commands:")
     print("=" * 80)
     print("\n1. Transfer files to HPC:")
-    print(f"   scp -r {BASE_DIR} username@frontera.tacc.utexas.edu:{HPC_PROJECT_ROOT}/{RELATIVE_STUDY_PATH}")
+    print(
+        f"   scp -r {BASE_DIR} username@frontera.tacc.utexas.edu:{HPC_PROJECT_ROOT}/{RELATIVE_STUDY_PATH}"
+    )
 
     print("\n2. Submit jobs on HPC:")
     print("   # Submit a single job")
@@ -365,7 +404,9 @@ def main():
 
     print("\n   # Submit all jobs")
     print(f"   cd {HPC_PROJECT_ROOT}/{RELATIVE_STUDY_PATH}")
-    print(f"   for dir in case_*/; do cd \"$dir\" && sbatch submit_{args.input_file.replace('.i', '')}.sh && cd ..; done")
+    print(
+        f'   for dir in case_*/; do cd "$dir" && sbatch submit_{args.input_file.replace(".i", "")}.sh && cd ..; done'
+    )
 
     print("\n3. Monitor jobs:")
     print("   squeue -u $USER")
