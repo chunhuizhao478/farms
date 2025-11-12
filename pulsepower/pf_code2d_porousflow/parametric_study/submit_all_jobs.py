@@ -46,7 +46,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent
 
 # Default submit script name pattern
-SUBMIT_SCRIPT_PATTERN = "submit_*.sh"
+SUBMIT_SCRIPT_PATTERN = "submit_combined.sh"
 
 # ==============================================================================
 # HELPER FUNCTIONS
