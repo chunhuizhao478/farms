@@ -54,7 +54,7 @@ SLURM_DEFAULTS = {
     "nodes": 4,  # Number of nodes
     "ntasks": 200,  # Total number of MPI tasks
     "time": "24:00:00",  # Wall time (hh:mm:ss)
-    "account": "ASC25056",  # Project/Allocation name
+    "account": "ASC25096",  # Project/Allocation name
     "mail_user": "chunhui3@illinois.edu",  # Email for notifications
     "mail_type": "all",  # Email notification type
 }
