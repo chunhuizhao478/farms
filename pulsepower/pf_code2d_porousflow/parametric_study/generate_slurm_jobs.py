@@ -41,7 +41,7 @@ HPC_PROJECT_ROOT = "/scratch1/10024/zhaochun/projects/farms_cdms_11022025"
 RELATIVE_STUDY_PATH = "pulsepower/pf_code2d_porousflow/parametric_study"
 
 # Executable name
-EXECUTABLE = "./farms-opt"
+EXECUTABLE = "/scratch/10024/zhaochun/projects/farms_cdms/farms-opt"
 
 # Input file to run (elasticity.i or static_solve.i)
 INPUT_FILE = "elasticity.i"

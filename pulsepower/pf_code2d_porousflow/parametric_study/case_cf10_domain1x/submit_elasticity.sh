@@ -29,4 +29,4 @@ export PETSC_DIR=$MOOSE_DIR/petsc
 export PETSC_ARCH=arch-moose
 
 # Run the simulation
-ibrun ./farms-opt -i /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_cf10_domain1x/elasticity.i --allow-unused
+ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_cf10_domain1x/elasticity.i --allow-unused
