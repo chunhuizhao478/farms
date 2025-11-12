@@ -13,8 +13,8 @@ Author: Auto-generated
 Date: 2025-11-09
 """
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # ==============================================================================
 # CONFIGURATION
@@ -23,49 +23,47 @@ import sys
 # Base directory (where this script is located)
 BASE_DIR = Path(__file__).parent
 
-# HPC project root path
+# Project directory on HPC (ABSOLUTE PATH on the cluster)
+# This should be the path to your project root on the HPC system
 HPC_PROJECT_ROOT = "/scratch1/10024/zhaochun/projects/farms_cdms_11022025"
 
 # Relative path from project root to this parametric study directory
 RELATIVE_STUDY_PATH = "pulsepower/pf_code2d_porousflow/parametric_study"
 
 # Executable name
-EXECUTABLE = "./farms-opt"
+EXECUTABLE = "/scratch/10024/zhaochun/projects/farms_cdms/farms-opt"
 
-# SLURM Parameters
+# Input file to run (elasticity.i or static_solve.i)
+INPUT_FILE = "elasticity.i"
+
+# SLURM Parameters (defaults)
 SLURM_PARAMS = {
-    'partition': 'normal',
-    'nodes': 8,
-    'ntasks': 200,
-    'time': '48:00:00',
-    'account': 'EAR20006',
-    'mail_user': 'chunhui3@illinois.edu',
-    'mail_type': 'all',
+    "partition": "normal",  # Queue name
+    "nodes": 4,  # Number of nodes
+    "ntasks": 200,  # Total number of MPI tasks
+    "time": "24:00:00",  # Wall time (hh:mm:ss)
+    "account": "ASC25096",  # Project/Allocation name
+    "mail_user": "chunhui3@illinois.edu",  # Email for notifications
+    "mail_type": "all",  # Email notification type
 }
 
-# Module loading commands
+# Module loading commands (customize for your HPC system)
 MODULE_COMMANDS = """# Load necessary modules
-module swap intel gcc
-#module swap impi mvapich2-x
-module load cuda
-export CXXFLAGS=-I/opt/apps/gcc/9.1.0/include/c++/9.1.0/
+ml reset
+ml gcc/11.2.0
+ml impi/19.0.9
+ml cuda/12.0
+ml eigen/3.4.0
+ml hdf5/1.14.6
+ml netcdf/4.9.2
+ml cmake/4.1.1
+
+echo $CC $CXX $FC $F90 $F77
 export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77
 
-# Set compilers and flags
-export CC=mpicc
-export CXX=mpicxx
-export FC=mpif90
-export F90=mpif90
-export F77=mpif77
-
-export CXXFLAGS=-I/opt/apps/gcc/9.1.0/include/c++/9.1.0/
-export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77
-
-# Enable MPI debugging
-export MV2_DEBUG=1
-export MV2_SHOW_ENV_INFO=1
-
-export MOOSE_JOBS=6 METHODS=opt"""
+export MOOSE_DIR=/work/10024/zhaochun/ls6/projects/moose-src
+export PETSC_DIR=$MOOSE_DIR/petsc
+export PETSC_ARCH=arch-moose"""
 
 # ==============================================================================
 # SLURM JOB TEMPLATE
@@ -165,6 +163,7 @@ exit 0
 # HELPER FUNCTIONS
 # ==============================================================================
 
+
 def find_case_folders():
     """Find all case folders in the parametric study directory."""
     case_folders = sorted(BASE_DIR.glob("case_*"))
@@ -192,19 +191,19 @@ def generate_combined_script(case_folder):
     # Fill in the template
     script_content = COMBINED_TEMPLATE.format(
         job_name=job_name,
-        partition=SLURM_PARAMS['partition'],
-        nodes=SLURM_PARAMS['nodes'],
-        ntasks=SLURM_PARAMS['ntasks'],
-        time=SLURM_PARAMS['time'],
-        mail_type=SLURM_PARAMS['mail_type'],
-        account=SLURM_PARAMS['account'],
-        mail_user=SLURM_PARAMS['mail_user'],
+        partition=SLURM_PARAMS["partition"],
+        nodes=SLURM_PARAMS["nodes"],
+        ntasks=SLURM_PARAMS["ntasks"],
+        time=SLURM_PARAMS["time"],
+        mail_type=SLURM_PARAMS["mail_type"],
+        account=SLURM_PARAMS["account"],
+        mail_user=SLURM_PARAMS["mail_user"],
         module_commands=MODULE_COMMANDS,
         case_dir=case_dir,
         case_name=case_name,
         static_input=static_input,
         dynamic_input=dynamic_input,
-        executable=EXECUTABLE
+        executable=EXECUTABLE,
     )
 
     return script_content
@@ -216,7 +215,7 @@ def write_combined_script(case_folder, script_content):
     script_path = case_folder / script_filename
 
     # Write the script
-    with open(script_path, 'w') as f:
+    with open(script_path, "w") as f:
         f.write(script_content)
 
     # Make it executable
@@ -228,6 +227,7 @@ def write_combined_script(case_folder, script_content):
 # ==============================================================================
 # MAIN EXECUTION
 # ==============================================================================
+
 
 def main():
     print("=" * 80)
@@ -261,7 +261,9 @@ def main():
         print(f"  - {cf.name}")
 
     if cases_without_static:
-        print(f"\nCases WITHOUT static solve (will be skipped): {len(cases_without_static)}")
+        print(
+            f"\nCases WITHOUT static solve (will be skipped): {len(cases_without_static)}"
+        )
         for cf in cases_without_static:
             print(f"  - {cf.name}")
 
@@ -309,8 +311,8 @@ def main():
     print("\n3. Submit all jobs:")
     print(f"   cd {HPC_PROJECT_ROOT}/{RELATIVE_STUDY_PATH}")
     print("   for dir in case_*/; do")
-    print("     if [ -f \"$dir/submit_combined.sh\" ]; then")
-    print("       cd \"$dir\" && sbatch submit_combined.sh && cd ..")
+    print('     if [ -f "$dir/submit_combined.sh" ]; then')
+    print('       cd "$dir" && sbatch submit_combined.sh && cd ..')
     print("     fi")
     print("   done")
 
