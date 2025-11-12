@@ -28,7 +28,7 @@ export PETSC_DIR=$MOOSE_DIR/petsc
 export PETSC_ARCH=arch-moose
 
 # Change to case directory
-cd /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x
+cd /scratch1/10024/zhaochun/projects/farms_cdms/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x
 
 echo "================================================================================"
 echo "Starting combined static + dynamic simulation"
@@ -41,11 +41,11 @@ echo ""
 echo "--------------------------------------------------------------------------------"
 echo "STEP 1: Running static solve..."
 echo "--------------------------------------------------------------------------------"
-echo "Input file: /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/static_solve.i"
+echo "Input file: /scratch1/10024/zhaochun/projects/farms_cdms/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/static_solve.i"
 echo "Start time: $(date)"
 echo ""
 
-ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/static_solve.i --allow-unused
+ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch1/10024/zhaochun/projects/farms_cdms/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/static_solve.i --allow-unused
 
 STATIC_EXIT_CODE=$?
 
@@ -76,11 +76,11 @@ echo ""
 echo "--------------------------------------------------------------------------------"
 echo "STEP 2: Running dynamic solve (elasticity)..."
 echo "--------------------------------------------------------------------------------"
-echo "Input file: /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/elasticity.i"
+echo "Input file: /scratch1/10024/zhaochun/projects/farms_cdms/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/elasticity.i"
 echo "Start time: $(date)"
 echo ""
 
-ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch1/10024/zhaochun/projects/farms_cdms_11022025/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/elasticity.i --allow-unused
+ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch1/10024/zhaochun/projects/farms_cdms/pulsepower/pf_code2d_porousflow/parametric_study/case_pp4_domain1x/elasticity.i --allow-unused
 
 DYNAMIC_EXIT_CODE=$?
 

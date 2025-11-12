@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).parent
 
 # Project directory on HPC (ABSOLUTE PATH on the cluster)
 # This should be the path to your project root on the HPC system
-HPC_PROJECT_ROOT = "/scratch1/10024/zhaochun/projects/farms_cdms_11022025"
+HPC_PROJECT_ROOT = "/scratch1/10024/zhaochun/projects/farms_cdms"
 
 # Relative path from project root to this parametric study directory
 RELATIVE_STUDY_PATH = "pulsepower/pf_code2d_porousflow/parametric_study"
