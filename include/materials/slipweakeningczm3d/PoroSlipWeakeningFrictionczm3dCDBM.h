@@ -91,4 +91,6 @@ protected:
   const VariableValue & _cohesion_aux;
   const VariableValue & _forced_rupture_aux;
   const VariableValue & _fault_pressure;
+
+  const MaterialProperty<Real> & _initial_porepressure;
 };

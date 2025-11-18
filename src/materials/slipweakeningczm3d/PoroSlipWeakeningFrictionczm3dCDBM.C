@@ -101,7 +101,9 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
     _t0(getParam<Real>("t0")),
     _cohesion_aux(coupledValue("cohesion_aux")),
     _forced_rupture_aux(coupledValue("forced_rupture_aux")),
-    _fault_pressure(coupledValue("fault_pressure"))
+    _fault_pressure(coupledValue("fault_pressure")),
+    _initial_porepressure(getMaterialProperty<Real>("initial_porepressure"))
+
 {
 
   // only works for small strain
@@ -219,7 +221,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
                 (2 * A) +
             ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
 
-  Real Pf = _fault_pressure[_qp]; // fluid pressure
+  Real Pf = _initial_porepressure[_qp] + _fault_pressure[_qp]; // fluid pressure
 
   //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
   //treat tension on the fault the same as if the effective normal stress equals zero.

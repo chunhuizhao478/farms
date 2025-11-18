@@ -16,8 +16,8 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 
 ##material properties##
 density = 2670 #density
-lambda_o = 3.204e10 #first lame constant
-shear_modulus_o = 3.204e10 #second lame constant
+lambda_o = 2.1547e10 #first lame constant
+shear_modulus_o = 2.975e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
@@ -54,6 +54,15 @@ m2 = 1 #coefficient of power law indexes
 chi = 0.8 #energy ratio
 ##-------------------------##
 
+## poroelastic properties
+
+fluid_bulk_modulus = 2.2e9   # Water bulk modulus (2.2 GPa)    
+permeability_solid_o = 1e-19 # Initial permeability (1 milli-darcy) 
+porosity_solid_o = 0.0026 # Initial porosity (8%)     
+solid_bulk_modulus_s = 57e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
+initial_viscosity_fluid = 1e-3
+##-------------------------##
+
 ##initial stress parameters##
 
 #background stress
@@ -82,7 +91,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
+    file = '../../mesh/tpv26_1000m_nonlocal_occ.msh'
     #file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
   []
   [./sidesets]
@@ -106,6 +115,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 
 [GlobalParams]
   displacements = 'disp_x disp_y disp_z'
+  porepressure = 'porepressure'
 
   ##----continuum damage breakage model----##
   #initial lambda value (first lame constant) [Pa]
@@ -160,6 +170,23 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 
   # energy ratio
   chi = ${chi}
+
+  # Water bulk modulus (2.2 GPa)
+  fluid_bulk_modulus = ${fluid_bulk_modulus}     
+
+  # Initial permeability (1 milli-darcy) 
+  permeability_solid_o = ${permeability_solid_o}  
+
+  # Initial porosity 
+  porosity_solid_o = ${porosity_solid_o}  
+     
+  # Viscosity      
+  initial_viscosity_fluid = ${initial_viscosity_fluid}  
+
+  # Solid grains bulk modulus (36 GPa - typical for quartz)  
+  solid_bulk_modulus_s = ${solid_bulk_modulus_s}  
+
+
 []
 
 [Variables]
@@ -175,6 +202,11 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
     order = FIRST
     family = LAGRANGE
   []
+  [porepressure]
+        order = FIRST
+        family = LAGRANGE
+        scaling = 1E9
+  []
 []
 
 [AuxVariables]
@@ -184,13 +216,32 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 []
 
 [Kernels]
-  [SolidMechanics]
-    displacements = 'disp_x disp_y disp_z'
-  [../]
+  [dispkernel_x]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_x
+      component = 0
+  []
+  [dispkernel_y]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_y
+      component = 1
+  []
+  [dispkernel_z]
+      type = TotalStressDivergenceTensor
+      displacements = 'disp_x disp_y disp_z'
+      variable = disp_z
+      component = 2
+  []
+  [./darcy_flow]
+      type = SmallStrainFluidDiffusion
+      variable = porepressure
+  []
   [gravity_z]
     type = BodyForce
     variable = disp_z
-    value = ${fparse -1 * density * gravity + 1 * fluid_density * gravity}
+    value = ${fparse -1 * density * gravity}
   []
 []
 
@@ -206,7 +257,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
     outputs = exodus
   []
   [stress_medium]
-    type = ComputeDamageBreakageStress3DStaticPureSolid
+    type = ComputeDamageBreakageStress3DStatic
     output_properties = 'B alpha_damagedvar xi I1 I2 stress elastic_strain'
     outputs = exodus
   []
@@ -321,6 +372,43 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
     variable = disp_z
     boundary = 'corner_ptr'
     value = 0
+  [../]
+# Pore pressure boundary conditions on all external boundaries
+  [./pp_left]
+    type = FunctionDirichletBC
+    variable = porepressure
+    boundary = left
+    function = func_fluid_pressure
+  [../]
+  [./pp_right]
+    type = FunctionDirichletBC
+    variable = porepressure
+    boundary = right
+    function = func_fluid_pressure
+  [../]
+  [./pp_front]
+    type = FunctionDirichletBC
+    variable = porepressure
+    boundary = front
+    function = func_fluid_pressure
+  [../]
+  [./pp_back]
+    type = FunctionDirichletBC
+    variable = porepressure
+    boundary = back
+    function = func_fluid_pressure
+  [../]
+  [./pp_top]
+    type = FunctionDirichletBC
+    variable = porepressure
+    boundary = top
+    function = func_fluid_pressure
+  [../]
+  [./pp_bottom]
+    type = FunctionDirichletBC
+    variable = porepressure
+    boundary = bottom
+    function = func_fluid_pressure
   [../]
 []
 
@@ -472,6 +560,30 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
     functions = 'func_initial_stress_zz'
     scale_factor = '-1'
   [../]
+  ###fluid pressure###
+  [./func_fluid_pressure]
+    type = InitialStressStrainTPV26
+    i = 0 #not used
+    j = 0 #not used
+    get_fluid_pressure = true
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    bxx = ${bxx}
+    byy = ${byy}
+    bxy = ${bxy}
+    use_tapering = ${use_tapering}
+    tapering_depth_A = ${tapering_depth_A}
+    tapering_depth_B = ${tapering_depth_B}
+  []
+[]
+
+[ICs]
+  [./initial_porepressure]
+    type = FunctionIC
+    variable = porepressure
+    function = func_fluid_pressure
+  [../]
 []
 
 [Preconditioning]
@@ -491,7 +603,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
   l_max_its = 200
   nl_max_its = 400
   line_search  = 'basic'
-  automatic_scaling = true
+  #automatic_scaling = true
   verbose = true
   petsc_options_iname = '-pc_type -pc_asm_overlap -sub_pc_type -ksp_type -ksp_gmres_restart'
   petsc_options_value = ' asm      2              hypre             gmres     200'

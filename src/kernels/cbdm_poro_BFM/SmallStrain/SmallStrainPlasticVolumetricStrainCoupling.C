@@ -21,8 +21,8 @@ SmallStrainPlasticVolumetricStrainCoupling::SmallStrainPlasticVolumetricStrainCo
   : Kernel(parameters),
     _ndisp(coupledComponents("displacements")),
     _disp_var(_ndisp),
-    _eps_p(getMaterialPropertyByName<RankTwoTensor>("plastic_strain_tensor")),
-    _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("plastic_strain_tensor")),
+    _eps_p(getMaterialPropertyByName<RankTwoTensor>("eps_p")),
+    _eps_p_old(getMaterialPropertyOldByName<RankTwoTensor>("eps_p")),
     _deps_p_dp(getMaterialProperty<RankTwoTensor>("deps_p_dp")),
     _deps_p_deps(getMaterialProperty<RankFourTensor>("deps_p_deps"))
 {

@@ -10,17 +10,33 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 ##element size
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 
+##mesh domain
+nonlocal_eqstrain_blocks = '1 100 200'
+
+#here we avoid the cross-fault averaging by defining separate averaging blocks
+nonlocal_eqstrain_blocks_1 = '1'
+nonlocal_eqstrain_blocks_2 = '100'
+nonlocal_eqstrain_blocks_3 = '200'
+
+local_eqstrain_blocks = ''  # Empty if all blocks use nonlocal, or specify other blocks if they exist
+
 ##main fault parameters
-xmin_fault = -20000 #xmin of fault
-xmax_fault = 20000 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
+
+#nonlocal length applied region along ydir
+ymin_fault = -1500
+ymax_fault = 1500
+nonlocal_averaging_length_scale = 200 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
+nonlocal_averaging_radius = 400 #for 800m testing, use 1600m
 
 ##-------------------------##
 ##material properties##
 density = 2670 #density
-lambda_o = 3.204e10 #first lame constant
-shear_modulus_o = 3.204e10 #second lame constant
+lambda_o = 2.1547e10 #first lame constant
+shear_modulus_o = 2.975e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
@@ -39,14 +55,14 @@ cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
 ##CDB model parameters##
-xi_0 = -1.0 #strain invariants ratio: onset of damage evolution
-xi_d = -1.0 #strain invariants ratio: onset of breakage healing
+xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
+xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-7 #strain rate dependent parameters
+strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -64,13 +80,13 @@ chi = 0.8 #energy ratio
 ### poroelastic properties
    
 fluid_bulk_modulus = 2.2e9   # Water bulk modulus (2.2 GPa)    
-permeability_solid_o = 1e-20 # Initial permeability (1 milli-darcy) 
-porosity_solid_o = 0.008 # Initial porosity (8%)  
-solid_bulk_modulus_g = 50.38e9 # Granular bulk modulus (50.3 GPa)      
-solid_bulk_modulus_s = 50.38e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
+permeability_solid_o = 1e-19 # Initial permeability (1 milli-darcy) 
+porosity_solid_o = 0.0026 # Initial porosity (8%)  
+solid_bulk_modulus_g = 57e9 # Granular bulk modulus (50.3 GPa)      
+solid_bulk_modulus_s = 57e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
 permeability_evolution_with_damage = 3
-initial_grain_size = 1.3
-ultimate_grain_size = 0.25
+initial_grain_size = 1
+ultimate_grain_size = 1
 initial_viscosity_fluid = 1e-3
 anand_param_go_mat = 0.25
 anand_param_eta_cv_mat = 0.01
@@ -79,10 +95,10 @@ anand_param_p_mat = 1
 ##------------------------------------------------------------------##
 
 ##initial stress parameters##
-#background stress 
+#background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.4
+bxx = 0.926793
 byy = 1.073206
 bxy = -0.8
 ##------------------------------------------------------------------##
@@ -94,7 +110,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -16000 #nucleation center x coordinate
+nucl_center_x = -22100 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -103,41 +119,40 @@ t0 = 0.5 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.0025 #time step size
+dt = 0.005 #time step size
 
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 40 #time step interval for output
+exodus_time_step_interval = 20 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
-csv_time_step_interval = 4 #time step interval for csv output
+csv_time_step_interval = 2 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
-
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../mesh/tpv26_100m.msh' #too large to run on local computer!
+    file = '../mesh/tpv26_100m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
     block_id = 100
   []
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
-  []       
+  []
   [./split_1]
     type = BreakMeshByBlockGenerator
     input = new_block_2
     split_interface = true
     block_pairs = '100 200'
-  []      
+  []
   [./sidesets]
     input = split_1
     type = SideSetsFromNormalsGenerator
@@ -148,7 +163,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                 0 0 -1
                 0 0 1'
     new_boundary = 'left right bottom top back front'
-  [] 
+  []
   [./extranodeset1]
       type = ExtraNodesetGenerator
       coord = ${bottom_nodes_coord}
@@ -401,6 +416,15 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []  
+  [eqstrain_nonlocal_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  ##
+  [eqstrain_nonlocal_initial_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -502,13 +526,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     function = func_forced_rupture
     execute_on = 'INITIAL TIMESTEP_BEGIN'
   []
-  ### fluid pressure
-  [get_fluid_pressure_aux]
-    type = FunctionAux
-    variable = fluid_pressure_aux
-    function = func_fluid_pressure
-    execute_on = 'INITIAL TIMESTEP_BEGIN'
-  []
   ### slip weakening strike direction
   [get_jump_x_aux]
     type = MaterialRealAux
@@ -516,6 +533,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = jump_x_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   [get_jump_x_rate_aux]
     type = FDCompVarRate
@@ -523,6 +541,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     coupled = jump_x
     execute_on = 'TIMESTEP_END'
     boundary = 'Block100_Block200'
+    check_boundary_restricted = false
+    
   []
   [get_traction_x_aux]
     type = MaterialRealAux
@@ -530,6 +550,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = traction_x_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   ### slip weakening normal direction
   [get_jump_y_aux]
@@ -538,6 +559,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = jump_y_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   [get_jump_y_rate_aux]
     type = FDCompVarRate
@@ -545,6 +567,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     coupled = jump_y
     execute_on = 'TIMESTEP_END'
     boundary = 'Block100_Block200'
+    check_boundary_restricted = false
   []
   [get_traction_y_aux]
     type = MaterialRealAux
@@ -552,6 +575,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = traction_y_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   ### slip weakening dip direction
   [get_jump_z_aux]
@@ -560,6 +584,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = jump_z_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   [get_jump_z_rate_aux]
     type = FDCompVarRate
@@ -567,6 +592,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     coupled = jump_z
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   [get_traction_z_aux]
     type = MaterialRealAux
@@ -574,6 +600,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = traction_z_aux
     boundary = 'Block100_Block200'
     execute_on = 'TIMESTEP_END'
+    check_boundary_restricted = false
   []
   ### get CDB model properties
   [get_alpha_damagedvar]
@@ -600,6 +627,22 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = deviatoric_strain_rate_aux
     property = deviatoric_strain_rate
     execute_on = 'TIMESTEP_END'
+  []
+    ###
+  [get_eqstrain_nonlocal_aux]
+    type = MaterialRealAux
+    variable = eqstrain_nonlocal_aux
+    property = eqstrain_nonlocal
+    execute_on = 'TIMESTEP_END'
+    # block = ${nonlocal_eqstrain_blocks}
+  []
+  ###
+  [get_eqstrain_nonlocal_initial]
+    type = SolutionAux
+    variable = eqstrain_nonlocal_initial_aux
+    solution = init_sol_components
+    from_variable = xi
+    execute_on = 'INITIAL'
   []
 []
 
@@ -678,15 +721,28 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Materials]
+  [strain3]
+        type = ComputeSmallStrain
+        displacements = 'disp_x disp_y disp_z'
+  [] 
   #damage breakage model
   [stress_medium]
-      type = ComputePoroDamageBreakageStress3DSlipWeakening
+      type = ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal
       output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
       use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
       m_exponent = ${m_exponent}
       strain_rate_hat = ${strain_rate_hat}
       cd_hat = ${cd_hat}
-      use_dilatancy = true
+      use_dilatancy = false
+      use_nonlocal_eqstrain = true
+      nonlocal_eqstrain_blocks = ${nonlocal_eqstrain_blocks}
+      outputs = exodus
+  []
+  [eqstrain_nonlocal_initial_xi]
+      type = FarmsCoupledVariableValueMaterial
+      coupled_variable = eqstrain_nonlocal_initial_aux
+      prop_name = eqstrain_nonlocal_initial
+      output_properties = 'eqstrain_nonlocal_initial'
       outputs = exodus
   []
   [dummy_material]
@@ -739,6 +795,31 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       output_properties = 'static_initial_stress_tensor'
       outputs = exodus
   [../]
+    #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
+  #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
+  [nonlocal_eqstrain_block1]
+    type = ElkNonlocalEqstrainUpdated
+    average_UO = eqstrain_averaging_block1
+    block = ${nonlocal_eqstrain_blocks_1}
+  []
+  [nonlocal_eqstrain_block2]
+    type = ElkNonlocalEqstrainUpdated
+    average_UO = eqstrain_averaging_block2
+    block = ${nonlocal_eqstrain_blocks_2}
+  []
+  [nonlocal_eqstrain_block3]
+    type = ElkNonlocalEqstrainUpdated
+    average_UO = eqstrain_averaging_block3
+    block = ${nonlocal_eqstrain_blocks_3}
+  []
+  #for the block outside the region, nonlocal strain is equal to the local strain
+  #[nonlocal_eqstrain_block]
+  #  type = ParsedMaterial
+  #  property_name = eqstrain_nonlocal
+  #  coupled_variables = 'xi_aux'
+  #  expression = 'xi_aux'
+  #  block = ${local_eqstrain_blocks}
+  #[]
 []
 
 [Functions]
@@ -807,23 +888,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./func_initial__porepressure]
     type = SolutionFunction
     solution = init_sol_components
-    from_variable = 'initial_porepressure'
-  []
-  ###fluid pressure###
-  [./func_fluid_pressure]
-    type = InitialStressStrainTPV26
-    i = 0 #not used
-    j = 0 #not used
-    get_fluid_pressure = true
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    bxx = ${bxx}
-    byy = ${byy}
-    bxy = ${bxy}
-    use_tapering = ${use_tapering}
-    tapering_depth_A = ${tapering_depth_A}
-    tapering_depth_B = ${tapering_depth_B}
+    from_variable = 'porepressure'
   []
   ###cohesion###
   [./func_cohesion]
@@ -856,11 +921,38 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
                         stress_00 stress_01 stress_02 stress_11 stress_12 stress_22
-                        initial_porepressure'
+                        porepressure'
     timestep = LATEST
     force_preaux = true
     execute_on = 'INITIAL'
   [../]
+  [eqstrain_averaging_block1]
+    type = ElkRadialAverageUpdated
+    length_scale = ${nonlocal_averaging_length_scale}
+    prop_name = xi
+    radius = ${nonlocal_averaging_radius}
+    weights = BAZANT3D
+    execute_on = TIMESTEP_END
+    block = ${nonlocal_eqstrain_blocks_1}
+  []
+  [eqstrain_averaging_block2]
+    type = ElkRadialAverageUpdated
+    length_scale = ${nonlocal_averaging_length_scale}
+    prop_name = xi
+    radius = ${nonlocal_averaging_radius}
+    weights = BAZANT3D
+    execute_on = TIMESTEP_END
+    block = ${nonlocal_eqstrain_blocks_2}
+  []
+  [eqstrain_averaging_block3]
+    type = ElkRadialAverageUpdated
+    length_scale = ${nonlocal_averaging_length_scale}
+    prop_name = xi
+    radius = ${nonlocal_averaging_radius}
+    weights = BAZANT3D
+    execute_on = TIMESTEP_END
+    block = ${nonlocal_eqstrain_blocks_3}
+  []
 []
 
 [Preconditioning]
@@ -884,7 +976,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux porepressure'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux deviatoric_strain_rate_aux porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
@@ -900,7 +992,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [sample_snapshots]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux porepressure'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux deviatoric_strain_rate_aux porepressure'
     time_step_interval = ${sample_snapshots_time_step_interval}
   []
 []    
@@ -922,34 +1014,61 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
 []
 
+#should use negative y as in tensile side
 [Positions]
   [pos]
     type = InputPositions
-    positions = '-24000 4000 0
-                 -20000 4000 0
-                 -16000 4000 0
-                 -12000 4000 0
-                 -8000 4000 0
-                 -4000 4000 0
-                 0 4000 0
-                 4000 4000 0
-                 8000 4000 0
-                 12000 4000 0
-                 16000 4000 0
-                 20000 4000 0
-                 24000 4000 0
-                 -24000 4000 -10000
-                 -20000 -4000 -10000
-                 -16000 -4000 -10000
-                 -12000 -4000 -10000
-                 -8000 -4000 -10000
-                 -4000 -4000 -10000
-                 0 -4000 -10000
-                 4000 -4000 -10000
-                 8000 -4000 -10000
-                 12000 -4000 -10000
-                 16000 -4000 -10000
-                 20000 -4000 -10000
-                 24000 -4000 -10000'
+    positions = '-24000 -1000 0
+                 -20000 -1000 0
+                 -16000 -1000 0
+                 -12000 -1000 0
+                 -8000 -1000 0
+                 -4000 -1000 0
+                 0 -1000 0
+                 4000 -1000 0
+                 8000 -1000 0
+                 12000 -1000 0
+                 16000 -1000 0
+                 20000 -1000 0
+                 24000 -1000 0
+                 -24000 -2000 0
+                 -20000 -2000 0
+                 -16000 -2000 0
+                 -12000 -2000 0
+                 -8000 -2000 0
+                 -4000 -2000 0
+                 0 -2000 0
+                 4000 -2000 0
+                 8000 -2000 0
+                 12000 -2000 0
+                 16000 -2000 0
+                 20000 -2000 0
+                 24000 -2000 0
+                 -24000 -3000 0
+                 -20000 -3000 0
+                 -16000 -3000 0
+                 -12000 -3000 0
+                 -8000 -3000 0
+                 -4000 -3000 0
+                 0 -3000 0
+                 4000 -3000 0
+                 8000 -3000 0
+                 12000 -3000 0
+                 16000 -3000 0
+                 20000 -3000 0
+                 24000 -3000 0
+                 -24000 -4000 0
+                 -20000 -4000 0
+                 -16000 -4000 0
+                 -12000 -4000 0
+                 -8000 -4000 0
+                 -4000 -4000 0
+                 0 -4000 0
+                 4000 -4000 0
+                 8000 -4000 0
+                 12000 -4000 0
+                 16000 -4000 0
+                 20000 -4000 0
+                 24000 -4000 0'
   []
 []
