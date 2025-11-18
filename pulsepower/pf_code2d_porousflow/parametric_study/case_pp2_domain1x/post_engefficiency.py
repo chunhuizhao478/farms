@@ -1,14 +1,27 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import itertools
 import os
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
 DATASETS = {
     # Format: "Label": (path, linestyle, color)
-    "Confinement Pressure: 1MPa": ("./case_1mpa/elasticity_csv.csv", "-", "b"),
-    "Confinement Pressure: 5MPa": ("./case_5mpa/elasticity_csv.csv", "-", "r"),
-    "Confinement Pressure: 10MPa": ("./case_10mpa/elasticity_csv.csv", "-", "g"),
+    "Hydro-Mech: Pore Pressure 1MPa, Confinement 5MPa": (
+        "../case_pp0d0965_domain1x/elasticity_csv.csv",
+        "-",
+        "r",
+    ),
+    "Hydro-Mech: Pore Pressure 2MPa, Confinement 5MPa": (
+        "./elasticity_csv.csv",
+        "-",
+        "b",
+    ),
+    "Hydro-Mech: Pore Pressure 4MPa, Confinement 5MPa": (
+        "../case_pp4_domain1x/elasticity_csv.csv",
+        "-",
+        "k",
+    ),
 }
 
 # Column filtering options (choose one approach):
@@ -18,7 +31,7 @@ HIDDEN_COLUMNS = {"damping_work"}
 # Option 2: Use only specific columns (if not empty, only these will be plotted)
 # Leave empty to plot all columns (except hidden ones)
 # Example: USE_COLUMNS = {"elastic_energy", "fracture_energy"}
-USE_COLUMNS = {"dissipated_energy_total"}
+USE_COLUMNS = {"solid_dissipated_energy_total"}
 # USE_COLUMNS = set()
 
 # Color mode: "by_column" or "by_case"
@@ -27,12 +40,12 @@ USE_COLUMNS = {"dissipated_energy_total"}
 COLOR_MODE = "by_case"
 
 time_column = "time"
-t_max = 2e-5
+t_max = 10e-5
 
 # Pulse efficiency calculation settings
 pulse_interval = 10e-6  # 10 microseconds in seconds
 energy_per_pulse = 10  # J/pulse
-num_pulses = 2
+num_pulses = 15
 
 # Create two subplots
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
@@ -131,7 +144,7 @@ for label, (path, linestyle, user_color) in DATASETS.items():
 # Configure Plot 1 (Time history)
 ax1.set_xlabel("time ($\mu$s)", fontsize=18)
 ax1.set_ylabel("dissipated energy (J)", fontsize=18)
-ax1.set_title("Pure Solid Dissipated Energy Time History", fontsize=20)
+ax1.set_title("Hydro-mech Dissipated Energy Time History", fontsize=20)
 ax1.grid(True, ls=":", alpha=0.6)
 ax1.legend(loc="best", ncol=1, fontsize=12)
 ax1.set_xlim(0, t_max * 1e6)
