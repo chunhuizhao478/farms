@@ -717,17 +717,17 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
   #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
   [nonlocal_eqstrain_block1]
-    type = ElkNonlocalEqstrain
+    type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block1
     block = ${nonlocal_eqstrain_blocks_1}
   []
   [nonlocal_eqstrain_block2]
-    type = ElkNonlocalEqstrain
+    type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block2
     block = ${nonlocal_eqstrain_blocks_2}
   []
   [nonlocal_eqstrain_block3]
-    type = ElkNonlocalEqstrain
+    type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block3
     block = ${nonlocal_eqstrain_blocks_3}
   []
