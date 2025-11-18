@@ -136,9 +136,9 @@ static_shear_strength = c + np.abs(mu_s * (sigma_yy + Pf))
 residual_shear_strength = c + np.abs(mu_d * (sigma_yy + Pf))
 
 # -------------------------------------------------------------------
-# Combined figure with seismic properties, effective stress, and strain invariants
+# Combined figure: seismic properties, total stress, effective stress, and strain invariants
 # -------------------------------------------------------------------
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 8))
+fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(24, 8))
 tick_prop = mpl.font_manager.FontProperties(family="DejaVu Sans", size=16)
 
 # Left subplot: Seismic Properties (constant for this case)
@@ -200,18 +200,9 @@ ax1.legend(loc="best", fontsize=10)
 for lab in ax1.get_xticklabels() + ax1.get_yticklabels():
     lab.set_fontproperties(tick_prop)
 
+# Second subplot: Total Stress Components
 # -------------------------------------------------------------------
-# Effective stress plot
-sigma_xx = sigma_xx + Pf
-sigma_yy = sigma_yy + Pf
-sigma_zz = sigma_zz + Pf
-
-static_shear_strength = c + np.abs(mu_s * (sigma_yy))
-residual_shear_strength = c + np.abs(mu_d * (sigma_yy))
-
-# Middle subplot: Effective Stress Components
-# -------------------------------------------------------------------
-# ax2.plot(Pf / 1e6, depths / 1e3, label=r"$P_f$")
+ax2.plot(Pf / 1e6, depths / 1e3, label=r"$P_f$")
 ax2.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}$")
 ax2.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}$")
 ax2.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}$")
@@ -234,10 +225,73 @@ ax2.plot(
 ax2.invert_yaxis()
 ax2.set_ylabel("Depth (km)", fontsize=20)
 ax2.set_xlabel("Stress (MPa)", fontsize=20)
-ax2.set_title("Effective Stress Components vs Depth", fontsize=20)
+ax2.set_title("Total Stress Components vs Depth", fontsize=20)
 ax2.legend(loc="best", fontsize=10)
-ax2.grid(True, which="both", linestyle=":")
 for lab in ax2.get_xticklabels() + ax2.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+
+# -------------------------------------------------------------------
+# Compute Principal Stresses from Total Stress Tensor (3x3)
+# -------------------------------------------------------------------
+# Assemble total stress tensor at each depth
+stress_total = np.zeros((len(depths), 3, 3))
+stress_total[:, 0, 0] = sigma_xx  # total stress xx
+stress_total[:, 1, 1] = sigma_yy  # total stress yy
+stress_total[:, 2, 2] = sigma_zz  # total stress zz
+stress_total[:, 0, 1] = sigma_xy  # total stress xy
+stress_total[:, 1, 0] = sigma_xy  # total stress xy (symmetric)
+
+# Initialize arrays for principal stresses
+S1_total = np.zeros_like(depths)  # Most compressive (most negative)
+S2_total = np.zeros_like(depths)  # Intermediate
+S3_total = np.zeros_like(depths)  # Least compressive (least negative)
+
+# Compute eigenvalues at each depth
+for i in range(len(depths)):
+    # Compute eigenvalues of the 3x3 stress tensor
+    eigvals = np.linalg.eigvalsh(stress_total[i])
+    # Sort eigenvalues: eigvalsh returns in ascending order
+    # For compressive stress (negative), most negative = most compressive
+    S1_total[i] = eigvals[0]  # Most negative (most compressive)
+    S2_total[i] = eigvals[1]  # Intermediate
+    S3_total[i] = eigvals[2]  # Least negative (least compressive)
+
+# -------------------------------------------------------------------
+# Convert to effective stress
+sigma_xx = sigma_xx + Pf
+sigma_yy = sigma_yy + Pf
+sigma_zz = sigma_zz + Pf
+
+static_shear_strength = c + np.abs(mu_s * (sigma_yy))
+residual_shear_strength = c + np.abs(mu_d * (sigma_yy))
+
+# Third subplot: Effective Stress Components
+# -------------------------------------------------------------------
+ax3.plot(np.abs(sigma_zz) / 1e6, depths / 1e3, label=r"$\sigma_{zz}'$")
+ax3.plot(np.abs(sigma_xx) / 1e6, depths / 1e3, label=r"$\sigma_{xx}'$")
+ax3.plot(np.abs(sigma_yy) / 1e6, depths / 1e3, label=r"$\sigma_{yy}'$")
+ax3.plot(sigma_xy / 1e6, depths / 1e3, label=r"$\sigma_{xy}'$")
+ax3.plot(
+    static_shear_strength / 1e6,
+    depths / 1e3,
+    label="Static Shear Strength",
+    linestyle="--",
+    alpha=0.8,
+)
+ax3.plot(
+    residual_shear_strength / 1e6,
+    depths / 1e3,
+    label="Residual Shear Strength",
+    linestyle="--",
+    alpha=0.8,
+)
+
+ax3.invert_yaxis()
+ax3.set_ylabel("Depth (km)", fontsize=20)
+ax3.set_xlabel("Stress (MPa)", fontsize=20)
+ax3.set_title("Effective Stress Components vs Depth", fontsize=20)
+ax3.legend(loc="best", fontsize=10)
+for lab in ax3.get_xticklabels() + ax3.get_yticklabels():
     lab.set_fontproperties(tick_prop)
 
 # -------------------------------------------------------------------
@@ -263,27 +317,79 @@ I1 = np.trace(strain, axis1=1, axis2=2)
 I2 = np.einsum("nij,nij->n", strain, strain)
 xi = I1 / np.sqrt(I2)
 
-# Right subplot: Strain Invariants
+# Fourth subplot: Strain Invariants
 # ------------------------
-# ax3.plot(I1, depths / 1e3, label=r'$I_1$')
-# ax3.plot(I2, depths / 1e3, label=r'$I_2$')
-ax3.plot(xi, depths / 1e3, label=r"$\xi$")
-ax3.invert_yaxis()
-ax3.set_ylabel("Depth (km)", fontsize=20)
-ax3.set_xlabel("Invariant values", fontsize=20)
-ax3.set_title("Strain Invariants vs Depth", fontsize=20)
-ax3.grid(True, which="both", linestyle=":")
+# ax4.plot(I1, depths / 1e3, label=r'$I_1$')
+# ax4.plot(I2, depths / 1e3, label=r'$I_2$')
+ax4.plot(xi, depths / 1e3, label=r"$\xi$")
+ax4.invert_yaxis()
+ax4.set_ylabel("Depth (km)", fontsize=20)
+ax4.set_xlabel("Invariant values", fontsize=20)
+ax4.set_title("Strain Invariants vs Depth", fontsize=20)
+ax4.grid(True, which="both", linestyle=":")
 # Fixed ticks for xi as requested (-1.5 to 1.5)
-ax3.set_xticks([-1.73, -1.075, -0.5, 0.0])
+ax4.set_xticks([-1.73, -1.075, -0.5, 0.0])
 # Optionally enforce symmetric x-limits if xi range narrower
-current_xlim = ax3.get_xlim()
+current_xlim = ax4.get_xlim()
 if current_xlim[0] > -1.5 or current_xlim[1] < 1.5:
-    ax3.set_xlim(-1.8, 0)
-for lab in ax3.get_xticklabels() + ax3.get_yticklabels():
+    ax4.set_xlim(-1.8, 0)
+for lab in ax4.get_xticklabels() + ax4.get_yticklabels():
     lab.set_fontproperties(tick_prop)
-ax3.legend(loc="best", fontsize=10)
+ax4.legend(loc="best", fontsize=10)
 
 # Save combined figure
 plt.tight_layout()
 plt.savefig("stress_and_strain_combined_loweffective.png", dpi=300)
+plt.show()
+
+# -------------------------------------------------------------------
+# Separate Plot: Principal Stresses (Total) vs Depth with Pore Pressure
+# -------------------------------------------------------------------
+fig_principal = plt.figure(figsize=(6, 8))
+ax_principal = fig_principal.add_subplot(111)
+
+# Plot principal stresses (as positive values for compression)
+ax_principal.plot(
+    np.abs(S1_total) / 1e6,
+    depths / 1e3,
+    linewidth=2,
+    label=r"$S_1$ (max principal)",
+    color=THEME_ACCENTS[0],
+)
+ax_principal.plot(
+    np.abs(S2_total) / 1e6,
+    depths / 1e3,
+    linewidth=2,
+    label=r"$S_2$ (intermediate)",
+    color=THEME_ACCENTS[2],
+)
+ax_principal.plot(
+    np.abs(S3_total) / 1e6,
+    depths / 1e3,
+    linewidth=2,
+    label=r"$S_3$ (min principal)",
+    color=THEME_ACCENTS[1],
+)
+ax_principal.plot(
+    Pf / 1e6,
+    depths / 1e3,
+    linewidth=2,
+    label=r"$P_f$ (pore pressure)",
+    linestyle="--",
+    color=THEME_ACCENTS[3],
+)
+
+ax_principal.invert_yaxis()
+ax_principal.set_ylabel("Depth (km)", fontsize=20)
+ax_principal.set_xlabel("Stress (MPa)", fontsize=20)
+ax_principal.set_title("Principal Stresses (Total) vs Depth", fontsize=20)
+ax_principal.legend(loc="best", fontsize=14)
+ax_principal.grid(True, which="both", linestyle=":")
+
+# Set tick properties
+for lab in ax_principal.get_xticklabels() + ax_principal.get_yticklabels():
+    lab.set_fontproperties(tick_prop)
+
+plt.tight_layout()
+plt.savefig("principal_stresses_total_vs_depth.png", dpi=300)
 plt.show()

@@ -835,7 +835,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [../]
   #here we avoid the cross-fault averaging by defining separate averaging blocks
   [eqstrain_averaging_block1]
-    type = ElkRadialAverage
+    type = ElkRadialAverageUpdated
     length_scale = ${nonlocal_averaging_length_scale}
     prop_name = xi
     radius = ${nonlocal_averaging_radius}
@@ -844,7 +844,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     block = ${nonlocal_eqstrain_blocks_1}
   []
   [eqstrain_averaging_block2]
-    type = ElkRadialAverage
+    type = ElkRadialAverageUpdated
     length_scale = ${nonlocal_averaging_length_scale}
     prop_name = xi
     radius = ${nonlocal_averaging_radius}
@@ -853,7 +853,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     block = ${nonlocal_eqstrain_blocks_2}
   []
   [eqstrain_averaging_block3]
-    type = ElkRadialAverage
+    type = ElkRadialAverageUpdated
     length_scale = ${nonlocal_averaging_length_scale}
     prop_name = xi
     radius = ${nonlocal_averaging_radius}
