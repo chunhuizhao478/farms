@@ -90,7 +90,7 @@ fault_center = '0 0 -10000'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
+    file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
   []
   [./sidesets]
     input = msh
