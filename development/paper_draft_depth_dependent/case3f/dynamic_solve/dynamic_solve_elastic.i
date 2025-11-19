@@ -11,10 +11,10 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
-nonlocal_eqstrain_blocks = '10 100 200'
+nonlocal_eqstrain_blocks = '100 200'
 
 #here we avoid the cross-fault averaging by defining separate averaging blocks
-nonlocal_eqstrain_blocks_1 = '10'
+local_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
@@ -34,7 +34,7 @@ nonlocal_averaging_radius = 400
 
 ##-------------------------##
 ##material properties##
-density = 2670 #density
+#density = 2670 #density
 lambda_o = 3.204e10 #first lame constant
 shear_modulus_o = 3.204e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
@@ -62,7 +62,7 @@ xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = 0 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = false #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -94,7 +94,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -22100 #nucleation center x coordinate
+nucl_center_x = -18500 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -716,11 +716,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [../]
   #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
   #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
-  [nonlocal_eqstrain_block1]
-    type = ElkNonlocalEqstrainUpdated
-    average_UO = eqstrain_averaging_block1
-    block = ${nonlocal_eqstrain_blocks_1}
-  []
   [nonlocal_eqstrain_block2]
     type = ElkNonlocalEqstrainUpdated
     average_UO = eqstrain_averaging_block2
@@ -738,6 +733,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     coupled_variables = 'xi_aux'
     expression = 'xi_aux'
     block = ${local_eqstrain_blocks}
+  []
+  [nonlocal_eqstrain_block1]
+    type = ParsedMaterial
+    property_name = eqstrain_nonlocal
+    coupled_variables = 'xi_aux'
+    expression = 'xi_aux'
+    block = ${local_eqstrain_blocks_1}
   []
 []
 
@@ -856,15 +858,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'INITIAL'
   [../]
   #here we avoid the cross-fault averaging by defining separate averaging blocks
-  [eqstrain_averaging_block1]
-    type = ElkRadialAverageUpdated
-    length_scale = ${nonlocal_averaging_length_scale}
-    prop_name = xi
-    radius = ${nonlocal_averaging_radius}
-    weights = BAZANT3D
-    execute_on = TIMESTEP_END
-    block = ${nonlocal_eqstrain_blocks_1}
-  []
   [eqstrain_averaging_block2]
     type = ElkRadialAverageUpdated
     length_scale = ${nonlocal_averaging_length_scale}
