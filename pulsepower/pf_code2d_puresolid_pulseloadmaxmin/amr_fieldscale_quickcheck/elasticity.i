@@ -117,7 +117,7 @@ top_right2 = '0.0925 3e-4 0'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.01 0.01 0'
+    coord = '1.0 1.0 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
