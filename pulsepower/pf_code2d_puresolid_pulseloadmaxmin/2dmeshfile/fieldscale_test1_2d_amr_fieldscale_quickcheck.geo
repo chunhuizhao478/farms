@@ -2,8 +2,8 @@
 SetFactory("OpenCASCADE");
 
 // Characteristic lengths
-lc0 = 0.0002; // super-fine near hole
-lc = 0.0002;  // fine transition
+lc0 = 0.0001; // super-fine near hole
+lc = 0.0001;  // fine transition
 lc2 = 0.01;  // coarse outer
 
 radius_outer = 0.2;

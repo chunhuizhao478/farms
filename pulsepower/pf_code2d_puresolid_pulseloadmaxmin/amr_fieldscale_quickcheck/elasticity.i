@@ -22,42 +22,42 @@ newmark_gamma = 0.5
 hht_alpha = 0.11 #match energy budget
 #----------------------------------------------------#
 
-[Adaptivity]
-   max_h_level = 50
-   marker = 'combo'
-   cycles_per_step = 1
-   [Markers]
-       [./combo]
-         type = FarmsComboMarker
-         markers = 'damage_marker strain_energy_marker'
-         meshsize_marker = 'meshsize_marker'
-         block = '5'
-       [../]
-       [damage_marker]
-         type = ValueThresholdMarker
-         variable = d
-         refine = 0.5
-         block = '5'
-       []
-       [strain_energy_marker]
-         type = ValueThresholdMarker
-         variable = psie_active
-         refine = '${fparse 1.0*3/8*Gc_const/l}'
-         block = '5'
-       []
-       # if mesh_size > dxmin, refine
-       # if mesh_size < dxmin/100, coarsen (which never happens)
-       # otherwise, do nothing
-       [meshsize_marker]
-         type = ValueThresholdMarker
-         variable = mesh_size
-         refine = '${dx_min}'
-         coarsen = '${fparse dx_min/100}'
-         third_state = DO_NOTHING
-         block = '5'
-       []
-   []
-[]
+#[Adaptivity]
+#   max_h_level = 50
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#         block = '5'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#         block = '5'
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#         block = '5'
+#       []
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#         block = '5'
+#       []
+#   []
+#[]
 
 [MultiApps]
   [fracture]
@@ -103,12 +103,12 @@ hht_alpha = 0.11 #match energy budget
 []
 
 #initial damage box 1
-bottom_left1 = '-0.0925 -3e-4 0'
-top_right1 = '0.0925 3e-4 0'
+bottom_left1 = '-0.0925 -4e-4 0'
+top_right1 = '0.0925 4e-4 0'
 
 #initial damage box 2
-bottom_left2 = '-0.0925 -3e-4 0'
-top_right2 = '0.0925 3e-4 0'
+bottom_left2 = '-4e-4 -0.0925  0'
+top_right2 = '4e-4 0.0925 0'
 
 [Mesh]
   [./msh]
@@ -320,7 +320,7 @@ top_right2 = '0.0925 3e-4 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.005
+    EM = 0.25
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -328,7 +328,7 @@ top_right2 = '0.0925 3e-4 0'
     discharge_center = '0 0 0'
     number_of_pulses = 100
     base_factor = 8000
-    # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -491,7 +491,7 @@ top_right2 = '0.0925 3e-4 0'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 20
+    time_step_interval = 5
     show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01'
   [../]
   [checkpoint]

@@ -1,10 +1,10 @@
 #initial damage box 1
-bottom_left1 = '-0.0925 -3e-4 0'
-top_right1 = '0.0925 3e-4 0'
+bottom_left1 = '-0.0925 -4e-4 0'
+top_right1 = '0.0925 4e-4 0'
 
 #initial damage box 2
-bottom_left2 = '-0.0925 -3e-4 0'
-top_right2 = '0.0925 3e-4 0'
+bottom_left2 = '-4e-4 -0.0925  0'
+top_right2 = '4e-4 0.0925 0'
 
 [Mesh]
   [./msh]
@@ -36,42 +36,42 @@ top_right2 = '0.0925 3e-4 0'
   []
 []
 
-[Adaptivity]
-   max_h_level = 50
-   marker = 'combo'
-   cycles_per_step = 1
-   [Markers]
-       [./combo]
-         type = FarmsComboMarker
-         markers = 'damage_marker strain_energy_marker'
-         meshsize_marker = 'meshsize_marker'
-         block = '5'
-       [../]
-       [damage_marker]
-         type = ValueThresholdMarker
-         variable = d
-         refine = 0.5
-         block = '5'
-       []
-       [strain_energy_marker]
-         type = ValueThresholdMarker
-         variable = psie_active
-         refine = '${fparse 1.0*3/8*Gc_const/l}'
-         block = '5'
-       []
-       # if mesh_size > dxmin, refine
-       # if mesh_size < dxmin/100, coarsen (which never happens)
-       # otherwise, do nothing
-       [meshsize_marker]
-         type = ValueThresholdMarker
-         variable = mesh_size
-         refine = '${dx_min}'
-         coarsen = '${fparse dx_min/100}'
-         third_state = DO_NOTHING
-         block = '5'
-       []
-   []
-[]
+#[Adaptivity]
+#   max_h_level = 50
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#         block = '5'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#         block = '5'
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#         block = '5'
+#       []
+#       # if mesh_size > dxmin, refine
+#       # if mesh_size < dxmin/100, coarsen (which never happens)
+#       # otherwise, do nothing
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         refine = '${dx_min}'
+#         coarsen = '${fparse dx_min/100}'
+#         third_state = DO_NOTHING
+#         block = '5'
+#       []
+#   []
+#[]
 
 [Variables]
   [d]
@@ -151,15 +151,8 @@ top_right2 = '0.0925 3e-4 0'
 [Materials]
   [fracture_properties]
     type = ADGenericConstantMaterial
-    prop_names = 'l'
-    prop_values = '${l}'
-  []
-  [Gc_var]
-    type = ADParsedMaterial
-    property_name = Gc
-    coupled_variables = 'Gc_var'
-    expression = 'Gc_var'
-    # outputs = exodus
+    prop_names = 'l Gc'
+    prop_values = '${l} ${Gc_const}'
   []
   [degradation]
     type = PowerDegradationFunction
@@ -248,24 +241,4 @@ top_right2 = '0.0925 3e-4 0'
   exodus = false
   # time_step_interval = 40
   print_linear_residuals = false
-[]
-
-[Distributions]
-  #typically for granite
-  #Shape Parameter (k): 5 to 15, commonly around 8 to 12.
-  #Scale Parameter (λ): 5 to 30 MPa, commonly around 10 to 20 MPa.
-  [weibull]
-    type = Weibull
-    shape = 15.0 #k
-    scale = ${Gc_const} #lambda
-    location = 0
-  []
-[]
-
-[ICs]
-  [./gc_var]
-    type =  RandomIC
-    variable = Gc_var
-    distribution = weibull
-  []
 []
