@@ -3,10 +3,10 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 100
+        nx = 20
         ny = 20
         xmin = 0
-        xmax = 0.05
+        xmax = 0.01
         ymin = 0
         ymax = 0.01
     []
@@ -15,21 +15,21 @@
         input = msh
         block_id = 1
         bottom_left = '0 0 0'
-        top_right = '0.05 0.004 0'
+        top_right = '0.01 0.004 0'
     []
     [./box2]
         type = SubdomainBoundingBoxGenerator
         input = box
         block_id = 0
         bottom_left = '0 0.004 0'
-        top_right = '0.05 0.006 0'
+        top_right = '0.01 0.006 0'
     []
     [./box3]
         type = SubdomainBoundingBoxGenerator
         input = box2
         block_id = 2
         bottom_left = '0 0.006 0'
-        top_right = '0.05 0.01 0'
+        top_right = '0.01 0.01 0'
     []
 []
 
@@ -51,7 +51,7 @@
     xi_d = -0.9
 
     #<material parameter: compliance or fluidity of the fine grain granular material>: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
-    C_g = 1e-11
+    C_g = 2e-11
 
     #<coefficient of power law indexes>: see flow rule (power law rheology): refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     m1 = 10
@@ -396,9 +396,9 @@
 [UserObjects]
     [eqstrain_averaging]
         type = ElkRadialAverage
-        length_scale = 1e-3
+        length_scale = 2e-3
         prop_name = strain_invariant_ratio
-        radius = 2e-3
+        radius = 4e-3
         weights = BAZANT
         execute_on = TIMESTEP_END
     []
@@ -416,7 +416,7 @@
     solve_type = 'NEWTON'
     # solve_type = 'PJFNK'
     start_time = -1e-12
-    end_time = 1e5
+    end_time = 3000
     # num_steps = 1
     l_max_its = 100
     l_tol = 1e-7
@@ -453,8 +453,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 10
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
+      time_step_interval = 100
+      show = 'disp_x disp_y vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
         type = CSV
@@ -494,13 +494,13 @@
           variable = disp_x
           primary = left
           secondary = right
-          translation = '0.05 0 0'
+          translation = '0.01 0 0'
         [../]
         [./y]
           variable = disp_y
           primary = left
           secondary = right
-          translation = '0.05 0 0'
+          translation = '0.01 0 0'
         [../]
     [../]
     #displacement rate
@@ -552,14 +552,24 @@
         type = NodalExtremeValue
         variable = vel_x
     []
+    #[./breakage_val]
+    #    type = NodalVariableValue
+    #    variable = B_damagedvar_aux
+    #    nodeid = 1060
+    #[]
+    #[./damage_val]
+    #    type = NodalVariableValue
+    #    variable = alpha_damagedvar_aux
+    #    nodeid = 1060
+    #[]
     [./breakage_val]
         type = NodalVariableValue
         variable = B_damagedvar_aux
-        nodeid = 1060
+        nodeid = 220
     []
     [./damage_val]
         type = NodalVariableValue
         variable = alpha_damagedvar_aux
-        nodeid = 1060
+        nodeid = 220
     []
 []
