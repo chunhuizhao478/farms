@@ -29,8 +29,8 @@ zmin_fault = -20000 #zmin of fault
 #nonlocal length applied region along ydir
 ymin_fault = -1500
 ymax_fault = 1500
-nonlocal_averaging_length_scale = 200 #200
-nonlocal_averaging_radius = 400 #400
+nonlocal_averaging_length_scale = 300
+nonlocal_averaging_radius = 600
 
 ##-------------------------##
 ##material properties##
