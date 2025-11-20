@@ -1012,6 +1012,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Outputs]
   [exodus]
     type = Exodus
+    execute_on = 'timestep_end'
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
