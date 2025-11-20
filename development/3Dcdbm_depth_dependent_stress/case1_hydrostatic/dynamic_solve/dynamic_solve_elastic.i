@@ -124,7 +124,7 @@ dt = 0.005 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 20 #time step interval for output
+exodus_time_step_interval = 1 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 2 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
@@ -1012,7 +1012,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Outputs]
   [exodus]
     type = Exodus
-    execute_on = 'timestep_end'
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
