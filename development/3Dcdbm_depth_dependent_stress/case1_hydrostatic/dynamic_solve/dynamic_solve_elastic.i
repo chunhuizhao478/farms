@@ -35,8 +35,10 @@ nonlocal_averaging_radius = 400 #for 800m testing, use 1600m
 ##-------------------------##
 ##material properties##
 density = 2670 #density
-lambda_o = 2.1547e10 #first lame constant
-shear_modulus_o = 2.975e10 #second lame constant
+#lambda_o = 2.1547e10 #first lame constant
+#shear_modulus_o = 2.975e10 #second lame constant
+lambda_o = 3.2547e10 #first lame constant
+shear_modulus_o = 3.275e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
