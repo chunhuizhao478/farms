@@ -619,7 +619,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Materials]
   #damage breakage model
   [stress_medium_nonlocal]
-      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocal
+      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocalRestart
       output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
       use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
       m_exponent = ${m_exponent}
@@ -686,12 +686,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #nonlocal eqstrain #set initial value to be eqstrain_nonlocal_initial for the first step
   #the ComputeDamageBreakageStress3DSlipWeakeningNonlocal takes old value for updating damage/breakage
   [nonlocal_eqstrain_block2]
-    type = ElkNonlocalEqstrainUpdated
+    type = ElkNonlocalEqstrainUpdatedRestart
     average_UO = eqstrain_averaging_block2
     block = ${nonlocal_eqstrain_blocks_2}
   []
   [nonlocal_eqstrain_block3]
-    type = ElkNonlocalEqstrainUpdated
+    type = ElkNonlocalEqstrainUpdatedRestart
     average_UO = eqstrain_averaging_block3
     block = ${nonlocal_eqstrain_blocks_3}
   []

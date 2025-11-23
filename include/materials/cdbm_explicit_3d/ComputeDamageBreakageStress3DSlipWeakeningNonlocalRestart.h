@@ -14,16 +14,16 @@
 #include <algorithm>
 
 /**
- * ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv put everything inside the computeQpstress without defining
+ * ComputeDamageBreakageStress3DSlipWeakeningNonlocalRestart put everything inside the computeQpstress without defining
  * additional functions
- 
+
  */
-class ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv : public ComputeDamageBreakageStressBase3D
+class ComputeDamageBreakageStress3DSlipWeakeningNonlocalRestart : public ComputeDamageBreakageStressBase3D
 {
 public:
   static InputParameters validParams();
 
-  ComputeDamageBreakageStress3DSlipWeakeningNonlocalAdv(const InputParameters & parameters);
+  ComputeDamageBreakageStress3DSlipWeakeningNonlocalRestart(const InputParameters & parameters);
 
   virtual void initialSetup() override;
 
@@ -41,17 +41,17 @@ protected:
   std::vector<Real> computecoefficients(Real gamma_damaged_r);
 
   /// @brief Compute first root of hessian matrix
-  /// @param xi 
+  /// @param xi
   /// @return the first root of critical alpha_cr
   Real alphacr_root1(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute second root of hessian matrix
-  /// @param xi 
+  /// @param xi
   /// @return the second root of critical alpha_cr
   Real alphacr_root2(Real xi, Real gamma_damaged_r);
 
   /// @brief Compute elasticity tensor for small strain
-  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee, 
+  virtual void computeQpTangentModulus(RankFourTensor & tangent, Real I1, Real I2, Real xi, RankTwoTensor Ee,
                                        Real a0, Real a1, Real a2, Real a3, Real gamma_damaged_r);
 
   /// @brief Setup initial values for the first step
@@ -156,6 +156,9 @@ protected:
   Real _strain_rate_hat;
   Real _cd_hat;
 
+  /// option: set Cd = 0 when strain rate < strain_rate_hat (default: false -> use cd_hat)
+  bool _zero_Cd_below_threshold;
+
   /// nonlocal equivalent strain
   bool _use_nonlocal_eqstrain;
   const MaterialProperty<Real> & _eqstrain_nonlocal_old;
@@ -163,19 +166,12 @@ protected:
   /// blocks where nonlocal equivalent strain is enabled; empty means all blocks
   const std::vector<unsigned int> _nonlocal_eqstrain_blocks;
 
-  /// optional dilatancy model toggles and parameters
-  bool _add_dilatancy;
-  Real _anand_param_go_mat;
-  Real _anand_param_eta_cv_mat;
-  Real _anand_param_p_mat;
+  /// nonlocal strain rate for Cd calculation
+  bool _use_nonlocal_strain_rate;
+  const MaterialProperty<Real> * _strain_rate_nonlocal_old;
 
-  /// optional thermal activation parameters
-  bool _add_temperature;
-  Real _thermal_A;
-  Real _thermal_n;
-  Real _thermal_Q;
-  Real _thermal_R;
-  const MaterialProperty<Real> * _thermal_T_prop;
+  /// static solve flag
+  bool _static_solve_flag;
 
   /// helper: whether nonlocal eqstrain should be used on the current element
   inline bool useNonlocalEqStrainHere() const
