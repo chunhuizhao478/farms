@@ -8,7 +8,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 400 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -35,10 +35,8 @@ nonlocal_averaging_radius = 400 #for 800m testing, use 1600m
 ##-------------------------##
 ##material properties##
 density = 2670 #density
-#lambda_o = 2.1547e10 #first lame constant
-#shear_modulus_o = 2.975e10 #second lame constant
-lambda_o = 3.2547e10 #first lame constant
-shear_modulus_o = 3.275e10 #second lame constant
+lambda_o = 2.1547e10 #first lame constant
+shear_modulus_o = 2.975e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
@@ -136,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
+    file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
