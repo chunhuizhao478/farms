@@ -69,8 +69,8 @@ initial_viscosity_fluid = 1e-3
 fluid_density = 1000
 gravity = 9.8
 bxx = 0.926793
-byy = 1.073206
-bxy = -0.169029
+byy = 1.2
+bxy = -0.1
 ##------------------------------------------------------------------##
 
 ##tapering parameters##
