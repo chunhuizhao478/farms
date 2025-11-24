@@ -50,7 +50,7 @@ ElkNonlocalEqstrainUpdated::computeQpProperties()
   // Now update the nonlocal damage model
   // _average_eqstrain_nonlocal = _average.find(_current_elem->id());
   // _eqstrain_nonlocal[_qp] = _average_eqstrain_nonlocal->second[_qp];
-  if (_step == 1){
+  if (_step == 1 && !_app.isRestarting()){
     _eqstrain_nonlocal[_qp] = _eqstrain_nonlocal_initial[_qp];
     return;
   }
