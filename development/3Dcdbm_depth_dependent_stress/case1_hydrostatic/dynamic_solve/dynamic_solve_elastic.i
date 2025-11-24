@@ -198,11 +198,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
   #may need a bit space, use 1.5 as boundary
-  xi_max = 1.8
+  xi_max = 10
 
   #<strain invariants ratio: minimum allowable value>: set boundary
   #Xu_etal_P15-2D
-  xi_min = -1.8
+  xi_min = -10
 
   #if option 2, use Cd_constant
   Cd_constant = ${Cd_constant}
