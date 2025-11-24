@@ -328,7 +328,7 @@ top_right2 = '4e-4 0.0925 0'
     discharge_center = '0 0 0'
     number_of_pulses = 100
     base_factor = 8000
-    peak_pressure = 150e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
