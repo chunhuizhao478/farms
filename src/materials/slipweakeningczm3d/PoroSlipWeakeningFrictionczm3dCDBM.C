@@ -189,10 +189,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   // Compute node mass and area
   Real M = 0;
   Real A = 0;
-  if (_current_elem->type() == libMesh::ElemType::TET4){
-    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
-  }
+
   else if (_current_elem->type() == libMesh::ElemType::TET10){
     M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 10) * 6;
     A = (sqrt(3) * _len * _len / 4 / 10) * 6;
@@ -225,7 +222,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 
 
   // Real Pf = _initial_porepressure[_qp] + _fault_pressure[_qp]; // fluid pressure
-  Real Pf =  0;
+  Real Pf =  _fault_pressure[_qp];
 
   //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
   //treat tension on the fault the same as if the effective normal stress equals zero.
