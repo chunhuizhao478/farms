@@ -34,7 +34,7 @@ nonlocal_averaging_radius = 600
 
 ##-------------------------##
 ##material properties##
-density = 2670 #density
+#density = 2670 #density
 lambda_o = 3.204e10 #first lame constant
 shear_modulus_o = 3.204e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
@@ -352,6 +352,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
+  ##
+  [shear_modulus_input_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -581,6 +586,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     from_variable = xi
     execute_on = 'INITIAL'
   []
+  ###
+  [get_shear_modulus_input]
+    type = MaterialRealAux
+    variable = shear_modulus_input_aux
+    property = shear_modulus_input
+    execute_on = 'TIMESTEP_END'
+  []
 []
 
 [Kernels]
@@ -588,16 +600,19 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = InertialForce
     use_displaced_mesh = false
     variable = disp_x
+    density = "density"
   []
   [./inertia_y]
     type = InertialForce
     use_displaced_mesh = false
     variable = disp_y
+    density = "density"
   []
   [./inertia_z]
     type = InertialForce
     use_displaced_mesh = false
     variable = disp_z
+    density = "density"
   []
   [./Reactionx]
     type = StiffPropDamping
@@ -617,22 +632,38 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Materials]
+  [./depth_dependent_props]
+    type = TPV32DepthSeismicProperties
+    depth_axis = z           # z is vertical in this model
+    flip_sign = true         # domain uses negative z for depth; flip to get positive depth
+    clamp_nonpositive_depth = true
+    vs_property_name = "Vs"
+    vp_property_name = "Vp"
+    density_property_name = "density"
+    shear_modulus_property_name = "shear_modulus_input"
+    lambda_property_name = "lambda_input"
+    output_properties = 'lambda_input shear_modulus_input density'
+    outputs = exodus
+  [../]
   #damage breakage model
-  [stress_medium_nonlocal]
-      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocal
-      output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
-      use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
-      m_exponent = ${m_exponent}
-      strain_rate_hat = ${strain_rate_hat}
-      cd_hat = ${cd_hat}
-      use_nonlocal_eqstrain = true
-      nonlocal_eqstrain_blocks = ${nonlocal_eqstrain_blocks}
-      outputs = exodus
+  #here we assume Cd = 0 if deviatoric strain rate is less than strain_rate_hat !
+  [stress_medium]
+    type = ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal
+    output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
+    use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
+    m_exponent = ${m_exponent}
+    strain_rate_hat = ${strain_rate_hat}
+    cd_hat = ${cd_hat}
+    use_nonlocal_eqstrain = true
+    nonlocal_eqstrain_blocks = ${nonlocal_eqstrain_blocks}
+    shear_modulus_input = shear_modulus_input #material property from depth_dependent_props
+    lambda_input = lambda_input #material property from depth_dependent_props
+    outputs = exodus
   []
   [dummy_material]
       type = GenericConstantMaterial
-      prop_names = 'initial_damage initial_breakage damage_perturbation density'
-      prop_values = '0 0 0 ${density}'
+      prop_names = 'initial_damage initial_breakage damage_perturbation'
+      prop_values = '0 0 0'
   []
   [eqstrain_nonlocal_initial_xi]
       type = CoupledVariableValueMaterial #this material object is in thermalhydraulicApp
@@ -777,12 +808,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   ###fluid pressure###
   [./func_fluid_pressure]
-    type = InitialStressStrainTPV26
+  type = InitialStressStrainTPV26VaryingDensity
     i = 0 #not used
     j = 0 #not used
     get_fluid_pressure = true
     fluid_density = ${fluid_density}
-    rock_density = ${density}
     gravity = ${gravity}
     bxx = ${bxx}
     byy = ${byy}
@@ -790,6 +820,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    flip_sign = true
   []
   ###cohesion###
   [./func_cohesion]
@@ -863,7 +894,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial shear_modulus_input_aux'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
@@ -958,4 +989,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                  20000 -4000 0
                  24000 -4000 0'
   []
+[]
+
+[Problem]
+    restart_file_base = dynamic_solve_eps1em8_out_cp/1200
 []

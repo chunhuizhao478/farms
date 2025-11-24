@@ -93,6 +93,12 @@ tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
 tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
+##overpressure parameters##
+use_overpressure = true #use overpressure for initial stress
+overpressure_depth_A = 6000 #overpressure depth A (m)
+overpressure_depth_B = 8000 #overpressure depth B (m)
+##------------------------------------------------------------------##
+
 #nucleation parameters
 nucl_center_x = -18500 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
@@ -790,6 +796,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   ###cohesion###
   [./func_cohesion]
@@ -958,4 +967,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                  20000 -4000 0
                  24000 -4000 0'
   []
+[]
+
+[Problem]
+    restart_file_base = dynamic_solve_eps1em8_out_cp/1200
 []

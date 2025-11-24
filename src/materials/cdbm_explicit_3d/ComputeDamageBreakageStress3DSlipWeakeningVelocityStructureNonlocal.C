@@ -15,7 +15,7 @@ registerMooseObject("farmsApp", ComputeDamageBreakageStress3DSlipWeakeningVeloci
 
 InputParameters
 ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::validParams()
-{ 
+{
   //Note: lambda_o, shear_modulus_o is defined in "ComputeGeneralDamageBreakageStressBase"
   //to initialize _lambda, _shear_modulus material properties
   InputParameters params = ComputeDamageBreakageStressBase3D::validParams();
@@ -110,7 +110,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::ComputeDama
 {
   // Enforce explicit block list when nonlocal eqstrain is enabled
   if (_use_nonlocal_eqstrain && _nonlocal_eqstrain_blocks.empty())
-    mooseError("When 'use_nonlocal_eqstrain=true' you must provide 'nonlocal_eqstrain_blocks' (e.g., 'nonlocal_eqstrain_blocks = 100 200').");  
+    mooseError("When 'use_nonlocal_eqstrain=true' you must provide 'nonlocal_eqstrain_blocks' (e.g., 'nonlocal_eqstrain_blocks = 100 200').");
 }
 
 void
@@ -125,7 +125,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::initialSetu
     mooseError("This linear elastic stress calculation only works for small strains; use "
                "ComputeFiniteStrainElasticStress for simulations using incremental and finite "
                "strains.");
-               
+
 }
 
 void
@@ -140,8 +140,8 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::initQpState
 
 void
 ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpStress()
-{ 
-  
+{
+
   /*
   compute gammar, breakage coefficients
   */
@@ -155,13 +155,13 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
   // std::cout << "gamma_damaged_r: " << gamma_damaged_r << std::endl;
   // std::cout << "a0: " << a0 << ", a1: " << a1 << ", a2: " << a2 << ", a3: " << a3 << std::endl;
 
-  if (_step == 1){
+  if (_step == 1 && !_app.isRestarting()){
     setupInitial();
     _stress[_qp].zero();
   }
   else{
-    
-    /* 
+
+    /*
     compute alpha and B parameters
     */
 
@@ -169,7 +169,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
     if (_use_strain_rate_dependent_Cd) // strain rate dependent Cd
       computeStrainRateCd();
     else // constant Cd
-      _Cd_mat[_qp] = _Cd_constant; 
+      _Cd_mat[_qp] = _Cd_constant;
 
     /* compute alpha */
     //compute forcing term
@@ -187,7 +187,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
       alpha_forcingterm = (1 - _B_old[_qp]) * ( _C1 * std::exp(_alpha_damagedvar_old[_qp]/_C2) * _I2_old[_qp] * ( xi_old - _xi_0 ) );
     }
     else{
-      mooseError("xi_old is OUT-OF-RANGE!.");   
+      mooseError("xi_old is OUT-OF-RANGE!.");
     }
     //update alpha at current time
     Real alpha_out = _alpha_damagedvar_old[_qp] + _dt * alpha_forcingterm;
@@ -195,7 +195,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
     //check alpha within range
     if ( alpha_out < 0 ){ alpha_out = 0.0; }
     else if ( alpha_out > 1 ){ alpha_out = 1.0; }
-    else{}       
+    else{}
 
     //check below initial damage (fix initial damage)
     if ( alpha_out < _initial_damage[_qp] + _damage_perturbation[_qp]){ alpha_out = _initial_damage[_qp] + _damage_perturbation[_qp]; }
@@ -211,7 +211,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
 
     //alphacr function
     Real alphacr;
-    if ( xi_old < _xi_0 ){ alphacr = 1.0;} 
+    if ( xi_old < _xi_0 ){ alphacr = 1.0;}
     else if ( xi_old > _xi_0 && xi_old <= _xi_1 ){ alphacr = alphacr_root1(xi_old,gamma_damaged_r);}
     else if ( xi_old > _xi_1 && xi_old <= _xi_max ){ alphacr = alphacr_root2(xi_old,gamma_damaged_r); }
     else{std::cout<<"xi: "<<xi_old<<std::endl;mooseError("xi exceeds the maximum allowable range!");}
@@ -234,7 +234,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
     //check breakage within range
     if ( B_out < 0 ){ B_out = 0.0; }
     else if ( B_out > 1 ){ B_out = 1.0; }
-    else{}   
+    else{}
 
     //check below initial damage (fix initial damage)
     if ( B_out < _initial_breakage[_qp] ){ B_out = _initial_breakage[_qp]; }
@@ -311,19 +311,19 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpSt
 
 }
 
-Real 
+Real
 ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computegammar()
 {
   // Calculate each part of the expression
   Real term1 = -_xi_0 * (-_lambda_o * pow(_xi_0, 2) + 6 * _lambda_o + 2 * _shear_modulus_o);
-  Real term2_sqrt = sqrt((_lambda_o * pow(_xi_0, 2) + 2 * _shear_modulus_o) * 
-                            (_lambda_o * pow(_xi_0, 4) - 12 * _lambda_o * pow(_xi_0, 2) + 36 * _lambda_o 
+  Real term2_sqrt = sqrt((_lambda_o * pow(_xi_0, 2) + 2 * _shear_modulus_o) *
+                            (_lambda_o * pow(_xi_0, 4) - 12 * _lambda_o * pow(_xi_0, 2) + 36 * _lambda_o
                             - 6 * _shear_modulus_o * pow(_xi_0, 2) + 24 * _shear_modulus_o));
   Real denominator = 2 * (pow(_xi_0, 2) - 3);
-  
+
   // Calculate gamma_r
   Real gamma_r = (term1 - term2_sqrt) / denominator;
-  
+
   //save
   return gamma_r;
 }
@@ -357,15 +357,15 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computecoef
   Real numerator_a2 = 2 * _chi * mu_cr * pow(_xi_1, 3) - 3 * _chi * mu_cr * pow(_xi_1, 2) * _xi_d + _chi * mu_cr * pow(_xi_d, 3)
                        + 2 * gamma_damaged_r * pow(_xi_1, 3) * _xi_d - 2 * gamma_damaged_r * pow(_xi_1, 3) * _xi_0
                        - _lambda_o * pow(_xi_1, 3) * pow(_xi_d, 2) - 2 * _shear_modulus_o * pow(_xi_1, 3);
-  Real denominator_a2 = pow(_xi_1, 4) * _xi_d - 2 * pow(_xi_1, 3) * pow(_xi_d, 2) + pow(_xi_1, 2) * pow(_xi_d, 3); 
-  Real a2 = numerator_a2 / denominator_a2; 
+  Real denominator_a2 = pow(_xi_1, 4) * _xi_d - 2 * pow(_xi_1, 3) * pow(_xi_d, 2) + pow(_xi_1, 2) * pow(_xi_d, 3);
+  Real a2 = numerator_a2 / denominator_a2;
 
   //a3
   Real numerator_a3 = -2 * _chi * mu_cr * pow(_xi_1, 2) + 4 * _chi * mu_cr * _xi_1 * _xi_d - 2 * _chi * mu_cr * pow(_xi_d, 2)
                        - 2 * gamma_damaged_r * pow(_xi_1, 2) * _xi_d + 2 * gamma_damaged_r * pow(_xi_1, 2) * _xi_0
                        + _lambda_o * pow(_xi_1, 2) * pow(_xi_d, 2) + 2 * _shear_modulus_o * pow(_xi_1, 2);
   Real denominator_a3 = 2 * pow(_xi_1, 4) * _xi_d - 4 * pow(_xi_1, 3) * pow(_xi_d, 2) + 2 * pow(_xi_1, 2) * pow(_xi_d, 3);
-  Real a3 = numerator_a3 / denominator_a3; 
+  Real a3 = numerator_a3 / denominator_a3;
 
   //save
   std::vector<Real> a_vec {a0,a1,a2,a3};
@@ -375,34 +375,34 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computecoef
 }
 
 // Function for alpha_func_root1
-Real 
+Real
 ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::alphacr_root1(Real xi, Real gamma_damaged_r) {
     Real term1 = _lambda_o * pow(xi, 3) - 6 * _lambda_o * _xi_0 + 6 * _shear_modulus_o * xi - 8 * _shear_modulus_o * _xi_0;
-    Real term2 = std::sqrt(_lambda_o * _lambda_o * pow(xi, 6) 
-                             - 12 * _lambda_o * _lambda_o * pow(xi, 3) * _xi_0 
-                             + 36 * _lambda_o * _lambda_o * _xi_0 * _xi_0 
-                             + 12 * _lambda_o * _shear_modulus_o * pow(xi, 4) 
-                             - 16 * _lambda_o * _shear_modulus_o * pow(xi, 3) * _xi_0 
-                             - 72 * _lambda_o * _shear_modulus_o * pow(xi, 2) 
-                             + 72 * _lambda_o * _shear_modulus_o * xi * _xi_0 
-                             + 72 * _lambda_o * _shear_modulus_o 
-                             - 12 * _shear_modulus_o * _shear_modulus_o * pow(xi, 2) 
+    Real term2 = std::sqrt(_lambda_o * _lambda_o * pow(xi, 6)
+                             - 12 * _lambda_o * _lambda_o * pow(xi, 3) * _xi_0
+                             + 36 * _lambda_o * _lambda_o * _xi_0 * _xi_0
+                             + 12 * _lambda_o * _shear_modulus_o * pow(xi, 4)
+                             - 16 * _lambda_o * _shear_modulus_o * pow(xi, 3) * _xi_0
+                             - 72 * _lambda_o * _shear_modulus_o * pow(xi, 2)
+                             + 72 * _lambda_o * _shear_modulus_o * xi * _xi_0
+                             + 72 * _lambda_o * _shear_modulus_o
+                             - 12 * _shear_modulus_o * _shear_modulus_o * pow(xi, 2)
                              + 48 * _shear_modulus_o * _shear_modulus_o);
     Real denominator = 2 * gamma_damaged_r * (3 * pow(xi, 2) - 6 * xi * _xi_0 + 4 * _xi_0 * _xi_0 - 3);
     return (term1 - term2) / denominator;
 }
 
 // Function for alpha_func_root2
-Real 
+Real
 ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::alphacr_root2(Real xi, Real gamma_damaged_r) {
     return 2 * _shear_modulus_o / (gamma_damaged_r * (xi - 2 * _xi_0));
 }
 
 void
-ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTangentModulus(RankFourTensor & tangent, 
-                                                      Real I1, 
-                                                      Real I2, 
-                                                      Real xi, 
+ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTangentModulus(RankFourTensor & tangent,
+                                                      Real I1,
+                                                      Real I2,
+                                                      Real xi,
                                                       RankTwoTensor Ee,
                                                       Real a0,
                                                       Real a1,
@@ -431,7 +431,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTa
   //     for (unsigned int j = 0; j < 3; ++j) {
   //       for (unsigned int k = 0; k < 3; ++k) {
   //         for (unsigned int l = 0; l < 3; ++l) {
-  //           tangent(i, j, k, l) = _lambda_o * identity(i, j) * identity(k, l) + 
+  //           tangent(i, j, k, l) = _lambda_o * identity(i, j) * identity(k, l) +
   //                                 _shear_modulus_o * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
   //         }
   //       }
@@ -459,7 +459,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTa
 
   RankFourTensor dSsdE;
   dSsdE.zero();
-  
+
   // CORRECTED: Complete implementation of solid phase tangent
   // ∂S^s_ij/∂E_kl = (-γ ∂ξ^(-1)/∂E_kl)I_1 δ_ij + (λ - γ/ξ) ∂I_1/∂E_kl δ_ij + (-γ ∂ξ/∂E_kl)E_ij + (2μ - γξ) ∂E_ij/∂E_kl
   for (unsigned int i = 0; i < 3; ++i) {
@@ -468,14 +468,14 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTa
         for (unsigned int l = 0; l < 3; ++l) {
           // Term 1a: (λ - γ/ξ) * ∂I1/∂E_kl * δ_ij = (λ - γ/ξ) * δ_kl * δ_ij
           dSsdE(i, j, k, l) += lambda_term * identity(i, j) * identity(k, l);
-          
+
           // Term 1b: (-γ ∂ξ^(-1)/∂E_kl) * I1 * δ_ij - PREVIOUSLY MISSING
           dSsdE(i, j, k, l) -= gamma_damaged_out * dxim1dE_tensor(k, l) * I1 * identity(i, j);
-          
+
           // Term 2a: (2μ - γξ) * ∂E_ij/∂E_kl
           Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
           dSsdE(i, j, k, l) += shear_term * I4_ijkl;
-          
+
           // Term 2b: (-γ ∂ξ/∂E_kl) * E_ij
           dSsdE(i, j, k, l) -= gamma_damaged_out * dxidE_tensor(k, l) * Ee(i, j);
         }
@@ -489,7 +489,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTa
 
   RankFourTensor dSbdE;
   dSbdE.zero();
-  
+
  // CORRECTED: Complete implementation of granular phase tangent
   // ∂S^b_ij/∂E_kl = (a_1 ∂ξ^(-1)/∂E_kl + 3a_3 ∂ξ/∂E_kl)I_1 δ_ij + (2a_2 + a_1/ξ + 3a_3ξ) ∂I_1/∂E_kl δ_ij
   //                + (a_1 ∂ξ/∂E_kl - a_3 ∂ξ^3/∂E_kl)E_ij + (2a_0 + a_1ξ - a_3ξ^3) ∂E_ij/∂E_kl
@@ -499,20 +499,20 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTa
         for (unsigned int l = 0; l < 3; ++l) {
           // Term 1a: (2a_2 + a_1/ξ + 3a_3ξ) * ∂I1/∂E_kl * δ_ij = coeff2_b * δ_kl * δ_ij
           dSbdE(i, j, k, l) += coeff2_b * identity(i, j) * identity(k, l);
-          
+
           // Term 1b: a_1 * ∂ξ^(-1)/∂E_kl * I1 * δ_ij - PREVIOUSLY MISSING
           dSbdE(i, j, k, l) += a1 * dxim1dE_tensor(k, l) * I1 * identity(i, j);
-          
+
           // Term 1c: 3a_3 * ∂ξ/∂E_kl * I1 * δ_ij
           dSbdE(i, j, k, l) += 3.0 * a3 * dxidE_tensor(k, l) * I1 * identity(i, j);
-          
+
           // Term 2a: (2a_0 + a_1ξ - a_3ξ^3) * ∂E_ij/∂E_kl
           Real I4_ijkl = 0.5 * (identity(i, k) * identity(j, l) + identity(i, l) * identity(j, k));
           dSbdE(i, j, k, l) += coeff4_b * I4_ijkl;
-          
+
           // Term 2b: a_1 * ∂ξ/∂E_kl * E_ij
           dSbdE(i, j, k, l) += a1 * dxidE_tensor(k, l) * Ee(i, j);
-          
+
           // Term 2c: -a_3 * ∂ξ^3/∂E_kl * E_ij
           // ∂ξ^3/∂E_kl = 3ξ^2 * ∂ξ/∂E_kl
           dSbdE(i, j, k, l) -= a3 * 3.0 * xi * xi * dxidE_tensor(k, l) * Ee(i, j);
@@ -522,7 +522,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeQpTa
   }
 
   // Combine: tangent = (1-B)*dSs/dE + B*dSb/dE
-  tangent = dSsdE * (1.0 - _B[_qp]) + dSbdE * _B[_qp];  
+  tangent = dSsdE * (1.0 - _B[_qp]) + dSbdE * _B[_qp];
 
 }
 
@@ -554,7 +554,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::setupInitia
   // Real eps13_init = strain_initial(0,2);
   // Real eps23_init = strain_initial(1,2);
   // Real eps33_init = strain_initial(2,2);
-  
+
   // //Compute xi, I1, I2
   // Real I1_init = eps11_init + eps22_init + eps33_init;
   // Real I2_init = eps11_init * eps11_init + eps22_init * eps22_init + eps33_init * eps33_init + 2 * eps12_init * eps12_init + 2 * eps13_init * eps13_init + 2 * eps23_init * eps23_init;
@@ -646,7 +646,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeDevi
 {
   //Compute strain rate E_dot = F^T * D * F
   RankTwoTensor E_dot = (_eps_total[_qp] - _eps_total_old[_qp]) / _dt;
-  //Compute deviatoric strain rate tensor E_dev_dot 
+  //Compute deviatoric strain rate tensor E_dev_dot
   RankTwoTensor E_dev_dot = E_dot - (1.0/3.0) * E_dot.trace() * RankTwoTensor::Identity();
   //Compute J2_dot = 1/2 * E_dev_dot(i,j) * E_dev_dot(i,j)
   Real J2_dot = 0.0;
@@ -659,7 +659,7 @@ ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeDevi
   _deviatroic_strain_rate[_qp] = std::sqrt(2.0/3.0 * J2_dot);
 }
 
-void 
+void
 ComputeDamageBreakageStress3DSlipWeakeningVelocityStructureNonlocal::computeStrainRateCd()
 {
   //_m_exponent: constant value - default value = 0.8
