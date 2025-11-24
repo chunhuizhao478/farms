@@ -170,7 +170,7 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpStress()
   // std::cout << "gamma_damaged_r: " << gamma_damaged_r << std::endl;
   // std::cout << "a0: " << a0 << ", a1: " << a1 << ", a2: " << a2 << ", a3: " << a3 << std::endl;
 
-  if (_step == 1){
+  if (_step == 1 && !_app.isRestarting()){
     setupInitial();
     _stress[_qp].zero();
   }

@@ -619,7 +619,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Materials]
   #damage breakage model
   [stress_medium_nonlocal]
-      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocalRestart
+      type = ComputeDamageBreakageStress3DSlipWeakeningNonlocal
       output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
       use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
       m_exponent = ${m_exponent}
@@ -962,5 +962,5 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 []
 
 [Problem]
-    restart_file_base = dynamic_solve_eps1em8_out_cp/1227
+    restart_file_base = dynamic_solve_eps1em8_out_cp/1240
 []
