@@ -10,7 +10,7 @@ confinement_pressure = 1000000.0
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  2e-4
-dx_min = 5e-5
+dx_min = 2e-4
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -48,12 +48,12 @@ hht_alpha = 0.11 #match energy budget
        # Gate: allow refinement only when mesh_size >= dx_min
        # if mesh_size < dx_min: COARSEN (blocks refinement via FarmsComboMarker gate)
        # if mesh_size >= dx_min: DO_NOTHING (allows other markers to refine)
+       # Applied to ALL blocks to prevent over-refinement at block boundaries
        [meshsize_marker]
          type = ValueThresholdMarker
          variable = mesh_size
          coarsen = '${dx_min}'
          third_state = DO_NOTHING
-         block = '5'
        []
    []
 []
@@ -491,7 +491,7 @@ top_right2 = '4e-4 0.0925 0'
   [./exodus]
     type = Exodus
     time_step_interval = 5
-    show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01'
+    show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01 mesh_size damage_marker strain_energy_marker meshsize_marker'
   [../]
   [checkpoint]
       type = Checkpoint

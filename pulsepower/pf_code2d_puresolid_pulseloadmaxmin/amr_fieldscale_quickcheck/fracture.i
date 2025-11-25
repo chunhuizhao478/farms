@@ -62,12 +62,12 @@ top_right2 = '4e-4 0.0925 0'
        # Gate: allow refinement only when mesh_size >= dx_min
        # if mesh_size < dx_min: COARSEN (blocks refinement via FarmsComboMarker gate)
        # if mesh_size >= dx_min: DO_NOTHING (allows other markers to refine)
+       # Applied to ALL blocks to prevent over-refinement at block boundaries
        [meshsize_marker]
          type = ValueThresholdMarker
          variable = mesh_size
          coarsen = '${dx_min}'
          third_state = DO_NOTHING
-         block = '5'
        []
    []
 []
