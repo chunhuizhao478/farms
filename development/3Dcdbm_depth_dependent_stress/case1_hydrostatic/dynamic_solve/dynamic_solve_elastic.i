@@ -1013,7 +1013,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'static_initial_stress_tensor static_initial_strain_tensor initial_porepressure forced_rupture_aux cohesion_aux vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
+    show = '   traction_strike_aux traction_normal_aux traction_dip_aux initial_porepressure forced_rupture_aux cohesion_aux vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
