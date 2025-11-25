@@ -92,7 +92,7 @@ FarmsComboMarker::computeElementMarker()
   }
   
   // If meshsize marker is not flagged for refinement (DONT_MARK or COARSEN), don't refine
-  if (meshsize_value == DO_NOTHING)
+  if (meshsize_value != DO_NOTHING && meshsize_value != REFINE)
     return DONT_MARK;
 
   // Now process the regular markers - start with DONT_MARK because it's -1
