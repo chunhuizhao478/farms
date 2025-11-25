@@ -440,6 +440,83 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
+ # Static initial stress tensor components (from material property)
+  [static_initial_stress_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [static_initial_stress_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [static_initial_stress_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [static_initial_stress_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [static_initial_stress_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [static_initial_stress_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  
+  # sts_initial_tensor components (from material property)
+  [sts_initial_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  
+  # sts_total components (from material property)
+  [sts_total_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -670,6 +747,155 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = stress_xy
     index_i = 0
     index_j = 1
+  []
+   # Extract static_initial_stress_tensor components (material property)
+  [static_initial_stress_xx]
+    type = RankTwoAux
+    rank_two_tensor = static_initial_stress_tensor
+    variable = static_initial_stress_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [static_initial_stress_yy]
+    type = RankTwoAux
+    rank_two_tensor = static_initial_stress_tensor
+    variable = static_initial_stress_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [static_initial_stress_zz]
+    type = RankTwoAux
+    rank_two_tensor = static_initial_stress_tensor
+    variable = static_initial_stress_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [static_initial_stress_xy]
+    type = RankTwoAux
+    rank_two_tensor = static_initial_stress_tensor
+    variable = static_initial_stress_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [static_initial_stress_xz]
+    type = RankTwoAux
+    rank_two_tensor = static_initial_stress_tensor
+    variable = static_initial_stress_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [static_initial_stress_yz]
+    type = RankTwoAux
+    rank_two_tensor = static_initial_stress_tensor
+    variable = static_initial_stress_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  
+  # Extract sts_initial_tensor components (material property)
+  [sts_initial_xx]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_yy]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_zz]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_xy]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_xz]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_yz]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  
+  # Extract sts_total components (material property)
+  [sts_total_xx]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_yy]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_zz]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_xy]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_xz]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_yz]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
   []
 []
 
@@ -1013,7 +1239,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = '   traction_strike_aux traction_normal_aux traction_dip_aux initial_porepressure forced_rupture_aux cohesion_aux vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z traction_x traction_y traction_z xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
+    show = 'static_initial_stress_xx static_initial_stress_yy static_initial_stress_zz 
+            static_initial_stress_xy static_initial_stress_xz static_initial_stress_yz
+            sts_initial_xx sts_initial_yy sts_initial_zz 
+            sts_initial_xy sts_initial_xz sts_initial_yz
+            sts_total_xx sts_total_yy sts_total_zz 
+            sts_total_xy sts_total_xz sts_total_yz
+            traction_strike_aux traction_normal_aux traction_dip_aux 
+            initial_porepressure forced_rupture_aux cohesion_aux 
+            vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
+            disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z 
+            traction_x traction_y traction_z xi_aux stress_xx stress_yy stress_xy 
+            deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
