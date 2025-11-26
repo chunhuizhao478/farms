@@ -68,8 +68,8 @@ initial_viscosity_fluid = 1e-3
 #background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 0.926793
-byy = 1.2
+bxx = 1
+byy = 1.5
 bxy = -0.1
 ##------------------------------------------------------------------##
 
