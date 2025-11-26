@@ -22,41 +22,41 @@ newmark_gamma = 0.5
 hht_alpha = 0.11 #match energy budget
 #----------------------------------------------------#
 
-[Adaptivity]
-   max_h_level = 50
-   marker = 'combo'
-   cycles_per_step = 1
-   [Markers]
-       [./combo]
-         type = FarmsComboMarker
-         markers = 'damage_marker strain_energy_marker'
-         meshsize_marker = 'meshsize_marker'
-         block = '5'
-       [../]
-       [damage_marker]
-         type = ValueThresholdMarker
-         variable = d
-         refine = 0.5
-         block = '5'
-       []
-       [strain_energy_marker]
-         type = ValueThresholdMarker
-         variable = psie_active
-         refine = '${fparse 1.0*3/8*Gc_const/l}'
-         block = '5'
-       []
-       # Gate: allow refinement only when mesh_size >= dx_min
-       # if mesh_size < dx_min: COARSEN (blocks refinement via FarmsComboMarker gate)
-       # if mesh_size >= dx_min: DO_NOTHING (allows other markers to refine)
-       # Applied to ALL blocks to prevent over-refinement at block boundaries
-       [meshsize_marker]
-         type = ValueThresholdMarker
-         variable = mesh_size
-         coarsen = '${dx_min}'
-         third_state = DO_NOTHING
-       []
-   []
-[]
+#[Adaptivity]
+#   max_h_level = 50
+#   marker = 'combo'
+#   cycles_per_step = 1
+#   [Markers]
+#       [./combo]
+#         type = FarmsComboMarker
+#         markers = 'damage_marker strain_energy_marker'
+#         meshsize_marker = 'meshsize_marker'
+#         block = '5'
+#       [../]
+#       [damage_marker]
+#         type = ValueThresholdMarker
+#         variable = d
+#         refine = 0.5
+#         block = '5'
+#       []
+#       [strain_energy_marker]
+#         type = ValueThresholdMarker
+#         variable = psie_active
+#         refine = '${fparse 1.0*3/8*Gc_const/l}'
+#         block = '5'
+#       []
+#       # Gate: allow refinement only when mesh_size >= dx_min
+#       # if mesh_size < dx_min: COARSEN (blocks refinement via FarmsComboMarker gate)
+#       # if mesh_size >= dx_min: DO_NOTHING (allows other markers to refine)
+#       # Applied to ALL blocks to prevent over-refinement at block boundaries
+#       [meshsize_marker]
+#         type = ValueThresholdMarker
+#         variable = mesh_size
+#         coarsen = '${dx_min}'
+#         third_state = DO_NOTHING
+#       []
+#   []
+#[]
 
 [MultiApps]
   [fracture]
