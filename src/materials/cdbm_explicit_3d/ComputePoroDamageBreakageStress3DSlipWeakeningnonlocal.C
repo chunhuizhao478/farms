@@ -878,10 +878,12 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::setupInitial()
   //_stress[_qp] = sigma_total - _static_initial_stress_tensor[_qp];
 
   // Also save the total stress tensor
-  _sts_total[_qp] = sigma_total;
+  // _sts_total[_qp] = sigma_total;
+  _sts_total[_qp] = _static_initial_stress_tensor[_qp];
 
   // Also save in the sts_initial_tensor
-  _sts_initial_tensor[_qp] = sigma_total;
+  // _sts_initial_tensor[_qp] = sigma_total;
+  _sts_initial_tensor[_qp] = _static_initial_stress_tensor[_qp];
 
   // Assign value for elastic strain, which is equal to the mechanical strain
   _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
