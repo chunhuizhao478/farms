@@ -491,7 +491,7 @@ top_right2 = '4e-4 0.0925 0'
   [./exodus]
     type = Exodus
     time_step_interval = 5
-    show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01 mesh_size damage_marker strain_energy_marker meshsize_marker'
+    show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01'
   [../]
   [checkpoint]
       type = Checkpoint
