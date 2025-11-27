@@ -327,7 +327,7 @@ top_right2 = '4e-4 0.0925 0'
     discharge_center = '0 0 0'
     number_of_pulses = 100
     base_factor = 8000
-    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 105e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -490,7 +490,7 @@ top_right2 = '4e-4 0.0925 0'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 5
+    time_step_interval = 20
     show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01'
   [../]
   [checkpoint]
