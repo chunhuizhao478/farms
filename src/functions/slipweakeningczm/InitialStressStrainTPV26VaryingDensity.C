@@ -29,6 +29,7 @@ InitialStressStrainTPV26VaryingDensity::validParams()
   params.addParam<bool>("use_overpressure", false, "use overpressure model");
   params.addParam<Real>("overpressure_depth_A", -1, "overpressure A depth");
   params.addParam<Real>("overpressure_depth_B", -1, "overpressure B depth");
+  params.addParam<Real>("overpressure_rho_ref", 2900.0, "reference rock density for overpressure gradient (kg/m^3), default: TPV32 final value = 2900");
   params.addParam<bool>("flip_sign", true, "If true, depth = -z (negative z is down)");
   params.addParam<Real>("depth_offset", 0.0, "Offset added to z before computing depth");
   return params;
@@ -55,6 +56,7 @@ InitialStressStrainTPV26VaryingDensity::InitialStressStrainTPV26VaryingDensity(c
     _use_overpressure(getParam<bool>("use_overpressure")),
     _overpressure_depth_A(getParam<Real>("overpressure_depth_A")),
     _overpressure_depth_B(getParam<Real>("overpressure_depth_B")),
+    _overpressure_rho_ref(getParam<Real>("overpressure_rho_ref")),
     _flip_sign(getParam<bool>("flip_sign")),
     _depth_offset(getParam<Real>("depth_offset"))
 {
@@ -120,7 +122,7 @@ InitialStressStrainTPV26VaryingDensity::value(Real /*t*/, const Point & p) const
     else if (std::abs(z) > _overpressure_depth_A && std::abs(z) <= _overpressure_depth_B)
     {
       const Real Pf_A = fluid_density * gravity * _overpressure_depth_A;
-      const Real delta_rho = rock_density - fluid_density;
+      const Real delta_rho = _overpressure_rho_ref - fluid_density;
       Pf = Pf_A + gravity * (fluid_density * (std::abs(z) - _overpressure_depth_A) +
             0.5 * delta_rho * std::pow((std::abs(z) - _overpressure_depth_A), 2) /
             (_overpressure_depth_B - _overpressure_depth_A));
@@ -128,9 +130,9 @@ InitialStressStrainTPV26VaryingDensity::value(Real /*t*/, const Point & p) const
     else
     {
       const Real Pf_B = fluid_density * gravity * _overpressure_depth_B +
-                        0.5 * gravity * (rock_density - fluid_density) *
+                        0.5 * gravity * (_overpressure_rho_ref - fluid_density) *
                         (_overpressure_depth_B - _overpressure_depth_A);
-      Pf = Pf_B + rock_density * gravity * (std::abs(z) - _overpressure_depth_B);
+      Pf = Pf_B + _overpressure_rho_ref * gravity * (std::abs(z) - _overpressure_depth_B);
     }
   }
 

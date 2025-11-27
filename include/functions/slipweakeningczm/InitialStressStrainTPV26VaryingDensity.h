@@ -38,6 +38,7 @@ private:
 	const bool _use_overpressure;
 	const Real _overpressure_depth_A;
 	const Real _overpressure_depth_B;
+	const Real _overpressure_rho_ref;
 
 	const bool _flip_sign;
 	const Real _depth_offset;
