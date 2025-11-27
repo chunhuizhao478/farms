@@ -96,7 +96,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
     _traction_strike(declareProperty<Real>("traction_strike")),
     _traction_dip(declareProperty<Real>("traction_dip")),
     _traction_normal(declareProperty<Real>("traction_normal")),
-    _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>(_base_name + "static_initial_stress_tensor")),
+    _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>(_base_name + "sts_initial_tensor")),
     _use_forced_rupture(getParam<bool>("use_forced_rupture")),
     _t0(getParam<Real>("t0")),
     _cohesion_aux(coupledValue("cohesion_aux")),
