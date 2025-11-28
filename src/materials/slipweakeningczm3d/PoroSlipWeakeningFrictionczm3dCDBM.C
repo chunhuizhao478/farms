@@ -218,11 +218,11 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
             (R_plus_local_t + R_plus_pressure_local_t - R_minus_local_t - R_minus_pressure_local_t) / (2 * A) + T1_o;
   Real T3 = (1 / _dt) * M * displacement_jump_rate_d / (2 * A) +
             (R_plus_local_d + R_plus_pressure_local_d- R_minus_local_d - R_minus_pressure_local_d) / (2 * A) + T3_o;
-  Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
-                (2 * A) +
-            ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
+  // Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
+  //               (2 * A) +
+  //           ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
   
-  // Real T2 = ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
+  Real T2 = ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
 
 
   Real Pf = _initial_porepressure[_qp] + _fault_pressure[_qp]; // fluid pressure
