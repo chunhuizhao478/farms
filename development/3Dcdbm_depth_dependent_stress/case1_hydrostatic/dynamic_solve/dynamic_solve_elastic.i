@@ -49,7 +49,7 @@ mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
-cohesion_depth = 4000 #cohesion depth (m)
+cohesion_depth = 5000 #cohesion depth (m)
 cohesion_slope = 0.00072 #cohesion slope (MPa/m)
 cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
@@ -110,12 +110,12 @@ anand_param_p_mat = 1
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -22100 #nucleation center x coordinate
+nucl_center_x = 0 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
 Vs = 3340 #shear wave speed (m/s)
-t0 = 0.5 #nucleation time (s)
+t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
@@ -1239,9 +1239,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'static_initial_stress_xx static_initial_stress_yy static_initial_stress_zz 
-            static_initial_stress_xy static_initial_stress_xz static_initial_stress_yz
-            sts_initial_xx sts_initial_yy sts_initial_zz 
+    show = 'sts_initial_xx sts_initial_yy sts_initial_zz 
             sts_initial_xy sts_initial_xz sts_initial_yz
             sts_total_xx sts_total_yy sts_total_zz 
             sts_total_xy sts_total_xz sts_total_yz

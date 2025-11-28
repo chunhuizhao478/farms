@@ -70,7 +70,7 @@ fluid_density = 1000
 gravity = 9.8
 bxx = 3
 byy = 4
-bxy = -0.1
+bxy = -1
 ##------------------------------------------------------------------##
 
 ##tapering parameters##
