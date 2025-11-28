@@ -24,4 +24,10 @@ protected:
 
   /// Permeability
   const MaterialProperty<Real> & _perm_s;
+
+  RealVectorValue _gravity;
+
+  Real _fluid_density;
+
+
 };

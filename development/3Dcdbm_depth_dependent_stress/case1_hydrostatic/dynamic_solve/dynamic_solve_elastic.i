@@ -932,6 +932,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./darcy_flow]
       type = SmallStrainFluidDiffusion
       variable = porepressure
+      fluid_density = 1000
+      gravity_vector = '0 0 0'
   []
   [./darcy_flow_granular]
       type = SmallStrainFluidDiffusionGranular
