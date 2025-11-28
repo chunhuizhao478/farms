@@ -238,7 +238,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
   [./darcy_flow]
       type = SmallStrainFluidDiffusion
       variable = porepressure
-      gravity_vector = '0 0 -1*gravity'
+      gravity_vector = '0 0 -9.8'
   []
   [gravity_z]
     type = BodyForce
