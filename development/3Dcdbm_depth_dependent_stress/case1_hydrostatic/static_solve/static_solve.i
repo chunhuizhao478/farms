@@ -69,9 +69,9 @@ initial_viscosity_fluid = 1e-3  # water viscosity
 #background stress
 fluid_density = 1000
 gravity = 9.8
-bxx = 3
-byy = 1.6
-bxy = -0.7
+bxx = 2
+byy = 2
+bxy = -0.5
 ##------------------------------------------------------------------##
 
 ##tapering parameters##
