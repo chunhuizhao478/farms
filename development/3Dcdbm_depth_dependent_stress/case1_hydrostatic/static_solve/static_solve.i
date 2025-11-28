@@ -61,7 +61,6 @@ permeability_solid_o = 1e-19 # Initial permeability (1 milli-darcy)
 porosity_solid_o = 0.0026 # Initial porosity (8%)     
 solid_bulk_modulus_s = 57e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
 initial_viscosity_fluid = 1e-3  # water viscosity 
-fluid_density = 1000 # water density 
 
 ##-------------------------##
 
@@ -239,7 +238,6 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
   [./darcy_flow]
       type = SmallStrainFluidDiffusion
       variable = porepressure
-      fluid_density = 1000
       gravity_vector = '0 0 -1*gravity'
   []
   [gravity_z]
