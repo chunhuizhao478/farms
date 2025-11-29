@@ -507,6 +507,31 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
+  # Mechanical strain components (RankTwoTensor has 9 components in 3D)
+  [mechanical_strain_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
 
 []
 
@@ -863,7 +888,58 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     index_j = 2
     execute_on = 'TIMESTEP_END'
   []
-[]
+
+  [mechanical_strain_xx]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_yy]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_zz]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_xy]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_xz]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_yz]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+   
+
+[] 
 
 [Kernels]
   [dispkernel_x]
@@ -1207,8 +1283,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'I1_aux biot_coefficient_effective_aux Biot_modulus_effective_aux fluid_solid_coupling_aux
-           traction_strike_aux traction_normal_aux traction_dip_aux 
+    show = 'mechanical_strain_yz mechanical_strain_xz mechanical_strain_xy mechanical_strain_zz mechanical_strain_yy mechanical_strain_xx
+            I1_aux biot_coefficient_effective_aux Biot_modulus_effective_aux fluid_solid_coupling_aux
+            traction_strike_aux traction_normal_aux traction_dip_aux 
             forced_rupture_aux cohesion_aux 
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
             disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z 
