@@ -440,32 +440,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
- # Static initial stress tensor components (from material property)
-  [static_initial_stress_xx]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [static_initial_stress_yy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [static_initial_stress_zz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [static_initial_stress_xy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [static_initial_stress_xz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [static_initial_stress_yz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  
   # sts_initial_tensor components (from material property)
   [sts_initial_xx]
     order = FIRST
@@ -517,6 +491,23 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
+  [I1_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [fluid_solid_coupling_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [Biot_modulus_effective_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [biot_coefficient_effective_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -703,6 +694,30 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     property = xi
     execute_on = 'TIMESTEP_END'
   []
+  [get_I1]
+    type = MaterialRealAux
+    variable = I1_aux
+    property = I1
+    execute_on = 'TIMESTEP_END'
+  []
+  [get_fluid_solid_coupling]
+    type = MaterialRealAux
+    variable = fluid_solid_coupling_aux
+    property = fluid_solid_coupling
+    execute_on = 'TIMESTEP_END'
+  []
+  [get_Biot_modulus_effective]
+    type = MaterialRealAux
+    variable = Biot_modulus_effective_aux
+    property = Biot_modulus_effective
+    execute_on = 'TIMESTEP_END'
+  []
+  [get_biot_coefficient_effective]
+    type = MaterialRealAux
+    variable = biot_coefficient_effective_aux
+    property = biot_coefficient_effective
+    execute_on = 'TIMESTEP_END'
+  []
   ###
   [get_deviatoric_strain_rate]
     type = MaterialRealAux
@@ -747,55 +762,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = stress_xy
     index_i = 0
     index_j = 1
-  []
-   # Extract static_initial_stress_tensor components (material property)
-  [static_initial_stress_xx]
-    type = RankTwoAux
-    rank_two_tensor = static_initial_stress_tensor
-    variable = static_initial_stress_xx
-    index_i = 0
-    index_j = 0
-    execute_on = 'TIMESTEP_END'
-  []
-  [static_initial_stress_yy]
-    type = RankTwoAux
-    rank_two_tensor = static_initial_stress_tensor
-    variable = static_initial_stress_yy
-    index_i = 1
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [static_initial_stress_zz]
-    type = RankTwoAux
-    rank_two_tensor = static_initial_stress_tensor
-    variable = static_initial_stress_zz
-    index_i = 2
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [static_initial_stress_xy]
-    type = RankTwoAux
-    rank_two_tensor = static_initial_stress_tensor
-    variable = static_initial_stress_xy
-    index_i = 0
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [static_initial_stress_xz]
-    type = RankTwoAux
-    rank_two_tensor = static_initial_stress_tensor
-    variable = static_initial_stress_xz
-    index_i = 0
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [static_initial_stress_yz]
-    type = RankTwoAux
-    rank_two_tensor = static_initial_stress_tensor
-    variable = static_initial_stress_yz
-    index_i = 1
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
   []
   
   # Extract sts_initial_tensor components (material property)
