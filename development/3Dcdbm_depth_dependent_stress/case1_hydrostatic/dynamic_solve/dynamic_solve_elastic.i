@@ -1207,7 +1207,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'traction_strike_aux traction_normal_aux traction_dip_aux 
+    show = 'I1_aux biot_coefficient_effective_aux Biot_modulus_effective_aux fluid_solid_coupling_aux
+           traction_strike_aux traction_normal_aux traction_dip_aux 
             forced_rupture_aux cohesion_aux 
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
             disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z 
