@@ -426,7 +426,8 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     Real alpha_g = 1.0 - K_d_granular/K_s_granular;
     
     // Compute porosity evolution for solid phase
-    Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1);
+    // Real porosity_s = 1 - (1 - _porosity_solid_o) * exp(-I1);
+     Real porosity_s = _porosity_solid_o;
 
     // Compute plastic porosity evolution 
     Real porosity_p = eps_p(0,0) + eps_p(1,1) + eps_p(2,2);
@@ -858,7 +859,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::setupInitial()
   /* Compute stress */
   sigma_s = (_lambda[_qp] - _gamma_damaged[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi) * eps_e;
   sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
-  fluid_contribution = - term22 / term33 * _pore_pressure[_qp] * RankTwoTensor::Identity();
+  fluid_contribution = - term22 / term33 * (_initial_porepressure + _pore_pressure[_qp])  * RankTwoTensor::Identity();
   sigma_total = (1 - _B[_qp]) * sigma_s + _B[_qp] * sigma_b + fluid_contribution;
 
   sigma_eff = sigma_total +  _pore_pressure[_qp] * RankTwoTensor::Identity();
