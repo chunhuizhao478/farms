@@ -1190,11 +1190,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     solution = init_sol_components
     from_variable = 'stress_22'
   []
- # [./func_initial_porepressure]
- #   type = SolutionFunction
- #   solution = init_sol_components
- #   from_variable = 'porepressure'
- # []
+  [./func_initial_porepressure]
+    type = SolutionFunction
+    solution = init_sol_components
+    from_variable = 'porepressure'
+  []
   ###cohesion###
   [./func_cohesion]
     type = InitialCohesionCDBMv2
