@@ -1190,11 +1190,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     solution = init_sol_components
     from_variable = 'stress_22'
   []
-  [./func_initial_porepressure]
-    type = SolutionFunction
-    solution = init_sol_components
-    from_variable = 'porepressure'
-  []
+ # [./func_initial_porepressure]
+ #   type = SolutionFunction
+ #   solution = init_sol_components
+ #   from_variable = 'porepressure'
+ # []
   ###cohesion###
   [./func_cohesion]
     type = InitialCohesionCDBMv2
@@ -1282,7 +1282,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Outputs]
   [exodus]
     type = Exodus
-    execute_on = 'timestep_end'
+   # execute_on = 'timestep_end'
     show = 'mechanical_strain_yz mechanical_strain_xz mechanical_strain_xy mechanical_strain_zz mechanical_strain_yy mechanical_strain_xx
             I1_aux biot_coefficient_effective_aux Biot_modulus_effective_aux fluid_solid_coupling_aux
             traction_strike_aux traction_normal_aux traction_dip_aux 
