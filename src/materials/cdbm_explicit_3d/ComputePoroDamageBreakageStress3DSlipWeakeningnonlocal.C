@@ -869,7 +869,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::setupInitial()
   _eps_total[_qp] = eps_e;
   _eps_p[_qp].zero(); // Initialize plastic strain to zero
   _eps_e[_qp] = eps_e;
-  _I1[_qp] = I1;
+  _I1[_qp] = 0;
   _I2[_qp] = I2;
   _xi[_qp] = xi;
   _sigma_d[_qp] = sigma_d_eff;
