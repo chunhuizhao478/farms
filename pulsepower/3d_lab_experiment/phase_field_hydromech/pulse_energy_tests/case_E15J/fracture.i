@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../3dmeshfile/cylinder_sample_coarse.msh'
+    file =  '../../../3dmeshfile/cylinder_sample.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
