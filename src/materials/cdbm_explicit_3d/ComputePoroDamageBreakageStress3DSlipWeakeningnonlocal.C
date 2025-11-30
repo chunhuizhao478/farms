@@ -215,6 +215,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::initQpStatefulProperties
 {
   _elastic_strain[_qp].zero();
   _stress[_qp].zero();
+  _I1[_qp] = 0.0;
   _deviatroic_strain_rate[_qp] = 0.0;
   _Cd_mat[_qp] = 0.0;
   _eta[_qp] = 0.0;
@@ -498,7 +499,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     /* Compute stress */
     sigma_s = (lambda_out - gamma_damaged_out / xi) * I1 * RankTwoTensor::Identity() + (2 * shear_modulus_out - gamma_damaged_out * xi) * eps_e;
     sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
-    fluid_contribution = term11 / term33 * I1 * RankTwoTensor::Identity() - term22 / term33 * _pore_pressure[_qp] * RankTwoTensor::Identity();
+    fluid_contribution = term11 / term33 * I1 * RankTwoTensor::Identity() - term22 / term33 * (_initial_porepressure[_qp] + _pore_pressure[_qp])  * RankTwoTensor::Identity();
     sigma_total = (1 - B_out) * sigma_s + B_out * sigma_b + fluid_contribution;
 
     sigma_eff = sigma_total +  _pore_pressure[_qp] * RankTwoTensor::Identity();
@@ -508,7 +509,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     _eps_total[_qp] = eps_p + eps_e;
     _eps_p[_qp] = eps_p;
     _eps_e[_qp] = eps_e;
-    _I1[_qp] = I1;
+    _I1[_qp] = I1 - _I1_old[_qp];
     _I2[_qp] = I2;
     _xi[_qp] = xi;
     _sigma_d[_qp] = sigma_d_eff;
