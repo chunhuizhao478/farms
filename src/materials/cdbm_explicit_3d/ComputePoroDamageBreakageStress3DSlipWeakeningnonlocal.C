@@ -242,7 +242,9 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
 
   if (_step == 1){
     setupInitial();
+    _elastic_strain[_qp].zero();
     _stress[_qp].zero();
+    _I1[_qp] = 0.0;
   }
   else{
     
@@ -502,14 +504,14 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     fluid_contribution = term11 / term33 * I1 * RankTwoTensor::Identity() - term22 / term33 * (_initial_porepressure[_qp] + _pore_pressure[_qp])  * RankTwoTensor::Identity();
     sigma_total = (1 - B_out) * sigma_s + B_out * sigma_b + fluid_contribution;
 
-    sigma_eff = sigma_total +  _pore_pressure[_qp] * RankTwoTensor::Identity();
+    sigma_eff = sigma_total +  (_initial_porepressure[_qp] + _pore_pressure[_qp]) * RankTwoTensor::Identity();
     
     sigma_d_eff = sigma_eff - 0.3333 * (sigma_eff(0,0) + sigma_eff(1,1) + sigma_eff(2,2)) * I;
 
     _eps_total[_qp] = eps_p + eps_e;
     _eps_p[_qp] = eps_p;
     _eps_e[_qp] = eps_e;
-    _I1[_qp] = I1 - _I1_old[_qp];
+    _I1[_qp] = eps_t_inc(0,0) + eps_t_inc(1,1) + eps_t_inc(2,2);
     _I2[_qp] = I2;
     _xi[_qp] = xi;
     _sigma_d[_qp] = sigma_d_eff;
@@ -525,7 +527,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     _sts_initial_tensor[_qp] = _sts_initial_tensor_old[_qp];
 
     // Assign value for elastic strain, which is equal to the mechanical strain
-    _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
+    _elastic_strain[_qp] = eps_t_inc ; //- _static_initial_strain_tensor[_qp];
 
     // Compute tangent
     RankFourTensor tangent;
@@ -860,10 +862,10 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::setupInitial()
   /* Compute stress */
   sigma_s = (_lambda[_qp] - _gamma_damaged[_qp] / xi) * I1 * RankTwoTensor::Identity() + (2 * _shear_modulus[_qp] - _gamma_damaged[_qp] * xi) * eps_e;
   sigma_b = (2 * a2 + a1 / xi + 3 * a3 * xi) * I1 * RankTwoTensor::Identity() + (2 * a0 + a1 * xi - a3 * std::pow(xi, 3)) * eps_e;
-  fluid_contribution = - term22 / term33 * (_initial_porepressure[_qp] + _pore_pressure[_qp])  * RankTwoTensor::Identity();
+  fluid_contribution = - term22 / term33 * (_initial_porepressure[_qp])  * RankTwoTensor::Identity();
   sigma_total = (1 - _B[_qp]) * sigma_s + _B[_qp] * sigma_b + fluid_contribution;
 
-  sigma_eff = sigma_total +  _pore_pressure[_qp] * RankTwoTensor::Identity();
+  sigma_eff = sigma_total +  _initial_porepressure[_qp] * RankTwoTensor::Identity();
     
   sigma_d_eff = sigma_eff - 0.3333 * (sigma_eff(0,0) + sigma_eff(1,1) + sigma_eff(2,2)) * I;
 
