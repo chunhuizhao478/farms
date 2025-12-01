@@ -112,7 +112,7 @@ top_right1 = '0.0925 4e-4 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../2dmeshfile/fieldscale_test1_2d_amr_fieldscale_debug.msh'
+    file = '../../2dmeshfile/fieldscale_test1_2d_amr_fieldscale_debug_enlargedrefine.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator

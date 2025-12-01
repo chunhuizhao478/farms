@@ -66,8 +66,8 @@ Field[1].VIn = lc_strip;       // uniform fine mesh inside horizontal box
 Field[1].VOut = lc2;           // coarse mesh outside
 Field[1].XMin = 0;
 Field[1].XMax = radius_outer;
-Field[1].YMin = -8 * 4e-4;
-Field[1].YMax =  8 * 4e-4;
+Field[1].YMin = -16 * 4e-4;
+Field[1].YMax =  16 * 4e-4;
 Field[1].Thickness = 0.02;    // 5mm transition zone
 
 // Field[2]: Vertical box for vertical crack propagation
