@@ -885,12 +885,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
   []
-  [sample_snapshots]
-    type = Exodus
-    execute_on = 'timestep_end'
-    show = 'eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22 sts_total_00 sts_total_01 sts_total_02 sts_total_11 sts_total_12 sts_total_22'
-    time_step_interval = ${sample_snapshots_time_step_interval}
-  []
+  #[sample_snapshots]
+  #  type = Exodus
+  #  execute_on = 'timestep_end'
+  #  show = 'eps_e_00 eps_e_01 eps_e_02 eps_e_11 eps_e_12 eps_e_22 eps_p_00 eps_p_01 eps_p_02 eps_p_11 eps_p_12 eps_p_22 sts_total_00 sts_total_01 sts_total_02 sts_total_11 sts_total_12 sts_total_22'
+  #  time_step_interval = ${sample_snapshots_time_step_interval}
+  #[]
 []
 
 [Problem]
