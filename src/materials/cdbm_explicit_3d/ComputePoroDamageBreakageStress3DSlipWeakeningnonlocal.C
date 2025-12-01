@@ -242,7 +242,6 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
 
   if (_step == 1){
     setupInitial();
-    _elastic_strain[_qp].zero();
     _stress[_qp].zero();
     _I1[_qp] = 0.0;
   }
