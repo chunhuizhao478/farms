@@ -1283,14 +1283,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'mechanical_strain_yz mechanical_strain_xz mechanical_strain_xy mechanical_strain_zz mechanical_strain_yy mechanical_strain_xx
-            I1_aux biot_coefficient_effective_aux Biot_modulus_effective_aux fluid_solid_coupling_aux
+    show = 'mechanical_strain_xy mechanical_strain_zz mechanical_strain_yy mechanical_strain_xx
+            I1_aux sts_total_xx sts_total_xy sts_total_zz sts_total_yy
             traction_strike_aux traction_normal_aux traction_dip_aux 
+            traction_x traction_y traction_z
             forced_rupture_aux cohesion_aux 
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
-            disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z 
             stress_xx stress_yy stress_xy 
-               porepressure'
+            porepressure initial_porepressure' 
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
