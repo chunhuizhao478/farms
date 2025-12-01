@@ -510,7 +510,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     _eps_total[_qp] = eps_p + eps_e;
     _eps_p[_qp] = eps_p;
     _eps_e[_qp] = eps_e;
-    _I1[_qp] = eps_t_inc(0,0) + eps_t_inc(1,1) + eps_t_inc(2,2);
+    _I1[_qp] = I1;
     _I2[_qp] = I2;
     _xi[_qp] = xi;
     _sigma_d[_qp] = sigma_d_eff;
