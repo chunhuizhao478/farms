@@ -526,7 +526,7 @@ ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal::computeQpStress()
     _sts_initial_tensor[_qp] = _sts_initial_tensor_old[_qp];
 
     // Assign value for elastic strain, which is equal to the mechanical strain
-    _elastic_strain[_qp] = eps_t_inc ; //- _static_initial_strain_tensor[_qp];
+    _elastic_strain[_qp] = eps_e ; //- _static_initial_strain_tensor[_qp];
 
     // Compute tangent
     RankFourTensor tangent;
