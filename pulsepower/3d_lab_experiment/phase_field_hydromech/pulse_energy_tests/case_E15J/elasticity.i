@@ -94,7 +94,7 @@ hht_alpha = 0
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../3dmeshfile/cylinder_sample.msh'
+    file =  '../../../3dmeshfile/cylinder_sample_coarse.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
