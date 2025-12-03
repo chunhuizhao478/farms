@@ -88,7 +88,8 @@ t0 = 0.5 #nucleation time (s)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault.msh'
+    #file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault.msh'
+    file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
   []
   [./sidesets]
     input = msh
