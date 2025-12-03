@@ -201,9 +201,9 @@ InitialStressStrainTPV26::value(Real /*t*/, const Point & p) const
   sigmaxy = Omega * ( bxy * ( sigmazz + Pf ) );
 
   //convert total stress to effective stress
-  sigmaxx = sigmaxx + Pf;
-  sigmayy = sigmayy + Pf;
-  sigmazz = sigmazz + Pf;
+  // sigmaxx = sigmaxx + Pf;
+  // sigmayy = sigmayy + Pf;
+  // sigmazz = sigmazz + Pf;
 
   //Compute the initial strain components
   Real sigma_mean = (sigmaxx + sigmayy + sigmazz);
