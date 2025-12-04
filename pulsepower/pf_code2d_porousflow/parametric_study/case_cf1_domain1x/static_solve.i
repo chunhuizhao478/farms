@@ -296,7 +296,7 @@ top_right2 = '2e-4 0.0025 0'
       type = CSV
       execute_on = 'initial timestep_end'
       time_step_interval = 1
-      show = 'full_energy_static full_input_energy_static  solid_elastic_energy_static fluid_elastic_energy_total_static'
+      show = 'full_energy_static full_input_energy_static solid_elastic_energy_static fluid_elastic_energy_total_static'
     []
   []
 
@@ -353,24 +353,10 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-# fluid elastic energy
+# fluid elastic energy (for energy accounting)
+# Note: Physics uses correct variational formulation, but energy accounting
+# uses incremental approach to properly track property evolution
 ###############################################################################
-# [Postprocessors]
-#   [fluid_elastic_energy_static]
-#     type = ElementIntegralMaterialProperty
-#     mat_prop = fluid_driving_energy_density
-#   []
-# []
-
-# [Postprocessors]
-#   [fluid_elastic_energy_total_static]
-#       type = ParsedPostprocessor
-#       expression = 'fluid_elastic_energy_static'
-#       pp_names = 'fluid_elastic_energy_static'
-#       execute_on = 'INITIAL TIMESTEP_END'
-#   []
-# []
-
 [AuxVariables]
   [fluid_elastic_energy]
       order = CONSTANT
@@ -379,11 +365,13 @@ top_right2 = '2e-4 0.0025 0'
 []
 
 [AuxKernels]
-  [fluid_elastic_energy]
+  [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
       coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
+      # In static solve, biot coefficient is constant
       expression = "0.5 * ${biot_coefficient} * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      execute_on = 'TIMESTEP_END'
   []
 []
 
