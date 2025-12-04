@@ -1,4 +1,8 @@
-fluid_elastic_energy_total_static = 8.081664e-05
+# Static energy values from static solve
+# fluid_driving_energy_total_static needs to be computed from static solution
+# using: ∫ (M/2)(θ - β*tr(ε))^2 dV where θ = p/M + β*∇·u
+# For now, use the old fluid_elastic value as approximation - UPDATE THIS!
+fluid_driving_energy_total_static = 8.081664e-05
 solid_elastic_energy_total_static = 5.408951e-03
 full_input_energy_static = 5.489768e-03
 
@@ -805,7 +809,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_driving_energy_total damping_work'
   []
 []
 
@@ -906,110 +910,56 @@ top_right2 = '3e-4 0.0025 0'
   []
 []
 
-# fluid kinetic energy
+# fluid driving energy (replaces fluid kinetic + fluid elastic energies)
+# Based on CMAME paper Eq. (12): Ψ^f = ∫ (M/2)(θ - β*tr(ε))^2 dV
+# where θ = p/M + β*∇·u
 ###############################################################################
 [AuxVariables]
-  [fluid_kinetic_energy]
+  [fluid_driving_energy]
       order = CONSTANT
       family = MONOMIAL
   []
 []
 
 [AuxKernels]
-  [fluid_kinetic_energy]
-      type = ParsedAux
-      variable = fluid_kinetic_energy
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
-      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density}"
+  [get_fluid_driving_energy]
+      type = MaterialRealAux
+      variable = fluid_driving_energy
+      property = fluid_driving_energy_density
+      execute_on = 'TIMESTEP_END'
   []
 []
 
 [Postprocessors]
-  [fluid_kinetic_energy_total]
+  [fluid_driving_energy_total_dynamic]
       type = ElementIntegralVariablePostprocessor
-      variable = fluid_kinetic_energy
-  []
-[]
-###############################################################################
-
-# fluid elastic energy
-###############################################################################
-[AuxVariables]
-  [fluid_elastic_energy]
-      order = CONSTANT
-      family = MONOMIAL
-  []
-[]
-
-[AuxKernels]
-  [get_fluid_elastic_energy]
-      type = ParsedAux
-      variable = fluid_elastic_energy
-      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp biot_coefficient_aux'
-      expression = "0.5 * biot_coefficient_aux * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      variable = fluid_driving_energy
   []
 []
 
 [Postprocessors]
-  [fluid_elastic_energy_total_dynamic]
-      type = ElementIntegralVariablePostprocessor
-      variable = fluid_elastic_energy
-  []
-[]
-
-[Postprocessors]
-  [fluid_elastic_energy_total]
+  [fluid_driving_energy_total]
       type = ParsedPostprocessor
-      expression = '${fluid_elastic_energy_total_static} + fluid_elastic_energy_total_dynamic'
-      pp_names = 'fluid_elastic_energy_total_dynamic'
+      expression = '${fluid_driving_energy_total_static} + fluid_driving_energy_total_dynamic'
+      pp_names = 'fluid_driving_energy_total_dynamic'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 ###############################################################################
 
-# fluid energy dissipation
-###############################################################################
-[AuxVariables]
-  [fluid_incremental_elastic_energy]
-    order = CONSTANT
-    family = MONOMIAL
-  []
-[]
-
-[AuxKernels]
-  [fluid_incremental_elastic_energy_per_vol]
-      type = ParsedAux
-      variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
-  []
-[]
-
-[Postprocessors]
-  [fluid_incremental_elastic_energy]
-      type = ElementIntegralVariablePostprocessor
-      variable = fluid_incremental_elastic_energy
-  []
-  [fluid_incremental_elastic_energy_total]
-    type = CumulativeValuePostprocessor
-    postprocessor = fluid_incremental_elastic_energy
-  []
-  [fluid_dissipated_energy_total]
-    type = ParsedPostprocessor
-    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
-    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
-    execute_on = 'INITIAL TIMESTEP_END'
-  []
-[]
-###############################################################################
-
 # Full Energy
+# Based on CMAME paper Eq. (1): Ψ = Ψ^e + Ψ^k + Ψ^d + Ψ^f - Ψ^s
+# where:
+#   Ψ^e = solid elastic energy
+#   Ψ^k = solid kinetic energy
+#   Ψ^d = fracture dissipated energy
+#   Ψ^f = fluid driving energy (includes all fluid energy contributions)
 ###############################################################################
 [Postprocessors]
   [full_energy]
     type = ParsedPostprocessor
-    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
-    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
+    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_driving_energy_total'
+    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_driving_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
