@@ -2,13 +2,14 @@
 SetFactory("OpenCASCADE");
 
 // Characteristic lengths
-lc0 = 0.0002; // super-fine near hole
-lc = 0.0002;  // fine transition
-lc2 = 0.01;  // coarse outer
+lc0 = 0.0001; // super-fine near hole
+lc = 0.0001;  // fine transition
+lc_strip = 0.0001; // fine mesh in crack propagation strip
+lc2 = 0.02;  // coarse outer
 
 radius_outer = 1.0;
-radius_refined = 0.1825;
-radius_inner = 0.18;
+radius_refined = 0.0925;
+radius_inner = 0.09;
 
 //---- Center point (for arc definitions + distance field) ----
 Point(13) = {0.0, 0.0, 0.0, lc0};
@@ -57,32 +58,44 @@ Plane Surface(200) = {101, 102};
 // 5.2 Outer annulus: radius_refined → radius_outer
 Plane Surface(201) = {100, 101};
 
-//---- 6) CORRECTED Mesh‐size fields ----
-Field[1] = Distance;
-Field[1].NodesList = {13};
+//---- 6) Mesh‐size fields for two box regions ----
 
-// Field[2]: Outer region grading (radius_refined → radius_outer)
-Field[2] = Threshold;
-Field[2].IField = 1;
-Field[2].LcMin = lc;           // size at radius_refined
-Field[2].LcMax = lc2;          // size at radius_outer
-Field[2].DistMin = radius_refined;
-Field[2].DistMax = radius_outer;
+// Field[1]: Horizontal box for horizontal crack propagation
+Field[1] = Box;
+Field[1].VIn = lc_strip;       // uniform fine mesh inside horizontal box
+Field[1].VOut = lc2;           // coarse mesh outside
+Field[1].XMin = -radius_outer;
+Field[1].XMax = radius_outer;
+Field[1].YMin = -4 * 4e-4;
+Field[1].YMax =  4 * 4e-4;
+Field[1].Thickness = 0.02;    // 5mm transition zone
 
-// Field[3]: Inner region sizing (radius_inner → radius_refined)
-// CORRECTED: LcMax should be lc, not lc2
-Field[3] = Threshold;
-Field[3].IField = 1;
-Field[3].LcMin = lc0;          // size at radius_inner
-Field[3].LcMax = lc2;           // size at radius_refined (CORRECTED)
-Field[3].DistMin = radius_inner;
-Field[3].DistMax = radius_refined;
+// Field[2]: Vertical box for vertical crack propagation
+Field[2] = Box;
+Field[2].VIn = lc_strip;       // uniform fine mesh inside vertical box
+Field[2].VOut = lc2;           // coarse mesh outside
+Field[2].XMin = -4 * 4e-4;
+Field[2].XMax =  4 * 4e-4;
+Field[2].YMin = -radius_outer;
+Field[2].YMax = radius_outer;
+Field[2].Thickness = 0.02;    // 5mm transition zone
 
-// Field[4]: Take minimum of both fields
-Field[4] = Min;
-Field[4].FieldsList = {2,3};
+// Field[3]: Near hole refinement (distance-based)
+Field[3] = Distance;
+Field[3].NodesList = {13};
 
-Background Field = 4;
+Field[4] = Threshold;
+Field[4].IField = 3;
+Field[4].LcMin = lc0;          // fine near hole
+Field[4].LcMax = lc2;          // coarse far from hole
+Field[4].DistMin = radius_inner;
+Field[4].DistMax = radius_refined;
+
+// Field[5]: Take minimum of all fields (boxes take priority where finer)
+Field[5] = Min;
+Field[5].FieldsList = {1, 2, 4};
+
+Background Field = 5;
 
 //---- 7) Physical groups ----
 Physical Curve("OuterBoundary") = {1,2,3,4};
