@@ -46,6 +46,8 @@ protected:
   const ElkRadialAverage::Result & _average;
   ElkRadialAverage::Result::const_iterator _average_eqstrain_nonlocal;
 
+  const OptionalMaterialProperty<Real> & _eqstrain_nonlocal_initial;
+
   // Pointer to last element for comparison for speed
   const Elem * _prev_elem;
 

@@ -25,6 +25,7 @@ ElkNonlocalEqstrain::ElkNonlocalEqstrain(const InputParameters & parameters)
     _eqstrain_nonlocal(declareProperty<Real>("eqstrain_nonlocal")),
     _eqstrain_nonlocal_old(getMaterialPropertyOld<Real>("eqstrain_nonlocal")),
     _average(getUserObject<ElkRadialAverage>("average_UO").getAverage()),
+    _eqstrain_nonlocal_initial(getOptionalMaterialProperty<Real>("eqstrain_nonlocal_initial")),
     _prev_elem(nullptr)
 {
 }
@@ -33,12 +34,15 @@ ElkNonlocalEqstrain::ElkNonlocalEqstrain(const InputParameters & parameters)
 //Only the object that declares the material property can assign values to it.
 //Objects can request material properties, gaining read-only access to their values.
 //When any object (including the object that declares it) requests the old value of a material property, that property becomes "stateful".
-//All stateful material properties must be initialized within the initQpStatefulProperties call. 
+//All stateful material properties must be initialized within the initQpStatefulProperties call.
 //
 void
 ElkNonlocalEqstrain::initQpStatefulProperties()
 {
-  _eqstrain_nonlocal[_qp] = 0.0;
+  if (_eqstrain_nonlocal_initial)
+    _eqstrain_nonlocal[_qp] = _eqstrain_nonlocal_initial[_qp];
+  else
+    _eqstrain_nonlocal[_qp] = 0.0;
 }
 
 void
