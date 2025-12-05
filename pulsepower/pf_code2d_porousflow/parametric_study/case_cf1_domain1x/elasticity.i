@@ -808,7 +808,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total fluid_viscous_dissipation_rate_total damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work'
   []
 []
 
@@ -975,39 +975,39 @@ top_right2 = '3e-4 0.0025 0'
 []
 ###############################################################################
 
-# fluid viscous dissipation (true dissipation from Darcy flow)
-# Based on: Φ = ∫ q·∇p dV = ∫ (μ/k)|q|² dV
+# fluid dissipated energy via incremental work accounting
+# Dissipation = ∫(α·σ_vol·dε_vol) - ΔE_fluid_elastic
+# This captures all dissipation mechanisms including viscous dissipation and property evolution effects
 ###############################################################################
 [AuxVariables]
-  [fluid_viscous_dissipation_rate]
+  [fluid_incremental_elastic_energy]
     order = CONSTANT
     family = MONOMIAL
   []
 []
 
 [AuxKernels]
-  [fluid_viscous_dissipation_rate_aux]
+  [fluid_incremental_elastic_energy_per_vol]
       type = ParsedAux
-      variable = fluid_viscous_dissipation_rate
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z effective_perm00_aux effective_perm11_aux'
-      # Dissipation rate per unit volume: (μ/k_eff) * |q|²
-      # where q is Darcy velocity (q = -k_eff/μ ∇p, so q·∇p = -(μ/k_eff)|q|²)
-      # Using damage-dependent effective permeability for consistency with weak form
-      # For 2D: use average of xx and yy components for the scalar dissipation calculation
-      # Viscous dissipation rate = (μ/k_eff_avg) * (q_x² + q_y² + q_z²)
-      expression = "(${viscosity}/((effective_perm00_aux + effective_perm11_aux)/2.0)) * (darcy_vel_x*darcy_vel_x + darcy_vel_y*darcy_vel_y + darcy_vel_z*darcy_vel_z)"
+      variable = fluid_incremental_elastic_energy
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
+      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
   []
 []
 
 [Postprocessors]
-  [fluid_viscous_dissipation_rate_total]
+  [fluid_incremental_elastic_energy]
       type = ElementIntegralVariablePostprocessor
-      variable = fluid_viscous_dissipation_rate
-      execute_on = 'INITIAL TIMESTEP_END'
+      variable = fluid_incremental_elastic_energy
+  []
+  [fluid_incremental_elastic_energy_total]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_incremental_elastic_energy
   []
   [fluid_dissipated_energy_total]
-    type = CumulativeValuePostprocessor
-    postprocessor = fluid_viscous_dissipation_rate_total
+    type = ParsedPostprocessor
+    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
+    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
