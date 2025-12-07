@@ -14,16 +14,29 @@ Material Description of Slip Weakening Friction 3d
 #pragma once
 
 #include "CZMComputeLocalTractionTotalBase.h"
+#include <unordered_map>
 
 class PoroSlipWeakeningFrictionczm3dCDBM : public CZMComputeLocalTractionTotalBase
 {
 public:
   static InputParameters validParams();
+
   PoroSlipWeakeningFrictionczm3dCDBM(const InputParameters & parameters);
 
+  virtual void initialSetup() override;
+
 protected:
-  /// method computing the total traction and its derivatives
-  void computeInterfaceTractionAndDerivatives() override;
+  virtual void computeInterfaceTractionAndDerivatives() override;
+  
+  void computeNodalVolumePatches();  // ONLY DECLARE ONCE
+  
+  // Member variables
+  std::unordered_map<dof_id_type, Real> _nodal_volume_patches;
+  std::unordered_map<dof_id_type, Real> _nodal_areas;
+
+  // Add these new members:
+  std::map<dof_id_type, Real> _nodal_masses;      // Store M for each node
+  std::map<dof_id_type, Real> _nodal_interface_areas;  // Store A for each node (rename for clarity)
   
   Real _mu_s;
   Real _mu_d;
@@ -91,6 +104,7 @@ protected:
   const VariableValue & _cohesion_aux;
   const VariableValue & _forced_rupture_aux;
   const VariableValue & _fault_pressure;
+  const VariableValue & _fault_pressure_neighbor;
 
   const MaterialProperty<Real> & _initial_porepressure;
 };
