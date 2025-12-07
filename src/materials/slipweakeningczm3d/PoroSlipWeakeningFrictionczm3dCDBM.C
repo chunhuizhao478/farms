@@ -348,11 +348,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   
   // If no node found, compute M and A based on element type
   if (!found)
-  {
-    Moose::out << "WARNING: No nodal volume patches found for element " << _current_elem->id() 
-               << " at qp " << _qp << ". Using fallback computation based on element type: "
-               << libMesh::Utility::enum_to_string(_current_elem->type()) << std::endl;
-    
+  { 
     if (_current_elem->type() == libMesh::ElemType::TET4)
     {
       M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
@@ -364,13 +360,6 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
       M = (_density[_qp] * _len * _len * _len / 8) * 4;
       A = (_len * _len / 4) * 4;
       Moose::out << "  Using HEX8 formulas: M = " << M << ", A = " << A << std::endl;
-    }
-    else
-    {
-      mooseError("No nodal volume patches found and element type ", 
-                 libMesh::Utility::enum_to_string(_current_elem->type()),
-                 " not supported for fallback computation in computeInterfaceTractionAndDerivatives. "
-                 "Element ID: ", _current_elem->id());
     }
   }
   else
