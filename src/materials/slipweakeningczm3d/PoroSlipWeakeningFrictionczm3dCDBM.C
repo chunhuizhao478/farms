@@ -346,32 +346,8 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     }
   }
   
-  // If no node found, compute M and A based on element type
-  if (!found)
-  { 
-    if (_current_elem->type() == libMesh::ElemType::TET4)
-    {
-      M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-      A = (sqrt(3) * _len * _len / 4 / 3) * 6;
-      Moose::out << "  Using TET4 formulas: M = " << M << ", A = " << A << std::endl;
-    }
-    else if (_current_elem->type() == libMesh::ElemType::HEX8)
-    {
-      M = (_density[_qp] * _len * _len * _len / 8) * 4;
-      A = (_len * _len / 4) * 4;
-      Moose::out << "  Using HEX8 formulas: M = " << M << ", A = " << A << std::endl;
-    }
-  }
-  else
-  {
-    // Print info about using nodal patch (only print occasionally to avoid spam)
-    if (_current_elem->id() % 100 == 0 && _qp == 0)  // Print for every 100th element, first qp only
-    {
-      Moose::out << "Element " << _current_elem->id() 
-                 << ": Using nodal volume patch from node " << nearest_node_id
-                 << " (distance = " << min_distance << "): M = " << M << ", A = " << A << std::endl;
-    }
-  }
+  M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+  A = (sqrt(3) * _len * _len / 4 / 3) * 6;
   // ===== END FIXED SECTION =====
 
   // Compute T1_o, T2_o, T3_o for current qp
