@@ -105,7 +105,7 @@ t0 = 0.5 #nucleation time (s)
 ##model parameters##
 dt = 0.005 #time step size
 
-end_time = 12.0 #end time for simulation
+end_time = 20.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 20 #time step interval for output
