@@ -92,7 +92,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_125m_nonlocal.msh'
+    file = '../../mesh/tpv26_125m_nonlocal_occ.msh'
   []
   [./sidesets]
     input = msh

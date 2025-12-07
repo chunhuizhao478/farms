@@ -136,7 +136,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_125m_nonlocal.msh'
+    file = '../../mesh/tpv26_125m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -442,32 +442,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
-  # sts_initial_tensor components (from material property)
-  [sts_initial_xx]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_initial_yy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_initial_zz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_initial_xy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_initial_xz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_initial_yz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  
   # sts_total components (from material property)
   [sts_total_xx]
     order = FIRST
@@ -494,43 +468,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     family = MONOMIAL
   []
   [I1_aux]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [fluid_solid_coupling_aux]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [Biot_modulus_effective_aux]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [biot_coefficient_effective_aux]
-    order = FIRST
-    family = MONOMIAL
-  []
-  # Mechanical strain components (RankTwoTensor has 9 components in 3D)
-  [mechanical_strain_xx]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [mechanical_strain_yy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [mechanical_strain_zz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [mechanical_strain_xy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [mechanical_strain_xz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [mechanical_strain_yz]
     order = FIRST
     family = MONOMIAL
   []
@@ -727,24 +664,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     property = I1
     execute_on = 'TIMESTEP_END'
   []
-  [get_fluid_solid_coupling]
-    type = MaterialRealAux
-    variable = fluid_solid_coupling_aux
-    property = fluid_solid_coupling
-    execute_on = 'TIMESTEP_END'
-  []
-  [get_Biot_modulus_effective]
-    type = MaterialRealAux
-    variable = Biot_modulus_effective_aux
-    property = Biot_modulus_effective
-    execute_on = 'TIMESTEP_END'
-  []
-  [get_biot_coefficient_effective]
-    type = MaterialRealAux
-    variable = biot_coefficient_effective_aux
-    property = biot_coefficient_effective
-    execute_on = 'TIMESTEP_END'
-  []
   ###
   [get_deviatoric_strain_rate]
     type = MaterialRealAux
@@ -789,56 +708,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = stress_xy
     index_i = 0
     index_j = 1
-  []
-  
-  # Extract sts_initial_tensor components (material property)
-  [sts_initial_xx]
-    type = RankTwoAux
-    rank_two_tensor = sts_initial_tensor
-    variable = sts_initial_xx
-    index_i = 0
-    index_j = 0
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_initial_yy]
-    type = RankTwoAux
-    rank_two_tensor = sts_initial_tensor
-    variable = sts_initial_yy
-    index_i = 1
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_initial_zz]
-    type = RankTwoAux
-    rank_two_tensor = sts_initial_tensor
-    variable = sts_initial_zz
-    index_i = 2
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_initial_xy]
-    type = RankTwoAux
-    rank_two_tensor = sts_initial_tensor
-    variable = sts_initial_xy
-    index_i = 0
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_initial_xz]
-    type = RankTwoAux
-    rank_two_tensor = sts_initial_tensor
-    variable = sts_initial_xz
-    index_i = 0
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_initial_yz]
-    type = RankTwoAux
-    rank_two_tensor = sts_initial_tensor
-    variable = sts_initial_yz
-    index_i = 1
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
   []
   
   # Extract sts_total components (material property)
@@ -886,55 +755,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = RankTwoAux
     rank_two_tensor = sts_total
     variable = sts_total_yz
-    index_i = 1
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-
-  [mechanical_strain_xx]
-    type = RankTwoAux
-    rank_two_tensor = mechanical_strain
-    variable = mechanical_strain_xx
-    index_i = 0
-    index_j = 0
-    execute_on = 'TIMESTEP_END'
-  []
-  [mechanical_strain_yy]
-    type = RankTwoAux
-    rank_two_tensor = mechanical_strain
-    variable = mechanical_strain_yy
-    index_i = 1
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [mechanical_strain_zz]
-    type = RankTwoAux
-    rank_two_tensor = mechanical_strain
-    variable = mechanical_strain_zz
-    index_i = 2
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [mechanical_strain_xy]
-    type = RankTwoAux
-    rank_two_tensor = mechanical_strain
-    variable = mechanical_strain_xy
-    index_i = 0
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [mechanical_strain_xz]
-    type = RankTwoAux
-    rank_two_tensor = mechanical_strain
-    variable = mechanical_strain_xz
-    index_i = 0
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [mechanical_strain_yz]
-    type = RankTwoAux
-    rank_two_tensor = mechanical_strain
-    variable = mechanical_strain_yz
     index_i = 1
     index_j = 2
     execute_on = 'TIMESTEP_END'
@@ -1285,7 +1105,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'sts_total_xx sts_total_xy sts_total_zz sts_total_yy
+    show = 'B_aux alpha_damagedvar_aux sts_total_xx sts_total_xy sts_total_zz sts_total_yy
             traction_strike_aux traction_normal_aux traction_dip_aux 
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
             stress_xx stress_yy stress_xy 
