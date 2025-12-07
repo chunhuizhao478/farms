@@ -308,12 +308,82 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real R_minus_pressure_local_t = R_minus_pressure_local(1);
   Real R_minus_pressure_local_d = R_minus_pressure_local(2);
 
-  // Compute M and A directly using current density
-  const Node * node = _current_elem->node_ptr(0);
-  dof_id_type node_id = node->id();
+// ===== FIXED SECTION: Compute M and A for node nearest to quadrature point =====
+  // Find the node closest to the current quadrature point that has volume patch data
+  Real M = 0.0;
+  Real A = 0.0;
+  bool found = false;
+  
+  // Get the physical coordinates of the current quadrature point
+  const Point & qp_coords = _q_point[_qp];
+  
+  Real min_distance = std::numeric_limits<Real>::max();
+  dof_id_type nearest_node_id = 0;
+  
+  unsigned int n_elem_nodes = _current_elem->n_nodes();
+  for (unsigned int i = 0; i < n_elem_nodes; i++)
+  {
+    const Node * node = _current_elem->node_ptr(i);
+    dof_id_type node_id = node->id();
     
-  Real M = _density[_qp] * _nodal_volume_patches[node_id];  // M = rho * V
-  Real A = _nodal_areas[node_id];                            // A = area
+    // Check if this node has volume patch data
+    auto vol_it = _nodal_volume_patches.find(node_id);
+    auto area_it = _nodal_areas.find(node_id);
+    
+    if (vol_it != _nodal_volume_patches.end() && area_it != _nodal_areas.end())
+    {
+      // Calculate distance from quadrature point to this node
+      Real distance = (*node - qp_coords).norm();
+      
+      if (distance < min_distance)
+      {
+        min_distance = distance;
+        nearest_node_id = node_id;
+        M = _density[_qp] * vol_it->second;  // M = rho * V
+        A = area_it->second;                  // A
+        found = true;
+      }
+    }
+  }
+  
+  // If no node found, compute M and A based on element type
+  if (!found)
+  {
+    Moose::out << "WARNING: No nodal volume patches found for element " << _current_elem->id() 
+               << " at qp " << _qp << ". Using fallback computation based on element type: "
+               << libMesh::Utility::enum_to_string(_current_elem->type()) << std::endl;
+    
+    if (_current_elem->type() == libMesh::ElemType::TET4)
+    {
+      M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+      A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+      Moose::out << "  Using TET4 formulas: M = " << M << ", A = " << A << std::endl;
+    }
+    else if (_current_elem->type() == libMesh::ElemType::HEX8)
+    {
+      M = (_density[_qp] * _len * _len * _len / 8) * 4;
+      A = (_len * _len / 4) * 4;
+      Moose::out << "  Using HEX8 formulas: M = " << M << ", A = " << A << std::endl;
+    }
+    else
+    {
+      mooseError("No nodal volume patches found and element type ", 
+                 libMesh::Utility::enum_to_string(_current_elem->type()),
+                 " not supported for fallback computation in computeInterfaceTractionAndDerivatives. "
+                 "Element ID: ", _current_elem->id());
+    }
+  }
+  else
+  {
+    // Print info about using nodal patch (only print occasionally to avoid spam)
+    if (_current_elem->id() % 100 == 0 && _qp == 0)  // Print for every 100th element, first qp only
+    {
+      Moose::out << "Element " << _current_elem->id() 
+                 << ": Using nodal volume patch from node " << nearest_node_id
+                 << " (distance = " << min_distance << "): M = " << M << ", A = " << A << std::endl;
+    }
+  }
+  // ===== END FIXED SECTION =====
 
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
