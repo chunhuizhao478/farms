@@ -49,7 +49,7 @@ mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
-cohesion_depth = 6500 #cohesion depth (m)
+cohesion_depth = 5000 #cohesion depth (m)
 cohesion_slope = 0.01 #cohesion slope (MPa/m)
 cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
@@ -110,7 +110,7 @@ anand_param_p_mat = 1
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = 0 #nucleation center x coordinate
+nucl_center_x = -22100 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -124,7 +124,7 @@ dt = 0.005 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 1 #time step interval for output
+exodus_time_step_interval = 10 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 100 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_200m_nonlocal.msh'
+    file = '../../mesh/tpv26_125m_nonlocal.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -1283,14 +1283,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'mechanical_strain_xy mechanical_strain_zz mechanical_strain_yy mechanical_strain_xx
-            I1_aux sts_total_xx sts_total_xy sts_total_zz sts_total_yy
+    show = 'sts_total_xx sts_total_xy sts_total_zz sts_total_yy
             traction_strike_aux traction_normal_aux traction_dip_aux 
-            traction_x traction_y traction_z
-            forced_rupture_aux cohesion_aux 
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
             stress_xx stress_yy stress_xy 
-            porepressure initial_porepressure' 
+            porepressure' 
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]

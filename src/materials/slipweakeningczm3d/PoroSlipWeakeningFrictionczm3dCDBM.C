@@ -14,6 +14,9 @@ Material Description of Slip Weakening Friction 3d
 #include "PoroSlipWeakeningFrictionczm3dCDBM.h"
 #include "InterfaceKernel.h"
 #include "FEProblemBase.h"
+#include "libmesh/fe_base.h"
+#include "libmesh/quadrature_gauss.h"
+
 
 registerMooseObject("farmsApp", PoroSlipWeakeningFrictionczm3dCDBM);
 
@@ -102,6 +105,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
     _cohesion_aux(coupledValue("cohesion_aux")),
     _forced_rupture_aux(coupledValue("forced_rupture_aux")),
     _fault_pressure(coupledValue("fault_pressure")),
+    _fault_pressure_neighbor(coupledNeighborValue("fault_pressure")),
     _initial_porepressure(getMaterialProperty<Real>("initial_porepressure"))
 
 {
@@ -111,6 +115,124 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
   {
     mooseError("SlipWeakening only works for small strain!");
   }
+}
+
+
+void
+PoroSlipWeakeningFrictionczm3dCDBM::initialSetup()
+{
+  CZMComputeLocalTractionTotalBase::initialSetup();
+  computeNodalVolumePatches();
+}
+
+void
+PoroSlipWeakeningFrictionczm3dCDBM::computeNodalVolumePatches()
+{
+  _nodal_volume_patches.clear();
+  _nodal_areas.clear();
+  
+  MeshBase & mesh = _mesh.getMesh();
+  
+  std::set<dof_id_type> interface_node_ids;
+  
+  const BoundaryInfo & boundary_info = mesh.get_boundary_info();
+  const std::set<BoundaryID> & all_boundary_ids = boundary_info.get_boundary_ids();
+  
+  MeshBase::const_element_iterator el = mesh.active_elements_begin();
+  const MeshBase::const_element_iterator end_el = mesh.active_elements_end();
+  
+  std::map<dof_id_type, Real> interface_face_areas;
+  
+  for (; el != end_el; ++el)
+  {
+    const Elem * elem = *el;
+    
+    for (unsigned int side = 0; side < elem->n_sides(); side++)
+    {
+      for (auto bid : all_boundary_ids)
+      {
+        if (boundary_info.has_boundary_id(elem, side, bid))
+        {
+          const Elem * neighbor = elem->neighbor_ptr(side);
+          
+          if (neighbor == nullptr)
+            continue;
+          
+          std::unique_ptr<const Elem> side_elem = elem->build_side_ptr(side);
+          Real face_area = side_elem->volume();
+          unsigned int n_face_nodes = side_elem->n_nodes();
+          
+          for (unsigned int n = 0; n < n_face_nodes; n++)
+          {
+            dof_id_type node_id = side_elem->node_id(n);
+            interface_node_ids.insert(node_id);
+            interface_face_areas[node_id] += face_area / static_cast<Real>(n_face_nodes);
+          }
+          
+          break;
+        }
+      }
+    }
+  }
+  
+  el = mesh.active_elements_begin();
+  for (; el != end_el; ++el)
+  {
+    const Elem * elem = *el;
+    
+    if (elem->dim() != 3)
+      continue;
+    
+    bool has_interface_node = false;
+    for (unsigned int n = 0; n < elem->n_nodes(); n++)
+    {
+      if (interface_node_ids.count(elem->node_id(n)) > 0)
+      {
+        has_interface_node = true;
+        break;
+      }
+    }
+    
+    if (!has_interface_node)
+      continue;
+    
+    Real elem_volume = elem->volume();
+    unsigned int n_nodes = elem->n_nodes();
+    
+    for (unsigned int n = 0; n < n_nodes; n++)
+    {
+      dof_id_type node_id = elem->node_id(n);
+      
+      if (interface_node_ids.count(node_id) > 0)
+      {
+        _nodal_volume_patches[node_id] += elem_volume / static_cast<Real>(n_nodes);
+      }
+    }
+  }
+  
+  for (const auto & pair : interface_face_areas)
+  {
+    _nodal_areas[pair.first] = pair.second;
+  }
+
+  // // -----------------------------------------------------
+  // // (4) PRINT all results
+  // // -----------------------------------------------------
+  // Moose::out << "\n=== NODAL VOLUME PATCHES & AREAS ===\n";
+
+  // for (const auto & kv : _nodal_volume_patches)
+  // {
+  //   dof_id_type node_id = kv.first;
+  //   Real V = kv.second;
+  //   Real A = _nodal_areas.count(node_id) ? _nodal_areas[node_id] : 0.0;
+
+  //   Moose::out << "Node " << node_id
+  //              << " | Volume = " << V
+  //              << " | Area = " << A
+  //              << std::endl;
+  // }
+
+  // Moose::out << "=== END PRINT ===\n\n";
 }
 
 void
@@ -186,26 +308,12 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real R_minus_pressure_local_t = R_minus_pressure_local(1);
   Real R_minus_pressure_local_d = R_minus_pressure_local(2);
 
-  // Compute node mass and area
-  Real M = 0;
-  Real A = 0;
-
-  if (_current_elem->type() == libMesh::ElemType::TET4){
-    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
-  }
-  else if (_current_elem->type() == libMesh::ElemType::TET10){
-    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 10) * 6;
-    A = (sqrt(3) * _len * _len / 4 / 10) * 6;
-  }
-  else if (_current_elem->type() == libMesh::ElemType::HEX8){
-    M = (_density[_qp] * _len * _len * _len / 8) * 4;
-    A = (_len * _len / 4) * 4;
-  }
-  else if (_current_elem->type() == libMesh::ElemType::HEX27){
-    M = (_density[_qp] * _len * _len * _len / 64) * 4;
-    A = (_len * _len / 16) * 4;
-  }
+  // Compute M and A directly using current density
+  const Node * node = _current_elem->node_ptr(0);
+  dof_id_type node_id = node->id();
+    
+  Real M = _density[_qp] * _nodal_volume_patches[node_id];  // M = rho * V
+  Real A = _nodal_areas[node_id];                            // A = area
 
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
@@ -218,16 +326,19 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
             (R_plus_local_t + R_plus_pressure_local_t - R_minus_local_t - R_minus_pressure_local_t) / (2 * A) + T1_o;
   Real T3 = (1 / _dt) * M * displacement_jump_rate_d / (2 * A) +
             (R_plus_local_d + R_plus_pressure_local_d- R_minus_local_d - R_minus_pressure_local_d) / (2 * A) + T3_o;
-  // Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
-  //               (2 * A) +
-  //           ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
+  Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
+                (2 * A) +
+            ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
   
-  Real T2 = ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
+  // Real T2 = ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
 
+  Real pressure_primary = _fault_pressure[_qp];
+  Real pressure_neighbor = _fault_pressure_neighbor[_qp];
 
-  Real Pf = _initial_porepressure[_qp] + _fault_pressure[_qp]; // fluid pressure
+  Real Pmax = std::max(pressure_primary, pressure_neighbor);
 
-  // Real Pf =  0;
+  Real Pf = _initial_porepressure[_qp] + Pmax; // fault pressure
+
   //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
   //treat tension on the fault the same as if the effective normal stress equals zero.
   Real effective_stress = (-T2) - Pf;
