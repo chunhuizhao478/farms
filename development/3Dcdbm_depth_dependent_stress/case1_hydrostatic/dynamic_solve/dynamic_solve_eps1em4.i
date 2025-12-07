@@ -1,3 +1,5 @@
+
+
 #parameters
 
 ##mesh parameters
@@ -8,7 +10,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 125 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -29,8 +31,8 @@ zmin_fault = -20000 #zmin of fault
 #nonlocal length applied region along ydir
 ymin_fault = -1500
 ymax_fault = 1500
-nonlocal_averaging_length_scale = 200 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
-nonlocal_averaging_radius = 400 #for 800m testing, use 1600m
+nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
+nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
 
 ##-------------------------##
 ##material properties##
@@ -50,7 +52,7 @@ mu_d = 0.6 #dynamic friction coefficient
 
 ##Cohesion parameters##
 cohesion_depth = 5000 #cohesion depth (m)
-cohesion_slope = 0.00072 #cohesion slope (MPa/m)
+cohesion_slope = 0.01 #cohesion slope (MPa/m)
 cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
@@ -115,7 +117,7 @@ nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
 Vs = 3340 #shear wave speed (m/s)
-t0 = 0.5 #nucleation time (s)
+t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
@@ -124,9 +126,9 @@ dt = 0.005 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 20 #time step interval for output
+exodus_time_step_interval = 10 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
-csv_time_step_interval = 2 #time step interval for csv output
+csv_time_step_interval = 100 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
@@ -134,7 +136,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
+    file = '../../mesh/tpv26_125m_nonlocal.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -198,11 +200,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #<strain invariants ratio: maximum allowable value>: set boundary
   #Xu_etal_P15-2D
   #may need a bit space, use 1.5 as boundary
-  xi_max = 1.8
+  xi_max = 1000000000000
 
   #<strain invariants ratio: minimum allowable value>: set boundary
   #Xu_etal_P15-2D
-  xi_min = -1.8
+  xi_min = -1000000000000
 
   #if option 2, use Cd_constant
   Cd_constant = ${Cd_constant}
@@ -440,6 +442,99 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
+  # sts_initial_tensor components (from material property)
+  [sts_initial_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_initial_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  
+  # sts_total components (from material property)
+  [sts_total_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sts_total_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [I1_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [fluid_solid_coupling_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [Biot_modulus_effective_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [biot_coefficient_effective_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  # Mechanical strain components (RankTwoTensor has 9 components in 3D)
+  [mechanical_strain_xx]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_yy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_zz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_xy]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_xz]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [mechanical_strain_yz]
+    order = FIRST
+    family = MONOMIAL
+  []
+
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -626,6 +721,30 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     property = xi
     execute_on = 'TIMESTEP_END'
   []
+  [get_I1]
+    type = MaterialRealAux
+    variable = I1_aux
+    property = I1
+    execute_on = 'TIMESTEP_END'
+  []
+  [get_fluid_solid_coupling]
+    type = MaterialRealAux
+    variable = fluid_solid_coupling_aux
+    property = fluid_solid_coupling
+    execute_on = 'TIMESTEP_END'
+  []
+  [get_Biot_modulus_effective]
+    type = MaterialRealAux
+    variable = Biot_modulus_effective_aux
+    property = Biot_modulus_effective
+    execute_on = 'TIMESTEP_END'
+  []
+  [get_biot_coefficient_effective]
+    type = MaterialRealAux
+    variable = biot_coefficient_effective_aux
+    property = biot_coefficient_effective
+    execute_on = 'TIMESTEP_END'
+  []
   ###
   [get_deviatoric_strain_rate]
     type = MaterialRealAux
@@ -671,7 +790,158 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     index_i = 0
     index_j = 1
   []
-[]
+  
+  # Extract sts_initial_tensor components (material property)
+  [sts_initial_xx]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_yy]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_zz]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_xy]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_xz]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_initial_yz]
+    type = RankTwoAux
+    rank_two_tensor = sts_initial_tensor
+    variable = sts_initial_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  
+  # Extract sts_total components (material property)
+  [sts_total_xx]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_yy]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_zz]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_xy]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_xz]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [sts_total_yz]
+    type = RankTwoAux
+    rank_two_tensor = sts_total
+    variable = sts_total_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+
+  [mechanical_strain_xx]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_xx
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_yy]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_yy
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_zz]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_zz
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_xy]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_xy
+    index_i = 0
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_xz]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_xz
+    index_i = 0
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  [mechanical_strain_yz]
+    type = RankTwoAux
+    rank_two_tensor = mechanical_strain
+    variable = mechanical_strain_yz
+    index_i = 1
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+   
+
+[] 
 
 [Kernels]
   [dispkernel_x]
@@ -706,6 +976,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./darcy_flow]
       type = SmallStrainFluidDiffusion
       variable = porepressure
+      fluid_density = 1000
+      gravity_vector = '0 0 0'
   []
   [./darcy_flow_granular]
       type = SmallStrainFluidDiffusionGranular
@@ -1013,7 +1285,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial porepressure'
+    show = 'sts_total_xx sts_total_xy sts_total_zz sts_total_yy
+            traction_strike_aux traction_normal_aux traction_dip_aux 
+            vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
+            stress_xx stress_yy stress_xy 
+            porepressure' 
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
