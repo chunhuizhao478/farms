@@ -136,24 +136,36 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = FileMeshGenerator
     file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
   []
+  
+  # First, rename block 12 to avoid confusion
+  [./rename_inner]
+    type = RenameBlockGenerator
+    input = msh
+    old_block = '12'
+    new_block = '1000'  # Temporary ID
+  []
+  
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
-    input = msh
+    input = rename_inner
     combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
     block_id = 100
   []
+  
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
     combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
   []
+  
   [./split_1]
     type = BreakMeshByBlockGenerator
     input = new_block_2
     split_interface = true
     block_pairs = '100 200'
   []
+  
   [./sidesets]
     input = split_1
     type = SideSetsFromNormalsGenerator
@@ -165,6 +177,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
                 0 0 1'
     new_boundary = 'left right bottom top back front'
   []
+  
   [./extranodeset1]
       type = ExtraNodesetGenerator
       coord = ${bottom_nodes_coord}
