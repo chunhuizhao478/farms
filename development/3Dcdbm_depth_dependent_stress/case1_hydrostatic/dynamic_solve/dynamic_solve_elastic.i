@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-    file = tpv26_140m_nonlocal_uniform.msh
+      file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
   []
   
   [new_block_1]
