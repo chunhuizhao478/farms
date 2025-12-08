@@ -160,6 +160,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     primary_block = 100
     paired_block = 200
     new_boundary = 'Block100_Block200'
+    show_info = true
   []
   
   [split_1]
