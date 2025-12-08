@@ -346,8 +346,8 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     }
   }
   
-  M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-  A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+  M = _density[_qp] * _len * _len * _len / 2;
+  A = _len * _len ;
   // ===== END FIXED SECTION =====
 
   // Compute T1_o, T2_o, T3_o for current qp

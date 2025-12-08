@@ -8,17 +8,17 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 125 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 140 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
-nonlocal_eqstrain_blocks = '10 100 200'
+nonlocal_eqstrain_blocks = '10 11 100 200'
 
 #here we avoid the cross-fault averaging by defining separate averaging blocks
-nonlocal_eqstrain_blocks_1 = '10'
+nonlocal_eqstrain_blocks_1 = '10 11'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
-local_eqstrain_blocks = '11'
+#local_eqstrain_blocks = ''
 
 ##main fault parameters
 xmin_fault = -22500 #xmin of fault
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_125m_nonlocal_occ.msh'
+    file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -938,13 +938,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     block = ${nonlocal_eqstrain_blocks_3}
   []
   #for the block outside the region, nonlocal strain is equal to the local strain
-  [nonlocal_eqstrain_block]
-    type = ParsedMaterial
-    property_name = eqstrain_nonlocal
-    coupled_variables = 'xi_aux'
-    expression = 'xi_aux'
-    block = ${local_eqstrain_blocks}
-  []
+  #[nonlocal_eqstrain_block]
+  #  type = ParsedMaterial
+  #  property_name = eqstrain_nonlocal
+   # coupled_variables = 'xi_aux'
+  #  expression = 'xi_aux'
+  #  block = ${local_eqstrain_blocks}
+ # []
 []
 
 [Functions]
