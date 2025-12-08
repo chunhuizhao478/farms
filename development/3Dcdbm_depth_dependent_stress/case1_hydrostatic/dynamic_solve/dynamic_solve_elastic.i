@@ -137,7 +137,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
   []
   
-  [new_block_1]
+   [new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
     combinatorial_geometry = 'y > 0'
@@ -160,14 +160,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     primary_block = 100
     paired_block = 200
     new_boundary = 'Block100_Block200'
-    show_info = true
   []
   
   [split_1]
     type = BreakMeshByBlockGenerator
     input = create_interface
     split_interface = true
-    add_interface_boundaries = true  # Interface already created above
+    add_interface_boundaries = false  # Interface already created above
   []
   
   [sidesets]
