@@ -167,7 +167,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = BreakMeshByBlockGenerator
     input = create_interface
     split_interface = true
-    add_interface_boundaries = false  # Interface already created above
+    add_interface_boundaries = true  # Interface already created above
   []
   
   [sidesets]
