@@ -153,20 +153,18 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     excluded_subdomain_ids = '10 11'
   []
   
-  # Create the interface between blocks 100 and 200
-  [create_interface]
-    type = SideSetsBetweenSubdomainsGenerator
+  # Break the existing boundary 103 between the blocks
+  [break_boundary]
+    type = BreakBoundaryOnSubdomainGenerator
     input = new_block_2
-    primary_block = 100
-    paired_block = 200
-    new_boundary = 'Block100_Block200'
+    boundaries = '103'  # The fault surface from Gmsh
   []
   
+  # Now split the mesh
   [split_1]
     type = BreakMeshByBlockGenerator
-    input = create_interface
+    input = break_boundary
     split_interface = true
-    add_interface_boundaries = false  # Interface already created above
   []
   
   [sidesets]
