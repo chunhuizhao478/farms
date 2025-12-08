@@ -132,51 +132,54 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
 [Mesh]
-  [./msh]
+  [msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
-    show_info = true
+    file = tpv26_140m_nonlocal_uniform.msh
   []
   
-  # Split block 12 at Y=0 to create the fault
-  [./new_block_1]
+  [new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
     combinatorial_geometry = 'y > 0'
     block_id = 100
-    excluded_subdomain_ids = '10 11'  # Only modify block 12
-    show_info = true
+    excluded_subdomain_ids = '10 11'
   []
   
-  [./new_block_2]
+  [new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
     combinatorial_geometry = 'y < 0'
     block_id = 200
-    excluded_subdomain_ids = '10 11'  # Only modify block 12
-    show_info = true
+    excluded_subdomain_ids = '10 11'
   []
   
-  # This should now create Block100_Block200
-  [./split_1]
-    type = BreakMeshByBlockGenerator
+  # Create the interface between blocks 100 and 200
+  [create_interface]
+    type = SideSetsBetweenSubdomainsGenerator
     input = new_block_2
-    split_interface = true
-    block_pairs = '100 200'
-    show_info = true
+    primary_block = 100
+    paired_block = 200
+    new_boundary = 'Block100_Block200'
   []
   
-  [./sidesets]
-    input = split_1
+  [split_1]
+    type = BreakMeshByBlockGenerator
+    input = create_interface
+    split_interface = true
+    add_interface_boundaries = false  # Interface already created above
+  []
+  
+  [sidesets]
     type = SideSetsFromNormalsGenerator
-    normals = '-1 0 0
-                1 0 0
-                0 -1 0
-                0 1 0
-                0 0 -1
-                0 0 1'
+    input = split_1
+    normals = '-1  0  0
+                1  0  0
+                0 -1  0
+                0  1  0
+                0  0 -1
+                0  0  1'
+    fixed_normal = true
     new_boundary = 'left right bottom top back front'
-    show_info = true
   []
   
   [./extranodeset1]
@@ -184,7 +187,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       coord = ${bottom_nodes_coord}
       new_boundary = corner_ptr
       input = sidesets
-      show_info = true
   []
 []
 
