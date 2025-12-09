@@ -152,13 +152,20 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     excluded_subdomain_ids = '10 11'
   []
   
+  # Create the interface between blocks 100 and 200
+  [create_interface]
+    type = SideSetsBetweenSubdomainsGenerator
+    input = new_block_2
+    primary_block = 100
+    paired_block = 200
+    new_boundary = 'Block100_Block200'
+  []
+  
   [split_1]
     type = BreakMeshByBlockGenerator
-    input = new_block_2
-    # Explicitly list the block pairs to split
-    block_pairs = '100 200'
+    input = create_interface
     split_interface = true
-    show_info = true
+    add_interface_boundaries = false  # Interface already created above
   []
   
   [sidesets]
@@ -173,7 +180,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     fixed_normal = true
     new_boundary = 'left right bottom top back front'
   []
-  
   
   [./extranodeset1]
       type = ExtraNodesetGenerator
