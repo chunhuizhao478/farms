@@ -11,10 +11,10 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 elem_size = 140 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
-nonlocal_eqstrain_blocks = '10 11 100 200'
+nonlocal_eqstrain_blocks = '10 100 200'
 
 #here we avoid the cross-fault averaging by defining separate averaging blocks
-nonlocal_eqstrain_blocks_1 = '10 11'
+nonlocal_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
@@ -134,14 +134,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
+      file = '../../mesh/tpv26_125m_unifrom.msh'
   []
   [new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
     combinatorial_geometry = 'y > 0'
     block_id = 100
-    excluded_subdomain_ids = '10 11'
+    excluded_subdomain_ids = '10'
   []
   
   [new_block_2]
@@ -149,23 +149,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     input = new_block_1
     combinatorial_geometry = 'y < 0'
     block_id = 200
-    excluded_subdomain_ids = '10 11'
+    excluded_subdomain_ids = '10'
   []
   
-  # Create the interface between blocks 100 and 200
-  [create_interface]
-    type = SideSetsBetweenSubdomainsGenerator
-    input = new_block_2
-    primary_block = 100
-    paired_block = 200
-    new_boundary = 'Block100_Block200'
-  []
-  
-  [split_1]
+  [./split_1]
     type = BreakMeshByBlockGenerator
-    input = create_interface
+    input = new_block_2
     split_interface = true
-    add_interface_boundaries = false  # Interface already created above
+    block_pairs = '100 200'
   []
   
   [sidesets]
