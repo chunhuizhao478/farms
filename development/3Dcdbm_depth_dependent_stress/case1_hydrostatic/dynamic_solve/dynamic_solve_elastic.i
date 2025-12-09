@@ -136,8 +136,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = FileMeshGenerator
       file = '../../mesh/tpv26_140m_nonlocal_uniform.msh'
   []
-  
-   [new_block_1]
+  [new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
     combinatorial_geometry = 'y > 0'
@@ -153,18 +152,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     excluded_subdomain_ids = '10 11'
   []
   
-  # Break the existing boundary 103 between the blocks
-  [break_boundary]
-    type = BreakBoundaryOnSubdomainGenerator
-    input = new_block_2
-    boundaries = '103'  # The fault surface from Gmsh
-  []
-  
-  # Now split the mesh
   [split_1]
     type = BreakMeshByBlockGenerator
-    input = break_boundary
+    input = new_block_2
+    # Explicitly list the block pairs to split
+    block_pairs = '100 200'
     split_interface = true
+    show_info = true
   []
   
   [sidesets]
@@ -179,6 +173,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     fixed_normal = true
     new_boundary = 'left right bottom top back front'
   []
+  
   
   [./extranodeset1]
       type = ExtraNodesetGenerator
