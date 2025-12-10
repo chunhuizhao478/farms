@@ -32,7 +32,7 @@
     shear_modulus_o = 32.04e9
     xi_0 = -0.8
     xi_d = -0.9
-    C_g = 1e-12
+    C_g = 1e-8
     m1 = 10
     m2 = 1
     chi = 0.8
@@ -132,6 +132,11 @@
     []
     [total_lagrange_strain_01]
         order = CONSTANT
+        family = MONOMIAL
+    []
+    ##
+    [eqstrain_nonlocal_initial_aux]
+        order = FIRST
         family = MONOMIAL
     []
 []
@@ -257,6 +262,14 @@
         i = 0
         j = 1
         block = '1 3'
+    []
+    ###
+    [get_eqstrain_nonlocal_initial]
+        type = SolutionAux
+        variable = eqstrain_nonlocal_initial_aux
+        solution = init_sol_components
+        from_variable = xi_output
+        execute_on = 'INITIAL'
     []
 []
 
@@ -406,6 +419,13 @@
         output_properties = 'strain_invariant_ratio'
         outputs = exodus
         block = '2'
+    []
+    [eqstrain_nonlocal_initial_xi]
+      type = CoupledVariableValueMaterial #this material object is in thermalhydraulicApp
+      coupled_variable = eqstrain_nonlocal_initial_aux
+      prop_name = eqstrain_nonlocal_initial
+      output_properties = 'eqstrain_nonlocal_initial'
+      outputs = exodus
     []
     [nonlocal_eqstrain]
         type = ElkNonlocalEqstrain
