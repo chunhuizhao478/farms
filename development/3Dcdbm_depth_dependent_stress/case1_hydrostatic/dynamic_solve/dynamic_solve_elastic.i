@@ -134,22 +134,20 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_125m_unifrom.msh'
+      file = '../../mesh/tpv26_1250m_unifrom.msh'
+      construct_side_list_from_node_list=true
   []
-  [new_block_1]
+  [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'y > 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
     block_id = 100
-    excluded_subdomain_ids = '10'
   []
-  
-  [new_block_2]
+  [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'y < 0'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
-    excluded_subdomain_ids = '10'
   []
   
   [./split_1]
@@ -157,6 +155,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     input = new_block_2
     split_interface = true
     block_pairs = '100 200'
+    show_info = true
+    construct_side_list_from_node_list=true
   []
   
   [sidesets]
