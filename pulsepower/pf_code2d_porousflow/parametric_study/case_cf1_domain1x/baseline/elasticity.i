@@ -1,6 +1,5 @@
 # Static energy values from static solve
-# Note: NOW using damage-dependent Biot coefficient with incremental accounting approach
-# Porosity is kept constant, only Biot coefficient evolves with damage
+# Note: Using incremental accounting approach with damaged biot coefficient
 # This value should be recomputed from static solve with the updated formulation
 fluid_elastic_energy_total_static = 8.081664e-05
 solid_elastic_energy_total_static = 5.408951e-03
@@ -25,7 +24,7 @@ confinement_pressure  = 1000000.0
 #hydraulic properties
 #----------------------------------------------------#
 fluid_density = 1000
-#biot_coefficient = ${fparse 1 - K/K_s}
+biot_coefficient = ${fparse 1 - K/K_s}
 fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -244,10 +243,6 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
-  [biot_coefficient_aux]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [porosity_aux]
     order = CONSTANT
     family = MONOMIAL
@@ -360,13 +355,6 @@ top_right2 = '3e-4 0.0025 0'
     property = PorousFlow_constant_biot_modulus_qp
     execute_on = 'TIMESTEP_END'
   []
-  #### get damaged biot coefficient
-  [biot_coefficient_aux_kernel]
-    type = MaterialRealAux
-    variable = biot_coefficient_aux
-    property = biot_coefficient_damaged
-    execute_on = 'TIMESTEP_END'
-  []
   #### get damaged porosity
   [porosity_aux_kernel]
     type = MaterialRealAux
@@ -427,16 +415,16 @@ top_right2 = '3e-4 0.0025 0'
   []
   #pressure coupling on stress tensor
   [poro_x]
-      type = ElkPorousFlowEffectiveStressCoupling
+      type = PorousFlowEffectiveStressCoupling
+      biot_coefficient = ${biot_coefficient}
       variable = disp_x
       component = 0
-      use_damaged_biot = true
   []
   [poro_y]
-      type = ElkPorousFlowEffectiveStressCoupling
+      type = PorousFlowEffectiveStressCoupling
+      biot_coefficient = ${biot_coefficient}
       variable = disp_y
       component = 1
-      use_damaged_biot = true
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
@@ -799,7 +787,7 @@ top_right2 = '3e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 10
-    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
+    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux porosity_aux'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -950,8 +938,9 @@ top_right2 = '3e-4 0.0025 0'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp biot_coefficient_aux'
-      expression = "0.5 * biot_coefficient_aux * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
+      # Use constant biot coefficient parameter
+      expression = "0.5 * ${biot_coefficient} * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
   []
 []
 
@@ -985,8 +974,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_incremental_elastic_energy_per_vol]
       type = ParsedAux
       variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
+      expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
   []
 []
 
