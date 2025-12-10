@@ -18,7 +18,7 @@ nonlocal_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
-#local_eqstrain_blocks = ''
+local_eqstrain_blocks = '12'
 
 ##main fault parameters
 xmin_fault = -22500 #xmin of fault
@@ -78,19 +78,19 @@ chi = 0.8 #energy ratio
 ##-------------------------##
 
 ### poroelastic properties
-   
-fluid_bulk_modulus = 2.2e9   # Water bulk modulus (2.2 GPa)    
-permeability_solid_o = 1e-19 # Initial permeability (1 milli-darcy) 
-porosity_solid_o = 0.0026 # Initial porosity (8%)  
-solid_bulk_modulus_g = 57e9 # Granular bulk modulus (50.3 GPa)      
-solid_bulk_modulus_s = 57e9 # Solid grains bulk modulus (36 GPa - typical for quartz) 
+
+fluid_bulk_modulus = 2.2e9   # Water bulk modulus (2.2 GPa)
+permeability_solid_o = 1e-19 # Initial permeability (1 milli-darcy)
+porosity_solid_o = 0.0026 # Initial porosity (8%)
+solid_bulk_modulus_g = 57e9 # Granular bulk modulus (50.3 GPa)
+solid_bulk_modulus_s = 57e9 # Solid grains bulk modulus (36 GPa - typical for quartz)
 permeability_evolution_with_damage = 3
 initial_grain_size = 1
 ultimate_grain_size = 1
 initial_viscosity_fluid = 1e-3
 anand_param_go_mat = 0.25
 anand_param_eta_cv_mat = 0.01
-anand_param_p_mat = 1    
+anand_param_p_mat = 1
 
 ##------------------------------------------------------------------##
 
@@ -124,7 +124,7 @@ dt = 0.005 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 10 #time step interval for output
+exodus_time_step_interval = 1 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 100 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
@@ -135,7 +135,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [msh]
     type = FileMeshGenerator
       file = '../../mesh/tpv26_1250m_unifrom.msh'
-      construct_side_list_from_node_list=true
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -149,16 +148,16 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
   []
-  
+
   [./split_1]
     type = BreakMeshByBlockGenerator
     input = new_block_2
     split_interface = true
     block_pairs = '100 200'
     show_info = true
-    construct_side_list_from_node_list=true
+    #construct_side_list_from_node_list=true
   []
-  
+
   [sidesets]
     type = SideSetsFromNormalsGenerator
     input = split_1
@@ -171,7 +170,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     fixed_normal = true
     new_boundary = 'left right bottom top back front'
   []
-  
+
   [./extranodeset1]
       type = ExtraNodesetGenerator
       coord = ${bottom_nodes_coord}
@@ -244,39 +243,39 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   chi = ${chi}
 
   # Water bulk modulus (2.2 GPa)
-  fluid_bulk_modulus = ${fluid_bulk_modulus}     
+  fluid_bulk_modulus = ${fluid_bulk_modulus}
 
-  # Initial permeability (1 milli-darcy) 
-  permeability_solid_o = ${permeability_solid_o}  
+  # Initial permeability (1 milli-darcy)
+  permeability_solid_o = ${permeability_solid_o}
 
   # Initial porosity (15%)
-  porosity_solid_o = ${porosity_solid_o}  
-     
-  # Granular bulk modulus (15 GPa)      
-  solid_bulk_modulus_g = ${solid_bulk_modulus_g}  
+  porosity_solid_o = ${porosity_solid_o}
 
-  # Solid grains bulk modulus (36 GPa - typical for quartz)  
-  solid_bulk_modulus_s = ${solid_bulk_modulus_s}   
+  # Granular bulk modulus (15 GPa)
+  solid_bulk_modulus_g = ${solid_bulk_modulus_g}
 
-  permeability_evolution_with_damage = ${permeability_evolution_with_damage}  
-  initial_grain_size = ${initial_grain_size}  
-  ultimate_grain_size = ${ultimate_grain_size}  
-  initial_viscosity_fluid = ${initial_viscosity_fluid}  
+  # Solid grains bulk modulus (36 GPa - typical for quartz)
+  solid_bulk_modulus_s = ${solid_bulk_modulus_s}
 
-  anand_param_go_mat = ${anand_param_go_mat}  
-  anand_param_eta_cv_mat = ${anand_param_eta_cv_mat}  
-  anand_param_p_mat = ${anand_param_p_mat}  
+  permeability_evolution_with_damage = ${permeability_evolution_with_damage}
+  initial_grain_size = ${initial_grain_size}
+  ultimate_grain_size = ${ultimate_grain_size}
+  initial_viscosity_fluid = ${initial_viscosity_fluid}
+
+  anand_param_go_mat = ${anand_param_go_mat}
+  anand_param_eta_cv_mat = ${anand_param_eta_cv_mat}
+  anand_param_p_mat = ${anand_param_p_mat}
 []
 
 
 [Variables]
     [disp_x]
         order = FIRST
-        family = LAGRANGE     
+        family = LAGRANGE
     []
     [disp_y]
         order = FIRST
-        family = LAGRANGE    
+        family = LAGRANGE
     []
     [disp_z]
         order = FIRST
@@ -446,7 +445,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [stress_xy]
     order = FIRST
     family = MONOMIAL
-  []  
+  []
   # sts_total components (from material property)
   [sts_total_xx]
     order = FIRST
@@ -714,7 +713,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     index_i = 0
     index_j = 1
   []
-    
+
   # Extract sts_total components (material property)
   [sts_total_xx]
     type = RankTwoAux
@@ -765,8 +764,8 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
 
-  
-[] 
+
+[]
 
 [Kernels]
   [dispkernel_x]
@@ -848,7 +847,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [strain3]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
-  [] 
+  []
   #damage breakage model
   [stress_medium]
       type = ComputePoroDamageBreakageStress3DSlipWeakeningnonlocal
@@ -945,13 +944,14 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     block = ${nonlocal_eqstrain_blocks_3}
   []
   #for the block outside the region, nonlocal strain is equal to the local strain
-  #[nonlocal_eqstrain_block]
-  #  type = ParsedMaterial
-  #  property_name = eqstrain_nonlocal
-   # coupled_variables = 'xi_aux'
-  #  expression = 'xi_aux'
-  #  block = ${local_eqstrain_blocks}
- # []
+  #for the block outside the region, nonlocal strain is equal to the local strain
+  [nonlocal_eqstrain_block]
+    type = ParsedMaterial
+    property_name = eqstrain_nonlocal
+    coupled_variables = 'xi_aux'
+    expression = 'xi_aux'
+    block = ${local_eqstrain_blocks}
+  []
 []
 
 [Functions]
@@ -1111,10 +1111,10 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = Exodus
     execute_on = 'timestep_end'
     show = 'sts_total_xx sts_total_xy sts_total_zz sts_total_yy
-            traction_strike_aux traction_normal_aux traction_dip_aux 
-            vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z 
-            stress_xx stress_yy stress_xy 
-            porepressure' 
+            traction_strike_aux traction_normal_aux traction_dip_aux
+            vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z
+            stress_xx stress_yy stress_xy
+            porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
