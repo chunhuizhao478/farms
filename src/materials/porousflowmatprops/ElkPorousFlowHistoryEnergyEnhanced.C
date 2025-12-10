@@ -34,6 +34,8 @@ ElkPorousFlowHistoryEnergyEnhanced::ElkPorousFlowHistoryEnergyEnhanced(
     const InputParameters & parameters)
   : Material(parameters),
     _psie_active(getMaterialProperty<Real>(getParam<MaterialPropertyName>("psie_active"))),
+    _psie_inactive(getMaterialProperty<Real>("psie_inactive")),
+    _g(getMaterialProperty<Real>("g")),
     _pp(coupledValue("pore_pressure")),
     _initial_porosity(getParam<Real>("initial_porosity")),
     _fluid_bulk_modulus(getParam<Real>("fluid_bulk_modulus")),
@@ -41,8 +43,12 @@ ElkPorousFlowHistoryEnergyEnhanced::ElkPorousFlowHistoryEnergyEnhanced(
     _K(getMaterialProperty<Real>(getParam<MaterialPropertyName>("bulk_modulus"))),
     _psie_active_enhanced(
         declareProperty<Real>(getParam<MaterialPropertyName>("psie_active_enhanced"))),
+    _psie_enhanced(
+        declareProperty<Real>("psie_enhanced")),
     _psie_active_enhanced_old(
-        getMaterialPropertyOld<Real>(getParam<MaterialPropertyName>("psie_active_enhanced")))
+        getMaterialPropertyOld<Real>(getParam<MaterialPropertyName>("psie_active_enhanced"))),
+    _psie_enhanced_old(
+        getMaterialPropertyOld<Real>("psie_enhanced"))
 {
   // Validate parameters
   if (_initial_porosity <= 0.0 || _initial_porosity >= 1.0)
@@ -57,6 +63,7 @@ void
 ElkPorousFlowHistoryEnergyEnhanced::initQpStatefulProperties()
 {
   _psie_active_enhanced[_qp] = 0.0;
+  _psie_enhanced[_qp] = 0.0;
 }
 
 void
@@ -76,6 +83,7 @@ ElkPorousFlowHistoryEnergyEnhanced::computeQpProperties()
   // Take maximum over time (irreversibility condition)
   // H+ = max_t ( H_current_positive )
   _psie_active_enhanced[_qp] = std::max(H_current_positive, _psie_active_enhanced_old[_qp]);
+  _psie_enhanced[_qp] = _g[_qp] * _psie_active_enhanced[_qp] + _psie_inactive[_qp];
 }
 
 Real

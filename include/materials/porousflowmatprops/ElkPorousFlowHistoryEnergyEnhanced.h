@@ -33,6 +33,8 @@ protected:
 
   /// Positive elastic energy density (from NDSmallDeformationIsotropicElasticity)
   const MaterialProperty<Real> & _psie_active;
+  const MaterialProperty<Real> & _psie_inactive;
+  const MaterialProperty<Real> & _g;
 
   /// Pore pressure
   const VariableValue & _pp;
@@ -51,9 +53,11 @@ protected:
 
   /// Enhanced history energy (output)
   MaterialProperty<Real> & _psie_active_enhanced;
+  MaterialProperty<Real> & _psie_enhanced;
 
   /// Old value of enhanced history energy (for max operation)
   const MaterialProperty<Real> & _psie_active_enhanced_old;
+  const MaterialProperty<Real> & _psie_enhanced_old;
 
   /// Pressure coefficient for the additional term
   Real computePressureCoefficient() const;

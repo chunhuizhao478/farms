@@ -63,7 +63,7 @@ private:
   const MaterialProperty<Real> * _a2_prop;
   const MaterialProperty<Real> * _a3_prop;
   const MaterialProperty<Real> * _p_prop;
-  
+
   // Store the property names
   const MaterialPropertyName _a1_name;
   const MaterialPropertyName _a2_name;
@@ -77,6 +77,7 @@ private:
   // @{ Strain energy density and its derivative w/r/t damage
   MaterialProperty<Real> & _psie;
   MaterialProperty<Real> & _psie_active;
+  MaterialProperty<Real> & _psie_inactive;
   MaterialProperty<Real> & _dpsie_dd;
   // @}
 
@@ -100,7 +101,7 @@ private:
 
   /// @brief define the effective permeability
   MaterialProperty<RealTensorValue> & _effective_perm;
-  const MaterialProperty<RealTensorValue> & _effective_perm_old;  
+  const MaterialProperty<RealTensorValue> & _effective_perm_old;
 
   const bool _porous_flow_coupling; // flag to indicate if porous flow coupling is enabled
   const Real _intrinsic_permeability;

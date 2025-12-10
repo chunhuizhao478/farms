@@ -1,13 +1,13 @@
-fluid_elastic_energy_total_static = 8.872887e-05
-solid_elastic_energy_total_static = 1.679652e-03
-full_input_energy_static = 1.768381e-03
+fluid_elastic_energy_total_static = 1.271812e-04
+solid_elastic_energy_total_static = 3.605239e-03
+full_input_energy_static = 3.732421e-03
 
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.373 # Poisson's ratio
 Gc_const = 100  # critical energy release rate, N * m
-solid_density = 2600 # kg/m^3 
+solid_density = 2600 # kg/m^3
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
 l =  1e-4 # length scale, m
@@ -64,7 +64,7 @@ hht_alpha = 0
 #         type = ValueThresholdMarker
 #         variable = psie_active
 #         refine = '${fparse 1.0*3/8*Gc_const/l}'
-#       []   
+#       []
 #       # if mesh_size > dxmin, refine
 #       # if mesh_size < dxmin/100, coarsen (which never happens)
 #       # otherwise, do nothing
@@ -74,7 +74,7 @@ hht_alpha = 0
 #         refine = '${dx_min}'
 #         coarsen = '${fparse dx_min/100}'
 #         third_state = DO_NOTHING
-#       [] 
+#       []
 #   []
 # []
 
@@ -164,17 +164,17 @@ top_right2 = '2e-4 0.0025 0'
 [Variables]
   [disp_x]
     order = FIRST
-    family = LAGRANGE  
+    family = LAGRANGE
     scaling = 1e-6
   []
   [disp_y]
     order = FIRST
-    family = LAGRANGE  
+    family = LAGRANGE
     scaling = 1e-6
   []
   [pp]
     order = FIRST
-    family = LAGRANGE  
+    family = LAGRANGE
   []
 []
 
@@ -245,38 +245,38 @@ top_right2 = '2e-4 0.0025 0'
   [fconfinementy]
   []
   [fconfinementz]
-  [] 
+  []
   [fdampx]
   []
   [fdampy]
   []
   [fdampz]
-  [] 
+  []
   #darcy velocity components
   [darcy_vel_x]
     order = CONSTANT
-    family = MONOMIAL      
+    family = MONOMIAL
   []
   [darcy_vel_y]
     order = CONSTANT
-    family = MONOMIAL      
-  [] 
+    family = MONOMIAL
+  []
   [darcy_vel_z]
     order = CONSTANT
-    family = MONOMIAL      
-  [] 
+    family = MONOMIAL
+  []
   # [strain_increment_00]
   #   order = CONSTANT
-  #   family = MONOMIAL   
+  #   family = MONOMIAL
   # []
   # [strain_increment_11]
   #   order = CONSTANT
-  #   family = MONOMIAL   
-  # []  
+  #   family = MONOMIAL
+  # []
   # [strain_increment_22]
   #   order = CONSTANT
-  #   family = MONOMIAL   
-  # []    
+  #   family = MONOMIAL
+  # []
 []
 
 [AuxKernels]
@@ -314,7 +314,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   #get pulse load aux
   [get_pulse_load_aux]
-    type = FunctionAux 
+    type = FunctionAux
     variable = pulse_load_aux
     function = func_tri_pulse
     execute_on = timestep_end
@@ -374,21 +374,21 @@ top_right2 = '2e-4 0.0025 0'
   # #### get strain increment
   # [strain_increment_00]
   #   type = MaterialRankTwoTensorAux
-  #   property = strain_increment  
+  #   property = strain_increment
   #   variable = strain_increment_00
   #   i = 0
   #   j = 0
   # []
   # [strain_increment_11]
   #   type = MaterialRankTwoTensorAux
-  #   property = strain_increment  
+  #   property = strain_increment
   #   variable = strain_increment_11
   #   i = 1
   #   j = 1
   # []
   # [strain_increment_22]
   #   type = MaterialRankTwoTensorAux
-  #   property = strain_increment  
+  #   property = strain_increment
   #   variable = strain_increment_22
   #   i = 2
   #   j = 2
@@ -469,7 +469,7 @@ top_right2 = '2e-4 0.0025 0'
       variable = pp
       multiply_by_density = false
       gravity = '0 0 0'
-  []  
+  []
 []
 
 [BCs]
@@ -483,7 +483,7 @@ top_right2 = '2e-4 0.0025 0'
       use_displaced_mesh = false
       save_in_disp_x = fx
       save_in_disp_y = fy
-    []          
+    []
     #assign pressure on outer surface
     [static_pressure_outer]
       boundary = 1
@@ -492,8 +492,8 @@ top_right2 = '2e-4 0.0025 0'
       use_displaced_mesh = false
       save_in_disp_x = fconfinementx
       save_in_disp_y = fconfinementy
-    []     
-  []   
+    []
+  []
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -650,7 +650,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   #compute biot modulus #include damaged solid compliance
   [biot_modulus]
-    type = ElkPorousFlowDamagedBiotModulus
+    type = ElkPorousFlowDamagedBiotModulusOld
     biot_coefficient = ${biot_coefficient}
     solid_bulk_compliance = ${solid_bulk_modulus_compliance}
     fluid_bulk_modulus = ${fluid_bulk_modulus}
@@ -669,7 +669,7 @@ top_right2 = '2e-4 0.0025 0'
   #     biot_coefficient = ${biot_coefficient}
   #     solid_bulk_compliance = ${solid_bulk_modulus_compliance}
   #     fluid_bulk_modulus = ${fluid_bulk_modulus}
-  # []  
+  # []
   ##----------------------------------------------------------##
   #Compute density and viscosity
   [simple_fluid_qp]
@@ -690,7 +690,7 @@ top_right2 = '2e-4 0.0025 0'
   []
 []
 
-#provide fluid properties for porous flow 
+#provide fluid properties for porous flow
 [FluidProperties]
   [the_simple_fluid]
     type = SimpleFluidProperties
@@ -816,7 +816,7 @@ top_right2 = '2e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work'
   []
 []
 
@@ -924,7 +924,7 @@ top_right2 = '2e-4 0.0025 0'
       order = CONSTANT
       family = MONOMIAL
   []
-[]  
+[]
 
 [AuxKernels]
   [fluid_kinetic_energy]
@@ -1004,14 +1004,14 @@ top_right2 = '2e-4 0.0025 0'
   [fluid_incremental_elastic_energy_total]
     type = CumulativeValuePostprocessor
     postprocessor = fluid_incremental_elastic_energy
-  []  
+  []
   [fluid_dissipated_energy_total]
     type = ParsedPostprocessor
     pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
     expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
     execute_on = 'INITIAL TIMESTEP_END'
-  []  
-[]  
+  []
+[]
 ###############################################################################
 
 # fluid driving energy

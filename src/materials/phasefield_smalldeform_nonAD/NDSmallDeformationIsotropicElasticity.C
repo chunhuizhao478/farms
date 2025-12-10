@@ -26,6 +26,9 @@ NDSmallDeformationIsotropicElasticity::validParams()
   params.addParam<MaterialPropertyName>("strain_energy_density_active",
                                         "psie_active",
                                         "Name of the active strain energy density");
+  params.addParam<MaterialPropertyName>("strain_energy_density_inactive",
+                                        "psie_inactive",
+                                        "Name of the inactive strain energy density");
   params.addParam<MaterialPropertyName>(
       "strain_energy_density_derivative",
       "dpsie_dd",
@@ -106,6 +109,8 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     _psie(declareProperty<Real>(getParam<MaterialPropertyName>("strain_energy_density"))),
     _psie_active(declareProperty<Real>(getParam<MaterialPropertyName>(
         "strain_energy_density_active"))),
+    _psie_inactive(declareProperty<Real>(getParam<MaterialPropertyName>(
+        "strain_energy_density_inactive"))),
     _dpsie_dd(declareProperty<Real>(getParam<MaterialPropertyName>(
         "strain_energy_density_derivative"))),
 
@@ -232,6 +237,7 @@ NDSmallDeformationIsotropicElasticity::computeStressSpectralDecomposition(
   _psie_active[_qp] = 0.5 * lambda * strain_tr_pos * strain_tr_pos +
                       _G[_qp] * strain_pos.doubleContraction(strain_pos);
   Real psie_inactive = psie_intact - _psie_active[_qp];
+  _psie_inactive[_qp] = psie_inactive;
   _psie[_qp] = _g[_qp] * _psie_active[_qp] + psie_inactive;
   _dpsie_dd[_qp] = _dg_dd[_qp] * _psie_active[_qp];
 

@@ -51,6 +51,6 @@ ElkPorousFlowDamagedBiotCoefficient::computeQpProperties()
   const Real alpha = 1.0 - Kc / _grain_bulk_modulus;
   // note here the biot coefficient depends on the damage variable, only bulk modulus is modified Kc = g * _bulk_modulus_intact
   // clamp to [0,1] for numerical safety
-  const Real alpha_clamped = std::clamp(alpha, 0.0, 1.0);
+  const Real alpha_clamped = 0.16666667; //std::clamp(alpha, 0.0, 1.0);
   _biot_coefficient_damaged[_qp] = alpha_clamped;
 }

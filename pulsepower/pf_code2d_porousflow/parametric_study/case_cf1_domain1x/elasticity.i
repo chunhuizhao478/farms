@@ -24,7 +24,7 @@ confinement_pressure  = 1000000.0
 #hydraulic properties
 #----------------------------------------------------#
 fluid_density = 1000
-#biot_coefficient = ${fparse 1 - K/K_s}
+biot_coefficient = ${fparse 1 - K/K_s}
 fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -69,7 +69,7 @@ hht_alpha = 0
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
     variable = 'psie_active mesh_size'
-    source_variable = 'psie_active_enhanced mesh_size'
+    source_variable = 'psie_active mesh_size'
   []
   [pp_transfer_dissipated_energy_total]
     type = MultiAppPostprocessorTransfer
@@ -243,10 +243,6 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
-  [biot_coefficient_aux]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [porosity_aux]
     order = CONSTANT
     family = MONOMIAL
@@ -359,13 +355,6 @@ top_right2 = '3e-4 0.0025 0'
     property = PorousFlow_constant_biot_modulus_qp
     execute_on = 'TIMESTEP_END'
   []
-  #### get damaged biot coefficient
-  [biot_coefficient_aux_kernel]
-    type = MaterialRealAux
-    variable = biot_coefficient_aux
-    property = biot_coefficient_damaged
-    execute_on = 'TIMESTEP_END'
-  []
   #### get damaged porosity
   [porosity_aux_kernel]
     type = MaterialRealAux
@@ -426,16 +415,16 @@ top_right2 = '3e-4 0.0025 0'
   []
   #pressure coupling on stress tensor
   [poro_x]
-      type = ElkPorousFlowEffectiveStressCoupling
+      type = PorousFlowEffectiveStressCoupling
+      biot_coefficient = ${biot_coefficient}
       variable = disp_x
       component = 0
-      use_damaged_biot = true
   []
   [poro_y]
-      type = ElkPorousFlowEffectiveStressCoupling
+      type = PorousFlowEffectiveStressCoupling
+      biot_coefficient = ${biot_coefficient}
       variable = disp_y
       component = 1
-      use_damaged_biot = true
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
@@ -547,6 +536,7 @@ top_right2 = '3e-4 0.0025 0'
     phase_field = d
     strain_energy_density = psie
     strain_energy_density_active = psie_active
+    strain_energy_density_inactive = psie_inactive
     strain_energy_density_derivative = dpsie_dd
     degradation_function = g
     degradation_function_derivative = dg_dd
@@ -638,7 +628,7 @@ top_right2 = '3e-4 0.0025 0'
     phase_field = d
     initial_porosity = ${porosity}
     porosity_lower_bound = 0.008
-    porosity_upper_bound = 0.999
+    porosity_upper_bound = 0.008
   []
   #compute permeability
   [permeability] #take effective_perm
@@ -770,7 +760,7 @@ top_right2 = '3e-4 0.0025 0'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 100e-5
+  end_time = 2e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -797,7 +787,7 @@ top_right2 = '3e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 10
-    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
+    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux porosity_aux'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -808,7 +798,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work dissipated_energy_first_step dissipated_energy_dynamic'
   []
 []
 
@@ -922,12 +912,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_kinetic_energy]
       type = ParsedAux
       variable = fluid_kinetic_energy
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z porosity_aux'
-      # Physical fluid velocity: v_fluid = q / φ
-      # Kinetic energy per unit total volume: (1/2) * ρ_fluid * φ * v_fluid²
-      # = (1/2) * ρ_fluid * φ * (q/φ)² = (1/2) * ρ_fluid * q²/φ
-      # where q is Darcy velocity and φ is damage-dependent porosity
-      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density} / porosity_aux"
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
+      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density}"
   []
 []
 
@@ -952,9 +938,9 @@ top_right2 = '3e-4 0.0025 0'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp biot_coefficient_aux'
-      # Use damage-dependent biot coefficient from aux variable
-      expression = "0.5 * biot_coefficient_aux * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
+      # Use constant biot coefficient parameter
+      expression = "0.5 * ${biot_coefficient} * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
   []
 []
 
@@ -975,9 +961,7 @@ top_right2 = '3e-4 0.0025 0'
 []
 ###############################################################################
 
-# fluid dissipated energy via incremental work accounting
-# Dissipation = ∫(α·σ_vol·dε_vol) - ΔE_fluid_elastic
-# This captures all dissipation mechanisms including viscous dissipation and property evolution effects
+# fluid energy dissipation
 ###############################################################################
 [AuxVariables]
   [fluid_incremental_elastic_energy]
@@ -990,8 +974,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_incremental_elastic_energy_per_vol]
       type = ParsedAux
       variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
+      expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
   []
 []
 
