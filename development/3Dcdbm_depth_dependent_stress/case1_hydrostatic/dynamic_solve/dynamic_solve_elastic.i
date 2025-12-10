@@ -8,7 +8,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 140 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 125 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -155,7 +155,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     split_interface = true
     block_pairs = '100 200'
     show_info = true
-    #construct_side_list_from_node_list=true
   []
 
   [sidesets]
