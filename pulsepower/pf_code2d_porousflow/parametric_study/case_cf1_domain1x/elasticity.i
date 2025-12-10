@@ -70,7 +70,7 @@ hht_alpha = 0
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
     variable = 'psie_active mesh_size'
-    source_variable = 'psie_active mesh_size'
+    source_variable = 'psie_active_enhanced mesh_size'
   []
   [pp_transfer_dissipated_energy_total]
     type = MultiAppPostprocessorTransfer
