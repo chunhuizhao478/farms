@@ -18,7 +18,7 @@ nonlocal_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
-local_eqstrain_blocks = ''
+#local_eqstrain_blocks = ''
 
 ##main fault parameters
 xmin_fault = -22500 #xmin of fault
