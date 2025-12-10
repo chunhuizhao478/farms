@@ -3,7 +3,7 @@
  * - Inner region: structured uniform tet4 (transfinite brick, split by fault).
  * - Outer region: graded unstructured tet4, coarsening outward.
  * - SINGLE LAYER VERSION: Only one structured layer around fault.
- * 
+ *
  * CORRECTED: Proper fault surface identification
  */
 
@@ -12,12 +12,12 @@ SetFactory("OpenCASCADE");
 // ----------------------------------------------------
 // GLOBAL & LOCAL SIZES  (COARSER, ADJUST IF NEEDED)
 // ----------------------------------------------------
-lc       = 2e4;    // global coarse size away from fault
+lc       = 1.75e4;    // global coarse size away from fault
 lc_fault = 125;    // target fine size near fault (inner region)
 Fault_length        = 45e3;
 Fault_width         = 20e3;
 Fault_dip           = 90*Pi/180.;
-transition_length   = 0.25e3;   // inner region halo around fault
+transition_length   = 500; //0.25e3;   // inner region halo around fault <- change it back if you want smaller inner volume
 
 Xmax = 60e3;
 Xmin = -Xmax;
@@ -58,18 +58,22 @@ Printf("Inner region divisions (tet4): nx=%g, ny_below=%g, ny_above=%g, nz=%g",
 // BUILD INNER REGION SPLIT AT Y=0 (FAULT PLANE)
 // ----------------------------------------------------
 
-// Two rectangular boxes that meet at Y=0
+// Create SINGLE box containing both regions (Y < 0 and Y > 0)
+// This ensures all elements share nodes - critical for BreakMeshByBlockGenerator
 Box(100) = {X_inner_min, Y_inner_min, Z_inner_bot,
-            dx_inner, Abs(Y_inner_min), Abs(Z_inner_bot)}; // Below fault (Y<0)
+            dx_inner, Y_inner_max - Y_inner_min, Abs(Z_inner_bot)}; // Entire inner region
 
-Box(101) = {X_inner_min, 0, Z_inner_bot,
-            dx_inner, Y_inner_max, Abs(Z_inner_bot)};      // Above fault (Y>0)
+// MOOSE will split this into blocks 100 and 200 using ParsedSubdomainMeshGenerator (based on Y coordinate)
+// Then BreakMeshByBlockGenerator will duplicate nodes at Y=0 to create the fault interface
 
 // ----------------------------------------------------
 // TRANSFINITE CONSTRAINTS FOR INNER VOLUMES (TET4)
 // ----------------------------------------------------
 
-// --- Volume 100 (below fault) ---
+// --- Single volume with uniform meshing ---
+// Total Y divisions = below + above
+n_y_total = n_y_below + n_y_above;
+
 edges_100[] = Unique(Abs(Boundary{ Surface{Boundary{ Volume{100}; }}; }));
 
 For i In {0:#edges_100[]-1}
@@ -82,7 +86,7 @@ For i In {0:#edges_100[]-1}
   If (dx > dy && dx > dz)
     Transfinite Curve{e} = n_x + 1;
   ElseIf (dy > dx && dy > dz)
-    Transfinite Curve{e} = n_y_below + 1;
+    Transfinite Curve{e} = n_y_total + 1;  // Total Y divisions
   Else
     Transfinite Curve{e} = n_z + 1;
   EndIf
@@ -92,63 +96,10 @@ surfs_100[] = Unique(Abs(Boundary{ Volume{100}; }));
 Transfinite Surface{surfs_100[]};
 Transfinite Volume{100};   // structured tet4 brick
 
-// --- Volume 101 (above fault) ---
-edges_101[] = Unique(Abs(Boundary{ Surface{Boundary{ Volume{101}; }}; }));
-
-For i In {0:#edges_101[]-1}
-  e  = edges_101[i];
-  bb[] = BoundingBox Curve{e};
-  dx = Abs(bb[3] - bb[0]);
-  dy = Abs(bb[4] - bb[1]);
-  dz = Abs(bb[5] - bb[2]);
-
-  If (dx > dy && dx > dz)
-    Transfinite Curve{e} = n_x + 1;
-  ElseIf (dy > dx && dy > dz)
-    Transfinite Curve{e} = n_y_above + 1;
-  Else
-    Transfinite Curve{e} = n_z + 1;
-  EndIf
-EndFor
-
-surfs_101[] = Unique(Abs(Boundary{ Volume{101}; }));
-Transfinite Surface{surfs_101[]};
-Transfinite Volume{101};   // structured tet4 brick
-
 // ----------------------------------------------------
-// IDENTIFY FAULT SURFACES (CORRECTED)
+// NOTE: Fault interface will be created by MOOSE BreakMeshByBlockGenerator
+// No need to identify fault surfaces here since the volume is continuous
 // ----------------------------------------------------
-// Get fault surfaces from each volume (they're at Y=0 plane)
-surfs_100_all[] = Unique(Abs(Boundary{ Volume{100}; }));
-surfs_101_all[] = Unique(Abs(Boundary{ Volume{101}; }));
-
-// Find surfaces at Y=0 (the fault plane)
-fault_100 = -1;
-fault_101 = -1;
-
-For i In {0:#surfs_100_all[]-1}
-  s = surfs_100_all[i];
-  bb[] = BoundingBox Surface{s};
-  // Check if surface is at Y=0 (fault plane) - top surface of volume 100
-  // Y coordinates should both be very close to 0
-  If (Abs(bb[1]) < 1e-6 && Abs(bb[4]) < 1e-6)
-    fault_100 = s;
-  EndIf
-EndFor
-
-For i In {0:#surfs_101_all[]-1}
-  s = surfs_101_all[i];
-  bb[] = BoundingBox Surface{s};
-  // Check if surface is at Y=0 (fault plane) - bottom surface of volume 101
-  If (Abs(bb[1]) < 1e-6 && Abs(bb[4]) < 1e-6)
-    fault_101 = s;
-  EndIf
-EndFor
-
-Printf("Found fault surface IDs: %g (volume 100), %g (volume 101)", fault_100, fault_101);
-
-// Store fault surfaces for later use
-fault_surfaces[] = {fault_100, fault_101};
 
 // ----------------------------------------------------
 // OUTER REGION
@@ -158,7 +109,7 @@ Box(1) = {Xmin, Ymin, Zmin,
           Xmax - Xmin, Ymax - Ymin, -Zmin};
 
 // Subtract inner from outer (no intermediate layer)
-out_outer[] = BooleanDifference{ Volume{1}; Delete; }{ Volume{100, 101}; };
+out_outer[] = BooleanDifference{ Volume{1}; Delete; }{ Volume{100}; };
 outer_vol   = out_outer[0];
 Printf("Outer volume ID: %g", outer_vol);
 
@@ -166,9 +117,12 @@ Printf("Outer volume ID: %g", outer_vol);
 // MESH SIZE FIELDS  (AGGRESSIVE COARSENING IN OUTER REGION, CAPPED AT lc)
 // ----------------------------------------------------
 
-// Distance to main fault (for general fault refinement)
+// Get all surfaces of inner volume (boundaries with outer region)
+inner_surfaces[] = Unique(Abs(Boundary{ Volume{100}; }));
+
+// Distance to inner region (for refinement near fault)
 Field[1] = Distance;
-Field[1].SurfacesList     = {fault_100, fault_101};
+Field[1].SurfacesList     = {inner_surfaces[]};
 Field[1].NumPointsPerCurve = 100;
 
 // Aggressive exponential function for rapid coarsening, capped at lc
@@ -200,7 +154,7 @@ Mesh.MeshSizeFromCurvature      = 0;
 Mesh.MeshSizeExtendFromBoundary = 1;
 
 // Enforce fine size at all inner-region points
-Characteristic Length { PointsOf{ Volume{100, 101}; } } = lc_fault;
+Characteristic Length { PointsOf{ Volume{100}; } } = lc_fault;
 
 // ----------------------------------------------------
 // PHYSICAL GROUPS
@@ -208,23 +162,13 @@ Characteristic Length { PointsOf{ Volume{100, 101}; } } = lc_fault;
 
 // Get all unique surfaces from each region
 outer_boundary_surfs[] = Unique(Abs(Boundary{ Volume{outer_vol}; }));
-inner_boundary_surfs[] = Unique(Abs(Boundary{ Volume{100, 101}; }));
-
-// Remove fault surfaces from inner boundary (they should only be in Physical Surface 103)
-inner_boundary_filtered[] = {};
-For i In {0:#inner_boundary_surfs[]-1}
-  If (inner_boundary_surfs[i] != fault_100 && 
-      inner_boundary_surfs[i] != fault_101)
-    inner_boundary_filtered[] += inner_boundary_surfs[i];
-  EndIf
-EndFor
+inner_boundary_surfs[] = Unique(Abs(Boundary{ Volume{100}; }));
 
 Physical Surface(101) = {outer_boundary_surfs[]};           // Outer boundary (all surfaces)
-Physical Surface(103) = {fault_surfaces[]};                 // Fault (main fault surfaces)
-Physical Surface(105) = {inner_boundary_filtered[]};        // Inner region boundary (excluding fault)
+Physical Surface(105) = {inner_boundary_surfs[]};           // Inner region boundary
 
-Physical Volume(10) = {outer_vol};     // Outer volume
-Physical Volume(12) = {100, 101};      // Inner volumes (structured tet4)
+Physical Volume(10) = {outer_vol};     // Outer volume (coarse, unstructured)
+Physical Volume(12) = {100};           // Inner volume (fine, structured) - will be split by MOOSE
 
 // ----------------------------------------------------
 // FINAL MESH SETTINGS: PURE TET4

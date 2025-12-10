@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_1250m_unifrom.msh'
+      file = '../../mesh/tpv26_125m_unifrom.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
