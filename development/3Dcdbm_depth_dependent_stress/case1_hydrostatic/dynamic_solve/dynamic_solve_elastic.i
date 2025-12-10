@@ -18,7 +18,7 @@ nonlocal_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
-local_eqstrain_blocks = '12'
+local_eqstrain_blocks = ''
 
 ##main fault parameters
 xmin_fault = -22500 #xmin of fault
@@ -944,13 +944,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   #for the block outside the region, nonlocal strain is equal to the local strain
   #for the block outside the region, nonlocal strain is equal to the local strain
-  [nonlocal_eqstrain_block]
-    type = ParsedMaterial
-    property_name = eqstrain_nonlocal
-    coupled_variables = 'xi_aux'
-    expression = 'xi_aux'
-    block = ${local_eqstrain_blocks}
-  []
+ # [nonlocal_eqstrain_block]
+ #   type = ParsedMaterial
+ #   property_name = eqstrain_nonlocal
+ #   coupled_variables = 'xi_aux'
+ #   expression = 'xi_aux'
+ #   block = ${local_eqstrain_blocks}
+ # []
 []
 
 [Functions]
