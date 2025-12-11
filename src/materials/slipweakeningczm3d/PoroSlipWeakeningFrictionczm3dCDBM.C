@@ -308,43 +308,43 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real R_minus_pressure_local_t = R_minus_pressure_local(1);
   Real R_minus_pressure_local_d = R_minus_pressure_local(2);
 
-// ===== FIXED SECTION: Compute M and A for node nearest to quadrature point =====
-  // Find the node closest to the current quadrature point that has volume patch data
-  Real M = 0.0;
-  Real A = 0.0;
-  bool found = false;
+// // ===== FIXED SECTION: Compute M and A for node nearest to quadrature point =====
+//   // Find the node closest to the current quadrature point that has volume patch data
+//   Real M = 0.0;
+//   Real A = 0.0;
+//   bool found = false;
   
-  // Get the physical coordinates of the current quadrature point
-  const Point & qp_coords = _q_point[_qp];
+//   // Get the physical coordinates of the current quadrature point
+//   const Point & qp_coords = _q_point[_qp];
   
-  Real min_distance = std::numeric_limits<Real>::max();
-  dof_id_type nearest_node_id = 0;
+//   Real min_distance = std::numeric_limits<Real>::max();
+//   dof_id_type nearest_node_id = 0;
   
-  unsigned int n_elem_nodes = _current_elem->n_nodes();
-  for (unsigned int i = 0; i < n_elem_nodes; i++)
-  {
-    const Node * node = _current_elem->node_ptr(i);
-    dof_id_type node_id = node->id();
+//   unsigned int n_elem_nodes = _current_elem->n_nodes();
+//   for (unsigned int i = 0; i < n_elem_nodes; i++)
+//   {
+//     const Node * node = _current_elem->node_ptr(i);
+//     dof_id_type node_id = node->id();
     
-    // Check if this node has volume patch data
-    auto vol_it = _nodal_volume_patches.find(node_id);
-    auto area_it = _nodal_areas.find(node_id);
+//     // Check if this node has volume patch data
+//     auto vol_it = _nodal_volume_patches.find(node_id);
+//     auto area_it = _nodal_areas.find(node_id);
     
-    if (vol_it != _nodal_volume_patches.end() && area_it != _nodal_areas.end())
-    {
-      // Calculate distance from quadrature point to this node
-      Real distance = (*node - qp_coords).norm();
+//     if (vol_it != _nodal_volume_patches.end() && area_it != _nodal_areas.end())
+//     {
+//       // Calculate distance from quadrature point to this node
+//       Real distance = (*node - qp_coords).norm();
       
-      if (distance < min_distance)
-      {
-        min_distance = distance;
-        nearest_node_id = node_id;
-        M = _density[_qp] * vol_it->second;  // M = rho * V
-        A = area_it->second;                  // A
-        found = true;
-      }
-    }
-  }
+//       if (distance < min_distance)
+//       {
+//         min_distance = distance;
+//         nearest_node_id = node_id;
+//         M = _density[_qp] * vol_it->second;  // M = rho * V
+//         A = area_it->second;                  // A
+//         found = true;
+//       }
+//     }
+//   }
 
   Real M = 0.0;
   Real A = 0.0;
