@@ -383,7 +383,7 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.005
+    EM = 0.01
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -772,7 +772,7 @@ top_right2 = '3e-4 0.0025 0'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 2e-5
+  end_time = 100e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
