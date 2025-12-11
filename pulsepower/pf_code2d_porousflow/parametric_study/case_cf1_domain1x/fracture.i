@@ -141,7 +141,7 @@ top_right2 = '3e-4 0.0025 0'
   [psi]
     type = ADDerivativeParsedMaterial
     property_name = psi
-    expression = 'alpha*Gc/c0/l+g*psie_active'
+    expression = 'alpha*Gc/c0/l+0.5*g*psie_active' //<-there is a 0.5 because 2 is taken within psie_active
     coupled_variables = 'd psie_active'
     material_property_names = 'alpha(d) g(d) Gc c0 l'
     derivative_order = 1
