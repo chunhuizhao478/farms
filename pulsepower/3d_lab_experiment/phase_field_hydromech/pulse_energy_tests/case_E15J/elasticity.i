@@ -22,7 +22,7 @@ confinement_pressure  = 1e6
 #----------------------------------------------------#
 fluid_density = 1000
 #biot_coefficient = ${fparse 1 - K/K_s}
-fluid_bulk_modulus = 1e+9
+fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = ${fparse 1.0/K} #bulk modulus of porous medium
