@@ -640,7 +640,7 @@ top_right2 = '3e-4 0.0025 0'
     phase_field = d
     initial_porosity = ${porosity}
     porosity_lower_bound = 0.008
-    porosity_upper_bound = 0.008
+    porosity_upper_bound = 0.999
   []
   #compute permeability
   [permeability] #take effective_perm
