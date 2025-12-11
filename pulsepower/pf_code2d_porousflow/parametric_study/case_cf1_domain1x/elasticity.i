@@ -781,12 +781,12 @@ top_right2 = '3e-4 0.0025 0'
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 5e-8
+    dt = 1e-8
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 5e-8
+    max_time_step_bound = 1e-8
   []
   [./TimeIntegrator]
     type = NewmarkBeta
