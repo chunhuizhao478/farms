@@ -8,7 +8,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 125 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 150 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -18,7 +18,7 @@ nonlocal_eqstrain_blocks_1 = '10'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
-#local_eqstrain_blocks = '11'
+local_eqstrain_blocks = '11'
 
 ##main fault parameters
 xmin_fault = -22500 #xmin of fault
@@ -119,7 +119,7 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.005 #time step size
+dt = 0.0025 #time step size
 
 end_time = 12.0 #end time for simulation
 
