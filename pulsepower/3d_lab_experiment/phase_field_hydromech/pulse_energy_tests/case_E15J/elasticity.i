@@ -829,7 +829,7 @@ hht_alpha = 0
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 1e-7
+    max_time_step_bound = 1e-8
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -841,7 +841,7 @@ hht_alpha = 0
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
+    time_step_interval = 160
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
