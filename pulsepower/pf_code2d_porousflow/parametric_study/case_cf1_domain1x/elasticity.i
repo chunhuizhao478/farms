@@ -10,7 +10,7 @@ full_input_energy_static = 5.489768e-03
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.3 # Poisson's ratio
-Gc_const = 100  # critical energy release rate, N * m
+Gc_const = 40  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3
 K = '${fparse E/3.0/(1.0-2.0*nu)}' #bulk modulus of porous material
 K_s = 50e9 #bulk modulus of solid grains, material property
