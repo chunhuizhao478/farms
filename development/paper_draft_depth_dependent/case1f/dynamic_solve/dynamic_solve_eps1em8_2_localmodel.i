@@ -692,7 +692,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     property_name = eqstrain_nonlocal
     coupled_variables = 'xi_aux'
     expression = 'xi_aux'
-    block = ${local_eqstrain_blocks}
   []
 []
 
