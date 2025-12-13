@@ -379,11 +379,11 @@ top_right2 = '3e-4 0.0025 0'
 [Functions]
   [func_tri_pulse]
     type = ElkPulseLoadExperiment
-    shape_param_alpha = 4.658e5
-    shape_param_beta = 4.661e5
-    rise_time = 3e-6
-    single_pulse_duration = 1e-5
-    EM = 0.01
+    shape_param_alpha = 1.461e5
+    shape_param_beta = 2.657e5
+    rise_time = 5e-6
+    single_pulse_duration = 50e-5
+    EM = 0.0025
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
