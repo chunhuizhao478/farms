@@ -511,6 +511,12 @@ hht_alpha = 0
     boundary = corner_ptr
     value = 0
   []
+  [./fix_cptr3_z]
+    type = DirichletBC
+    variable = disp_z
+    boundary = corner_ptr
+    value = 0
+  []
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
@@ -890,7 +896,7 @@ hht_alpha = 0
   []
   [confinement_work]
     type = FarmsExternalWork
-    boundary = '3'
+    boundary = '2 3 5'
     forces = 'fconfinementx fconfinementy fconfinementz'
   []
   [damping_work]
