@@ -188,6 +188,14 @@
         order = FIRST
         family = MONOMIAL
     []
+    [eta]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [dilatancy]
+        order = FIRST
+        family = MONOMIAL
+    []
     
 []
 
@@ -302,6 +310,18 @@
         type = MaterialRealAux
         variable = perm_g
         property = permeability_granular
+        block = '3'
+    []
+    [get_eta]
+        type = MaterialRealAux
+        variable = eta
+        property = plastic_volume_change
+        block = '3'
+    []
+    [get_dilatancy]
+        type = MaterialRealAux
+        variable = dilatancy
+        property = dilatancy_function_beta
         block = '3'
     []
 []
