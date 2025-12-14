@@ -160,6 +160,34 @@
         order = FIRST
         family = MONOMIAL
     []
+        [biot_coeff_s]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [biot_mod_s]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [perm_s]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [biot_coeff_g]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [biot_mod_g]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [perm_g]
+        order = FIRST
+        family = MONOMIAL
+    []
+    [Plastic_porosity]
+        order = FIRST
+        family = MONOMIAL
+    []
     
 []
 
@@ -233,6 +261,48 @@
         type = MaterialRealAux
         variable = nonlocal_xi
         property = eqstrain_nonlocal
+    []
+    [biot_coeff_s]
+        type = MaterialRealAux
+        variable = biot_coeff_s
+        property = Biot_coefficient_solid
+        block = '3'
+    []
+    [biot_mod_s]
+        type = MaterialRealAux
+        variable = biot_mod_s
+        property = Biot_modulus_solid
+        block = '3'
+    []
+    [perm_s]
+        type = MaterialRealAux
+        variable = perm_s
+        property = permeability_solid
+        block = '3'
+    []
+    [porosity_plastic]
+        type = MaterialRealAux
+        variable = Plastic_porosity
+        property = plastic_porosity
+        block = '3'
+    []
+    [biot_coeff_g]
+        type = MaterialRealAux
+        variable = biot_coeff_g
+        property = Biot_coefficient_granular
+        block = '3'
+    []
+    [biot_mod_g]
+        type = MaterialRealAux
+        variable = biot_mod_g
+        property = Biot_modulus_granular
+        block = '3'
+    []
+    [perm_g]
+        type = MaterialRealAux
+        variable = perm_g
+        property = permeability_granular
+        block = '3'
     []
 []
 
@@ -423,7 +493,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 30
+        optimal_iterations = 10
         growth_factor = 1.25
         max_time_step_bound = 10
     []
@@ -438,7 +508,7 @@
     [./exodus]
         type = Exodus
         time_step_interval = 5 ###
-        show = 'disp_z porepressure vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
+        show = 'biot_coeff_s biot_mod_s perm_s biot_coeff_g biot_mod_g perm_g Plastic_porosity dilatancy eta porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
         type = CSV
