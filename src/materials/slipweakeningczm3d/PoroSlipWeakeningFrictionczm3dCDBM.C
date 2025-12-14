@@ -349,8 +349,8 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real M = 0.0;
   Real A = 0.0;
   
-  M = _density[_qp] * _len * _len * _len / 2;
-  A = _len * _len ;
+  M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+  A = (sqrt(3) * _len * _len / 4 / 3) * 6;
   
   // ===== END FIXED SECTION =====
 
