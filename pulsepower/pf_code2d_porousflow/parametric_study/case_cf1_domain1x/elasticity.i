@@ -252,6 +252,31 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
+  #strain components for energy calculation
+  [strain_00]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_11]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_22]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_inc_00]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_inc_11]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [strain_inc_22]
+    order = CONSTANT
+    family = MONOMIAL
+  []
 []
 
 [AuxKernels]
@@ -372,6 +397,56 @@ top_right2 = '3e-4 0.0025 0'
     type = MaterialRealAux
     variable = porosity_aux
     property = PorousFlow_porosity_qp_damaged
+    execute_on = 'TIMESTEP_END'
+  []
+  #### extract elastic strain components
+  [extract_strain_00]
+    type = RankTwoAux
+    rank_two_tensor = elastic_strain
+    variable = strain_00
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [extract_strain_11]
+    type = RankTwoAux
+    rank_two_tensor = elastic_strain
+    variable = strain_11
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [extract_strain_22]
+    type = RankTwoAux
+    rank_two_tensor = elastic_strain
+    variable = strain_22
+    index_i = 2
+    index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  #### extract strain increment components
+  [extract_strain_inc_00]
+    type = RankTwoAux
+    rank_two_tensor = strain_increment
+    variable = strain_inc_00
+    index_i = 0
+    index_j = 0
+    execute_on = 'TIMESTEP_END'
+  []
+  [extract_strain_inc_11]
+    type = RankTwoAux
+    rank_two_tensor = strain_increment
+    variable = strain_inc_11
+    index_i = 1
+    index_j = 1
+    execute_on = 'TIMESTEP_END'
+  []
+  [extract_strain_inc_22]
+    type = RankTwoAux
+    rank_two_tensor = strain_increment
+    variable = strain_inc_22
+    index_i = 2
+    index_j = 2
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -950,8 +1025,8 @@ top_right2 = '3e-4 0.0025 0'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp biot_coefficient_aux'
-      expression = "0.5 * biot_coefficient_aux * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      coupled_variables = 'strain_00 strain_11 strain_22 pp biot_coefficient_aux'
+      expression = "0.5 * biot_coefficient_aux * -pp * (strain_00+strain_11+strain_22)"
   []
 []
 
@@ -985,8 +1060,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_incremental_elastic_energy_per_vol]
       type = ParsedAux
       variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
+      coupled_variables = 'strain_inc_00 strain_inc_11 strain_inc_22 pp biot_coefficient_aux'
+      expression = "biot_coefficient_aux * -pp * (strain_inc_00+strain_inc_11+strain_inc_22)"
   []
 []
 

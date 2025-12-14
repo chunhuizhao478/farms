@@ -1,15 +1,16 @@
 # Static energy values from static solve
-# Note: Using incremental accounting approach with damaged biot coefficient
+# Note: NOW using damage-dependent Biot coefficient with incremental accounting approach
+# Porosity is kept constant, only Biot coefficient evolves with damage
 # This value should be recomputed from static solve with the updated formulation
-fluid_elastic_energy_total_static = 8.081664e-05
-solid_elastic_energy_total_static = 5.408951e-03
-full_input_energy_static = 5.489768e-03
+fluid_elastic_energy_total_static = 8.081987e-05
+solid_elastic_energy_total_static = 5.411442e-03
+full_input_energy_static = 5.492262e-03
 
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.3 # Poisson's ratio
-Gc_const = 100  # critical energy release rate, N * m
+Gc_const = 40  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3
 K = '${fparse E/3.0/(1.0-2.0*nu)}' #bulk modulus of porous material
 K_s = 50e9 #bulk modulus of solid grains, material property
@@ -24,7 +25,7 @@ confinement_pressure  = 1000000.0
 #hydraulic properties
 #----------------------------------------------------#
 fluid_density = 1000
-biot_coefficient = ${fparse 1 - K/K_s}
+#biot_coefficient = ${fparse 1 - K/K_s}
 fluid_bulk_modulus = 2.24e+9
 viscosity = 1e-3
 porosity = 0.008
@@ -69,7 +70,7 @@ hht_alpha = 0
     type = MultiAppCopyTransfer
     to_multi_app = 'fracture'
     variable = 'psie_active mesh_size'
-    source_variable = 'psie_active mesh_size'
+    source_variable = 'psie_active_enhanced mesh_size'
   []
   [pp_transfer_dissipated_energy_total]
     type = MultiAppPostprocessorTransfer
@@ -103,7 +104,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -243,6 +244,10 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
+  [biot_coefficient_aux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
   [porosity_aux]
     order = CONSTANT
     family = MONOMIAL
@@ -355,6 +360,13 @@ top_right2 = '3e-4 0.0025 0'
     property = PorousFlow_constant_biot_modulus_qp
     execute_on = 'TIMESTEP_END'
   []
+  #### get damaged biot coefficient
+  [biot_coefficient_aux_kernel]
+    type = MaterialRealAux
+    variable = biot_coefficient_aux
+    property = biot_coefficient_damaged
+    execute_on = 'TIMESTEP_END'
+  []
   #### get damaged porosity
   [porosity_aux_kernel]
     type = MaterialRealAux
@@ -371,7 +383,7 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.005
+    EM = 0.0025
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -415,16 +427,16 @@ top_right2 = '3e-4 0.0025 0'
   []
   #pressure coupling on stress tensor
   [poro_x]
-      type = PorousFlowEffectiveStressCoupling
-      biot_coefficient = ${biot_coefficient}
+      type = ElkPorousFlowEffectiveStressCoupling
       variable = disp_x
       component = 0
+      use_damaged_biot = true
   []
   [poro_y]
-      type = PorousFlowEffectiveStressCoupling
-      biot_coefficient = ${biot_coefficient}
+      type = ElkPorousFlowEffectiveStressCoupling
       variable = disp_y
       component = 1
+      use_damaged_biot = true
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
   [mass0]
@@ -628,7 +640,7 @@ top_right2 = '3e-4 0.0025 0'
     phase_field = d
     initial_porosity = ${porosity}
     porosity_lower_bound = 0.008
-    porosity_upper_bound = 0.008
+    porosity_upper_bound = 0.999
   []
   #compute permeability
   [permeability] #take effective_perm
@@ -760,7 +772,7 @@ top_right2 = '3e-4 0.0025 0'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 2e-5
+  end_time = 100e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -769,12 +781,12 @@ top_right2 = '3e-4 0.0025 0'
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 5e-8
+    dt = 1e-8
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 5e-8
+    max_time_step_bound = 1e-8
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -786,8 +798,8 @@ top_right2 = '3e-4 0.0025 0'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 10
-    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux porosity_aux'
+    time_step_interval = 100
+    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -938,9 +950,8 @@ top_right2 = '3e-4 0.0025 0'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp'
-      # Use constant biot coefficient parameter
-      expression = "0.5 * ${biot_coefficient} * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
+      coupled_variables = 'elastic_strain_00 elastic_strain_11 elastic_strain_22 pp biot_coefficient_aux'
+      expression = "0.5 * biot_coefficient_aux * -pp * (elastic_strain_00+elastic_strain_11+elastic_strain_22)"
   []
 []
 
@@ -974,8 +985,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_incremental_elastic_energy_per_vol]
       type = ParsedAux
       variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp'
-      expression = "${biot_coefficient} * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
+      coupled_variables = 'strain_increment_00 strain_increment_11 strain_increment_22 pp biot_coefficient_aux'
+      expression = "biot_coefficient_aux * -pp * (strain_increment_00+strain_increment_11+strain_increment_22)"
   []
 []
 

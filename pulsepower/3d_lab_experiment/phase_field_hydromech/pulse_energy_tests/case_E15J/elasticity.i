@@ -972,7 +972,7 @@ hht_alpha = 0
   []
   [confinement_work]
     type = FarmsExternalWork
-    boundary = '2 3 5'
+    boundary = '3'
     forces = 'fconfinementx fconfinementy fconfinementz'
   []
   [damping_work]
