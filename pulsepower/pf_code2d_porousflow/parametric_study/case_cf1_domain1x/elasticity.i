@@ -2,9 +2,9 @@
 # Note: NOW using damage-dependent Biot coefficient with incremental accounting approach
 # Porosity is kept constant, only Biot coefficient evolves with damage
 # This value should be recomputed from static solve with the updated formulation
-fluid_elastic_energy_total_static = 8.081664e-05
-solid_elastic_energy_total_static = 5.408951e-03
-full_input_energy_static = 5.489768e-03
+fluid_elastic_energy_total_static = 8.081987e-05
+solid_elastic_energy_total_static = 5.411442e-03
+full_input_energy_static = 5.492262e-03
 
 #solid properties
 #----------------------------------------------------#
@@ -104,7 +104,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -379,10 +379,10 @@ top_right2 = '3e-4 0.0025 0'
 [Functions]
   [func_tri_pulse]
     type = ElkPulseLoadExperiment
-    shape_param_alpha = 1.461e5
-    shape_param_beta = 2.657e5
-    rise_time = 5e-6
-    single_pulse_duration = 50e-5
+    shape_param_alpha = 4.658e5
+    shape_param_beta = 4.661e5
+    rise_time = 3e-6
+    single_pulse_duration = 1e-5
     EM = 0.0025
     gap = 0.008
     convert_efficiency = 1.0
@@ -798,7 +798,7 @@ top_right2 = '3e-4 0.0025 0'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 10
+    time_step_interval = 100
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
