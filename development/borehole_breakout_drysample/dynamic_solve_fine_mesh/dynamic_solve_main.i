@@ -54,7 +54,7 @@
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
-    ultimate_grain_size = 0.2
+    ultimate_grain_size = 1.3
     initial_viscosity_fluid = 1e-3
 
     anand_param_go_mat = 0.25
@@ -220,7 +220,12 @@
         property = second_elastic_strain_invariant
         block = '3'
     [] 
-
+    [get_deviatroic_strain_rate]
+        type = MaterialRealAux
+        variable = deviatroic_strain_rate_aux
+        property = deviatoric_strain_rate
+        block = '3'
+    []
     #
     [get_nonlocal_xi]
         type = MaterialRealAux
@@ -371,7 +376,7 @@
 
 [UserObjects]
     [eqstrain_averaging] #length scale = radius = grain size 
-        type = ElkRadialAverage
+        type = ElkRadialAverageUpdated
         length_scale = 0.0013
         prop_name = strain_invariant_ratio
         radius = 0.0013
