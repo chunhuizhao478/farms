@@ -1,21 +1,30 @@
 /**
- * Derived from tpv26_100m.geo: adds THREE nested volumes (geometric partitions)
+ * Derived from tpv26_100m.geo: adds nested volumes with fault-side separation
  * surrounding the vertical fault plane. Uses the OpenCASCADE kernel to ensure
  * the fault surface is properly integrated into the volume mesh.
  *
- * Volume structure (from innermost to outermost):
- * 1. Narrow fault zone (for nonlocal averaging):
- *    X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
- *    Y in [-fault_zone_width, +fault_zone_width]  (±200m)
- *    Z in [0, -Fault_width - transition_length]
+ * Volume structure after BooleanFragments (4 Physical Volumes):
  *
- * 2. Intermediate transition zone:
- *    X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
- *    Y in [-transition_length, +transition_length]  (±4km)
- *    Z in [0, -Fault_width - transition_length]
+ * Physical Volume 10 - Outer coarse domain (not split by fault)
+ *   Full domain, coarse mesh (up to 20km elements)
  *
- * 3. Outer coarse domain:
- *    Full domain
+ * Physical Volume 11 - Intermediate transition zone (not split by fault)
+ *   X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
+ *   Y in [-transition_length, +transition_length]  (±4km)
+ *   Z in [0, -Fault_width - transition_length]
+ *   Mesh transitions from 100m to coarse
+ *
+ * Physical Volume 12 - Narrow fault zone, -Y side (UNIFORM 100m mesh)
+ *   X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
+ *   Y in [-fault_zone_width, 0]  (-200m to 0)
+ *   Z in [0, -Fault_width - transition_length]
+ *
+ * Physical Volume 13 - Narrow fault zone, +Y side (UNIFORM 100m mesh)
+ *   X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
+ *   Y in [0, +fault_zone_width]  (0 to +200m)
+ *   Z in [0, -Fault_width - transition_length]
+ *
+ * The narrow zones (12, 13) are split by the fault to avoid cross-fault averaging
  */
 
 SetFactory("OpenCASCADE"); // Required for Boolean operations
@@ -78,16 +87,48 @@ Rectangle(1001) = {X_nucl-R_nucl, Width_nucl-R_nucl, 0, 2*R_nucl, 2*R_nucl};
 Rotate{{1, 0, 0}, {0, 0, 0}, -Fault_dip} { Surface{1001}; }
 
 // 3. Fragment all three volumes by the fault surfaces (keep surfaces, delete original volumes)
+// This will split volumes that intersect the fault plane
 BooleanFragments{ Volume{1,2,3}; Delete; }{ Surface{1000,1001}; }
 
-// 4. Collect resulting volumes (expect 3: outer shell, intermediate zone, narrow fault zone)
+// 4. Collect resulting volumes
+// After fragmentation with 4 volumes total:
+//   - 1 outer shell (not split by fault - extends beyond fault)
+//   - 1 intermediate zone (not split - extends beyond fault)
+//   - 2 narrow fault zones (+Y and -Y sides, split by fault)
+
 vols[] = Volume{:};
-// After fragmentation, we should get 3 volumes
-// Note: Ordering depends on Gmsh's internal algorithm - verify in GUI if needed
-// Typically ordered by size or creation sequence
-shell_vol = vols[0];      // Outermost coarse domain
-transition_vol = vols[1]; // Intermediate zone (±4km in Y)
-fault_zone_vol = vols[2]; // Narrow fault zone (±200m in Y, UNIFORM 100m mesh)
+Printf("Total volumes after fragmentation: %g", #vols[]);
+
+// Expected structure with 4 volumes:
+// vols[0] = outer shell (largest)
+// vols[1] = intermediate transition zone
+// vols[2] = narrow fault zone -Y side
+// vols[3] = narrow fault zone +Y side
+//
+// Note: Ordering depends on Gmsh's internal algorithm
+// VERIFY in GUI: Tools → Visibility → Physical Groups
+
+If (#vols[] == 4)
+    shell_vol = vols[0];           // Outer coarse domain
+    transition_vol = vols[1];      // Intermediate zone (both sides, not split)
+    fault_zone_vol_neg = vols[2];  // Narrow zone, -Y side (Y < 0)
+    fault_zone_vol_pos = vols[3];  // Narrow zone, +Y side (Y > 0)
+    Printf("4 volumes detected: shell, transition, fault_neg, fault_pos");
+EndIf
+
+If (#vols[] == 5)
+    // If somehow 5 volumes are created
+    shell_vol = vols[0];
+    transition_vol_neg = vols[1];
+    transition_vol_pos = vols[2];
+    fault_zone_vol_neg = vols[3];
+    fault_zone_vol_pos = vols[4];
+    Printf("5 volumes detected: shell, trans_neg, trans_pos, fault_neg, fault_pos");
+EndIf
+
+If (#vols[] != 4 && #vols[] != 5)
+    Error("Unexpected number of volumes: %g. Expected 4 or 5.", #vols[]);
+EndIf
 
 // Assign fault surface tags directly (they are preserved: 1000 main, 1001 nucleation)
 fault_main = 1000;
@@ -156,14 +197,22 @@ Background Field = 7;
 // -------------------------------------------
 
 // Define physical groups
-Physical Surface(101) = Boundary{ Volume{shell_vol}; };        // Outer boundary (coarse)
-Physical Surface(103) = {fault_main, fault_nucl};              // Fault surfaces
-Physical Surface(105) = Boundary{ Volume{transition_vol}; };   // Intermediate zone boundary
-Physical Surface(107) = Boundary{ Volume{fault_zone_vol}; };   // Narrow fault zone boundary
+Physical Surface(101) = Boundary{ Volume{shell_vol}; };  // Outer boundary (coarse)
+Physical Surface(103) = {fault_main, fault_nucl};        // Fault surfaces
 
-Physical Volume(10) = {shell_vol};        // Outer volume (coarse mesh)
-Physical Volume(11) = {transition_vol};   // Intermediate transition zone
-Physical Volume(12) = {fault_zone_vol};   // Narrow fault zone (UNIFORM 100m, for nonlocal averaging)
+// Physical Volumes - 4 blocks total (for 4-volume case)
+Physical Volume(10) = {shell_vol};              // Outer volume (coarse mesh)
+Physical Volume(12) = {fault_zone_vol_neg};     // Narrow fault zone, -Y side (UNIFORM 100m)
+Physical Volume(13) = {fault_zone_vol_pos};     // Narrow fault zone, +Y side (UNIFORM 100m)
+
+// Intermediate transition zone - handle both 4-volume and 5-volume cases
+If (#vols[] == 4)
+    Physical Volume(11) = {transition_vol};     // Intermediate zone (not split by fault)
+EndIf
+
+If (#vols[] == 5)
+    Physical Volume(11) = {transition_vol_neg, transition_vol_pos};  // Intermediate zones (both sides)
+EndIf
 
 // Final settings
 Mesh.Algorithm = 6;  // Frontal Delaunay
