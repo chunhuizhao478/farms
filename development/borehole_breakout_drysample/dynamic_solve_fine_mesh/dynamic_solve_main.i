@@ -220,12 +220,6 @@
         property = second_elastic_strain_invariant
         block = '3'
     [] 
-    [get_deviatroic_strain_rate]
-        type = MaterialRealAux
-        variable = deviatroic_strain_rate_aux
-        property = deviatoric_strain_rate
-        block = '3'
-    []
     #
     [get_nonlocal_xi]
         type = MaterialRealAux
