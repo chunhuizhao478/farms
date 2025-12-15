@@ -31,7 +31,7 @@ top_right2 = '2e-4 0.0025 0'
 [Mesh]
     [./msh]
       type = FileMeshGenerator
-      file =  '../../../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+      file =  '../../../2dmeshfile/fieldscale_test1_2d.msh'
     []
     [./extranodeset1]
       type = ExtraNodesetGenerator
