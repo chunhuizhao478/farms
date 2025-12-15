@@ -369,7 +369,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   //               (2 * A) +
   //           ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
   
-  Real T2 = ((R_minus_local_n + R_minus_pressure_local_n - R_plus_local_n - R_plus_pressure_local_n) / (2 * A)) - T2_o;
+  Real T2 = - T2_o;
 
   Real pressure_primary = _fault_pressure[_qp];
   Real pressure_neighbor = _fault_pressure_neighbor[_qp];
