@@ -308,50 +308,36 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real R_minus_pressure_local_t = R_minus_pressure_local(1);
   Real R_minus_pressure_local_d = R_minus_pressure_local(2);
 
-// ===== Compute M and A for node nearest to quadrature point =====
-  // Find the node closest to the current quadrature point that has volume patch data
+// ===== PURE QP METHOD - Calculate M and A directly from element geometry =====
   Real M = 0.0;
   Real A = 0.0;
-  bool found = false;
   
-  // Get the physical coordinates of the current quadrature point
-  const Point & qp_coords = _q_point[_qp];
+  const Elem * czm_elem = _current_elem;
   
-  Real min_distance = std::numeric_limits<Real>::max();
-  dof_id_type nearest_node_id = 0;
+  // Get the plus side bulk element
+  const Elem * neighbor_plus = czm_elem->neighbor_ptr(0);
   
-  unsigned int n_elem_nodes = _current_elem->n_nodes();
-  for (unsigned int i = 0; i < n_elem_nodes; i++)
+  if (neighbor_plus != nullptr)
   {
-    const Node * node = _current_elem->node_ptr(i);
-    dof_id_type node_id = node->id();
+    // Get volumes and areas from actual element geometry
+    Real volume_plus = neighbor_plus->volume();
+    Real face_area = czm_elem->volume();  // CZM element "volume" is actually interface area
     
-    // Check if this node has volume patch data
-    auto vol_it = _nodal_volume_patches.find(node_id);
-    auto area_it = _nodal_areas.find(node_id);
+    // Calculate total quadrature weight for this element
+    Real total_JxW = 0.0;
+    unsigned int n_qp = _qrule->n_points();
+    for (unsigned int qp = 0; qp < n_qp; qp++)
+      total_JxW += _JxW[qp];
     
-    if (vol_it != _nodal_volume_patches.end() && area_it != _nodal_areas.end())
-    {
-      // Calculate distance from quadrature point to this node
-      Real distance = (*node - qp_coords).norm();
-      
-      if (distance < min_distance)
-      {
-        min_distance = distance;
-        nearest_node_id = node_id;
-        M = _density[_qp] * vol_it->second;  // M = rho * V
-        A = area_it->second;                  // A
-        found = true;
-      }
-    }
-  }
-  
-  // Fallback to geometric formulas if no node found (shouldn't happen)
-  if (!found)
-  {
-    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
-    mooseWarning("No nodal volume patch found at qp ", _qp, ", using geometric approximation");
+    // This qp's share based on quadrature weight (handles non-uniform elements correctly)
+    Real qp_weight_fraction = _JxW[_qp] / total_JxW;
+    
+    // Volume and area for THIS specific quadrature point
+    Real V_qp = volume_plus * qp_weight_fraction;
+    Real A_qp = face_area * qp_weight_fraction;
+    
+    M = _density[_qp] * V_qp;
+    A = A_qp;
   }
   
   // ===== END FIXED SECTION =====
