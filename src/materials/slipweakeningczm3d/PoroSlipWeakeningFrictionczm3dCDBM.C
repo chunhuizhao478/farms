@@ -376,7 +376,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 
   Real Pmax = std::max(pressure_primary, pressure_neighbor);
 
-  Real Pf = _initial_porepressure[_qp] + _fault_pressure[_qp]; // fault pressure
+  Real Pf = _initial_porepressure[_qp] + Pmax; // fault pressure
 
   //T2: total normal stress acting on the fault, taken to be "positive" in compression: -T2
   //treat tension on the fault the same as if the effective normal stress equals zero.

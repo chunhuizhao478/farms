@@ -110,7 +110,7 @@ anand_param_p_mat = 1
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = 21000 #nucleation center x coordinate
+nucl_center_x = 18000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_125m_nonlocal_occ.msh'
+      file = '../../mesh/tpv26_150m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
