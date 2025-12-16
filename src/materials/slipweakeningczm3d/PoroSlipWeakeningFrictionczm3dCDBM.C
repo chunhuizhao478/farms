@@ -308,37 +308,85 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real R_minus_pressure_local_t = R_minus_pressure_local(1);
   Real R_minus_pressure_local_d = R_minus_pressure_local(2);
 
-// ===== PURE QP METHOD - Calculate M and A directly from element geometry =====
+// ===== DEBUG QP METHOD - NO FALLBACK =====
   Real M = 0.0;
   Real A = 0.0;
   
   const Elem * czm_elem = _current_elem;
   
-  // Get the plus side bulk element
+  // Debug: Print element info (only for first qp, first few timesteps)
+  if (_qp == 0 && _t < 0.01)
+  {
+    Moose::out << "\n=== CZM Element Debug ===\n";
+    Moose::out << "CZM elem id: " << czm_elem->id() << "\n";
+    Moose::out << "CZM elem type: " << czm_elem->type() << "\n";
+    Moose::out << "CZM elem dim: " << czm_elem->dim() << "\n";
+    Moose::out << "CZM elem volume (area): " << czm_elem->volume() << "\n";
+    Moose::out << "Number of neighbors: " << czm_elem->n_neighbors() << "\n";
+    
+    for (unsigned int s = 0; s < czm_elem->n_sides(); s++)
+    {
+      const Elem * neighbor = czm_elem->neighbor_ptr(s);
+      if (neighbor != nullptr)
+      {
+        Moose::out << "  Neighbor " << s << ": id=" << neighbor->id() 
+                   << ", type=" << neighbor->type()
+                   << ", dim=" << neighbor->dim()
+                   << ", volume=" << neighbor->volume() << "\n";
+      }
+      else
+      {
+        Moose::out << "  Neighbor " << s << ": nullptr\n";
+      }
+    }
+    
+    Moose::out << "n_qp: " << _qrule->n_points() << "\n";
+    Moose::out << "_JxW[0]: " << _JxW[0] << "\n";
+    Moose::out << "===================\n\n";
+  }
+  
   const Elem * neighbor_plus = czm_elem->neighbor_ptr(0);
   
   if (neighbor_plus != nullptr)
   {
-    // Get volumes and areas from actual element geometry
     Real volume_plus = neighbor_plus->volume();
-    Real face_area = czm_elem->volume();  // CZM element "volume" is actually interface area
+    Real face_area = czm_elem->volume();
     
-    // Calculate total quadrature weight for this element
     Real total_JxW = 0.0;
     unsigned int n_qp = _qrule->n_points();
     for (unsigned int qp = 0; qp < n_qp; qp++)
       total_JxW += _JxW[qp];
     
-    // This qp's share based on quadrature weight (handles non-uniform elements correctly)
-    Real qp_weight_fraction = _JxW[_qp] / total_JxW;
-    
-    // Volume and area for THIS specific quadrature point
-    Real V_qp = volume_plus * qp_weight_fraction;
-    Real A_qp = face_area * qp_weight_fraction;
-    
-    M = _density[_qp] * V_qp;
-    A = A_qp;
+    if (total_JxW > 1e-20)
+    {
+      Real qp_weight_fraction = _JxW[_qp] / total_JxW;
+      
+      Real V_qp = volume_plus * qp_weight_fraction;
+      Real A_qp = face_area * qp_weight_fraction;
+      
+      M = _density[_qp] * V_qp;
+      A = A_qp;
+      
+      // Debug output
+      if (_qp == 0 && _t < 0.01)
+      {
+        Moose::out << "Calculated: V_qp=" << V_qp << ", A_qp=" << A_qp 
+                   << ", M=" << M << ", A=" << A << "\n";
+      }
+    }
+    else
+    {
+      if (_qp == 0 && _t < 0.01)
+        Moose::out << "ERROR: total_JxW is zero or negative!\n";
+    }
   }
+  else
+  {
+    if (_qp == 0 && _t < 0.01)
+      Moose::out << "ERROR: neighbor_plus is nullptr!\n";
+  }
+  
+  // M and A remain as calculated (could be zero if errors occurred)
   
   // ===== END FIXED SECTION =====
 
