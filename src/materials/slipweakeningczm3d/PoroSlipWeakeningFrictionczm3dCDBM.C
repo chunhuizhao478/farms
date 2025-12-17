@@ -109,7 +109,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
     _initial_porepressure(getMaterialProperty<Real>("initial_porepressure"))
 
 {
-
+  _interface_boundary_ids = boundaryIDs();
   // only works for small strain
   if (hasBlockMaterialProperty<RankTwoTensor>(_base_name + "strain_increment"))
   {
@@ -134,47 +134,91 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeNodalVolumePatches()
   MeshBase & mesh = _mesh.getMesh();
   
   std::set<dof_id_type> interface_node_ids;
+  std::unordered_map<dof_id_type, bool> is_vertex_node;
   
   const BoundaryInfo & boundary_info = mesh.get_boundary_info();
-  const std::set<BoundaryID> & all_boundary_ids = boundary_info.get_boundary_ids();
   
   MeshBase::const_element_iterator el = mesh.active_elements_begin();
   const MeshBase::const_element_iterator end_el = mesh.active_elements_end();
   
-  std::map<dof_id_type, Real> interface_face_areas;
+  Real total_face_area = 0.0;
   
+  // First pass: accumulate interface face areas with TRI6 weights
   for (; el != end_el; ++el)
   {
     const Elem * elem = *el;
     
+    if (elem->dim() != 3)
+      continue;
+    
     for (unsigned int side = 0; side < elem->n_sides(); side++)
     {
-      for (auto bid : all_boundary_ids)
+      bool is_interface_side = false;
+      for (auto bid : _interface_boundary_ids)
       {
         if (boundary_info.has_boundary_id(elem, side, bid))
         {
-          const Elem * neighbor = elem->neighbor_ptr(side);
-          
-          if (neighbor == nullptr)
-            continue;
-          
-          std::unique_ptr<const Elem> side_elem = elem->build_side_ptr(side);
-          Real face_area = side_elem->volume();
-          unsigned int n_face_nodes = side_elem->n_nodes();
-          
-          for (unsigned int n = 0; n < n_face_nodes; n++)
-          {
-            dof_id_type node_id = side_elem->node_id(n);
-            interface_node_ids.insert(node_id);
-            interface_face_areas[node_id] += face_area / static_cast<Real>(n_face_nodes);
-          }
-          
+          is_interface_side = true;
           break;
+        }
+      }
+      
+      if (!is_interface_side)
+        continue;
+      
+      const Elem * neighbor = elem->neighbor_ptr(side);
+      
+      // EXTERNAL boundary interface
+      if (neighbor != nullptr)
+        continue;
+      
+      std::unique_ptr<const Elem> side_elem = elem->build_side_ptr(side);
+      Real face_area = side_elem->volume();
+      
+      total_face_area += face_area;
+      
+      if (side_elem->type() == TRI3)
+      {
+        for (unsigned int n = 0; n < 3; n++)
+        {
+          dof_id_type node_id = side_elem->node_id(n);
+          interface_node_ids.insert(node_id);
+          is_vertex_node[node_id] = true;
+          _nodal_areas[node_id] += face_area / 3.0;
+        }
+      }
+      else if (side_elem->type() == TRI6)
+      {
+        std::set<dof_id_type> parent_vertex_ids;
+        for (unsigned int i = 0; i < elem->n_vertices(); ++i)
+          parent_vertex_ids.insert(elem->node_id(i));
+        
+        for (unsigned int n = 0; n < 6; n++)
+        {
+          dof_id_type node_id = side_elem->node_id(n);
+          interface_node_ids.insert(node_id);
+          
+          bool is_corner = (parent_vertex_ids.count(node_id) > 0);
+          
+          if (is_corner)
+          {
+            is_vertex_node[node_id] = true;
+            _nodal_areas[node_id] += face_area / 19.0;
+          }
+          else
+          {
+            if (is_vertex_node.find(node_id) == is_vertex_node.end())
+              is_vertex_node[node_id] = false;
+            _nodal_areas[node_id] += 16.0 * face_area / 57.0;
+          }
         }
       }
     }
   }
   
+  Real total_volume_contribution = 0.0;
+  
+  // Second pass: accumulate element volumes with TET10 weights
   el = mesh.active_elements_begin();
   for (; el != end_el; ++el)
   {
@@ -197,42 +241,106 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeNodalVolumePatches()
       continue;
     
     Real elem_volume = elem->volume();
-    unsigned int n_nodes = elem->n_nodes();
     
-    for (unsigned int n = 0; n < n_nodes; n++)
+    if (elem->type() == TET4)
     {
-      dof_id_type node_id = elem->node_id(n);
-      
-      if (interface_node_ids.count(node_id) > 0)
+      for (unsigned int n = 0; n < 4; n++)
       {
-        _nodal_volume_patches[node_id] += elem_volume / static_cast<Real>(n_nodes);
+        dof_id_type node_id = elem->node_id(n);
+        if (interface_node_ids.count(node_id) > 0)
+        {
+          Real contribution = elem_volume / 4.0;
+          _nodal_volume_patches[node_id] += contribution;
+          total_volume_contribution += contribution;
+          is_vertex_node[node_id] = true;
+        }
+      }
+    }
+    else if (elem->type() == TET10)
+    {
+      std::set<dof_id_type> vert_ids;
+      for (unsigned int i = 0; i < elem->n_vertices(); ++i)
+        vert_ids.insert(elem->node_id(i));
+      
+      for (unsigned int n = 0; n < elem->n_nodes(); ++n)
+      {
+        const dof_id_type node_id = elem->node_id(n);
+        
+        if (interface_node_ids.count(node_id) == 0)
+          continue;
+        
+        const bool is_vertex = (vert_ids.count(node_id) > 0);
+        
+        Real contribution;
+        if (is_vertex)
+        {
+          contribution = elem_volume / 36.0;
+          is_vertex_node[node_id] = true;
+        }
+        else
+        {
+          contribution = 4.0 * elem_volume / 27.0;
+          if (is_vertex_node.find(node_id) == is_vertex_node.end())
+            is_vertex_node[node_id] = false;
+        }
+        
+        _nodal_volume_patches[node_id] += contribution;
+        total_volume_contribution += contribution;
       }
     }
   }
   
-  for (const auto & pair : interface_face_areas)
+  // Conservation checks
+  Real total_nodal_area = 0.0;
+  for (const auto & kv : _nodal_areas)
+    total_nodal_area += kv.second;
+  
+  Moose::out << "\n=== NODAL VOLUME PATCHES & AREAS ===\n";
+  Moose::out << "Total interface nodes: " << interface_node_ids.size() << "\n";
+  Moose::out << "\n--- CONSERVATION CHECKS ---\n";
+  Moose::out << "Total face area (geometric):     " << total_face_area << "\n";
+  Moose::out << "Total nodal area (weighted sum): " << total_nodal_area << "\n";
+  Moose::out << "Area conservation error:         " 
+             << std::abs(total_face_area - total_nodal_area) << "\n";
+  
+  if (std::abs(total_face_area - total_nodal_area) > 1e-6 * total_face_area)
+    mooseWarning("Area conservation check failed! Check TRI6 weights or face counting.");
+  
+  Moose::out << "\nTotal volume contribution:       " << total_volume_contribution << "\n";
+  Moose::out << "----------------------------\n\n";
+  
+  unsigned int n_vertices = 0;
+  unsigned int n_mid_edges = 0;
+  
+  for (const auto & kv : _nodal_volume_patches)
   {
-    _nodal_areas[pair.first] = pair.second;
+    dof_id_type node_id = kv.first;
+    Real V = kv.second;
+    Real A = _nodal_areas.count(node_id) ? _nodal_areas[node_id] : 0.0;
+    
+    std::string node_type = "unknown";
+    if (is_vertex_node.count(node_id) > 0)
+    {
+      if (is_vertex_node[node_id])
+      {
+        node_type = "vertex";
+        n_vertices++;
+      }
+      else
+      {
+        node_type = "mid-edge";
+        n_mid_edges++;
+      }
+    }
+    
+    Moose::out << "Node " << node_id 
+               << " (" << node_type << ")"
+               << " | Volume = " << V 
+               << " | Area = " << A << "\n";
   }
-
-  // // -----------------------------------------------------
-  // // (4) PRINT all results
-  // // -----------------------------------------------------
-  // Moose::out << "\n=== NODAL VOLUME PATCHES & AREAS ===\n";
-
-  // for (const auto & kv : _nodal_volume_patches)
-  // {
-  //   dof_id_type node_id = kv.first;
-  //   Real V = kv.second;
-  //   Real A = _nodal_areas.count(node_id) ? _nodal_areas[node_id] : 0.0;
-
-  //   Moose::out << "Node " << node_id
-  //              << " | Volume = " << V
-  //              << " | Area = " << A
-  //              << std::endl;
-  // }
-
-  // Moose::out << "=== END PRINT ===\n\n";
+  
+  Moose::out << "\nSummary: " << n_vertices << " vertices, " << n_mid_edges << " mid-edges\n";
+  Moose::out << "=== END PRINT ===\n\n";
 }
 
 void
@@ -345,21 +453,15 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 //       }
 //     }
 //   }
-
-  // ===== Tet10 (equilateral) interface-consistent M and A using dominant shape function =====
+// ===== Use precomputed nodal volumes and areas =====
   Real M = 0.0;
   Real A = 0.0;
 
-  // Geometry: equilateral tet (edge length = _len)
-  const Real l = _len;
-  const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));  // tet volume
-  const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;        // one triangular face area
-
-  // 1) Get shape functions from assembly for interface
+  // Get interface shape functions
   const MooseVariable & var = _subproblem.getStandardVariable(_tid, "disp_slipweakening_x");
   const VariablePhiValue & phi = _assembly.phiFace(var);
 
-  // 2) Determine whether this QP belongs to a vertex/corner patch or a mid-edge patch
+  // Find dominant node by shape function value
   unsigned int dominant_i = 0;
   Real max_phi = -std::numeric_limits<Real>::max();
 
@@ -373,62 +475,25 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     }
   }
 
-  // 3) Interpret dominant_i depending on whether we're on Tet10 (10 nodes) or Tri6 (6 nodes)
-  bool is_mid_edge = false;
+  // Get node ID from FACE element (not volume element)
+  const Elem * elem = _current_elem;
+  const Elem * side = elem->side_ptr(_current_side);
+  dof_id_type node_id = side->node_id(dominant_i);
 
-  if (phi.size() == 10)
+  // Use precomputed values
+  auto vol_it = _nodal_volume_patches.find(node_id);
+  auto area_it = _nodal_areas.find(node_id);
+
+  // Error if not found
+  if (vol_it == _nodal_volume_patches.end() || area_it == _nodal_areas.end())
   {
-    // Tet10 (libMesh): 0-3 vertices, 4-9 mid-edge nodes
-    is_mid_edge = (dominant_i >= 4);
-  }
-  else if (phi.size() == 6)
-  {
-    // Tri6 (libMesh): 0-2 corners, 3-5 mid-edge nodes on the face
-    is_mid_edge = (dominant_i >= 3);
-  }
-  else if (phi.size() == 4)
-  {
-    // Tet4: all vertices
-    is_mid_edge = false;
-  }
-  else if (phi.size() == 3)
-  {
-    // Tri3: all vertices
-    is_mid_edge = false;
-  }
-  else
-  {
-    // Fallback: if unknown, assume vertex-like behavior (more conservative for stability)
-    is_mid_edge = false;
+    mooseError("Missing nodal patch data for node_id = ", node_id, 
+               " at QP ", _qp, ". Check boundary parameter matches mesh.");
   }
 
-  // 4) Tet10-safe positive nodal weights (per adjacent tet / per interface face)
-  Real V_i = 0.0;   // nodal volume weight per tet
-  Real A_i = 0.0;   // nodal area weight per face
-  Real n_shared_vol = 0.0;
-  Real n_shared_area = 0.0;
-
-  if (!is_mid_edge)
-  {
-    // vertex/corner node on interface
-    V_i = V_tet / 36.0;
-    A_i = A_face / 19.0;
-    n_shared_vol = 6.0;   // your 60-degree interface: 6 tets around a vertex
-    n_shared_area = 6.0;  // 6 faces around a vertex
-  }
-  else
-  {
-    // mid-edge node on interface
-    V_i = 4.0 * V_tet / 27.0;
-    A_i = 16.0 * A_face / 57.0;
-    n_shared_vol = 2.0;   // interior edge in 3D: ~4-6 tets
-    n_shared_area = 2.0;  // your 60-degree interface: 2 triangles share an edge
-  }
-
-  // 5) Final measures
-  M = _density[_qp] * (n_shared_vol * V_i);
-  A = (n_shared_area * A_i);
-  // ===== END Tet10 interface M/A =====
+  M = _density[_qp] * vol_it->second;
+  A = area_it->second;
+  // ===== END =====
 
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!

@@ -34,6 +34,8 @@ protected:
   std::unordered_map<dof_id_type, Real> _nodal_volume_patches;
   std::unordered_map<dof_id_type, Real> _nodal_areas;
 
+  std::vector<BoundaryID> _interface_boundary_ids;
+
   // Add these new members:
   std::map<dof_id_type, Real> _nodal_masses;      // Store M for each node
   std::map<dof_id_type, Real> _nodal_interface_areas;  // Store A for each node (rename for clarity)
