@@ -292,39 +292,39 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   ###
   #slip weakening friction parameters
   [./resid_x]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   [../]
   [./resid_y]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   []
   [./resid_z]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [./resid_slipweakening_x]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   [../]
   [./resid_slipweakening_y]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   [../]
   [./resid_slipweakening_z]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   [../]
   [./resid_pressure_x]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   [../]
   [./resid_pressure_y]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   [../]
   [./resid_pressure_z]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   [../]
   [./disp_slipweakening_x]
@@ -354,11 +354,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   ###
   #output initial shear stress
   [cohesion_aux]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [forced_rupture_aux]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [fluid_pressure_aux]
@@ -368,39 +368,39 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   ###
   #output jump, jump rate, traction quantities
   [jump_strike_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [jump_strike_rate_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [traction_strike_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [jump_normal_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [jump_normal_rate_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [traction_normal_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [jump_dip_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [jump_dip_rate_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [traction_dip_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   ###
@@ -414,22 +414,22 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       family = MONOMIAL
   []
   [xi_aux]
-      order = FIRST
+      order = SECOND
       family = MONOMIAL
   []
   ###
   [deviatoric_strain_rate_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   ##
   [eqstrain_nonlocal_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   ##
   [eqstrain_nonlocal_initial_aux]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   ##
@@ -447,27 +447,27 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   # sts_total components (from material property)
   [sts_total_xx]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [sts_total_yy]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [sts_total_zz]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [sts_total_xy]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [sts_total_xz]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [sts_total_yz]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [I1_aux]
