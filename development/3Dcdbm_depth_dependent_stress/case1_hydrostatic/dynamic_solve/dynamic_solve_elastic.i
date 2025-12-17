@@ -269,15 +269,15 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
 [Variables]
     [disp_x]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [disp_y]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [disp_z]
-        order = FIRST
+        order = SECOND
         family = LAGRANGE
     []
     [porepressure]
@@ -328,27 +328,27 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       family = LAGRANGE
   [../]
   [./disp_slipweakening_x]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   []
   [./disp_slipweakening_y]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   []
   [./disp_slipweakening_z]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [./vel_slipweakening_x]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [./vel_slipweakening_y]
-      order = FIRST
+      order = SECOND
       family = LAGRANGE
   []
   [./vel_slipweakening_z]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   ###
@@ -434,15 +434,15 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   ##
   [stress_xx]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [stress_yy]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   [stress_xy]
-    order = FIRST
+    order = SECOND
     family = MONOMIAL
   []
   # sts_total components (from material property)
