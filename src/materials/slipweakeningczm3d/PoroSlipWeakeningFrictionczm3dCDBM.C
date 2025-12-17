@@ -346,66 +346,89 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 //     }
 //   }
 
-    // ===== Tet10 (equilateral) interface-consistent M and A using dominant shape function =====
-    Real M = 0.0;
-    Real A = 0.0;
-    // Geometry: equilateral tet (edge length = _len)
-    const Real l = _len;
-    const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));  // tet volume
-    const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;        // one triangular face area
-    // 1) Determine whether this QP belongs to a vertex/corner patch or a mid-edge patch
-    unsigned int dominant_i = 0;
-    Real max_phi = -std::numeric_limits<Real>::max();
-    for (unsigned int i = 0; i < _phi.size(); ++i)
+  // ===== Tet10 (equilateral) interface-consistent M and A using dominant shape function =====
+  Real M = 0.0;
+  Real A = 0.0;
+
+  // Geometry: equilateral tet (edge length = _len)
+  const Real l = _len;
+  const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));  // tet volume
+  const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;        // one triangular face area
+
+  // 1) Get shape functions from assembly for interface
+  const MooseVariable & var = _subproblem.getStandardVariable(_tid, "disp_slipweakening_x");
+  const VariablePhiValue & phi = _assembly.phiFace(var);
+
+  // 2) Determine whether this QP belongs to a vertex/corner patch or a mid-edge patch
+  unsigned int dominant_i = 0;
+  Real max_phi = -std::numeric_limits<Real>::max();
+
+  for (unsigned int i = 0; i < phi.size(); ++i)
+  {
+    const Real val = phi[i][_qp];
+    if (val > max_phi)
     {
-      const Real val = _phi[i][_qp];
-      if (val > max_phi)
-      {
-        max_phi = val;
-        dominant_i = i;
-      }
+      max_phi = val;
+      dominant_i = i;
     }
-    // Interpret dominant_i depending on whether we're on Tet10 (10 nodes) or Tri6 (6 nodes)
-    bool is_mid_edge = false;
-    if (_phi.size() == 10)
-    {
-      // Tet10 (libMesh): 0-3 vertices, 4-9 mid-edge nodes
-      is_mid_edge = (dominant_i >= 4);
-    }
-    else if (_phi.size() == 6)
-    {
-      // Tri6 (libMesh): 0-2 corners, 3-5 mid-edge nodes on the face
-      is_mid_edge = (dominant_i >= 3);
-    }
-    else
-    {
-      // Fallback: if unknown, assume vertex-like behavior (more conservative for stability)
-      is_mid_edge = false;
-    }
-    // 2) Tet10-safe positive nodal weights (per adjacent tet / per interface face)
-    Real V_i = 0.0;   // nodal volume weight per tet
-    Real A_i = 0.0;   // nodal area weight per face
-    Real n_shared = 0.0;
-    if (!is_mid_edge)
-    {
-      // vertex/corner node on interface
-      V_i = V_tet / 36.0;
-      A_i = A_face / 19.0;
-      n_shared = 6.0;     // your 60-degree interface: 6 around a vertex
-    }
-    else
-    {
-      // mid-edge node on interface
-      V_i = 4.0 * V_tet / 27.0;
-      A_i = 16.0 * A_face / 57.0;
-      n_shared = 2.0;     // your 60-degree interface: 2 triangles share an edge
-    }
-    // 3) Final measures
-    M = _density[_qp] * (n_shared * V_i);
-    A = (n_shared * A_i);
-    // ===== END Tet10 interface M/A =====
-  
-  // ===== END FIXED SECTION =====
+  }
+
+  // 3) Interpret dominant_i depending on whether we're on Tet10 (10 nodes) or Tri6 (6 nodes)
+  bool is_mid_edge = false;
+
+  if (phi.size() == 10)
+  {
+    // Tet10 (libMesh): 0-3 vertices, 4-9 mid-edge nodes
+    is_mid_edge = (dominant_i >= 4);
+  }
+  else if (phi.size() == 6)
+  {
+    // Tri6 (libMesh): 0-2 corners, 3-5 mid-edge nodes on the face
+    is_mid_edge = (dominant_i >= 3);
+  }
+  else if (phi.size() == 4)
+  {
+    // Tet4: all vertices
+    is_mid_edge = false;
+  }
+  else if (phi.size() == 3)
+  {
+    // Tri3: all vertices
+    is_mid_edge = false;
+  }
+  else
+  {
+    // Fallback: if unknown, assume vertex-like behavior (more conservative for stability)
+    is_mid_edge = false;
+  }
+
+  // 4) Tet10-safe positive nodal weights (per adjacent tet / per interface face)
+  Real V_i = 0.0;   // nodal volume weight per tet
+  Real A_i = 0.0;   // nodal area weight per face
+  Real n_shared_vol = 0.0;
+  Real n_shared_area = 0.0;
+
+  if (!is_mid_edge)
+  {
+    // vertex/corner node on interface
+    V_i = V_tet / 36.0;
+    A_i = A_face / 19.0;
+    n_shared_vol = 6.0;   // your 60-degree interface: 6 tets around a vertex
+    n_shared_area = 6.0;  // 6 faces around a vertex
+  }
+  else
+  {
+    // mid-edge node on interface
+    V_i = 4.0 * V_tet / 27.0;
+    A_i = 16.0 * A_face / 57.0;
+    n_shared_vol = 4.0;   // interior edge in 3D: ~4-6 tets
+    n_shared_area = 2.0;  // your 60-degree interface: 2 triangles share an edge
+  }
+
+  // 5) Final measures
+  M = _density[_qp] * (n_shared_vol * V_i);
+  A = (n_shared_area * A_i);
+  // ===== END Tet10 interface M/A =====
 
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
