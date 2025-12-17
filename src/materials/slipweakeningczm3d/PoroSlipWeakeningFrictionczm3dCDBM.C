@@ -168,8 +168,12 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeNodalVolumePatches()
       
       const Elem * neighbor = elem->neighbor_ptr(side);
       
-      // EXTERNAL boundary interface
-      if (neighbor != nullptr)
+      // Try INTERNAL interface first (most common for fault)
+      if (neighbor == nullptr)
+        continue;  // Skip external boundaries
+      
+      // Avoid double-counting internal faces
+      if (elem->id() > neighbor->id())
         continue;
       
       std::unique_ptr<const Elem> side_elem = elem->build_side_ptr(side);
