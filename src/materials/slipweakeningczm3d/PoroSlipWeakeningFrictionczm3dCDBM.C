@@ -477,7 +477,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 
   // Get node ID from FACE element (not volume element)
   const Elem * elem = _current_elem;
-  const Elem * side = elem->side_ptr(_current_side);
+  std::unique_ptr<const Elem> side = elem->build_side_ptr(_current_side);
   dof_id_type node_id = side->node_id(dominant_i);
 
   // Use precomputed values
