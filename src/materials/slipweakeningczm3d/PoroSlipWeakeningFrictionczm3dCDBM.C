@@ -421,7 +421,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     // mid-edge node on interface
     V_i = 4.0 * V_tet / 27.0;
     A_i = 16.0 * A_face / 57.0;
-    n_shared_vol = 4.0;   // interior edge in 3D: ~4-6 tets
+    n_shared_vol = 2.0;   // interior edge in 3D: ~4-6 tets
     n_shared_area = 2.0;  // your 60-degree interface: 2 triangles share an edge
   }
 
