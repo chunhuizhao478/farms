@@ -192,15 +192,15 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 
 [Variables]
   [disp_x]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [disp_y]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [disp_z]
-    order = FIRST
+    order = SECOND
     family = LAGRANGE
   []
   [porepressure]
