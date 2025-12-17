@@ -8,7 +8,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 200 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 400 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -29,8 +29,8 @@ zmin_fault = -20000 #zmin of fault
 #nonlocal length applied region along ydir
 ymin_fault = -1500
 ymax_fault = 1500
-nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
-nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
+nonlocal_averaging_length_scale = 800 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
+nonlocal_averaging_radius = 1600 #for 800m testing, use 1600m
 
 ##-------------------------##
 ##material properties##
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_200m_nonlocal_occ.msh'
+      file = '../../mesh/tpv26_2ndorder_400m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
