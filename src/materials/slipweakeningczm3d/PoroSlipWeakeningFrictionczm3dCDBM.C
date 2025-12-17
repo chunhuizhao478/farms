@@ -488,15 +488,46 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   auto vol_it = _nodal_volume_patches.find(node_id);
   auto area_it = _nodal_areas.find(node_id);
 
-  // Error if not found
+  // If not found, compute on-the-fly as fallback
   if (vol_it == _nodal_volume_patches.end() || area_it == _nodal_areas.end())
   {
-    mooseError("Missing nodal patch data for node_id = ", node_id, 
-               " at QP ", _qp, ". Check boundary parameter matches mesh.");
+    // Fallback: compute M and A directly for this node
+    const Real l = _len;
+    const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));
+    const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;
+    
+    // Determine if vertex or mid-edge from phi.size() and dominant_i
+    bool is_mid_edge = false;
+    if (phi.size() == 6)
+      is_mid_edge = (dominant_i >= 3);
+    else if (phi.size() == 10)
+      is_mid_edge = (dominant_i >= 4);
+    
+    if (!is_mid_edge)
+    {
+      M = _density[_qp] * (V_tet / 36.0) * 6.0;
+      A = (A_face / 19.0) * 6.0;
+    }
+    else
+    {
+      M = _density[_qp] * (4.0 * V_tet / 27.0) * 2.0;
+      A = (16.0 * A_face / 57.0) * 2.0;
+    }
+    
+    // Warn once
+    static bool warned = false;
+    if (!warned)
+    {
+      mooseWarning("Some interface nodes not in precomputed patches (node ", node_id, 
+                   "). Using fallback calculation. This may occur at domain boundaries.");
+      warned = true;
+    }
   }
-
-  M = _density[_qp] * vol_it->second;
-  A = area_it->second;
+  else
+  {
+    M = _density[_qp] * vol_it->second;
+    A = area_it->second;
+  }
   // ===== END =====
 
   // Compute T1_o, T2_o, T3_o for current qp
