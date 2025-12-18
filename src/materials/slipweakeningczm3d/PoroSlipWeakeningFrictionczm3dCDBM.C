@@ -420,115 +420,91 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   Real R_minus_pressure_local_t = R_minus_pressure_local(1);
   Real R_minus_pressure_local_d = R_minus_pressure_local(2);
 
-// // ===== FIXED SECTION: Compute M and A for node nearest to quadrature point =====
-//   // Find the node closest to the current quadrature point that has volume patch data
+// // ===== Use precomputed nodal volumes and areas =====
 //   Real M = 0.0;
 //   Real A = 0.0;
-//   bool found = false;
-  
-//   // Get the physical coordinates of the current quadrature point
-//   const Point & qp_coords = _q_point[_qp];
-  
-//   Real min_distance = std::numeric_limits<Real>::max();
-//   dof_id_type nearest_node_id = 0;
-  
-//   unsigned int n_elem_nodes = _current_elem->n_nodes();
-//   for (unsigned int i = 0; i < n_elem_nodes; i++)
+
+//   // Get interface shape functions
+//   const MooseVariable & var = _subproblem.getStandardVariable(_tid, "disp_slipweakening_x");
+//   const VariablePhiValue & phi = _assembly.phiFace(var);
+
+//   // Find dominant node by shape function value
+//   unsigned int dominant_i = 0;
+//   Real max_phi = -std::numeric_limits<Real>::max();
+
+//   for (unsigned int i = 0; i < phi.size(); ++i)
 //   {
-//     const Node * node = _current_elem->node_ptr(i);
-//     dof_id_type node_id = node->id();
-    
-//     // Check if this node has volume patch data
-//     auto vol_it = _nodal_volume_patches.find(node_id);
-//     auto area_it = _nodal_areas.find(node_id);
-    
-//     if (vol_it != _nodal_volume_patches.end() && area_it != _nodal_areas.end())
+//     const Real val = phi[i][_qp];
+//     if (val > max_phi)
 //     {
-//       // Calculate distance from quadrature point to this node
-//       Real distance = (*node - qp_coords).norm();
-      
-//       if (distance < min_distance)
-//       {
-//         min_distance = distance;
-//         nearest_node_id = node_id;
-//         M = _density[_qp] * vol_it->second;  // M = rho * V
-//         A = area_it->second;                  // A
-//         found = true;
-//       }
+//       max_phi = val;
+//       dominant_i = i;
 //     }
 //   }
-// ===== Use precomputed nodal volumes and areas =====
-  Real M = 0.0;
-  Real A = 0.0;
 
-  // Get interface shape functions
-  const MooseVariable & var = _subproblem.getStandardVariable(_tid, "disp_slipweakening_x");
-  const VariablePhiValue & phi = _assembly.phiFace(var);
+//   // Get node ID from FACE element (not volume element)
+//   const Elem * elem = _current_elem;
+//   std::unique_ptr<const Elem> side = elem->build_side_ptr(_current_side);
+//   dof_id_type node_id = side->node_id(dominant_i);
 
-  // Find dominant node by shape function value
-  unsigned int dominant_i = 0;
-  Real max_phi = -std::numeric_limits<Real>::max();
+//   // Use precomputed values
+//   auto vol_it = _nodal_volume_patches.find(node_id);
+//   auto area_it = _nodal_areas.find(node_id);
 
-  for (unsigned int i = 0; i < phi.size(); ++i)
-  {
-    const Real val = phi[i][_qp];
-    if (val > max_phi)
-    {
-      max_phi = val;
-      dominant_i = i;
-    }
+//   // If not found, compute on-the-fly as fallback
+//   if (vol_it == _nodal_volume_patches.end() || area_it == _nodal_areas.end())
+//   {
+//     // Fallback: compute M and A directly for this node
+//     const Real l = _len;
+//     const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));
+//     const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;
+    
+//     // Determine if vertex or mid-edge from phi.size() and dominant_i
+//     bool is_mid_edge = false;
+//     if (phi.size() == 6)
+//       is_mid_edge = (dominant_i >= 3);
+//     else if (phi.size() == 10)
+//       is_mid_edge = (dominant_i >= 4);
+    
+//     if (!is_mid_edge)
+//     {
+//       M = _density[_qp] * (V_tet / 36.0) * 6.0;
+//       A = (A_face / 19.0) * 6.0;
+//     }
+//     else
+//     {
+//       M = _density[_qp] * (4.0 * V_tet / 27.0) * 2.0;
+//       A = (16.0 * A_face / 57.0) * 2.0;
+//     }
+    
+//     // Warn once
+//     static bool warned = false;
+//     if (!warned)
+//     {
+//       mooseWarning("Some interface nodes not in precomputed patches (node ", node_id, 
+//                    "). Using fallback calculation. This may occur at domain boundaries.");
+//       warned = true;
+//     }
+//   }
+//   else
+//   {
+//     M = _density[_qp] * vol_it->second;
+//     A = area_it->second;
+//   }
+//   // ===== END =====
+
+  // Compute node mass and area
+  Real M = 0;
+  Real A = 0;
+  if (_current_elem->type() == libMesh::ElemType::TET4){
+    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+  }
+  else if (_current_elem->type() == libMesh::ElemType::HEX8){
+    M = (_density[_qp] * _len * _len * _len / 8) * 4;
+    A = (_len * _len / 4) * 4;
   }
 
-  // Get node ID from FACE element (not volume element)
-  const Elem * elem = _current_elem;
-  std::unique_ptr<const Elem> side = elem->build_side_ptr(_current_side);
-  dof_id_type node_id = side->node_id(dominant_i);
-
-  // Use precomputed values
-  auto vol_it = _nodal_volume_patches.find(node_id);
-  auto area_it = _nodal_areas.find(node_id);
-
-  // If not found, compute on-the-fly as fallback
-  if (vol_it == _nodal_volume_patches.end() || area_it == _nodal_areas.end())
-  {
-    // Fallback: compute M and A directly for this node
-    const Real l = _len;
-    const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));
-    const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;
-    
-    // Determine if vertex or mid-edge from phi.size() and dominant_i
-    bool is_mid_edge = false;
-    if (phi.size() == 6)
-      is_mid_edge = (dominant_i >= 3);
-    else if (phi.size() == 10)
-      is_mid_edge = (dominant_i >= 4);
-    
-    if (!is_mid_edge)
-    {
-      M = _density[_qp] * (V_tet / 36.0) * 6.0;
-      A = (A_face / 19.0) * 6.0;
-    }
-    else
-    {
-      M = _density[_qp] * (4.0 * V_tet / 27.0) * 2.0;
-      A = (16.0 * A_face / 57.0) * 2.0;
-    }
-    
-    // Warn once
-    static bool warned = false;
-    if (!warned)
-    {
-      mooseWarning("Some interface nodes not in precomputed patches (node ", node_id, 
-                   "). Using fallback calculation. This may occur at domain boundaries.");
-      warned = true;
-    }
-  }
-  else
-  {
-    M = _density[_qp] * vol_it->second;
-    A = area_it->second;
-  }
-  // ===== END =====
 
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
