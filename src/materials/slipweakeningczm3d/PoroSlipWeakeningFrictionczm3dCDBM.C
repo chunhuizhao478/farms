@@ -493,12 +493,61 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 //   }
 //   // ===== END =====
 
-  // Compute node mass and area
+ // Compute node mass and area for TET10/TRI6
   Real M = 0;
   Real A = 0;
-    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+  
+  // Get interface shape functions to determine node type
+  const MooseVariable & var = _subproblem.getStandardVariable(_tid, "disp_slipweakening_x");
+  const VariablePhiValue & phi = _assembly.phiFace(var);
 
+  // Find dominant node by shape function value
+  unsigned int dominant_i = 0;
+  Real max_phi = -std::numeric_limits<Real>::max();
+
+  for (unsigned int i = 0; i < phi.size(); ++i)
+  {
+    const Real val = phi[i][_qp];
+    if (val > max_phi)
+    {
+      max_phi = val;
+      dominant_i = i;
+    }
+  }
+
+  // Get the actual node ID from the face element
+  const Elem * elem = _current_elem;
+  std::unique_ptr<const Elem> side = elem->build_side_ptr(_current_side);
+  dof_id_type node_id = side->node_id(dominant_i);
+  
+  // Check if this node is a vertex of the parent volume element
+  // Vertex nodes are the first n_vertices() nodes of the parent element
+  bool is_vertex = false;
+  for (unsigned int i = 0; i < elem->n_vertices(); ++i)
+  {
+    if (elem->node_id(i) == node_id)
+    {
+      is_vertex = true;
+      break;
+    }
+  }
+  
+  // Base geometric quantities
+  const Real l = _len;
+  const Real V_tet  = (l * l * l) / (6.0 * std::sqrt(2.0));
+  const Real A_face = (std::sqrt(3.0) * l * l) / 4.0;
+  
+  // Apply TET10/TRI6 weights based on actual node type
+  if (is_vertex)  // Vertex/corner node
+  {
+    M = _density[_qp] * (V_tet / 36.0) * 6.0;
+    A = (A_face / 19.0) * 6.0;
+  }
+  else  // Mid-edge node
+  {
+    M = _density[_qp] * (4.0 * V_tet / 27.0) * 2.0;
+    A = (16.0 * A_face / 57.0) * 2.0;
+  }
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
   Real T1_o = _static_initial_stress_tensor[_qp](0, 1); // shear stress in t dir
