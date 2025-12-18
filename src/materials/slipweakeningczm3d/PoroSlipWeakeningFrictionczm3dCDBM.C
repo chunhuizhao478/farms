@@ -545,7 +545,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   }
   else  // Mid-edge node
   {
-    M = _density[_qp] * (4.0 * V_tet / 27.0) * 3.0;
+    M = _density[_qp] * (4.0 * V_tet / 27.0) * 6.0;
     A = (16.0 * A_face / 57.0) * 2.0;
   }
   // Compute T1_o, T2_o, T3_o for current qp
