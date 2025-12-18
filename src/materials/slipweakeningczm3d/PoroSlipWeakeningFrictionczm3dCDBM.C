@@ -548,6 +548,15 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
     M = _density[_qp] * (4.0 * V_tet / 27.0) * 6.0;
     A = (16.0 * A_face / 57.0) * 2.0;
   }
+
+    if (_qp == 0 && _t < 0.01)
+  {
+    Moose::out << "Node " << node_id 
+               << " is_vertex=" << is_vertex 
+               << " M=" << M 
+               << " A=" << A 
+               << " M/A=" << (M/A) << "\n";
+  }
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
   Real T1_o = _static_initial_stress_tensor[_qp](0, 1); // shear stress in t dir
