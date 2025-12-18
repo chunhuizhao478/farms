@@ -8,7 +8,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 200 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 300 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_2ndorder_200m_nonlocal_occ.msh'
+      file = '../../mesh/tpv26_2ndorder_300m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -1047,7 +1047,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   [./init_sol_components]
     type = SolutionUserObject
-    mesh = '../static_solve/static_solve_out.e'
+    mesh = '../static_solve_2nd/static_solve_out.e'
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
                         stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 xi porepressure'
