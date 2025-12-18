@@ -1050,7 +1050,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     mesh = '../static_solve_2nd/static_solve_out.e'
     system_variables = 'elastic_strain_00 elastic_strain_01 elastic_strain_02
                         elastic_strain_11 elastic_strain_12 elastic_strain_22
-                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 xi porepressure forced_rupture_aux'
+                        stress_00 stress_01 stress_02 stress_11 stress_12 stress_22 xi porepressure '
     timestep = LATEST
     force_preaux = true
     execute_on = 'INITIAL'
@@ -1112,7 +1112,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
             traction_strike_aux traction_normal_aux traction_dip_aux
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z
             stress_xx stress_yy stress_xy
-            porepressure'
+            porepressure forced_rupture_aux'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
