@@ -842,7 +842,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   [pspg_stabilization]
     type = PoroStabilization
-    variable = pore_pressure
+    variable = porepressure
     displacements = 'disp_x disp_y disp_z'
   []
 
