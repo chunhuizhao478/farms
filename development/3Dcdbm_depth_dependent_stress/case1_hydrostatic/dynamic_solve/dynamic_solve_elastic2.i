@@ -840,12 +840,23 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = 'disp_z'
     component = '2'
   []
+  [pspg_stabilization]
+    type = PoroStabilization
+    variable = pore_pressure
+    displacements = 'disp_x disp_y disp_z'
+  []
+
+  
 []
 
 [Materials]
   [strain3]
         type = ComputeSmallStrain
         displacements = 'disp_x disp_y disp_z'
+  []
+  [stabilization_param]
+    type = StabilizationMaterial
+    stabilization_coeff = 1
   []
   #damage breakage model
   [stress_medium]
