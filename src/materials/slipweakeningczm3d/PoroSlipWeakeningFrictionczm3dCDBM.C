@@ -106,6 +106,8 @@ PoroSlipWeakeningFrictionczm3dCDBM::PoroSlipWeakeningFrictionczm3dCDBM(const Inp
     _forced_rupture_aux(coupledValue("forced_rupture_aux")),
     _fault_pressure(coupledValue("fault_pressure")),
     _fault_pressure_neighbor(coupledNeighborValue("fault_pressure")),
+    _fault_pressure_old(coupledValueOld("fault_pressure")),
+    _fault_pressure_neighbor_old(coupledNeighborValueOld("fault_pressure")),
     _initial_porepressure(getMaterialProperty<Real>("initial_porepressure"))
 
 {
@@ -551,7 +553,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 
   Real M = 0;
   Real A = 0;
-  
+
     M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
     A = (sqrt(3) * _len * _len / 4 / 3) * 6;
   // Compute T1_o, T2_o, T3_o for current qp
@@ -571,8 +573,10 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   
   Real T2 = - T2_o;
 
-  Real pressure_primary = _fault_pressure[_qp];
-  Real pressure_neighbor = _fault_pressure_neighbor[_qp];
+  Real alpha = 0.3
+
+  Real pressure_primary = alpha * _fault_pressure[_qp] + (1-alpha) * _fault_pressure_old[_qp];
+  Real pressure_neighbor = alpha * _fault_pressure_neighbor[_qp] + (1-alpha) * _fault_pressure_neighbor_old[_qp];
 
   Real Pmax = std::max(pressure_primary, pressure_neighbor);
 

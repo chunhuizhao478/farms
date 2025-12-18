@@ -107,6 +107,8 @@ protected:
   const VariableValue & _forced_rupture_aux;
   const VariableValue & _fault_pressure;
   const VariableValue & _fault_pressure_neighbor;
+  const VariableValue & _fault_pressure_old;
+  const VariableValue & _fault_pressure_neighbor_old;
 
   const MaterialProperty<Real> & _initial_porepressure;
 };
