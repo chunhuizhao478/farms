@@ -119,12 +119,12 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.005 #time step size
+dt = 0.002 #time step size
 
-end_time = 12.0 #end time for simulation
+end_time = 16.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 5 #time step interval for output
+exodus_time_step_interval = 20 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 100 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
