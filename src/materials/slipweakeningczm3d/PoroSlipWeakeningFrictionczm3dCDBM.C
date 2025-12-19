@@ -551,11 +551,18 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 //     A = (16.0 * A_face / 57.0) * 2.0;
 //   }
 
+  // Compute node mass and area
   Real M = 0;
   Real A = 0;
-
+  if (_current_elem->type() == libMesh::ElemType::TET4){
     M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
     A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+  }
+  else if (_current_elem->type() == libMesh::ElemType::HEX8){
+    M = (_density[_qp] * _len * _len * _len / 8) * 4;
+    A = (_len * _len / 4) * 4;
+  }
+
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
   Real T1_o = _static_initial_stress_tensor[_qp](0, 1); // shear stress in t dir
@@ -573,10 +580,13 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
   
   Real T2 = - T2_o;
 
-  Real alpha = 0.3;
+  // Real alpha = 0.3;
 
-  Real pressure_primary = alpha * _fault_pressure[_qp] + (1-alpha) * _fault_pressure_old[_qp];
-  Real pressure_neighbor = alpha * _fault_pressure_neighbor[_qp] + (1-alpha) * _fault_pressure_neighbor_old[_qp];
+  // Real pressure_primary = alpha * _fault_pressure[_qp] + (1-alpha) * _fault_pressure_old[_qp];
+  // Real pressure_neighbor = alpha * _fault_pressure_neighbor[_qp] + (1-alpha) * _fault_pressure_neighbor_old[_qp];
+
+  Real pressure_primary = _fault_pressure[_qp];
+  Real pressure_neighbor = _fault_pressure_neighbor[_qp];
 
   Real Pmax = std::max(pressure_primary, pressure_neighbor);
 
