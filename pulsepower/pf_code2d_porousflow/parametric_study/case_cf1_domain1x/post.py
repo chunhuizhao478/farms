@@ -20,7 +20,7 @@ def format_label(col_name):
 cols = [c for c in df.columns if c != time_col and c not in hidden_cols]
 
 # Keep only data at or before 0.00006 s
-t_max = 2e-5
+t_max = 20e-5
 df = df[df[time_col] <= t_max].sort_values(time_col)
 
 t = df[time_col].to_numpy() * 1e6  # Convert to microseconds

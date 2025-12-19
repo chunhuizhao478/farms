@@ -2,9 +2,9 @@
 # Note: NOW using damage-dependent Biot coefficient with incremental accounting approach
 # Porosity is kept constant, only Biot coefficient evolves with damage
 # This value should be recomputed from static solve with the updated formulation
-fluid_elastic_energy_total_static = 8.081987e-05
-solid_elastic_energy_total_static = 5.411442e-03
-full_input_energy_static = 5.492262e-03
+fluid_elastic_energy_total_static = 8.081664e-05
+solid_elastic_energy_total_static = 5.408951e-03
+full_input_energy_static = 5.489768e-03
 
 #solid properties
 #----------------------------------------------------#
@@ -104,7 +104,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../2dmeshfile/fieldscale_test1_2d_refine2x.msh'
+    file =  '../../../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -383,13 +383,13 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.0025
+    EM = 0.00125
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     fitting_param_exponent = 0.25
     discharge_center = '0 0 0'
-    number_of_pulses = 100
+    number_of_pulses = 20
     base_factor = 8000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
