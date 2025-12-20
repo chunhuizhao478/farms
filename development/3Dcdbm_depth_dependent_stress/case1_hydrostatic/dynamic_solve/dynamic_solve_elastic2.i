@@ -680,7 +680,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = eqstrain_nonlocal_aux
     property = eqstrain_nonlocal
     execute_on = 'TIMESTEP_END'
-    # block = ${nonlocal_eqstrain_blocks}
+   block = ${nonlocal_eqstrain_blocks}
   []
   ###
   [get_eqstrain_nonlocal_initial]
