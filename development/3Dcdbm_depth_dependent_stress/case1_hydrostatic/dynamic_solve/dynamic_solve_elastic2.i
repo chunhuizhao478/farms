@@ -11,10 +11,10 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 elem_size = 200 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
-nonlocal_eqstrain_blocks = '10 100 200'
+nonlocal_eqstrain_blocks = '10 12 100 200'
 
 #here we avoid the cross-fault averaging by defining separate averaging blocks
-nonlocal_eqstrain_blocks_1 = '10'
+nonlocal_eqstrain_blocks_1 = '10 12'
 nonlocal_eqstrain_blocks_2 = '100'
 nonlocal_eqstrain_blocks_3 = '200'
 
