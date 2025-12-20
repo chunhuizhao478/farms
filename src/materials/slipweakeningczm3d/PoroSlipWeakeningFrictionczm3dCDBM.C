@@ -552,16 +552,21 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 //   }
 
   // Compute node mass and area
+  // Real M = 0;
+  // Real A = 0;
+  // if (_current_elem->type() == libMesh::ElemType::TET4){
+  //   M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+  //   A = (sqrt(3) * _len * _len / 4 / 3) * 6;
+  // }
+  // else if (_current_elem->type() == libMesh::ElemType::HEX8){
+  //   M = (_density[_qp] * _len * _len * _len / 8) * 4;
+  //   A = (_len * _len / 4) * 4;
+  // }
+
   Real M = 0;
   Real A = 0;
-  if (_current_elem->type() == libMesh::ElemType::TET4){
-    M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
-    A = (sqrt(3) * _len * _len / 4 / 3) * 6;
-  }
-  else if (_current_elem->type() == libMesh::ElemType::HEX8){
-    M = (_density[_qp] * _len * _len * _len / 8) * 4;
-    A = (_len * _len / 4) * 4;
-  }
+    M = (_density[_qp] * _len * _len * _len) / 2;
+    A = _len * _len;
 
   // Compute T1_o, T2_o, T3_o for current qp
   //!!! rotation matrix is not applied here !!!
