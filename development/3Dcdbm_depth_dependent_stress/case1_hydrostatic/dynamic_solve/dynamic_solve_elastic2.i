@@ -124,7 +124,7 @@ dt = 0.0025 #time step size
 end_time = 16.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 2 #time step interval for output
+exodus_time_step_interval = 4 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 100 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_200m_nonlocal.msh'
+      file = '../../mesh/tpv26_200m_unifrom.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
