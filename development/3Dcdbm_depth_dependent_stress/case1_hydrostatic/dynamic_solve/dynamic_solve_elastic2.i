@@ -119,7 +119,7 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.00175 #time step size
+dt = 0.00225 #time step size
 
 end_time = 12.0 #end time for simulation
 
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_100m_nonlocal_occ.msh'
+      file = '../../mesh/tpv26_125m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
