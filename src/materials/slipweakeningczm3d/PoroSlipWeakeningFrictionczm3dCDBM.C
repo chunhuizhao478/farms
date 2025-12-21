@@ -551,7 +551,7 @@ PoroSlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
 //     A = (16.0 * A_face / 57.0) * 2.0;
 //   }
 
-  Compute node mass and area
+  // Compute node mass and area
   Real M = 0;
   Real A = 0;
   if (_current_elem->type() == libMesh::ElemType::TET4){
