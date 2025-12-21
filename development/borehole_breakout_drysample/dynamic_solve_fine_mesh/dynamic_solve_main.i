@@ -54,9 +54,8 @@
 
     permeability_evolution_with_damage = 3
     initial_grain_size = 1.3
-    ultimate_grain_size = 1.3
+    ultimate_grain_size = 0.25
     initial_viscosity_fluid = 1e-3
-
     anand_param_go_mat = 0.25
     anand_param_eta_cv_mat = 0.01
     anand_param_p_mat = 1
@@ -71,19 +70,21 @@
     [disp_x]
         order = FIRST
         family = LAGRANGE     
+        scaling = 1e-6 
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE    
+        scaling = 1e-6 
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
+        scaling = 1e-6 
     []
     [porepressure]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E9 
     []
     
 []
@@ -220,6 +221,12 @@
         property = second_elastic_strain_invariant
         block = '3'
     [] 
+    [get_deviatroic_strain_rate]
+        type = MaterialRealAux
+        variable = deviatroic_strain_rate_aux
+        property = deviatroic_strain_rate
+        block = '3'
+    []
     #
     [get_nonlocal_xi]
         type = MaterialRealAux
@@ -325,6 +332,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
         large_kinematics = true
+        use_dilatancy = true 
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
         outputs = exodus
         block = '3'
@@ -396,9 +404,9 @@
     # num_steps = 10
     l_max_its = 100
     l_tol = 1e-7
-    nl_rel_tol = 1e-5
-    nl_max_its = 50
-    nl_abs_tol = 1e-7
+    nl_rel_tol = 1e-6
+    nl_max_its = 40
+    nl_abs_tol = 1e-8
     petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
     petsc_options_value = 'gmres     hypre  boomeramg True'
     # petsc_options_iname = '-pc_type -pc_factor_shift_type'
@@ -406,10 +414,10 @@
     # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     # automatic_scaling = true
-    # nl_forced_its = 3
+    #nl_forced_its = 3
     line_search = 'bt'
     # dt = 10
-    verbose = true
+    #verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
         dt = 1
@@ -429,7 +437,7 @@
     [./exodus]
         type = Exodus
         time_step_interval = 5 ###
-        show = 'disp_z porepressure vel_x vel_y vel_z alpha_damagedvar_aux B_damagedvar_aux xi_aux deviatroic_strain_rate_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
+        show = 'porepressure alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_22 green_lagrange_elastic_strain_22 plastic_strain_22 total_lagrange_strain_22'
     [../]
     [./csv]
         type = CSV
