@@ -425,8 +425,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   ##
   [eqstrain_nonlocal_aux]
     order = FIRST
-    family = MONOMIAL
+    family = MONOMIAL 
   []
+  
   ##
   [eqstrain_nonlocal_initial_aux]
     order = FIRST
@@ -442,35 +443,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     family = MONOMIAL
   []
   [stress_xy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  # sts_total components (from material property)
-  [sts_total_xx]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_total_yy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_total_zz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_total_xy]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_total_xz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [sts_total_yz]
-    order = FIRST
-    family = MONOMIAL
-  []
-  [I1_aux]
     order = FIRST
     family = MONOMIAL
   []
@@ -661,13 +633,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     property = xi
     execute_on = 'TIMESTEP_END'
   []
-  [get_I1]
-    type = MaterialRealAux
-    variable = I1_aux
-    property = I1
-    execute_on = 'TIMESTEP_END'
-  []
-  ###
   [get_deviatoric_strain_rate]
     type = MaterialRealAux
     variable = deviatoric_strain_rate_aux
@@ -711,56 +676,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = stress_xy
     index_i = 0
     index_j = 1
-  []
-
-  # Extract sts_total components (material property)
-  [sts_total_xx]
-    type = RankTwoAux
-    rank_two_tensor = sts_total
-    variable = sts_total_xx
-    index_i = 0
-    index_j = 0
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_total_yy]
-    type = RankTwoAux
-    rank_two_tensor = sts_total
-    variable = sts_total_yy
-    index_i = 1
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_total_zz]
-    type = RankTwoAux
-    rank_two_tensor = sts_total
-    variable = sts_total_zz
-    index_i = 2
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_total_xy]
-    type = RankTwoAux
-    rank_two_tensor = sts_total
-    variable = sts_total_xy
-    index_i = 0
-    index_j = 1
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_total_xz]
-    type = RankTwoAux
-    rank_two_tensor = sts_total
-    variable = sts_total_xz
-    index_i = 0
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
-  []
-  [sts_total_yz]
-    type = RankTwoAux
-    rank_two_tensor = sts_total
-    variable = sts_total_yz
-    index_i = 1
-    index_j = 2
-    execute_on = 'TIMESTEP_END'
   []
 
 
@@ -1119,7 +1034,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'sts_total_xx sts_total_xy sts_total_zz sts_total_yy
+    show = 'eqstrain_nonlocal_aux xi_aux deviatoric_strain_rate_aux B_aux alpha_damagedvar_aux
             traction_strike_aux traction_normal_aux traction_dip_aux
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z
             stress_xx stress_yy stress_xy
