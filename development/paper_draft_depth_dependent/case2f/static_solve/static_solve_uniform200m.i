@@ -26,7 +26,7 @@ shear_modulus_o = 3.204e10 #second lame constant
 Dc = 0.8 #0.4 #characteristic length (m)
 q = 0.4 #damping ratio
 mu_s = 0.8 #static friction coefficient
-mu_d = 0.6 #dynamic friction coefficient
+mu_d = 0.6  #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
@@ -70,6 +70,12 @@ tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
 tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
+##overpressure parameters##
+use_overpressure = true #use overpressure for initial stress
+overpressure_depth_A = 6000 #overpressure depth A (m)
+overpressure_depth_B = 8000 #overpressure depth B (m)
+##------------------------------------------------------------------##
+
 #nucleation parameters
 nucl_center_x = -16000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
@@ -83,6 +89,7 @@ t0 = 0.5 #nucleation time (s)
   [./msh]
     type = FileMeshGenerator
     file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform200m_tensileside.msh'
+    #file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
   []
   [./sidesets]
     input = msh
@@ -187,9 +194,14 @@ t0 = 0.5 #nucleation time (s)
     displacements = 'disp_x disp_y disp_z'
   [../]
   [gravity_z]
-    type = BodyForce
+    type = EffectiveBodyForceTPV26
     variable = disp_z
-    value = ${fparse -1 * density * gravity + 1 * fluid_density * gravity}
+    fluid_density = ${fluid_density}
+    rock_density = ${density}
+    gravity = ${gravity}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
 []
 
@@ -341,6 +353,9 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_xx_stress]
     type = CompositeFunction
@@ -369,6 +384,9 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_xy_stress]
     type = CompositeFunction
@@ -397,6 +415,9 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   ##
   [./func_initial_stress_yy]
@@ -415,6 +436,9 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_yy_stress]
     type = CompositeFunction
@@ -443,6 +467,9 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_initial_stress_zz]
     type = InitialStressStrainTPV26
@@ -460,6 +487,9 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_zz_stress]
     type = CompositeFunction
