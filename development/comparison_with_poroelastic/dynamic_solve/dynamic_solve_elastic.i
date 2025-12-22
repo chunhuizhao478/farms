@@ -16,6 +16,9 @@ xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
+ymin_fault = -1000
+ymax_fault = 1000
+
 ##-------------------------##
 ##material properties##
 density = 2670 #density
