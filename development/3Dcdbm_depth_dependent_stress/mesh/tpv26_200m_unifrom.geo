@@ -13,11 +13,11 @@ SetFactory("OpenCASCADE");
 // GLOBAL & LOCAL SIZES  (COARSER, ADJUST IF NEEDED)
 // ----------------------------------------------------
 lc       = 2e4;    // global coarse size away from fault
-lc_fault = 150;    // target fine size near fault (inner region)
+lc_fault = 200;    // target fine size near fault (inner region)
 Fault_length        = 45e3;
 Fault_width         = 20e3;
 Fault_dip           = 90*Pi/180.;
-transition_length   = 450; //0.25e3;   // inner region halo around fault <- change it back if you want smaller inner volume
+transition_length   = 800; //0.25e3;   // inner region halo around fault <- change it back if you want smaller inner volume
 
 Xmax = 60e3;
 Xmin = -Xmax;
@@ -28,12 +28,12 @@ Zmin = -Xmax;
 // ----------------------------------------------------
 // INNER PRISM AROUND FAULT (STRUCTURED REGION)
 // ----------------------------------------------------
-X_inner_min = -0.5*Fault_length;
-X_inner_max =  0.5*Fault_length;
+X_inner_min = -0.5*Fault_length - 0.5*transition_length;
+X_inner_max =  0.5*Fault_length + 0.5*transition_length;
 Y_inner_min = -transition_length;
 Y_inner_max =  transition_length;
 Z_inner_top = 0;
-Z_inner_bot = -Fault_width;
+Z_inner_bot = -Fault_width - 0.5*transition_length;
 
 // Compute divisions for inner region to get ~lc_fault spacing
 dx_inner = X_inner_max - X_inner_min;

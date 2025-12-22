@@ -1,126 +1,96 @@
 /**
- * Derived from tpv26_100m.geo: adds an embedded inner volume (geometric partition)
- * surrounding the vertical fault plane. Uses the OpenCASCADE kernel to ensure
- * the fault surface is properly integrated into the volume mesh.
- * The inner prism bounds:
- *   X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
- *   Y in [-transition_length, +transition_length]
- *   Z in [0, -Fault_width - transition_length]
- * with transition_length = 2 km.
+ * Simple uniform TET4 mesh - Inner region only
+ * No fault, no outer volume, just a uniformly meshed box
  */
 
-SetFactory("OpenCASCADE"); // Required for Boolean operations
+SetFactory("OpenCASCADE");
 
-lc = 2e4;
-lc_fault = 400; // fine size near fault
+// ============================================
+// MESH SIZE
+// ============================================
+lc_uniform = 400;  // Uniform element size throughout (adjust as needed)
 
+// ============================================
+// GEOMETRY PARAMETERS
+// ============================================
 Fault_length = 45e3;
 Fault_width = 20e3;
-Fault_dip = 90*Pi/180.;
-transition_length = 1.5e3; // 2 km halo around fault
+transition_length = 1.2e3;
 
-// Nucleation in X,Z local coordinates
-X_nucl = 0e3;
-Width_nucl = 0.5*Fault_width;
-R_nucl = 1e3;
-lc_nucl = 400;
+// Inner box dimensions (same as your inner region)
+X_min = -0.5*Fault_length - transition_length;  // -24 km
+X_max =  0.5*Fault_length + transition_length;  //  24 km
+Y_min = -transition_length;                      // -1.5 km
+Y_max =  transition_length;                      //  1.5 km
+Z_min = -Fault_width - transition_length;        // -21.5 km
+Z_max = 0;                                       //   0 km
 
-Xmax = 60e3;
-Xmin = -Xmax;
-Ymin = -Xmax +  0.5 * Fault_width  *Cos(Fault_dip);
-Ymax =  Xmax + 0.5 * Fault_width  *Cos(Fault_dip);
-Zmin = -Xmax; // large depth extent (negative)
+// ============================================
+// CREATE SIMPLE BOX
+// ============================================
+Box(1) = {X_min, Y_min, Z_min, 
+          X_max-X_min, Y_max-Y_min, Z_max-Z_min};
 
-// Inner prism around fault dimensions
-X_inner_min = -0.5*Fault_length - transition_length;
-X_inner_max =  0.5*Fault_length + transition_length;
-Y_inner_min = -transition_length;
-Y_inner_max =  transition_length;
-Z_inner_top = 0;
-Z_inner_bot = -Fault_width - transition_length;
+// ============================================
+// UNIFORM MESH SIZING
+// ============================================
+// Set uniform characteristic length on all points
+Characteristic Length{ PointsOf{ Volume{1}; } } = lc_uniform;
 
-// -------------------------------------------
-// DEFINE ALL GEOMETRY USING OCC PRIMITIVES
-// -------------------------------------------
+// ============================================
+// MESH ALGORITHM SETTINGS
+// ============================================
 
-// 1. Create outer and inner boxes (volumes 1 & 2 initially)
-Box(1) = {Xmin, Ymin, Zmin, Xmax-Xmin, Ymax-Ymin, -Zmin};
-Box(2) = {X_inner_min, Y_inner_min, Z_inner_bot,
-                    X_inner_max-X_inner_min, Y_inner_max-Y_inner_min, Z_inner_top-Z_inner_bot};
+// 3D meshing algorithm
+Mesh.Algorithm3D = 4;         // Frontal Delaunay for quality
+                              // Options: 1=Delaunay, 4=Frontal, 10=HXT
 
-// 2. Create fault plane and nucleation patch with high, non-conflicting surface tags
-Rectangle(1000) = {-0.5*Fault_length, 0, 0, Fault_length, Fault_width};
-Rotate{{1, 0, 0}, {0, 0, 0}, -Fault_dip} { Surface{1000}; }
-Rectangle(1001) = {X_nucl-R_nucl, Width_nucl-R_nucl, 0, 2*R_nucl, 2*R_nucl};
-Rotate{{1, 0, 0}, {0, 0, 0}, -Fault_dip} { Surface{1001}; }
+// Quality optimization
+Mesh.Optimize = 1;            // Enable optimization
+Mesh.OptimizeNetgen = 1;      // Use Netgen optimizer for better quality
+Mesh.OptimizeThreshold = 0.3; // Optimize poor quality elements
 
-// 3. Fragment both volumes by the two fault-related surfaces (keep surfaces, delete original volumes)
-BooleanFragments{ Volume{1,2}; Delete; }{ Surface{1000,1001}; }
+// Smoothing
+Mesh.Smoothing = 10;          // Laplacian smoothing iterations
 
-// 4. Collect resulting volumes (expect 2: outer shell & inner prism cut by fault)
-vols[] = Volume{:};
-// Assume ordering: first = outer shell, second = inner (verify in GUI if unsure)
-shell_vol = vols[0];
-inner_vol = vols[1];
+// Element order
+Mesh.ElementOrder = 1;        // Linear TET4 elements
 
-// Assign fault surface tags directly (they are preserved: 1000 main, 1001 nucleation)
-fault_main = 1000;
-fault_nucl = 1001;
+// 2D algorithm (for surfaces)
+Mesh.Algorithm = 6;           // Frontal Delaunay
 
-// -------------------------------------------
-// MESH SETTINGS
-// -------------------------------------------
+// Quality metric
+Mesh.QualityType = 2;         // gamma (equilateral measure)
 
-// Distance to fault surfaces (analog of FacesList=101 in nonlocal file)
-Field[1] = Distance;
-Field[1].SurfacesList = {fault_main, fault_nucl};
-
-// Smooth growth away from fault (analog of Field[2] in nonlocal file)
-Field[2] = MathEval;
-Field[2].F = Sprintf("0.1*F1 +(F1/2.5e3)^2 + %g", lc_fault);
-
-// Distance to nucleation patch only (analog of Field[3] in nonlocal file)
-Field[3] = Distance;
-Field[3].SurfacesList = {fault_nucl};
-
-// Threshold around nucleation (Field[4] in nonlocal)
-Field[4] = Threshold;
-Field[4].IField = 3;
-Field[4].LcMin = lc_nucl;
-Field[4].LcMax = lc_fault;
-Field[4].DistMin = R_nucl;
-Field[4].DistMax = 2*R_nucl;
-
-// Restrict nucleation refinement strictly to fault surfaces (Field[5] in nonlocal)
-Field[5] = Restrict;
-Field[5].IField = 4;
-Field[5].SurfacesList = {fault_main, fault_nucl};
-
-// Propagation zone sizing transition away from fault (Field[6] in nonlocal)
-Field[6] = Threshold;
-Field[6].IField = 1; // based on distance to fault
-Field[6].LcMin = lc_fault;
-Field[6].LcMax = lc;
-Field[6].DistMin = 2*lc_fault;
-Field[6].DistMax = 2*lc_fault + 0.001; // tiny offset to avoid zero interval
-
-// Combine all (Field[7] in nonlocal)
-Field[7] = Min;
-Field[7].FieldsList = {2,5,6};
-Background Field = 7;
-
-// -------------------------------------------
-// PHYSICAL GROUPS
-// -------------------------------------------
-
-// Define physical groups
-Physical Surface(101) = Boundary{ Volume{shell_vol}; };  // Outer boundary
-Physical Surface(103) = {fault_main, fault_nucl};        // Fault surfaces
-Physical Surface(105) = Boundary{ Volume{inner_vol}; };  // Inner volume boundary
-
-Physical Volume(10) = {shell_vol};  // Outer volume
-Physical Volume(11) = {inner_vol};  // Inner volume
-
-// Final settings
-Mesh.Algorithm = 6;  // Frontal Delaunay
+// Output
 Mesh.MshFileVersion = 2.2;
+
+// ============================================
+// PHYSICAL GROUPS
+// ============================================
+Physical Surface(1) = Boundary{ Volume{1}; };  // All boundaries
+Physical Volume(1) = {1};                      // The volume
+
+// ============================================
+// USAGE
+// ============================================
+// Generate mesh:
+//   gmsh inner_uniform.geo -3 -o inner_mesh.msh
+//
+// Visualize:
+//   gmsh inner_uniform.geo
+//   Press '3' to mesh
+//
+// Adjust element size:
+//   lc_uniform = 200;   // Finer (200m)
+//   lc_uniform = 400;   // Default (400m)
+//   lc_uniform = 800;   // Coarser (800m)
+//
+// Box dimensions:
+//   X: 48 km (centered at x=0)
+//   Y: 3 km (centered at y=0)
+//   Z: 21.5 km (from surface to depth)
+//
+// Expected mesh:
+//   Completely uniform ~400m TET4 elements
+//   Optimized for equilateral quality

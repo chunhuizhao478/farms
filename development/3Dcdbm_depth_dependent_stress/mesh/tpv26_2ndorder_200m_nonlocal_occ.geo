@@ -2,28 +2,24 @@
  * Derived from tpv26_100m.geo: adds an embedded inner volume (geometric partition)
  * surrounding the vertical fault plane. Uses the OpenCASCADE kernel to ensure
  * the fault surface is properly integrated into the volume mesh.
- * The inner prism bounds:
- *   X in [-0.5*Fault_length - transition_length, 0.5*Fault_length + transition_length]
- *   Y in [-transition_length, +transition_length]
- *   Z in [0, -Fault_width - transition_length]
- * with transition_length = 2 km.
+ * Modified to generate second-order TET10 elements.
  */
 
 SetFactory("OpenCASCADE"); // Required for Boolean operations
 
 lc = 2e4;
-lc_fault = 125; // fine size near fault
+lc_fault = 200; // fine size near fault
 
 Fault_length = 45e3;
 Fault_width = 20e3;
 Fault_dip = 90*Pi/180.;
-transition_length = 1e3; // 2 km halo around fault
+transition_length = 1.5e3; // 1.5 km halo around fault
 
 // Nucleation in X,Z local coordinates
 X_nucl = 0e3;
 Width_nucl = 0.5*Fault_width;
 R_nucl = 1e3;
-lc_nucl = 125;
+lc_nucl = 200;
 
 Xmax = 60e3;
 Xmin = -Xmax;
@@ -121,6 +117,20 @@ Physical Surface(105) = Boundary{ Volume{inner_vol}; };  // Inner volume boundar
 Physical Volume(10) = {shell_vol};  // Outer volume
 Physical Volume(11) = {inner_vol};  // Inner volume
 
+// -------------------------------------------
+// SECOND-ORDER MESH SETTINGS (TET10)
+// -------------------------------------------
+
+// Generate second-order elements (TET10 instead of TET4)
+Mesh.ElementOrder = 2;
+
+// Use complete second-order elements (with all mid-side nodes)
+Mesh.SecondOrderIncomplete = 0;
+
+// Optional: Optimize high-order mesh quality
+Mesh.HighOrderOptimize = 1;  // Optimize placement of mid-side nodes
+
 // Final settings
-Mesh.Algorithm = 6;  // Frontal Delaunay
+Mesh.Algorithm = 6;  // Frontal Delaunay (works with 2nd order)
+Mesh.Algorithm3D = 1; // Delaunay 3D (default, compatible with 2nd order)
 Mesh.MshFileVersion = 2.2;

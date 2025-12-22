@@ -64,9 +64,9 @@ Zmin = -Xmax;
 
 // ----------------------------------------------------
 
-X_inner_min = -0.5*Fault_length - transition_length;
+X_inner_min = -0.5*Fault_length;
 
-X_inner_max =  0.5*Fault_length + transition_length;
+X_inner_max =  0.5*Fault_length;
 
 Y_inner_min = -transition_length;
 
@@ -74,15 +74,15 @@ Y_inner_max =  transition_length;
 
 Z_inner_top = 0;
 
-Z_inner_bot = -Fault_width - transition_length;
+Z_inner_bot = -Fault_width;
 
 
 
 // Intermediate prism (transition region)
 
-X_mid_min = -0.5*Fault_length - transition_length - intermediate_length;
+X_mid_min = -0.5*Fault_length - intermediate_length;
 
-X_mid_max =  0.5*Fault_length + transition_length + intermediate_length;
+X_mid_max =  0.5*Fault_length + intermediate_length;
 
 Y_mid_min = -transition_length - intermediate_length;
 
@@ -90,7 +90,7 @@ Y_mid_max =  transition_length + intermediate_length;
 
 Z_mid_top = 0;
 
-Z_mid_bot = -Fault_width - transition_length - intermediate_length;
+Z_mid_bot = -Fault_width - intermediate_length;
 
 
 

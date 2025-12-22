@@ -12,18 +12,18 @@
 SetFactory("OpenCASCADE"); // Required for Boolean operations
 
 lc = 2e4;
-lc_fault = 125; // fine size near fault
+lc_fault = 1000; // fine size near fault
 
 Fault_length = 45e3;
 Fault_width = 20e3;
 Fault_dip = 90*Pi/180.;
-transition_length = 1e3; // 2 km halo around fault
+transition_length = 1.5e3; // 2 km halo around fault
 
 // Nucleation in X,Z local coordinates
 X_nucl = 0e3;
 Width_nucl = 0.5*Fault_width;
 R_nucl = 1e3;
-lc_nucl = 125;
+lc_nucl = 1000;
 
 Xmax = 60e3;
 Xmin = -Xmax;
