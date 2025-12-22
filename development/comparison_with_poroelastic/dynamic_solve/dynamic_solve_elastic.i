@@ -805,10 +805,11 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   [off_fault]
     type = PositionsFunctorValueSampler
-    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z'
+    functors = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z porepressure'
     positions = 'pos'
     sort_by = x
     execute_on = TIMESTEP_END
+    discontinuous = false
   []
 []
 
