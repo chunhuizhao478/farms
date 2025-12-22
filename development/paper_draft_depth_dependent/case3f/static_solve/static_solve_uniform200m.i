@@ -11,7 +11,7 @@ xmin_fault = -20000 #xmin of fault
 xmax_fault = 20000 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
-elem_size = 100 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 200 #!!! element size near the fault, need to be consistent with the mesh file
 ##-------------------------##
 
 ##material properties##
@@ -90,7 +90,7 @@ fault_center = '0 0 -10000'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault.msh'
+    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform200m.msh'
     #file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
   []
   [./sidesets]
