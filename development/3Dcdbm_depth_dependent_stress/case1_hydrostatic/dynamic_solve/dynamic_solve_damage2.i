@@ -27,8 +27,8 @@ zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
 #nonlocal length applied region along ydir
-ymin_fault = -1500
-ymax_fault = 1500
+ymin_fault = -1000
+ymax_fault = 1000
 nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
 nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
 
@@ -119,12 +119,12 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.00175 #time step size
+dt = 0.00225 #time step size
 
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 10 #time step interval for output
+exodus_time_step_interval = 20 #time step interval for output
 sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
 csv_time_step_interval = 100 #time step interval for csv output
 checkpoint_time_step_interval = 40 #time step interval for checkpoint output
@@ -446,6 +446,10 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
+  [shear_modulus]
+    order = FIRST
+    family = MONOMIAL
+  []
 
 []
 
@@ -677,7 +681,12 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     index_i = 0
     index_j = 1
   []
-
+  [get_shear_modulus]
+    type = MaterialRealAux
+    variable = shear_modulus
+    property = shear_modulus
+    execute_on = 'TIMESTEP_END'
+  []
 
 []
 
@@ -1034,7 +1043,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'eqstrain_nonlocal_aux xi_aux deviatoric_strain_rate_aux B_aux alpha_damagedvar_aux
+    show = 'eqstrain_nonlocal_aux xi_aux deviatoric_strain_rate_aux B_aux alpha_damagedvar_aux shear_modulus
             traction_strike_aux traction_normal_aux traction_dip_aux
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z
             stress_xx stress_yy stress_xy
