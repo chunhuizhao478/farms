@@ -8,7 +8,7 @@ bottom_nodes_coord =' -60000 -60000 -60000;
                      -60000 60000  -60000'
 
 ##element size
-elem_size = 150 #!!! element size near the fault, need to be consistent with the mesh file
+elem_size = 125 #!!! element size near the fault, need to be consistent with the mesh file
 
 ##mesh domain
 nonlocal_eqstrain_blocks = '10 100 200'
@@ -27,8 +27,8 @@ zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
 #nonlocal length applied region along ydir
-ymin_fault = -1500
-ymax_fault = 1500
+ymin_fault = -1000
+ymax_fault = 1000
 nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
 nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
 
@@ -110,7 +110,7 @@ anand_param_p_mat = 1
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = -21000 #nucleation center x coordinate
+nucl_center_x = 18500 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -119,7 +119,7 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.002 #time step size
+dt = 0.00225 #time step size
 
 end_time = 12.0 #end time for simulation
 
@@ -134,7 +134,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [msh]
     type = FileMeshGenerator
-      file = '../../mesh/tpv26_150m_nonlocal_occ.msh'
+      file = '../../mesh/tpv26_125m_nonlocal_occ.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -680,7 +680,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = eqstrain_nonlocal_aux
     property = eqstrain_nonlocal
     execute_on = 'TIMESTEP_END'
-    # block = ${nonlocal_eqstrain_blocks}
+   block = ${nonlocal_eqstrain_blocks}
   []
   ###
   [get_eqstrain_nonlocal_initial]
@@ -840,12 +840,23 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     variable = 'disp_z'
     component = '2'
   []
+  [pspg_stabilization]
+    type = PoroStabilization
+    variable = porepressure
+    displacements = 'disp_x disp_y disp_z'
+  []
+
+  
 []
 
 [Materials]
   [strain3]
-        type = ComputeSmallStrain
-        displacements = 'disp_x disp_y disp_z'
+      type = ComputeSmallStrain
+      displacements = 'disp_x disp_y disp_z'
+  []
+  [stabilization_param]
+    type = StabilizationMaterial
+    stabilization_coeff = 0.1
   []
   #damage breakage model
   [stress_medium]
