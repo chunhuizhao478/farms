@@ -62,7 +62,7 @@ xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-9 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -93,6 +93,12 @@ tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
 tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
+##overpressure parameters##
+use_overpressure = true #use overpressure for initial stress
+overpressure_depth_A = 6000 #overpressure depth A (m)
+overpressure_depth_B = 8000 #overpressure depth B (m)
+##------------------------------------------------------------------##
+
 #nucleation parameters
 nucl_center_x = -16000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
@@ -105,7 +111,7 @@ t0 = 0.5 #nucleation time (s)
 ##model parameters##
 dt = 0.005 #time step size
 
-end_time = 20.0 #end time for simulation
+end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 20 #time step interval for output
@@ -118,7 +124,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform200m.msh'
+    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform200m_tensileside.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -790,6 +796,9 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
+    use_overpressure = ${use_overpressure}
+    overpressure_depth_A = ${overpressure_depth_A}
+    overpressure_depth_B = ${overpressure_depth_B}
   []
   ###cohesion###
   [./func_cohesion]
@@ -866,22 +875,22 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial'
     time_step_interval = ${exodus_time_step_interval}
   []
-  #[csv]
-  #  type = CSV
-  #  execute_on = 'timestep_end'
-  #  time_step_interval = ${csv_time_step_interval}
-  #[]
+  [csv]
+    type = CSV
+    execute_on = 'timestep_end'
+    time_step_interval = ${csv_time_step_interval}
+  []
   [out]
     type = Checkpoint
     time_step_interval = ${checkpoint_time_step_interval}
     num_files = ${checkpoint_num_files}
   []
-  #[sample_snapshots]
-  #  type = Exodus
-  #  execute_on = 'timestep_end'
-  #  show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux'
-  #  time_step_interval = ${sample_snapshots_time_step_interval}
-  #[]
+  [sample_snapshots]
+    type = Exodus
+    execute_on = 'timestep_end'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux'
+    time_step_interval = ${sample_snapshots_time_step_interval}
+  []
 []
 
 [VectorPostprocessors]
