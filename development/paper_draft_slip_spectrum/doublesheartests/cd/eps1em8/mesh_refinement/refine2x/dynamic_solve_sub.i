@@ -3,10 +3,10 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 200
+        nx = 40
         ny = 40
         xmin = 0
-        xmax = 0.05
+        xmax = 0.01
         ymin = 0
         ymax = 0.01
     []
@@ -15,21 +15,21 @@
         input = msh
         block_id = 1
         bottom_left = '0 0 0'
-        top_right = '0.05 0.004 0'
+        top_right = '0.01 0.004 0'
     []
     [./box2]
         type = SubdomainBoundingBoxGenerator
         input = box
         block_id = 0
         bottom_left = '0 0.004 0'
-        top_right = '0.05 0.006 0'
+        top_right = '0.01 0.006 0'
     []
     [./box3]
         type = SubdomainBoundingBoxGenerator
         input = box2
         block_id = 2
         bottom_left = '0 0.006 0'
-        top_right = '0.05 0.01 0'
+        top_right = '0.01 0.01 0'
     []
 []
 

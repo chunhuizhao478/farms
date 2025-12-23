@@ -3,10 +3,10 @@
     [./msh]
         type = GeneratedMeshGenerator
         dim = 2
-        nx = 200
+        nx = 40
         ny = 40
         xmin = 0
-        xmax = 0.05
+        xmax = 0.01
         ymin = 0
         ymax = 0.01
     []
@@ -15,21 +15,21 @@
         input = msh
         block_id = 1
         bottom_left = '0 0 0'
-        top_right = '0.05 0.004 0'
+        top_right = '0.01 0.004 0'
     []
     [./box2]
         type = SubdomainBoundingBoxGenerator
         input = box
         block_id = 0
         bottom_left = '0 0.004 0'
-        top_right = '0.05 0.006 0'
+        top_right = '0.01 0.006 0'
     []
     [./box3]
         type = SubdomainBoundingBoxGenerator
         input = box2
         block_id = 2
         bottom_left = '0 0.006 0'
-        top_right = '0.05 0.01 0'
+        top_right = '0.01 0.01 0'
     []
 []
 
@@ -434,7 +434,15 @@
     automatic_scaling = true
     # nl_forced_its = 3
     # line_search = 'bt'
-    dt = 0.1
+    [TimeStepper]
+        type = FarmsIterationAdaptiveDT
+        dt = 0.001
+        cutback_factor_at_failure = 0.5
+        optimal_iterations = 20
+        growth_factor = 1.05
+        # Fallback constant value (not used when postprocessor is active)
+        max_time_step_bound = 0.01
+    []
     verbose = true
     fixed_point_max_its = 10
     accept_on_max_fixed_point_iteration = false
@@ -453,8 +461,8 @@
 [Outputs]
     [./exodus]
       type = Exodus
-      time_step_interval = 100
-      show = 'vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
+      time_step_interval = 1000
+      show = 'disp_x disp_y vel_x vel_y alpha_damagedvar_aux B_damagedvar_aux xi_aux nonlocal_xi pk2_stress_01 green_lagrange_elastic_strain_01 plastic_strain_01 total_lagrange_strain_01 deviatroic_strain_rate_aux'
     [../]
     [./csv]
         type = CSV
@@ -494,13 +502,13 @@
           variable = disp_x
           primary = left
           secondary = right
-          translation = '0.05 0 0'
+          translation = '0.01 0 0'
         [../]
         [./y]
           variable = disp_y
           primary = left
           secondary = right
-          translation = '0.05 0 0'
+          translation = '0.01 0 0'
         [../]
     [../]
     #displacement rate
@@ -552,14 +560,24 @@
         type = NodalExtremeValue
         variable = vel_x
     []
+    #[./breakage_val]
+    #    type = NodalVariableValue
+    #    variable = B_damagedvar_aux
+    #    nodeid = 1060
+    #[]
+    #[./damage_val]
+    #    type = NodalVariableValue
+    #    variable = alpha_damagedvar_aux
+    #    nodeid = 1060
+    #[]
     [./breakage_val]
         type = NodalVariableValue
         variable = B_damagedvar_aux
-        nodeid = 4100
+        nodeid = 820
     []
     [./damage_val]
         type = NodalVariableValue
         variable = alpha_damagedvar_aux
-        nodeid = 4100
+        nodeid = 820
     []
 []
