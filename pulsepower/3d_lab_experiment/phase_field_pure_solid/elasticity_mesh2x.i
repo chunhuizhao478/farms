@@ -332,7 +332,7 @@ top_right1 = '0.002 4e-4 0.06'
   [./Pressure]
     #assign pressure on inner surface
     [pressure_inner]
-      boundary = 4 #confirm the boundary id
+      boundary = 3 #confirm the boundary id
       function = func_tri_pulse
       displacements = 'disp_x disp_y disp_z'
       use_displaced_mesh = false
@@ -368,7 +368,7 @@ top_right1 = '0.002 4e-4 0.06'
     velocities = 'vel_x vel_y vel_z'
     accelerations = 'accel_x accel_y accel_z'
     component = 0
-    boundary = 3
+    boundary = 4
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
     alpha = ${hht_alpha}
@@ -384,7 +384,7 @@ top_right1 = '0.002 4e-4 0.06'
     velocities = 'vel_x vel_y vel_z'
     accelerations = 'accel_x accel_y accel_z'
     component = 1
-    boundary = 3
+    boundary = 4
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
     alpha = ${hht_alpha}
@@ -400,7 +400,7 @@ top_right1 = '0.002 4e-4 0.06'
     velocities = 'vel_x vel_y vel_z'
     accelerations = 'accel_x accel_y accel_z'
     component = 2
-    boundary = 3
+    boundary = 4
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
     alpha = ${hht_alpha}
