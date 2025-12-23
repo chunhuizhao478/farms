@@ -64,20 +64,22 @@
 [Variables]
     [disp_x]
         order = FIRST
-        family = LAGRANGE     
+        family = LAGRANGE    
+        scaling = 1E-6 
     []
     [disp_y]
         order = FIRST
-        family = LAGRANGE    
+        family = LAGRANGE 
+        scaling = 1E-6  
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     [porepressure]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E9 
     []
 []
 
@@ -397,7 +399,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 22
+        optimal_iterations = 25
         growth_factor = 1.25
         max_time_step_bound = 5
     []
