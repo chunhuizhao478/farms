@@ -856,7 +856,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   []
   [stabilization_param]
     type = StabilizationMaterial
-    stabilization_coeff = 1
+    stabilization_coeff = 0
   []
   #damage breakage model
   [stress_medium]
