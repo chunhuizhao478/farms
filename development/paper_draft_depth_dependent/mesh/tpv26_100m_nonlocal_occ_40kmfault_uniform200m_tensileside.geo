@@ -18,8 +18,8 @@ Fault_length = 40e3;
 Fault_width = 20e3;
 Fault_dip = 90*Pi/180.;
 transition_length = 2e3; // 2 km halo for X and Z directions
-transition_length_pos = 10e3; // 8 km halo on positive Y (tensile side)
-transition_length_neg = 2e3; // 2 km halo on negative Y
+transition_length_pos = 2e3; // 8 km halo on positive Y (tensile side)
+transition_length_neg = 10e3; // 2 km halo on negative Y
 
 // Nucleation in X,Z local coordinates
 X_nucl = 0e3;
