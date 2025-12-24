@@ -204,24 +204,59 @@
 []
   
 [Executioner]
-    type = Transient
+     type = Transient
     solve_type = 'NEWTON'
+    # solve_type = 'PJFNK'
     start_time = -1e-12
-    l_max_its = 100
-    l_tol = 1e-7
-    nl_rel_tol = 1e-8
-    nl_max_its = 10
-    nl_abs_tol = 1e-10
-    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-    petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+    end_time = 1e10
+    # num_steps = 10
+    l_max_its = 200
+    l_tol = 1e-5
+    nl_rel_tol = 1e-6
+    nl_max_its = 20
+    nl_abs_tol = 1e-8
+      # Improved solver settings for fine mesh
+
+
+
+    petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type 
+
+
+                           -pc_hypre_boomeramg_strong_threshold
+
+
+                           -ksp_gmres_restart
+
+
+                           -snes_type'
+
+
+    petsc_options_value = 'gmres hypre boomeramg 
+
+
+                           0.5
+
+
+                           100
+
+
+                           vinewtonrsls'
+    # petsc_options_iname = '-pc_type -pc_factor_shift_type'
+    # petsc_options_value = 'lu       NONZERO'
+    # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+    # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
+    # automatic_scaling = true
+    #nl_forced_its = 3
+    line_search = 'bt'
+    # dt = 10
     #verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 10
+        dt = 2.5
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 10
-        growth_factor = 1.25
-        max_time_step_bound = 100
+        optimal_iterations = 25
+        growth_factor = 1.1
+        max_time_step_bound = 5
     []
     [./TimeIntegrator]
         type = ImplicitEuler
