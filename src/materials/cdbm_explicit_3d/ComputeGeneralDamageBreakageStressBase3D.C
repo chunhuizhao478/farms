@@ -51,7 +51,8 @@ ComputeGeneralDamageBreakageStressBase3D::ComputeGeneralDamageBreakageStressBase
     _shear_modulus_o(getParam<Real>("shear_modulus_o")),
     _lambda_input_prop_ptr(nullptr),
     _mu_input_prop_ptr(nullptr),
-    _sts_initial_tensor(declareProperty<RankTwoTensor>("sts_initial_tensor"))
+    _sts_initial_tensor(declareProperty<RankTwoTensor>("sts_initial_tensor")),
+    _total_energy_density(declareProperty<Real>("total_energy_density"))
 {
   const auto lambda_name = isParamValid("lambda_input") ? getParam<MaterialPropertyName>("lambda_input") : MaterialPropertyName("");
   const auto mu_name = isParamValid("shear_modulus_input") ? getParam<MaterialPropertyName>("shear_modulus_input") : MaterialPropertyName("");

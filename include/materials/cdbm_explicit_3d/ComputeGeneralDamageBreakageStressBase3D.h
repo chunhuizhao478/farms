@@ -89,7 +89,7 @@ protected:
   MaterialProperty<RankTwoTensor> & _sigma_d;
   /// eq strain rate
   MaterialProperty<Real> & _epsilon_eq;
-  /// take initial value 
+  /// take initial value
   /// lambda (first lame const)
   Real _lambda_o;
   /// mu (shear modulus)
@@ -102,4 +102,7 @@ protected:
 
   /// initial stress tensor
   MaterialProperty<RankTwoTensor> & _sts_initial_tensor;
+
+  /// total energy density
+  MaterialProperty<Real> & _total_energy_density;
 };

@@ -632,7 +632,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   #damage breakage model
   [stress_medium_nonlocal]
       type = ComputeDamageBreakageStress3DSlipWeakeningNonlocalDev
-      output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate'
+      output_properties = 'B alpha_damagedvar xi I1 I2 deviatoric_strain_rate sts_total eps_p eps_e'
       use_strain_rate_dependent_Cd = ${use_strain_rate_dependent_Cd}
       m_exponent = ${m_exponent}
       strain_rate_hat = ${strain_rate_hat}
@@ -882,7 +882,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [exodus]
     type = Exodus
     execute_on = 'timestep_end'
-    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux xi_aux stress_xx stress_yy stress_xy deviatoric_strain_rate_aux eqstrain_nonlocal_aux eqstrain_nonlocal_initial'
+    show = 'vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z disp_slipweakening_x disp_slipweakening_y disp_slipweakening_z alpha_damagedvar_aux B_aux deviatoric_strain_rate_aux eqstrain_nonlocal_aux sts_total_00 sts_total_01 sts_total_11 sts_total_22'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
