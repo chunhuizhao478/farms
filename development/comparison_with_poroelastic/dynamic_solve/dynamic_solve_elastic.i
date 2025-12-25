@@ -759,6 +759,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [../]
 []
 
+[Preconditioning]
+    [smp]
+      type = SMP
+      full = true
+    []
+[]
+
 [Executioner]
   type = Transient
   dt = ${dt}
