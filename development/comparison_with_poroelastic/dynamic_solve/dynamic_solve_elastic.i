@@ -766,8 +766,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   # num_steps = ${num_steps}
   [TimeIntegrator]
     type = CentralDifference
-    solve_type = lumped
-    use_constant_mass = true
   []
 []
 
