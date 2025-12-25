@@ -85,7 +85,7 @@ SlipWeakeningFrictionczm3dCDBM::SlipWeakeningFrictionczm3dCDBM(const InputParame
     _traction_strike(declareProperty<Real>("traction_strike")),
     _traction_dip(declareProperty<Real>("traction_dip")),
     _traction_normal(declareProperty<Real>("traction_normal")),
-    _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>(_base_name + "static_initial_stress_tensor")),
+    _static_initial_stress_tensor(getMaterialPropertyByName<RankTwoTensor>(_base_name + "sts_initial_tensor")),
     _use_forced_rupture(getParam<bool>("use_forced_rupture")),
     _t0(getParam<Real>("t0")),
     _cohesion_aux(coupledValue("cohesion_aux")),
@@ -176,11 +176,8 @@ SlipWeakeningFrictionczm3dCDBM::computeInterfaceTractionAndDerivatives()
             (R_plus_local_t - R_minus_local_t) / (2 * A) + T1_o;
   Real T3 = (1 / _dt) * M * displacement_jump_rate_d / (2 * A) +
             (R_plus_local_d - R_minus_local_d) / (2 * A) + T3_o;
-  // Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
-   //              (2 * A) +
-   //          ((R_minus_local_n - R_plus_local_n) / (2 * A)) - T2_o;
-
-  Real T2 = - T2_o ;
+  Real T2 = -(1 / _dt) * M * (displacement_jump_rate_n + (1 / _dt) * displacement_jump_n) /
+                 (2 * A) + ((R_minus_local_n - R_plus_local_n) / (2 * A)) - T2_o;
 
   // Overstress nucleation
   if (!_use_forced_rupture){
