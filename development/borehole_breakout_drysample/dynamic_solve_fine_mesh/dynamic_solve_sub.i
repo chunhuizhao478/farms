@@ -210,8 +210,8 @@
     start_time = -1e-12
     end_time = 1e10
     # num_steps = 10
-    l_max_its = 200
-    l_tol = 1e-5
+    l_max_its = 100
+    l_tol = 1e-6
     nl_rel_tol = 1e-6
     nl_max_its = 20
     nl_abs_tol = 1e-8
@@ -254,9 +254,9 @@
         type = FarmsIterationAdaptiveDT
         dt = 2.5
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 25
+        optimal_iterations = 10
         growth_factor = 1.1
-        max_time_step_bound = 5
+        max_time_step_bound = 10
     []
     [./TimeIntegrator]
         type = ImplicitEuler
