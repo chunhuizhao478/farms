@@ -38,7 +38,7 @@
     #strain rate dependent Cd options
      m_exponent = 0.8
      strain_rate_hat = 1e-4
-     cd_hat = 12
+     cd_hat = 15
 
     #<coefficient gives positive breakage evolution >: refer to "Lyak_BZ_JMPS14_splitstrain" Table 1
     #The multiplier between Cd and Cb: Cb = CdCb_multiplier * Cd #specify by auxiliary variable
@@ -211,7 +211,7 @@
     end_time = 1e10
     # num_steps = 10
     l_max_its = 100
-    l_tol = 1e-6
+    l_tol = 1e-7
     nl_rel_tol = 1e-6
     nl_max_its = 20
     nl_abs_tol = 1e-8
@@ -252,11 +252,11 @@
     #verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 2.5
+        dt = 10
         cutback_factor_at_failure = 0.5
         optimal_iterations = 10
         growth_factor = 1.1
-        max_time_step_bound = 10
+        max_time_step_bound = 100
     []
     [./TimeIntegrator]
         type = ImplicitEuler
