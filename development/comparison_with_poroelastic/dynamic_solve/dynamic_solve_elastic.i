@@ -891,7 +891,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = Exodus
     execute_on = 'timestep_end'
     show = 'sts_total_xx sts_total_xy sts_total_zz sts_total_yy
-            traction_strike_aux traction_normal_aux traction_dip_aux
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z
             stress_xx stress_yy stress_xy'
     time_step_interval = ${exodus_time_step_interval}
