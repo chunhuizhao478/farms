@@ -332,7 +332,7 @@
     [stress_medium]
         type = ComputeLagrangianDamageBreakageStressPK2Diffused
         large_kinematics = true
-        use_dilatancy = true 
+        use_dilatancy = false 
         output_properties = 'pk2_stress green_lagrange_elastic_strain plastic_strain total_lagrange_strain strain_invariant_ratio'
         outputs = exodus
         block = '3'
