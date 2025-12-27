@@ -97,7 +97,7 @@ PoroFullSatMaterial::computeQpProperties()
 
     _one_over_biot_modulus[_qp] =
         // ( _porosity[_qp] * _Ks - ( _alpha - _porosity[_qp] ) * _Kf) / (_Ks*_Kf);
-        (1 - _alpha) * (_alpha - _porosity[_qp]) * 1/_Ks + _porosity[_qp] * 1/_Kf;
+        (_alpha - _porosity[_qp]) * 1/_Ks + _porosity[_qp] * 1/_Kf;
         
     _done_over_biot_modulus_dP[_qp] = 0;
     _done_over_biot_modulus_dep[_qp] = 0;
