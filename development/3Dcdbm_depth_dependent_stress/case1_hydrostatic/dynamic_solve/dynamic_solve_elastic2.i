@@ -32,11 +32,12 @@ ymax_fault = 1000
 nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
 nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
 
+
 ##-------------------------##
 ##material properties##
 density = 2670 #density
-lambda_o = 2.1547e10 #first lame constant
-shear_modulus_o = 2.975e10 #second lame constant
+lambda_o = 3.204e10 #first lame constant
+shear_modulus_o = 3.204e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
@@ -49,8 +50,8 @@ mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
-cohesion_depth = 6500 #cohesion depth (m)
-cohesion_slope = 0.01 #cohesion slope (MPa/m)
+cohesion_depth = 5000 #cohesion depth (m)
+cohesion_slope = 0.00072 #cohesion slope (MPa/m)
 cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
