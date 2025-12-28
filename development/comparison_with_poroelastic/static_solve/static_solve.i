@@ -16,8 +16,8 @@ bottom_nodes_coord =' -60000 -60000 -60000;
 
 ##material properties##
 density = 2670 #density
-lambda_o = 2.1547e10 #first lame constant
-shear_modulus_o = 2.975e10 #second lame constant
+lambda_o = 3.204e10 #first lame constant
+shear_modulus_o = 3.204e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
@@ -61,7 +61,7 @@ fluid_density = 1000
 gravity = 9.8
 bxx = 0.926793
 byy = 1.073206
-bxy = -0.7
+bxy = -0.8
 ##------------------------------------------------------------------##
 
 ##tapering parameters##
