@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 68
+    Cd_constant = 70
 
     #strain rate dependent Cd options
     # m_exponent = 0.8
@@ -218,7 +218,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 5
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 18
+        optimal_iterations = 10
         growth_factor = 1.25
         max_time_step_bound = 50
     []
