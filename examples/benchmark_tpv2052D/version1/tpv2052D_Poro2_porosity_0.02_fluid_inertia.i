@@ -501,7 +501,7 @@
     type = Transient
     dt = 0.00085
     end_time = 3.6
-    automatic_scaling = true
+    #automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference
     []
