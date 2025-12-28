@@ -12,12 +12,12 @@
 #include "Kernel.h"
 #include "Function.h"
 
-class CoefDiffusion : public Kernel
+class CoefDiffusion1 : public Kernel
 {
 public:
   static InputParameters validParams();
 
-  CoefDiffusion(const InputParameters & parameters);
+  CoefDiffusion1(const InputParameters & parameters);
 
 protected:
   virtual Real computeQpResidual();

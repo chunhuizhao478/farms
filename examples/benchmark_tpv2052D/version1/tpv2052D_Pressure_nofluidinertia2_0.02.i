@@ -189,7 +189,6 @@
         lambda = 13.51e9
         shear_modulus = 30.08e9
         use_displaced_mesh = false
-    []mesh = false
     []
     [stress]
         type = ComputeLinearElasticStress

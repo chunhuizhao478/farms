@@ -7,12 +7,12 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "CoefDiffusion.h"
+#include "CoefDiffusion1.h"
 
-registerMooseObject("farmsApp", CoefDiffusion);
+registerMooseObject("farmsApp", CoefDiffusion1);
 
 InputParameters
-CoefDiffusion::validParams()
+CoefDiffusion1::validParams()
 {
   InputParameters params = Kernel::validParams();
   params.addParam<Real>("coef", 0.0, "Diffusion coefficient");
@@ -24,7 +24,7 @@ CoefDiffusion::validParams()
   return params;
 }
 
-CoefDiffusion::CoefDiffusion(const InputParameters & parameters)
+CoefDiffusion1::CoefDiffusion1(const InputParameters & parameters)
   : Kernel(parameters),
     _coef(getParam<Real>("coef")),
     _func(parameters.isParamValid("function") ? &getFunction("function") : NULL)
@@ -32,7 +32,7 @@ CoefDiffusion::CoefDiffusion(const InputParameters & parameters)
 }
 
 Real
-CoefDiffusion::computeQpResidual()
+CoefDiffusion1::computeQpResidual()
 {
   Real diffusivity = _coef;
 
@@ -43,7 +43,7 @@ CoefDiffusion::computeQpResidual()
 }
 
 Real
-CoefDiffusion::computeQpJacobian()
+CoefDiffusion1::computeQpJacobian()
 {
   Real diffusivity = _coef;
 
