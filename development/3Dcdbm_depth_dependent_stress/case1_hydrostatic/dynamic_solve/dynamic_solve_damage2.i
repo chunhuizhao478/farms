@@ -124,10 +124,10 @@ dt = 0.00225 #time step size
 end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 20 #time step interval for output
-sample_snapshots_time_step_interval = 400 #time step interval for sample snapshots output
-csv_time_step_interval = 100 #time step interval for csv output
-checkpoint_time_step_interval = 40 #time step interval for checkpoint output
+exodus_time_step_interval = 25 #time step interval for output
+sample_snapshots_time_step_interval = 1000 #time step interval for sample snapshots output
+csv_time_step_interval = 1000 #time step interval for csv output
+checkpoint_time_step_interval = 1000 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
