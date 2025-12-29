@@ -62,7 +62,7 @@ xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-4 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -292,10 +292,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 
 [AuxVariables]
 
-  [pp]
-        order = FIRST
-        family = LAGRANGE
-  []
   ###
   #slip weakening friction parameters
   [./resid_x]
@@ -832,7 +828,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       reaction_pressure_x = resid_pressure_x
       reaction_pressure_y = resid_pressure_y
       reaction_pressure_z = resid_pressure_z
-      fault_pressure = pp
+      fault_pressure = porepressure
       #---------------------------------------------#
       use_forced_rupture = true
       t0 = ${t0}
