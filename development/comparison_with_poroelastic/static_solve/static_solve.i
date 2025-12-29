@@ -189,7 +189,7 @@ tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
   [gravity_z]
     type = BodyForce
     variable = disp_z
-    value = ${fparse -1 * density * gravity}
+    value = ${fparse -1 * density * gravity + 1 * fluid_density * gravity}
   []
 []
 
