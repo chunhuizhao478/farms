@@ -274,8 +274,8 @@
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 13.51e9
-        shear_modulus = 30.08e9
+        lambda = 32e9
+        shear_modulus = 32e9
         use_displaced_mesh = false
     []
     [stress]
@@ -287,7 +287,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2617
+        prop_values = 2670
     []
     [./rhof]
         type = GenericConstantMaterial
@@ -297,32 +297,32 @@
     [./turtuosity]
         type = GenericConstantMaterial
         prop_names = taut
-        prop_values = 7.07
+        prop_values = 12
     [../]
     [./porosity]
         type = GenericConstantMaterial
         prop_names = porosity
-        prop_values = 0.02
+        prop_values = 0.005
     [../]
     [./hydconductivity]
         type = GenericConstantMaterial
         prop_names = hydconductivity
-        prop_values = 4.4411549e-14
+        prop_values = 1e-16
     [../]
     [./hydconductivity_layer]
         type = GenericConstantMaterial
         prop_names = hydconductivity_layer
-        prop_values = 4.4411549e-14
+        prop_values = 1e-16
     [../]
     [./biotcoeff]
         type = GenericConstantMaterial
         prop_names = biot_coefficient
-        prop_values = 0.15
+        prop_values = 0.06
     [../]
     [./biotmodulus]
         type = GenericConstantMaterial
         prop_names = biot_modulus
-        prop_values = 7.98e10
+        prop_values = 3.07364e11
     [../]
     [./constants]
         type = GenericConstantMaterial

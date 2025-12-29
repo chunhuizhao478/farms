@@ -3,40 +3,39 @@
 # Harris, R. M.-P.-A. (2009). The SCEC/USGS Dynamic Earthquake Rupture Code Verification Exercise. Seismological Research Letters, vol. 80, no. 1, pages 119-126.
 
 [Mesh]
-
     [./msh]
-        type = GeneratedMeshGenerator
-        dim = 2
-        nx = 200
-        ny = 200
-        xmin = -15000
-        xmax = 15000
-        ymin = -15000
-        ymax = 15000
-        elem_type = QUAD9
-        
+        type = FileMeshGenerator
+        file =  './Planar_fault_unstructured.msh'
     []
-    [./new_block]
-        type = ParsedSubdomainMeshGenerator
+    [subdomain1]
         input = msh
-        combinatorial_geometry = 'y>0'
+        type = SubdomainBoundingBoxGenerator
+        bottom_left = '-15000 -15000 0'
+        top_right = '15000 15000 0'
+        block_id = 0
+    []
+    [./new_block_1]
+        type = ParsedSubdomainMeshGenerator
+        input = subdomain1
+        combinatorial_geometry = 'y > 0'
         block_id = 1
     []
-    [./split]
+    [./split_1]
         type = BreakMeshByBlockGenerator
-        input = new_block
+        input = new_block_1
         split_interface = true
         add_interface_on_two_sides = true
-    []
-    
+        block_pairs = '0 1'
+    []     
 []
 
 [GlobalParams]
     displacements = 'disp_x disp_y' 
     fluid_vel = 'fluid_vel_x fluid_vel_y'
     porepressure = 'p'
-    q = 0.1
+    q = 0.5
     Dc = 0.4
+    elem_size = 75
     T2_o = 120e6
     mu_d = 0.525
 []
@@ -75,17 +74,33 @@
         order = SECOND
         family = LAGRANGE
     []
+    [./fluid_disp_x]
+        order = SECOND
+        family = LAGRANGE
+    []
+    [./fluid_disp_y]
+        order = SECOND
+        family = LAGRANGE
+    []
     [./accel_y]
     []
     [./nodal_area]
         order = SECOND
         family = LAGRANGE
     [../]
-    [./resid_x]
+    [./resid_primary_x]
         order = SECOND
         family = LAGRANGE
     [../]
-    [./resid_y]
+    [./resid_primary_y]
+        order = SECOND
+        family = LAGRANGE
+    [../]
+    [./jacob_primary_x]
+        order = SECOND
+        family = LAGRANGE
+    [../]
+    [./jacob_primary_y]
         order = SECOND
         family = LAGRANGE
     [../]
@@ -97,11 +112,27 @@
         order = SECOND
         family = LAGRANGE
     [../]
+    [./jacob_damping_x]
+        order = SECOND
+        family = LAGRANGE
+    [../]
+    [./jacob_damping_y]
+        order = SECOND
+        family = LAGRANGE
+    [../]
     [./resid_pressure_x]
         order = SECOND
         family = LAGRANGE
     [../]
     [./resid_pressure_y]
+        order = SECOND
+        family = LAGRANGE
+    [../]
+    [./jacob_pressure_x]
+        order = SECOND
+        family = LAGRANGE
+    [../]
+    [./jacob_pressure_y]
         order = SECOND
         family = LAGRANGE
     [../]
@@ -113,11 +144,11 @@
         variable = vel_x
         coupled = disp_x
     []
-   # [velocity_y]
-   ##     type = CompVarRate
-   #     variable = vel_y
-   ##     coupled = disp_y
-    #[]
+    [velocity_y]
+        type = CompVarRate
+        variable = vel_y
+        coupled = disp_y
+    [] 
 []
 
 [Actions/PoroCohesiveZoneAction]
@@ -135,8 +166,9 @@
         variable = disp_x
         component = 0
         displacements = 'disp_x disp_y'
-        use_displaced_mesh = false     
-        save_in = 'resid_x'
+        use_displaced_mesh = false   
+        save_in = 'resid_primary_x' 
+        diag_save_in = 'jacob_primary_x' 
     [../]
     [./stressdiv_y]
         type = StressDivergenceTensors
@@ -144,7 +176,8 @@
         component = 1
         displacements = 'disp_x disp_y'
         use_displaced_mesh = false
-        save_in = 'resid_y'
+        save_in = 'resid_primary_y' 
+        diag_save_in = 'jacob_primary_y' 
     [../]
     [./skeletoninertia_x]
         type = InertialForce
@@ -184,6 +217,7 @@
         porepressure = p
         component = 0
         save_in = 'resid_pressure_x'
+        diag_save_in = 'jacob_pressure_x' 
     [../]
     [./poromechskeletoncoupling_y]
         type = PoroMechanicsCoupling
@@ -191,6 +225,7 @@
         porepressure = p
         component = 1
         save_in = 'resid_pressure_y'
+        diag_save_in = 'jacob_pressure_y' 
     [../]
     [./poromechfluidcoupling_x]
         type = PoroMechanicsCoupling2
@@ -225,20 +260,22 @@
         variable = 'disp_x'
         component = '0'
         save_in = 'resid_damping_x'
+        diag_save_in = 'jacob_damping_x' 
     []
     [./Reactiony]
         type = StiffPropDamping
         variable = 'disp_y'
         component = '1'
         save_in = 'resid_damping_y'
+        diag_save_in = 'jacob_damping_y' 
     []
 []
 
 [Materials]
     [elasticity]
         type = ComputeIsotropicElasticityTensor
-        bulk_modulus = 28.25e9
-        shear_modulus = 25.32e9
+        lambda = 13.51e9
+        shear_modulus = 30.08e9
         use_displaced_mesh = false
     []
     [stress]
@@ -250,7 +287,7 @@
     [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2534
+        prop_values = 2617
     []
     [./rhof]
         type = GenericConstantMaterial
@@ -260,32 +297,32 @@
     [./turtuosity]
         type = GenericConstantMaterial
         prop_names = taut
-        prop_values = 3.78
+        prop_values = 7.07
     [../]
     [./porosity]
         type = GenericConstantMaterial
         prop_names = porosity
-        prop_values = 0.07
+        prop_values = 0.02
     [../]
     [./hydconductivity]
         type = GenericConstantMaterial
         prop_names = hydconductivity
-        prop_values = 1.105354096e-11
+        prop_values = 4.4411549e-14
     [../]
     [./hydconductivity_layer]
         type = GenericConstantMaterial
         prop_names = hydconductivity_layer
-        prop_values = 1.105354096e-11
+        prop_values = 4.4411549e-14
     [../]
     [./biotcoeff]
         type = GenericConstantMaterial
         prop_names = biot_coefficient
-        prop_values = 0.2087
+        prop_values = 0.15
     [../]
     [./biotmodulus]
         type = GenericConstantMaterial
         prop_names = biot_modulus
-        prop_values = 2.85744e10
+        prop_values = 7.98e10
     [../]
     [./constants]
         type = GenericConstantMaterial
@@ -297,33 +334,148 @@
         boundary = 'Block0_Block1'
     [../]
     [./czm_mat]
-        type = PoroSlipWeakening2dImpermeable
+        type = PoroSlipWeakening2d
         boundary = 'Block0_Block1'
         pressure_plus = p
         pressure_minus = p
-        react_x = resid_x
-        react_y = resid_y
+        react_x = resid_primary_x
+        react_y = resid_primary_y
+        jacob_x = jacob_primary_x
+        jacob_y = jacob_primary_y
         react_pressure_x = resid_pressure_x
         react_pressure_y = resid_pressure_y 
+        jacob_pressure_x = jacob_pressure_x
+        jacob_pressure_y = jacob_pressure_y 
         react_damp_x = resid_damping_x
         react_damp_y = resid_damping_y
+        jacob_damp_x = jacob_damping_x
+        jacob_damp_y = jacob_damping_y
         nodal_area = nodal_area
+        fluid_disp_x = fluid_disp_x
+        fluid_disp_y = fluid_disp_y
+        permeability_type = 'impermeable'
     [../]
+    
 []
 
 [BCs]
-  [./fault_p]
-    type = FunctionDirichletBC
-    variable = fluid_vel_y
-    boundary = Block0_Block1
-    function = 0.0
-  [../]
-  [./fault_n]
-    type = FunctionDirichletBC
-    variable = fluid_vel_y
-    boundary = Block1_Block0
-    function = 0.0
-  [../]
+    [./fault_p]
+        type = DirichletBC
+        variable = fluid_vel_y
+        boundary = Block0_Block1
+        value = 0.0
+    [../]
+    [./fault_n]
+        type = DirichletBC
+        variable = fluid_vel_y
+        boundary = Block1_Block0
+        value = 0.0
+    [../]
+    [./left_vf]
+        type = DirichletBC
+        variable = fluid_vel_x
+        boundary = left
+        value = 0.0
+    [../]
+    [./right_vf]
+        type = DirichletBC
+        variable = fluid_vel_x
+        boundary = right
+        value = 0.0
+    [../]
+    [./top_vf]
+        type = DirichletBC
+        variable = fluid_vel_y
+        boundary = top
+        value = 0.0
+    [../]
+    [./bot_vf]
+        type = DirichletBC
+        variable = fluid_vel_y
+        boundary = bottom
+        value = 0.0
+    [../]
+  ##non-reflecting bc
+    [./dashpot_top_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = top
+    []
+    [./dashpot_top_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = top
+    []
+    [./dashpot_bottom_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = bottom
+    []
+    [./dashpot_bottom_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = bottom
+    []
+    [./dashpot_left_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = left
+    []
+    [./dashpot_left_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = left
+    []
+    [./dashpot_right_x]
+        type = NonReflectDashpotBC
+        component = 0
+        variable = disp_x
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = right
+    []
+    [./dashpot_right_y]
+        type = NonReflectDashpotBC
+        component = 1
+        variable = disp_y
+        disp_x = disp_x
+        disp_y = disp_y
+        p_wave_speed = 5318
+        shear_wave_speed = 3390
+        boundary = right
+    []
 []
 
 [UserObjects]
@@ -347,15 +499,11 @@
 
 [Executioner]
     type = Transient
-   # solve_type = 'PJFNK'
-    dt = 0.002
-    end_time = 2.4
-    #verbose = true
+    dt = 0.00085
+    end_time = 3.6
     #automatic_scaling = true
     [TimeIntegrator]
          type = CentralDifference
-         #type = NewmarkBeta
-        #solve_type = lumped
     []
     
 []
@@ -363,14 +511,5 @@
 [Outputs]
     exodus = true
     time_step_interval = 20
-     #print_linear_residuals = true
 []
-
-
-#[Debug]
-#  show_material_props = true
-#[]
-#[Debug]
-#    show_actions = true
-#[]
 

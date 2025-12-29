@@ -165,7 +165,7 @@
     [./darcy_flow]
         type = CoefDiffusion
         variable = p
-        coef = 4.4411549e-14
+        coef = 1e-16
     [../]
     [./Reactionx]
         type = StiffPropDamping
@@ -186,8 +186,8 @@
 [Materials]
      [elasticity]
         type = ComputeIsotropicElasticityTensor
-        lambda = 13.51e9
-        shear_modulus = 30.08e9
+        lambda = 32e9
+        shear_modulus = 32e9
         use_displaced_mesh = false
     []
     [stress]
@@ -199,13 +199,13 @@
      [density]
         type = GenericConstantMaterial
         prop_names = density
-        prop_values = 2617
+        prop_values = 2670
     []
     [./poro_material]
         type = PoroFullSatMaterial
-        porosity0 = 0.02
-        biot_coefficient = 0.15
-        solid_bulk_modulus = 35.7e9
+        porosity0 = 0.005
+        biot_coefficient = 0.06
+        solid_bulk_modulus = 56.73e9
         fluid_bulk_modulus = 2.25e9
         constant_porosity = true
   [../]
