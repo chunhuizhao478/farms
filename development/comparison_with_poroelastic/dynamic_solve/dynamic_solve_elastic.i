@@ -86,7 +86,7 @@ nucl_center_x = 18500 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
-Vs = 3340 #shear wave speed (m/s)
+Vs = 3464  #shear wave speed (m/s)
 t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
