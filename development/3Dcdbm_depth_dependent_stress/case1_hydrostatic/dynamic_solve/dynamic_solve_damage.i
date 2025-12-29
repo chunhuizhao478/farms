@@ -35,8 +35,8 @@ nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
 ##-------------------------##
 ##material properties##
 density = 2670 #density
-lambda_o = 2.1547e10 #first lame constant
-shear_modulus_o = 2.975e10 #second lame constant
+lambda_o = 3.204e10 #first lame constant
+shear_modulus_o = 3.204e10 #second lame constant
 # Cs = '${fparse shear_modulus_o / density }' #shear wave speed
 # Cp = '${fparse (lambda_o + 2 * shear_modulus_o) / density }' #pressure wave speed
 ##-------------------------##
@@ -49,8 +49,8 @@ mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
-cohesion_depth = 6500 #cohesion depth (m)
-cohesion_slope = 0.01 #cohesion slope (MPa/m)
+cohesion_depth = 5000 #cohesion depth (m)
+cohesion_slope = 0.00072 #cohesion slope (MPa/m)
 cohesion_min = 0.4 #minimum cohesion value (MPa)
 ##---------------------------------------------##
 
@@ -62,7 +62,7 @@ xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-7 #strain rate dependent parameters
+strain_rate_hat = 1e-8 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -114,7 +114,7 @@ nucl_center_x = 18500 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
-Vs = 3340 #shear wave speed (m/s)
+Vs = 3464 #shear wave speed (m/s)
 t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
@@ -271,24 +271,31 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     [disp_x]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     [disp_y]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     [disp_z]
         order = FIRST
         family = LAGRANGE
+        scaling = 1E-6
     []
     [porepressure]
         order = FIRST
         family = LAGRANGE
-        scaling = 1E9
     []
 []
 
 
 [AuxVariables]
+
+  [pp]
+        order = FIRST
+        family = LAGRANGE
+  []
   ###
   #slip weakening friction parameters
   [./resid_x]
@@ -446,7 +453,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     order = FIRST
     family = MONOMIAL
   []
-
   [shear_modulus]
     order = FIRST
     family = MONOMIAL
@@ -689,7 +695,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     execute_on = 'TIMESTEP_END'
   []
 
-
 []
 
 [Kernels]
@@ -827,7 +832,7 @@ checkpoint_num_files = 2 #number of files for checkpoint output
       reaction_pressure_x = resid_pressure_x
       reaction_pressure_y = resid_pressure_y
       reaction_pressure_z = resid_pressure_z
-      fault_pressure = porepressure
+      fault_pressure = pp
       #---------------------------------------------#
       use_forced_rupture = true
       t0 = ${t0}
