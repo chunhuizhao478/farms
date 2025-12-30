@@ -24,7 +24,7 @@ local_eqstrain_blocks = '11'
 xmin_fault = -22500 #xmin of fault
 xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
-# zmax_fault = 0 #zmax of fault
+zmax_fault = -250 #zmax of fault
 
 #nonlocal length applied region along ydir
 ymin_fault = -1000
@@ -140,13 +140,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
     input = msh
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & z <= ${zmax_fault} & y > 0 & y < ${ymax_fault}'
     block_id = 100
   []
   [./new_block_2]
     type = ParsedSubdomainMeshGenerator
     input = new_block_1
-    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y > ${ymin_fault}'
+    combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & z <= ${zmax_fault} & y < 0 & y > ${ymin_fault}'
     block_id = 200
   []
 
