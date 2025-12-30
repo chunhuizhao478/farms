@@ -21,8 +21,8 @@ nonlocal_eqstrain_blocks_3 = '200'
 local_eqstrain_blocks = '11'
 
 ##main fault parameters
-xmin_fault = -20500 #xmin of fault
-xmax_fault = 22500 #xmax of fault
+xmin_fault = -22500 #xmin of fault
+xmax_fault = 20500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
