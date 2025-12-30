@@ -216,11 +216,11 @@
     verbose = true
     [TimeStepper]
         type = FarmsIterationAdaptiveDT
-        dt = 5
+        dt = 2.5
         cutback_factor_at_failure = 0.5
         optimal_iterations = 14
         growth_factor = 1.25
-        max_time_step_bound = 50
+        max_time_step_bound = 25
     []
     [./TimeIntegrator]
         type = ImplicitEuler
