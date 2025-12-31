@@ -29,8 +29,8 @@ zmin_fault = -20000 #zmin of fault
 #nonlocal length applied region along ydir
 ymin_fault = -1000
 ymax_fault = 1000
-nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
-nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
+nonlocal_averaging_length_scale = 500 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
+nonlocal_averaging_radius = 1000 #for 800m testing, use 1600m
 
 ##-------------------------##
 ##material properties##
