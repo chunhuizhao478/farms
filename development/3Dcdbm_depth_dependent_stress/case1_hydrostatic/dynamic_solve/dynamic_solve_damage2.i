@@ -119,7 +119,7 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.00225 #time step size
+dt = 0.0015 #time step size
 
 end_time = 12.0 #end time for simulation
 
