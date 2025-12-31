@@ -22,7 +22,7 @@ local_eqstrain_blocks = '11'
 
 ##main fault parameters
 xmin_fault = -22500 #xmin of fault
-xmax_fault = 20500 #xmax of fault
+xmax_fault = 22500 #xmax of fault
 zmin_fault = -20000 #zmin of fault
 # zmax_fault = 0 #zmax of fault
 
@@ -59,8 +59,8 @@ xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
 xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = -1 #coefficient gives positive damage evolution
-use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
+Cd_constant = 5e6 #coefficient gives positive damage evolution
+use_strain_rate_dependent_Cd = false #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
 strain_rate_hat = 1e-8 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
