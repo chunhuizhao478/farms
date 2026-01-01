@@ -1,7 +1,7 @@
 SetFactory("OpenCASCADE");
 
-lc_min = 0.001;
-lc_max = 0.001; // Maximum mesh size
+lc_min = 0.00075;
+lc_max = 0.00075; // Maximum mesh size
 
 // Define main cylinder
 // Point(1) = {0, 0, 0, lc};
