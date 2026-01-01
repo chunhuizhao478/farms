@@ -59,8 +59,8 @@ xi_0 = -0.8 #strain invariants ratio: onset of damage evolution
 xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 
 ###constant Cd
-Cd_constant = 1e6 #coefficient gives positive damage evolution
-use_strain_rate_dependent_Cd = false #use strain rate dependent Cd
+Cd_constant = -1 #coefficient gives positive damage evolution
+use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
 strain_rate_hat = 1e-8 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
@@ -110,7 +110,7 @@ anand_param_p_mat = 1
 ##------------------------------------------------------------------##
 
 #nucleation parameters
-nucl_center_x = 18500 #nucleation center x coordinate
+nucl_center_x = 0 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
 nucl_center_z = -10000 #nucleation center y coordinate
 r_crit = 3000 #critical distance to hypocenter (m)
@@ -119,9 +119,9 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.00225 #time step size
+dt = 0.0025 #time step size
 
-end_time = 12.0 #end time for simulation
+end_time = 9.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
 exodus_time_step_interval = 25 #time step interval for output
