@@ -382,7 +382,7 @@
         length_scale = 0.0013
         prop_name = strain_invariant_ratio
         radius = 0.0013
-        weights = BAZANT3D
+        weights = BAZANT
         execute_on = LINEAR
     []
 []
@@ -415,7 +415,7 @@
     # petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
     # automatic_scaling = true
     #nl_forced_its = 3
-     line_search = 'bt'
+    # line_search = 'bt'
     # dt = 10
     #verbose = true
     [TimeStepper]
