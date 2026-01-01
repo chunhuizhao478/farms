@@ -58,7 +58,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 1e6
+    Cd_constant = 1e4
 
     #strain rate dependent Cd options
     m_exponent = 0.8
