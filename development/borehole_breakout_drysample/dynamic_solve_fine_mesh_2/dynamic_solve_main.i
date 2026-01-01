@@ -422,7 +422,7 @@
         type = FarmsIterationAdaptiveDT
         dt = 1
         cutback_factor_at_failure = 0.5
-        optimal_iterations = 22
+        optimal_iterations = 30
         growth_factor = 1.25
         max_time_step_bound = 10
     []
