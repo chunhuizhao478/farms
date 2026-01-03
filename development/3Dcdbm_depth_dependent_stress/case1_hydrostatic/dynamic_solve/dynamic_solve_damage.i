@@ -29,8 +29,8 @@ zmin_fault = -20000 #zmin of fault
 #nonlocal length applied region along ydir
 ymin_fault = -1000
 ymax_fault = 1000
-nonlocal_averaging_length_scale = 250 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
-nonlocal_averaging_radius = 500 #for 800m testing, use 1600m
+nonlocal_averaging_length_scale = 500 #your length scale must be resolved by multiple elements, or xi_out_of_range error will occur, for 400m testing, use 800m
+nonlocal_averaging_radius = 1000 #for 800m testing, use 1600m
 
 ##-------------------------##
 ##material properties##
@@ -62,7 +62,7 @@ xi_d = -0.8 #strain invariants ratio: onset of breakage healing
 Cd_constant = -1 #coefficient gives positive damage evolution
 use_strain_rate_dependent_Cd = true #use strain rate dependent Cd
 m_exponent = 0.8 #strain rate dependent parameters
-strain_rate_hat = 1e-8 #strain rate dependent parameters
+strain_rate_hat = 1e-7 #strain rate dependent parameters
 cd_hat = 10 #strain rate dependent parameters
 ###
 
@@ -119,15 +119,15 @@ t0 = 0.1 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 ##model parameters##
-dt = 0.0025 #time step size
+dt = 0.0015 #time step size
 
-end_time = 9.0 #end time for simulation
+end_time = 12.0 #end time for simulation
 
 # num_steps = 40 #end_time or num_steps only one of them is needed
-exodus_time_step_interval = 20 #time step interval for output
+exodus_time_step_interval = 25 #time step interval for output
 sample_snapshots_time_step_interval = 1000 #time step interval for sample snapshots output
 csv_time_step_interval = 1000 #time step interval for csv output
-checkpoint_time_step_interval = 1000 #time step interval for checkpoint output
+checkpoint_time_step_interval = 5000 #time step interval for checkpoint output
 checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
@@ -284,14 +284,13 @@ checkpoint_num_files = 2 #number of files for checkpoint output
         scaling = 1E-6
     []
     [porepressure]
-        order = FIRST
-        family = LAGRANGE
+        order = CONSTANT
+        family = MONOMIAL 
     []
 []
 
 
 [AuxVariables]
-
   ###
   #slip weakening friction parameters
   [./resid_x]
@@ -1047,9 +1046,10 @@ checkpoint_num_files = 2 #number of files for checkpoint output
     type = Exodus
     execute_on = 'timestep_end'
     show = 'eqstrain_nonlocal_aux xi_aux deviatoric_strain_rate_aux B_aux alpha_damagedvar_aux shear_modulus
+            traction_strike_aux traction_normal_aux traction_dip_aux
             vel_slipweakening_x vel_slipweakening_y vel_slipweakening_z
             stress_xx stress_yy stress_xy
-            porepressure cohesion_aux'
+            porepressure'
     time_step_interval = ${exodus_time_step_interval}
   []
   [csv]
