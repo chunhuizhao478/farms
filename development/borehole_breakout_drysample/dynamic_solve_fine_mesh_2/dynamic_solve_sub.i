@@ -32,7 +32,7 @@
     xi_min = -1.8
 
     #if option 2, use Cd_constant #specify by auxiliary variable
-    Cd_constant = 70
+    Cd_constant = 80
 
     #strain rate dependent Cd options
     # m_exponent = 0.8
