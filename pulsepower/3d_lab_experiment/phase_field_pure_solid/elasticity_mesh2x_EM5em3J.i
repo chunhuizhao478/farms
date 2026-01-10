@@ -24,7 +24,7 @@ hht_alpha = 0 #match energy budget
     input_files = fracture_mesh2x_EM5em3J.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'INITIAL TIMESTEP_END'
-    clone_parent_mesh = true
+    #clone_parent_mesh = true
   []
 []
 
@@ -233,7 +233,8 @@ top_right1 = '0.002 4e-4 0.06'
   [mesh_size_aux]
     type = MeshSize
     variable = mesh_size
-    execute_on = 'TIMESTEP_END'
+    #execute_on = 'TIMESTEP_END'
+    execute_on = 'INITIAL'
   []
 []
 
@@ -432,14 +433,15 @@ top_right1 = '0.002 4e-4 0.06'
     phase_field = d
     degradation_function = g
     decomposition = SPECTRAL
-    output_properties = 'elastic_strain psie_active psie'
+    #output_properties = 'elastic_strain psie_active psie'
+    output_properties = 'psie_active'
     outputs = exodus
   []
   [stress]
     type = ComputeSmallDeformationStress
     elasticity_model = elasticity
-    output_properties = 'stress'
-    outputs = exodus
+    #output_properties = 'stress'
+    #outputs = exodus
   []
   [strain]
     type = ADComputeSmallStrain
@@ -462,8 +464,11 @@ top_right1 = '0.002 4e-4 0.06'
   # petsc_options_value = 'lu       superlu_dist                 '
 
   #scalable to large problems
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  # petsc_options_value = 'gmres     hypre  boomeramg True'
+
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_max_iter -pc_hypre_boomeramg_truncfactor -ksp_gmres_restart -ksp_max_it'
+  petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 2 0.3 100 200'
 
   # automatic_scaling = true
   line_search = 'basic'
@@ -512,7 +517,7 @@ top_right1 = '0.002 4e-4 0.06'
   [csv]
     type = CSV
     execute_on = 'initial timestep_end'
-    time_step_interval = 1
+    time_step_interval = 10
     show = 'full_energy solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total full_input_energy damping_work'
   []
 []
