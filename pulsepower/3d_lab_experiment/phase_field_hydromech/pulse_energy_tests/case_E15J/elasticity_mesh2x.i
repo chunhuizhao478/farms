@@ -1,6 +1,7 @@
-fluid_elastic_energy_total_static = 3.698986e-06
-solid_elastic_energy_total_static = 4.233592e-04
-full_input_energy_static = 4.270582e-04
+fluid_elastic_energy_total_static = 0
+solid_elastic_energy_total_static = 0
+full_input_energy_static = 0
+initial_pore_pressure = 0.0965e6
 
 #solid properties
 #----------------------------------------------------#
@@ -823,40 +824,36 @@ hht_alpha = 0
     number_fluid_phases = 1
     number_fluid_components = 1
   []
-  [./init_sol_components]
-    type = SolutionUserObject
-    mesh = ../../static_solve_mesh2x_out.e
-    system_variables = 'disp_x disp_y disp_z pp'
-    timestep = LATEST
-    force_preaux = true
-  [../]
+  #[./init_sol_components]
+  #  type = SolutionUserObject
+  #  mesh = ../../static_solve_mesh2x_out.e
+  #  system_variables = 'disp_x disp_y disp_z pp'
+  #  timestep = LATEST
+  #  force_preaux = true
+  #[../]
 []
 
 [ICs]
-  [disp_x_ic]
-    type = SolutionIC
-    variable = disp_x
-    solution_uo = init_sol_components
-    from_variable = disp_x
-  []
-  [disp_y_ic]
-    type = SolutionIC
-    variable = disp_y
-    solution_uo = init_sol_components
-    from_variable = disp_y
-  []
-  [disp_z_ic]
-    type = SolutionIC
-    variable = disp_z
-    solution_uo = init_sol_components
-    from_variable = disp_z
-  []
-  [pp_ic]
-    type = SolutionIC
-    variable = pp
-    solution_uo = init_sol_components
-    from_variable = pp
-  []
+    [disp_x_ic]
+        type = ConstantIC
+        variable = disp_x
+        value = 0
+    []
+    [disp_y_ic]
+        type = ConstantIC
+        variable = disp_y
+        value = 0
+    []
+    [disp_z_ic]
+        type = ConstantIC
+        variable = disp_z
+        value = 0
+    []
+    [pp_ic]
+        type = ConstantIC
+        variable = pp
+        value = ${initial_pore_pressure}
+    []
 []
 
 [Controls] # turns off inertial terms for the SECOND time step
@@ -866,13 +863,6 @@ hht_alpha = 0
     # disable_objects = '*/mass0 */inertia_x */inertia_y */inertia_z */vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */damp_outer_x */damp_outer_y */damp_outer_z */pressure_inner'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
-  []
-  # Add this new control block
-  [./disable_solution_uo]
-    type = TimePeriod
-    disable_objects = 'UserObjects::init_sol_components'
-    start_time = 1e-8  # After first dynamic time step
-    end_time = 1e10
   []
 [../]
 
