@@ -166,7 +166,7 @@
   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
   petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 0.3 vinewtonrsls 100'
 
-  automatic_scaling = true
+  #automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10
