@@ -223,7 +223,7 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   nl_abs_tol = 1e-10
 
   dt = 0.1
-  end_time = 10
+  end_time = 30
 
   #[TimeStepper]
   #  type = FunctionDT
