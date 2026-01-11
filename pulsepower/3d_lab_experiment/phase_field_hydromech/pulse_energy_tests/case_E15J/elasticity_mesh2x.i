@@ -826,7 +826,7 @@ hht_alpha = 0
   [./init_sol_components]
     type = SolutionUserObject
     mesh = ../../static_solve_mesh2x_out.e
-    system_variables = 'disp_x disp_y disp_z pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    system_variables = 'disp_x disp_y disp_z pp'
     timestep = LATEST
     force_preaux = true
   [../]
@@ -866,6 +866,13 @@ hht_alpha = 0
     # disable_objects = '*/mass0 */inertia_x */inertia_y */inertia_z */vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */damp_outer_x */damp_outer_y */damp_outer_z */pressure_inner'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
+  []
+  # Add this new control block
+  [./disable_solution_uo]
+    type = TimePeriod
+    disable_objects = 'UserObjects::init_sol_components'
+    start_time = 1e-8  # After first dynamic time step
+    end_time = 1e10
   []
 [../]
 
