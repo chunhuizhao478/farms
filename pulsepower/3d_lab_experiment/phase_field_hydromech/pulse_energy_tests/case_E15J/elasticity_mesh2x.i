@@ -683,7 +683,8 @@ hht_alpha = 0
     # constants
     ##---------------------------------------------##
     eta = 1e-6
-    output_properties = 'elastic_strain psie_active'
+    #output_properties = 'elastic_strain psie_active'
+    output_properties = 'psie_active'
     outputs = exodus
     ##---------------------------------------------##
     # porous flow coupling
@@ -699,8 +700,8 @@ hht_alpha = 0
   [stress]
     type = NDComputeSmallDeformationStress ###
     elasticity_model = elasticity
-    output_properties = 'stress strain_increment'
-    outputs = exodus
+    #output_properties = 'stress strain_increment'
+    #outputs = exodus
   []
   #enhanced history energy with pressure-dependent term (from CMAME paper Appendix A)
   [history_energy_enhanced]
@@ -886,8 +887,12 @@ hht_alpha = 0
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
   # petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  #scalable to large problems
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
+  petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 0.3 vinewtonrsls 100'
 
   # automatic_scaling = true
   line_search = 'bt'
@@ -923,7 +928,7 @@ hht_alpha = 0
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 160
+    time_step_interval = 40
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
@@ -934,7 +939,7 @@ hht_alpha = 0
   [csv]
     type = CSV
     execute_on = 'initial timestep_end'
-    time_step_interval = 1
+    time_step_interval = 40
     show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work'
   []
 []
