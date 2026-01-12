@@ -1,0 +1,1 @@
+ini_shear_stress jump_x jump_y mu_s normal_jump_aux normal_jump_mat normal_traction_aux shear_jump_aux shear_jump_mat shear_jump_rate_aux shear_jump_rate_mat shear_traction_aux shear_traction_mat stress_xx stress_xy stress_yy traction_x traction_y 

@@ -170,11 +170,17 @@ RateStateFrictionLaw3DAsBC::computeInterfaceTractionAndDerivatives()
     //--------------------------------------------------------------------------------------------------//
 
     //*Nodal Mass*
-    ///HEX8 Element
-    Real M = _density[_qp] * len * len * len * 0.5;
-
-    //fault area
-    Real len_len = ( 1.0 * len ) * ( 1.0 * len );
+    // Compute node mass and area
+    Real M = 0;
+    Real len_len = 0;
+    if (_current_elem->type() == libMesh::ElemType::TET4){
+        M = (_density[_qp] * sqrt(2) * _len * _len * _len / 12 / 4) * 6;
+        len_len = (sqrt(3) * _len * _len / 4 / 3) * 6;
+    }
+    else if (_current_elem->type() == libMesh::ElemType::HEX8){
+        M = (_density[_qp] * _len * _len * _len / 8) * 4;
+        len_len = (_len * _len / 4) * 4;
+    }
     
     //Assign shear perturbation at t
     Real Ts_perturb = _Ts_perturb[_qp];
