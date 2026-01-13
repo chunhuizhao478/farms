@@ -48,18 +48,20 @@ InitialStrikeShearStressPerturbRSF3D::value(Real t, const Point & p) const
 {
 
   Real x_coord = p(0); //along the strike direction
+  Real y_coord = p(1); //along the normal direction
   Real z_coord = p(2); //along the dip direction
 
   //Parameter
   Real T1_perturb = 25e6; //pertubation (Pa)
   Real R = 3000; //(m)
   Real T = 1.0; //(s)
-  
+
   //Compute radius r
   Real x_o = 0.0; //3D //along strike direction
-  Real z_o = 0.0; //3D //along dip direction
+  Real y_o = 0.0; //3D //along normal direction
+  Real z_o = -7500; //3D //along dip direction
 
-  Real r = sqrt((x_coord-x_o)*(x_coord-x_o)+(z_coord-z_o)*(z_coord-z_o)); //3D
+  Real r = sqrt((x_coord-x_o)*(x_coord-x_o)+(y_coord-y_o)*(y_coord-y_o)+(z_coord-z_o)*(z_coord-z_o)); //3D
 
   //Evalute Spatial and Temporal Function
   double Val_F = Function_F(r, R);
@@ -67,7 +69,7 @@ InitialStrikeShearStressPerturbRSF3D::value(Real t, const Point & p) const
 
   //Obtain initial shear stress
   Real T1_o = T1_perturb * Val_F * Val_G;
-  
+
   return T1_o;
 
 }

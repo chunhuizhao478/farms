@@ -2,22 +2,22 @@
  * @file
  * This file is part of SeisSol.
  *
- * @author Thomas Ulrich
+ * @author Thomas Ulrich 
  *
  * @section LICENSE
  * Copyright (c) 2014-2022, SeisSol Group
  * All rights reserved.
- *
+ * 
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
- *
+ * 
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
- *
+ * 
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *
+ * 
  * 3. Neither the name of the copyright holder nor the names of its
  *    contributors may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
@@ -37,17 +37,17 @@
 
 
 lc = 5e3;
-lc_fault = 100; //change this!!!
+lc_fault = 400; //change this!!!
 
-Fault_length = 36e3;
-Fault_width = 18e3;
+Fault_length = 40e3;
+Fault_width = 20e3;
 Fault_dip = 90*Pi/180.;
 
 // Nucleation in X,Z local coordinates
 X_nucl = 0e3;
 Width_nucl = 0.5*Fault_width;
 R_nucl = 1.5e3;
-lc_nucl = 100; //change this!!!
+lc_nucl = 400; //change this!!!
 
 Xmax = 60e3;
 Xmin = -Xmax;
