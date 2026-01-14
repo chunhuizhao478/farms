@@ -167,6 +167,18 @@ top_right1 = '0.002 4e-4 0.06'
   []
   [fdampz]
   []
+  [fdampx_top]
+  []
+  [fdampy_top]
+  []
+  [fdampz_top]
+  []
+  [fdampx_bottom]
+  []
+  [fdampy_bottom]
+  []
+  [fdampz_bottom]
+  []
 []
 
 [AuxKernels]
@@ -362,6 +374,7 @@ top_right1 = '0.002 4e-4 0.06'
     value = 0
   []
   #add dampers
+  #outer #4
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
     variable = disp_x
@@ -409,6 +422,104 @@ top_right1 = '0.002 4e-4 0.06'
     p_wave_speed = ${Cp}
     density = ${density}
     save_in = fdampz
+  []
+  #top boundary #5
+  [damp_top_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 0
+    boundary = 5
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampx_top
+  []
+  [damp_top_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 1
+    boundary = 5
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampy_top
+  []
+  [damp_top_z]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_z
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 2
+    boundary = 5
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampz_top
+  []
+  #bottom #2
+  [damp_bottom_x]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_x
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 0
+    boundary = 2
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampx_bottom
+  []
+  [damp_bottom_y]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_y
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 1
+    boundary = 2
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampy_bottom
+  []
+  [damp_bottom_z]
+    type = FarmsNonReflectDashpotBC
+    variable = disp_z
+    displacements = 'disp_x disp_y disp_z'
+    velocities = 'vel_x vel_y vel_z'
+    accelerations = 'accel_x accel_y accel_z'
+    component = 2
+    boundary = 2
+    beta = ${newmark_beta}
+    gamma = ${newmark_gamma}
+    alpha = ${hht_alpha}
+    shear_wave_speed = ${Cs}
+    p_wave_speed = ${Cp}
+    density = ${density}
+    save_in = fdampz_bottom
   []
 []
 
@@ -577,12 +688,22 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = '3'
     forces = 'fdampx fdampy fdampz'
   []
+  [damping_work_top]
+    type = FarmsExternalWork
+    boundary = '5'
+    forces = 'fdampx_top fdampy_top fdampz_top'
+  []
+  [damping_work_bottom]
+    type = FarmsExternalWork
+    boundary = '2'
+    forces = 'fdampx_bottom fdampy_bottom fdampz_bottom'
+  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - damping_work'
+      expression = '-1 * external_work - damping_work - damping_work_top - damping_work_bottom'
       pp_names = 'external_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
