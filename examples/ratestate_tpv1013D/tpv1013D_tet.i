@@ -37,7 +37,7 @@
 [GlobalParams]
   #primary variables
   displacements = 'disp_x disp_y disp_z'
-  q = 0.2
+  q = 0.05
   ##rate-and-state coefficients
   f_o = 0.6
   rsf_a = 0.008

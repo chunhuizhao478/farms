@@ -61,7 +61,7 @@ InitialStrikeShearStressPerturbRSF3D::value(Real t, const Point & p) const
   Real y_o = 0.0; //3D //along normal direction
   Real z_o = -7500; //3D //along dip direction
 
-  Real r = sqrt((x_coord-x_o)*(x_coord-x_o)+(y_coord-y_o)*(y_coord-y_o)+(z_coord-z_o)*(z_coord-z_o)); //3D
+  Real r = sqrt((x_coord-x_o)*(x_coord-x_o)+(z_coord-z_o)*(z_coord-z_o)); //3D
 
   //Evalute Spatial and Temporal Function
   double Val_F = Function_F(r, R);
