@@ -50,6 +50,9 @@ protected:
   const ADMaterialProperty<Real> & _dg_dd;
   // @}
 
+  /// The Hencky (logarithmic) strain tensor
+  ADMaterialProperty<RankTwoTensor> & _elastic_strain;
+
   /// Decomposition types
   const enum class Decomposition { none, spectral, voldev } _decomposition;
 };

@@ -48,6 +48,9 @@ HenckyIsotropicElasticity::HenckyIsotropicElasticity(const InputParameters & par
     _g(getADMaterialProperty<Real>(_g_name)),
     _dg_dd(getADMaterialProperty<Real>(derivativePropertyName(_g_name, {_d_name}))),
 
+    // The Hencky (logarithmic) strain tensor
+    _elastic_strain(declareADProperty<RankTwoTensor>(prependBaseName("elastic_strain"))),
+
     _decomposition(getParam<MooseEnum>("decomposition").getEnum<Decomposition>())
 {
 }
@@ -91,6 +94,8 @@ HenckyIsotropicElasticity::computeMandelStressNoDecomposition(const ADRankTwoTen
   // compute the strain energy density
   if (!plasticity_update)
   {
+    // Store the Hencky (logarithmic) strain
+    _elastic_strain[_qp] = strain;
     // It is convenient that the Mandel stress is conjugate to the log strain
     _psie_active[_qp] = 0.5 * stress_intact.doubleContraction(strain);
     _psie[_qp] = _g[_qp] * _psie_active[_qp];
@@ -128,6 +133,8 @@ HenckyIsotropicElasticity::computeMandelStressVolDevDecomposition(const ADRankTw
   // compute the strain energy density
   if (!plasticity_update)
   {
+    // Store the Hencky (logarithmic) strain
+    _elastic_strain[_qp] = strain;
     ADReal psie_intact =
         0.5 * _K[_qp] * strain_tr * strain_tr + _G[_qp] * strain_dev.doubleContraction(strain_dev);
     ADReal psie_inactive = 0.5 * _K[_qp] * strain_tr_neg * strain_tr_neg;
@@ -167,6 +174,8 @@ HenckyIsotropicElasticity::computeMandelStressSpectralDecomposition(const ADRank
   // compute the strain energy density
   if (!plasticity_update)
   {
+    // Store the Hencky (logarithmic) strain
+    _elastic_strain[_qp] = strain;
     ADReal psie_intact =
         0.5 * lambda * strain_tr * strain_tr + _G[_qp] * strain.doubleContraction(strain);
     _psie_active[_qp] = 0.5 * lambda * strain_tr_pos * strain_tr_pos +
