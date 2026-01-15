@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../meshgenerator/tpv1013d/tpv1013d_200m.msh'
+    file = '../../meshgenerator/tpv1013d/tpv1013d_100m.msh'
   []
   [./new_block_1]
     type = ParsedSubdomainMeshGenerator
@@ -357,7 +357,7 @@
 [Executioner]
   type = Transient
   dt = 0.0025
-  end_time = 2.0 #for testing
+  end_time = 3.0 #for testing
   # num_steps = 10
   [TimeIntegrator]
     type = CentralDifference
