@@ -704,7 +704,7 @@ top_right1 = '0.002 4e-4 0.06'
   [full_input_energy]
       type = ParsedPostprocessor
       expression = '-1 * external_work - damping_work - damping_work_top - damping_work_bottom'
-      pp_names = 'external_work damping_work'
+      pp_names = 'external_work damping_work damping_work_top damping_work_bottom'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
