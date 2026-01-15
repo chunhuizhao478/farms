@@ -1,7 +1,8 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/mesh_wohole_3d.msh'
+    #file = '../../meshfile/mesh_wohole_3d.msh'
+    file = '../../meshfile/mesh_wohole_3d_quicktest.msh'
   []
 []
 
@@ -62,7 +63,7 @@
     expression = (1-d)^p*(1-eta)+eta
     phase_field = d
     parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
+    parameter_values = '2 1e-3'
   []
   [crack_geometric]
     type = CrackGeometricFunction

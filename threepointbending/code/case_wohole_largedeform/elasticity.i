@@ -3,7 +3,7 @@ nu = 0.25
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
 
-l = 5e-5 # N * h, N: number of elements, h: element size
+l = 1e-4 # N * h, N: number of elements, h: element size
 
 sigmat = 6.43e6
 
@@ -42,8 +42,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file = '../../meshfile/mesh_wohole_3d.msh'
-    #file = '../../meshfile/mesh_wohole_3d_quicktest.msh'
+    #file = '../../meshfile/mesh_wohole_3d.msh'
+    file = '../../meshfile/mesh_wohole_3d_quicktest.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -191,7 +191,7 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
     expression = (1-d)^p*(1-eta)+eta
     phase_field = d
     parameter_names = 'p eta '
-    parameter_values = '2 1e-6'
+    parameter_values = '2 1e-3'
   []
   # Block 1: Phase field region with large deformation
   [defgrad_phasefield]
@@ -256,23 +256,32 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
   petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 0.3 vinewtonrsls 100'
 
+  line_search = basic
+
   automatic_scaling = true
 
-  nl_rel_tol = 1e-8
-  nl_abs_tol = 1e-10
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-8
+  nl_max_its = 50
 
-  dt = 0.1
+  # Adaptive time stepping for large deformation
+  [TimeStepper]
+    type = IterationAdaptiveDT
+    dt = 0.01
+    optimal_iterations = 8
+    iteration_window = 2
+    growth_factor = 1.5
+    cutback_factor = 0.5
+  []
+
+  dtmin = 1e-6
+  dtmax = 0.1
   end_time = 30
-
-  #[TimeStepper]
-  #  type = FunctionDT
-  #  function = 'if(t>8.86,0.001,0.1)'
-  #[]
 
   fixed_point_max_its = 20
   accept_on_max_fixed_point_iteration = true
-  fixed_point_rel_tol = 1e-8
-  fixed_point_abs_tol = 1e-10
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
 []
 
 [Outputs]
