@@ -246,5 +246,6 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 [Outputs]
   exodus = true
   time_step_interval = 10
+  show = 'd psie_active stress_00 strain_00'
   print_linear_residuals = false
 []
