@@ -70,10 +70,13 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 
 [Variables]
   [disp_x]
+    initial_condition = 0.0
   []
   [disp_y]
+    initial_condition = 0.0
   []
   [disp_z]
+    initial_condition = 0.0
   []
 []
 
@@ -124,7 +127,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
 [Functions]
   [func_loading]
     type = ParsedFunction
-    expression = '-1e-4 * t'
+    # Reduce loading rate by 10x for large deformation
+    expression = '-1e-5 * t'
   []
 []
 
@@ -204,7 +208,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
     shear_modulus = G
     phase_field = d
     degradation_function = g
-    decomposition = spectral
+    # Switch to VOLDEV decomposition (more robust for large deformation)
+    decomposition = VOLDEV
     output_properties = 'elastic_strain psie_active'
     outputs = exodus
     block = 1
@@ -267,16 +272,17 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   # Adaptive time stepping for large deformation
   [TimeStepper]
     type = IterationAdaptiveDT
-    dt = 0.01
-    optimal_iterations = 8
+    dt = 0.001
+    optimal_iterations = 6
     iteration_window = 2
-    growth_factor = 1.5
+    growth_factor = 1.2
     cutback_factor = 0.5
   []
 
-  dtmin = 1e-6
-  dtmax = 0.1
-  end_time = 30
+  dtmin = 1e-7
+  dtmax = 0.05
+  # Extend end_time to account for reduced loading rate
+  end_time = 300
 
   fixed_point_max_its = 20
   accept_on_max_fixed_point_iteration = true
@@ -289,4 +295,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   show = 'd psie_active stress_00 strain_00'
   time_step_interval = 10
   print_linear_residuals = false
+
+  # Add checkpoint for restart capability
+  checkpoint = true
+  num_checkpoint_files = 2
 []

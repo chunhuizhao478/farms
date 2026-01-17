@@ -1,0 +1,25 @@
+[Tests]
+  design = 'ElkADDynamicDarcyFlowPhaseField.md ElkADPoroMechanicsCoupling.md ElkADMassConservationNewmark.md'
+  issues = '#threefield_phasefield'
+
+  [test_ad_dynamic_darcy_flow_phasefield]
+    type = 'RunApp'
+    input = 'test_ad_dynamic_darcy_flow_phasefield.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD dynamic Darcy flow kernel for phase-field shall work with RankTwoTensor permeability and damage-dependent properties'
+  []
+
+  [test_ad_poromechanics_coupling_damaged]
+    type = 'RunApp'
+    input = 'test_ad_poromechanics_coupling_damaged.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD poromechanics coupling kernel shall correctly use damage-dependent Biot coefficient from material properties'
+  []
+
+  [test_ad_mass_conservation_damaged]
+    type = 'RunApp'
+    input = 'test_ad_mass_conservation_damaged.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD mass conservation kernel shall correctly use damage-dependent Biot coefficient and modulus from material properties'
+  []
+[]

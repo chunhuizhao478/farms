@@ -1,0 +1,46 @@
+[Tests]
+  design = 'ElkADPorousFlowDamagedBiotCoefficient.md ElkADPorousFlowDamagedPorosity.md ElkADPorousFlowDamagedBiotModulus.md ElkADPoroDynamicPhaseFieldMaterials.md'
+  issues = '#threefield_phasefield'
+
+  [test_ad_damaged_biot_coefficient]
+    type = 'RunApp'
+    input = 'test_ad_damaged_biot_coefficient.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD damaged Biot coefficient material shall compute alpha(d) = 1 - g(d)*K0/Ks correctly'
+  []
+
+  [test_ad_damaged_porosity]
+    type = 'RunApp'
+    input = 'test_ad_damaged_porosity.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD damaged porosity material shall compute phi(d) = phi_0 + (1-phi_0)*(1-g(d)) correctly with proper bounds clamping'
+  []
+
+  [test_ad_damaged_biot_modulus]
+    type = 'RunApp'
+    input = 'test_ad_damaged_biot_modulus.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD damaged Biot modulus material shall compute 1/M = phi/Kf + (alpha-phi)/Ks correctly using damaged properties'
+  []
+
+  [test_ad_porodynamic_materials]
+    type = 'RunApp'
+    input = 'test_ad_porodynamic_materials.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The AD poro-dynamic phase-field materials shall correctly assemble density, biot coefficient, porosity, and biot modulus from damaged properties'
+  []
+
+  [test_ad_material_property_integration]
+    type = 'RunApp'
+    input = 'test_ad_material_property_integration.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'AD material properties shall be correctly integrated using AuxVariable + ADMaterialRealAux + ElementIntegralVariablePostprocessor approach'
+  []
+
+  [test_ad_material_property_integration_error]
+    type = 'RunException'
+    input = 'test_ad_material_property_integration_error.i'
+    expect_err = 'is already retrieved or declared as a AD property'
+    requirement = 'Using ElementIntegralMaterialProperty with AD material properties shall produce an error indicating the property type conflict'
+  []
+[]

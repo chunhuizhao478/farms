@@ -1,0 +1,11 @@
+[Tests]
+  design = 'ElkADDynamicDarcyFlowPhaseField.md ElkADPoroDynamicPhaseFieldMaterials.md'
+  issues = '#threefield_phasefield'
+
+  [test_threefield_phasefield_2d]
+    type = 'RunApp'
+    input = 'test_threefield_phasefield_2d.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The three-field poroelastodynamics formulation shall work with phase-field damage-dependent hydraulic properties in 2D'
+  []
+[]
