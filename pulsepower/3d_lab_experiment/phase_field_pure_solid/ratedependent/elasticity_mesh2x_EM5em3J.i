@@ -626,7 +626,7 @@ top_right1 = '0.002 4e-4 0.06'
   [./exodus]
     type = Exodus
     time_step_interval = 40
-    show = 'd pulse_load_aux'
+    show = 'd pulse_load_aux vel_x vel_y vel_z'
   [../]
   [checkpoint]
       type = Checkpoint
