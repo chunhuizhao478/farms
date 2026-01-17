@@ -1,0 +1,25 @@
+[Tests]
+  design = 'ADPFFViscousResistance.md'
+  issues = '#rate_dependent_phasefield'
+
+  [test_ADPFFViscousResistance]
+    type = 'RunApp'
+    input = 'test_ADPFFViscousResistance.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The ADPFFViscousResistance kernel shall add viscous crack resistance term eta*(d-d_old)/dt to the phase field equation with moderate viscosity'
+  []
+
+  [test_ADPFFViscousResistance_zero_eta]
+    type = 'RunApp'
+    input = 'test_ADPFFViscousResistance_zero_eta.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The ADPFFViscousResistance kernel shall recover rate-independent behavior when viscosity eta=0 (quasi-static limit)'
+  []
+
+  [test_ADPFFViscousResistance_high_eta]
+    type = 'RunApp'
+    input = 'test_ADPFFViscousResistance_high_eta.i'
+    expect_out = 'Solve Converged!'
+    requirement = 'The ADPFFViscousResistance kernel shall slow down damage evolution with high viscosity parameter, demonstrating rate-dependent behavior'
+  []
+[]
