@@ -59,8 +59,8 @@ Point(21) = { 0.0235,      0, 0, lc};  // Left boundary of right support
 Point(22) = { 0.0245,      0, 0, lc};  // Right boundary of right support
 
 // Top loading patch: x = 0.0135 to 0.0145
-Point(23) = { 0.0135, 0.0080, 0, lc};  // Left boundary of loading patch
-Point(24) = { 0.0145, 0.0080, 0, lc};  // Right boundary of loading patch
+Point(23) = { 0.0139, 0.0080, 0, lc};  // Left boundary of loading patch
+Point(24) = { 0.0141, 0.0080, 0, lc};  // Right boundary of loading patch
 
 // Define square edges with subdivisions for the three patches
 Line(1) = {1, 19};       // Bottom left corner to left support patch start
