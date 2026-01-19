@@ -43,7 +43,7 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0
+hht_alpha = 0.1
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
@@ -95,7 +95,7 @@ hht_alpha = 0
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../3dmeshfile/cylinder_sample.msh'
+    file =  '../../../3dmeshfile/cylinder_sample_refined_cross.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
