@@ -60,8 +60,8 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   [./elastic_region_3]
     type = SubdomainBoundingBoxGenerator
     input = elastic_region_2
-    bottom_left = '0.0135 0.007 0'
-    top_right = '0.0145 0.008 1'
+    bottom_left = '0.0139 0.007 0'
+    top_right = '0.0141 0.008 1'
     block_id = 2
   []
   displacements = 'disp_x disp_y disp_z'
