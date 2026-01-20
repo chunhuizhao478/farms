@@ -663,7 +663,7 @@ top_right2 = '3e-4 0.0025 0'
 [BCs]
   # Pulse power loading on inner surface
   [./Pressure]
-    [pressure_inner]
+   [pressure_inner]
       boundary = 3
       function = func_tri_pulse
       displacements = 'disp_x disp_y'
@@ -681,17 +681,6 @@ top_right2 = '3e-4 0.0025 0'
     []
   []
   # Drained pressure on inner surface
-  #[./porepressure_drained]
-  #  type = ADPiecewiseLinearSink
-  #  variable = p
-  #  boundary = '3'
-  #  pt_vals = '-1e9 1e9' # x coordinates defining g
-  #  multipliers = '-1e9 1e9' # y coordinates defining g
-  #  PT_shift = 96500   # BC pressure
-  #  #PT_shift = func_tri_pulse   # BC pressure
-  #  flux_function = 1e5 # Variable C
-  #  fluid_phase = 0
-  #[]
   # Fix corner point
   [./fix_cptr1_x]
     type = DirichletBC
@@ -839,11 +828,11 @@ top_right2 = '3e-4 0.0025 0'
     psie_active_enhanced = psie_active_enhanced
     # Formulation options (for testing pressure oscillation)
     # Set to true to use two-field H+ (only elastic + pressure terms)
-    use_two_field_formulation = true #for testing
+    use_two_field_formulation = false #for testing
     # Or control individual terms:
-    # include_fluid_divergence_term = true
-    # include_fluid_kinetic_term = true
-    # include_density_diff_kinetic_term = true
+    include_fluid_divergence_term = true
+    include_fluid_kinetic_term = true
+    include_density_diff_kinetic_term = true
   []
 
   # Note: density is provided by porodynamics material (damage-dependent)
@@ -984,8 +973,8 @@ top_right2 = '3e-4 0.0025 0'
   l_tol = 1e-4
 
   # Nonlinear solver tolerances
-  nl_rel_tol = 1e-6
-  nl_abs_tol = 1e-8
+  nl_rel_tol = 1e-5
+  nl_abs_tol = 1e-7
   nl_max_its = 25
   nl_div_tol = 1e10
 
@@ -1022,8 +1011,8 @@ top_right2 = '3e-4 0.0025 0'
 [Controls]
   [./period0]
     type = TimePeriod
-    disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y'
-    start_time = 0
+    disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y */pressure_inner'
+    start_time = -1e-12
     end_time = 1e-8
   []
 [../]

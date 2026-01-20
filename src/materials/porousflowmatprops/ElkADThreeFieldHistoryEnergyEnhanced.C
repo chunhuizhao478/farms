@@ -137,8 +137,8 @@ ElkADThreeFieldHistoryEnergyEnhanced::computeQpProperties()
   const ADReal Gamma = computeGamma();
 
   // Base terms (always included): 2ψ_o^{e+} + Γp²
-  ADReal H_current = 2.0 * _psie_active[_qp];        // Elastic energy term
-                     //+ Gamma * _pp[_qp] * _pp[_qp]; // Pressure term
+  ADReal H_current = 2.0 * _psie_active[_qp]        // Elastic energy term
+                     + Gamma * _pp[_qp] * _pp[_qp]; // Pressure term
 
   // Additional three-field terms (conditionally included)
   if (!_use_two_field_formulation)

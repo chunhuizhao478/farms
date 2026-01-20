@@ -14,7 +14,7 @@ ComputeSmallDeformationStress::validParams()
   InputParameters params = Material::validParams();
   params += BaseNameInterface::validParams();
   params.addClassDescription("The stress calculator given an elasticity model and a plasticity "
-                             "model. Small deformation is assumed.");
+                             "model. Small deformation is assumed. Also computes strain increment.");
 
   params.addRequiredParam<MaterialName>("elasticity_model",
                                         "Name of the elastic stress-strain constitutive model");
@@ -28,7 +28,10 @@ ComputeSmallDeformationStress::ComputeSmallDeformationStress(const InputParamete
   : Material(parameters),
     BaseNameInterface(parameters),
     _mechanical_strain(getADMaterialProperty<RankTwoTensor>(prependBaseName("mechanical_strain"))),
-    _stress(declareADProperty<RankTwoTensor>(prependBaseName("stress")))
+    _elastic_strain(getADMaterialProperty<RankTwoTensor>(prependBaseName("elastic_strain"))),
+    _elastic_strain_old(getMaterialPropertyOld<RankTwoTensor>(prependBaseName("elastic_strain"))),
+    _stress(declareADProperty<RankTwoTensor>(prependBaseName("stress"))),
+    _strain_increment(declareADProperty<RankTwoTensor>(prependBaseName("strain_increment")))
 {
   if (getParam<bool>("use_displaced_mesh"))
     mooseError("The stress calculator needs to run on the undisplaced mesh.");
@@ -56,6 +59,7 @@ void
 ComputeSmallDeformationStress::initQpStatefulProperties()
 {
   _stress[_qp].zero();
+  _strain_increment[_qp].zero();
 }
 
 void
@@ -63,4 +67,10 @@ ComputeSmallDeformationStress::computeQpProperties()
 {
   _elasticity_model->setQp(_qp);
   _elasticity_model->updateState(_mechanical_strain[_qp], _stress[_qp]);
+
+  // Compute elastic strain increment for this step: current minus old
+  // Note: _elastic_strain is AD, _elastic_strain_old is non-AD (from previous timestep)
+  for (unsigned int i = 0; i < 3; ++i)
+    for (unsigned int j = 0; j < 3; ++j)
+      _strain_increment[_qp](i, j) = _elastic_strain[_qp](i, j) - _elastic_strain_old[_qp](i, j);
 }
