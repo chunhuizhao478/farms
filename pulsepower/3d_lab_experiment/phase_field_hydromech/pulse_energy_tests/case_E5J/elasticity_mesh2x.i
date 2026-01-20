@@ -92,6 +92,10 @@ hht_alpha = 0.1
   PorousFlowDictator = dictator #All porous modules must contain
 []
 
+#initial damage box
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
@@ -103,6 +107,14 @@ hht_alpha = 0.1
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 2
+    input = extranodeset1
   []
   displacements = 'disp_x disp_y disp_z'
 []
