@@ -559,6 +559,7 @@ top_right1 = '0.002 4e-4 0.06'
   [stress]
     type = ComputeSmallDeformationStress
     elasticity_model = elasticity
+    compute_strain_increment = false
     #output_properties = 'stress'
     #outputs = exodus
   []

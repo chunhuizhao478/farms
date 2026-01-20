@@ -37,13 +37,18 @@ protected:
   /// The mechanical strain excluding eigen strains from the total strain
   const ADMaterialProperty<RankTwoTensor> & _mechanical_strain;
 
-  /// The elastic strain (from elasticity model) and its old value
+  /// The elastic strain (from elasticity model)
   const ADMaterialProperty<RankTwoTensor> & _elastic_strain;
-  const MaterialProperty<RankTwoTensor> & _elastic_strain_old;
+
+  /// Whether to compute strain increment (requires stateful elastic_strain)
+  const bool _compute_strain_increment;
+
+  /// The old elastic strain (only if computing strain increment)
+  const MaterialProperty<RankTwoTensor> * _elastic_strain_old;
 
   /// The stress
   ADMaterialProperty<RankTwoTensor> & _stress;
 
-  /// Elastic strain increment per step: elastic_strain - elastic_strain_old
-  ADMaterialProperty<RankTwoTensor> & _strain_increment;
+  /// Elastic strain increment per step: elastic_strain - elastic_strain_old (optional)
+  ADMaterialProperty<RankTwoTensor> * _strain_increment;
 };
