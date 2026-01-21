@@ -595,6 +595,12 @@ top_right2 = '3e-4 0.0025 0'
     boundary = corner_ptr
     value = 0
   []
+  [./fix_cptr2_p]
+    type = DirichletBC
+    variable = pp
+    boundary = corner_ptr
+    value = 0
+  []
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
@@ -866,8 +872,8 @@ top_right2 = '3e-4 0.0025 0'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
   # petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_gmres_restart -pc_hypre_boomeramg_strong_threshold -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre    boomeramg      300                0.7                                   True'
 
   # automatic_scaling = true
   line_search = 'bt'
