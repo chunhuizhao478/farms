@@ -1,7 +1,11 @@
+#initial damage box
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../3dmeshfile/cylinder_sample_coarse.msh'
+    file =  '../../../3dmeshfile/cylinder_sample_refined_cross.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -9,6 +13,14 @@
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 2
+    input = extranodeset1
   []
 []
 
@@ -102,7 +114,7 @@
   [psi]
     type = ADDerivativeParsedMaterial
     property_name = psi
-    expression = 'alpha*Gc/c0/l+g*psie_active'
+    expression = 'alpha*Gc/c0/l+0.5*g*psie_active'
     coupled_variables = 'd psie_active'
     material_property_names = 'alpha(d) g(d) Gc c0 l'
     derivative_order = 1
@@ -125,6 +137,21 @@
   [dissipated_energy_density]
     order = CONSTANT
     family = MONOMIAL
+  []
+[]
+
+[AuxKernels]
+  [define_initial_damage_block1]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0.9
+    block = 2
+  []
+  [define_initial_damage_block0]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0
+    block = 1
   []
 []
 
@@ -159,10 +186,14 @@
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
   # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+  #scalable to large problems
+  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
+  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
 
-  automatic_scaling = true
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
+  petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 0.3 vinewtonrsls 100'
+
+  #automatic_scaling = true
 
   nl_rel_tol = 1e-8
   nl_abs_tol = 1e-10

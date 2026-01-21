@@ -937,7 +937,7 @@ top_right1 = '0.002 4e-4 0.06'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
+    time_step_interval = 400
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]

@@ -43,7 +43,7 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0
+hht_alpha = 0.1
 #----------------------------------------------------#
 
 #fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
@@ -92,10 +92,14 @@ hht_alpha = 0
   PorousFlowDictator = dictator #All porous modules must contain
 []
 
+#initial damage box
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../3dmeshfile/cylinder_sample.msh'
+    file =  '../../../3dmeshfile/cylinder_sample_refined_cross.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -103,6 +107,14 @@ hht_alpha = 0
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 2
+    input = extranodeset1
   []
   displacements = 'disp_x disp_y disp_z'
 []
@@ -925,7 +937,7 @@ hht_alpha = 0
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
+    time_step_interval = 400
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]

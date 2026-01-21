@@ -1,7 +1,11 @@
+#initial damage box
+bottom_left1 = '-0.002 -4e-4 0'
+top_right1 = '0.002 4e-4 0.06'
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../3dmeshfile/cylinder_sample.msh'
+    file =  '../../../3dmeshfile/cylinder_sample_refined_cross.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -9,6 +13,14 @@
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
+  []
+  [./subdomain_id]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left1}
+    top_right = ${top_right1}
+    location = INSIDE
+    block_id = 2
+    input = extranodeset1
   []
 []
 
@@ -125,6 +137,21 @@
   [dissipated_energy_density]
     order = CONSTANT
     family = MONOMIAL
+  []
+[]
+
+[AuxKernels]
+  [define_initial_damage_block1]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0.9
+    block = 2
+  []
+  [define_initial_damage_block0]
+    type = ConstantAux
+    variable = initial_damage_aux
+    value = 0
+    block = 1
   []
 []
 
