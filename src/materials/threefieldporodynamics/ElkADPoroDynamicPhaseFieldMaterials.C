@@ -56,7 +56,8 @@ ElkADPoroDynamicPhaseFieldMaterials::ElkADPoroDynamicPhaseFieldMaterials(const I
     _effective_perm(getADMaterialProperty<RankTwoTensor>("effective_perm")),
     _elastic_strain(getADMaterialProperty<RankTwoTensor>("elastic_strain")),
     _rhof(declareADProperty<Real>("rhof")),
-    _rho(declareADProperty<Real>("density")),
+    _mixture_density(declareADProperty<Real>("mixture_density")),
+    _density(declareADProperty<Real>("density")),
     _porosity(declareADProperty<Real>("porosity")),
     _tortosity(declareADProperty<Real>("tortosity")),
     _viscosity(declareADProperty<Real>("viscosity")),
@@ -82,8 +83,11 @@ ElkADPoroDynamicPhaseFieldMaterials::initQpStatefulProperties()
   // Get porosity
   ADReal phi = _use_damaged_properties ? (*_porosity_damaged)[_qp] : ADReal(_porosity_const);
 
-  // Total density
-  _rho[_qp] = _rhos_val * (1.0 - phi) + _rhof_val * phi;
+  // Mixture density (for reference/output only)
+  _mixture_density[_qp] = _rhos_val * (1.0 - phi) + _rhof_val * phi;
+
+  // Constant solid density for ADInertialForce (matches two-field approach for energy consistency)
+  _density[_qp] = _rhos_val;
 
   // Porosity
   _porosity[_qp] = phi;
@@ -127,8 +131,11 @@ ElkADPoroDynamicPhaseFieldMaterials::computeQpProperties()
   // Get porosity
   ADReal phi = _use_damaged_properties ? (*_porosity_damaged)[_qp] : ADReal(_porosity_const);
 
-  // Total density (damage-dependent through porosity)
-  _rho[_qp] = _rhos_val * (1.0 - phi) + _rhof_val * phi;
+  // Mixture density (for reference/output only, damage-dependent through porosity)
+  _mixture_density[_qp] = _rhos_val * (1.0 - phi) + _rhof_val * phi;
+
+  // Constant solid density for ADInertialForce (matches two-field approach for energy consistency)
+  _density[_qp] = _rhos_val;
 
   // Porosity
   _porosity[_qp] = phi;

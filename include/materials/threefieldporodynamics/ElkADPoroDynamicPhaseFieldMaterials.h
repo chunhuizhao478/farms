@@ -79,8 +79,11 @@ protected:
   /// Material property fluid density
   ADMaterialProperty<Real> & _rhof;
 
-  /// Material property density
-  ADMaterialProperty<Real> & _rho;
+  /// Material property mixture density (for reference/output, not used by ADInertialForce)
+  ADMaterialProperty<Real> & _mixture_density;
+
+  /// Material property constant solid density (used by ADInertialForce for energy consistency)
+  ADMaterialProperty<Real> & _density;
 
   /// Material property porosity
   ADMaterialProperty<Real> & _porosity;

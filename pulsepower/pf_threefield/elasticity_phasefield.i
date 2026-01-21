@@ -896,7 +896,9 @@ top_right2 = '3e-4 0.0025 0'
     grain_bulk_modulus = ${grain_bulk_modulus}
     fluid_bulk_modulus = ${fluid_bulk_modulus}
     use_damaged_properties = true
-    output_properties = 'biot_modulus biot_coefficient porosity density'
+    # Note: 'density' is now constant solid_density (for ADInertialForce, matches two-field)
+    # 'mixture_density' contains the damage-dependent (1-phi)*rhos + phi*rhof for reference
+    output_properties = 'biot_modulus biot_coefficient porosity density mixture_density'
     outputs = exodus
   []
 []
@@ -1102,6 +1104,8 @@ top_right2 = '3e-4 0.0025 0'
 []
 
 # Solid kinetic energy
+# Note: 'density' material property is now constant solid_density (matches two-field approach)
+# This ensures energy consistency: ADInertialForce and kinetic energy use the same constant density
 [AuxVariables]
   [solid_kinetic_energy]
     order = CONSTANT
@@ -1111,12 +1115,11 @@ top_right2 = '3e-4 0.0025 0'
 
 [AuxKernels]
   [solid_kinetic_energy]
-    type = ADKineticEnergyAux
+    # Using ParsedAux with explicit constant density (matches two-field approach exactly)
+    type = ParsedAux
     variable = solid_kinetic_energy
-    newmark_velocity_x = vel_x
-    newmark_velocity_y = vel_y
-    newmark_velocity_z = vel_z
-    density = density
+    coupled_variables = 'vel_x vel_y'
+    expression = '0.5 * (vel_x * vel_x + vel_y * vel_y) * ${solid_density}'
   []
 []
 
