@@ -38,6 +38,12 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   displacements = 'disp_x disp_y disp_z'
 []
 
+# Line support positions
+left_support_x = 0.004
+right_support_x = 0.024
+loading_x = 0.014
+z_center = 0.004  # extrude_z / 2
+
 [Mesh]
   [./msh]
     type = FileMeshGenerator
@@ -63,6 +69,56 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
     bottom_left = '0.0139 0.007 0'
     top_right = '0.0141 0.008 1'
     block_id = 2
+  []
+  # Create nodesets for LINE supports using BoundingBoxNodeSetGenerator
+  # Left support LINE: x = 0.004, y = 0, z = 0 to 0.008
+  [./left_support_line]
+    type = BoundingBoxNodeSetGenerator
+    input = elastic_region_3
+    bottom_left = '${fparse left_support_x - 1e-5} -1e-5 -1e-5'
+    top_right = '${fparse left_support_x + 1e-5} 1e-5 0.009'
+    new_boundary = left_support_line
+  []
+  # Right support LINE: x = 0.024, y = 0, z = 0 to 0.008
+  [./right_support_line]
+    type = BoundingBoxNodeSetGenerator
+    input = left_support_line
+    bottom_left = '${fparse right_support_x - 1e-5} -1e-5 -1e-5'
+    top_right = '${fparse right_support_x + 1e-5} 1e-5 0.009'
+    new_boundary = right_support_line
+  []
+  # Top loading LINE: x = 0.014, y = 0.008, z = 0 to 0.008
+  [./top_loading_line]
+    type = BoundingBoxNodeSetGenerator
+    input = right_support_line
+    bottom_left = '${fparse loading_x - 1e-5} 0.0079 -1e-5'
+    top_right = '${fparse loading_x + 1e-5} 0.0081 0.009'
+    new_boundary = top_loading_line
+  []
+  # Create nodesets for CENTER POINTS of support lines (z = z_center)
+  # Left support center point
+  [./left_support_center]
+    type = ExtraNodesetGenerator
+    input = top_loading_line
+    coord = '${left_support_x} 0 ${z_center}'
+    new_boundary = left_support_center
+    use_closest_node = true
+  []
+  # Right support center point
+  [./right_support_center]
+    type = ExtraNodesetGenerator
+    input = left_support_center
+    coord = '${right_support_x} 0 ${z_center}'
+    new_boundary = right_support_center
+    use_closest_node = true
+  []
+  # Top loading center point
+  [./top_loading_center]
+    type = ExtraNodesetGenerator
+    input = right_support_center
+    coord = '${loading_x} 0.008 ${z_center}'
+    new_boundary = top_loading_center
+    use_closest_node = true
   []
   displacements = 'disp_x disp_y disp_z'
 []
@@ -106,53 +162,67 @@ Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
   []
 []
 
-#top_loading: id 4
-#bottom_left_support: id 2
-#bottom_right_support: id 3
+# LINE SUPPORT AND LINE LOADING BOUNDARY CONDITIONS
+# Boundary names from mesh:
+#   top_loading_line: loading line at top center
+#   top_loading_center: center point of loading line (for u_x=0, u_z=0)
+#   left_support_line: left support line at bottom
+#   right_support_line: right support line at bottom
+#   left_support_center: center point of left support (for u_y=0)
+#   right_support_center: center point of right support (for u_y=0)
 [BCs]
-  #top_loading
+  #=== TOP LOADING LINE ===
+  # Apply displacement loading on the entire line
   [apply_load_y]
     type = FunctionDirichletBC
     variable = disp_y
-    boundary = 4
+    boundary = top_loading_line
     function = func_loading
   []
-  [fix_load_x]
+  # u_x = 0 only at center point of loading line
+  [fix_load_center_x]
     type = DirichletBC
     variable = disp_x
-    boundary = 4
+    boundary = top_loading_center
     value = 0
   []
-  [fix_load_z]
+  # u_z = 0 only at center point of loading line
+  [fix_load_center_z]
     type = DirichletBC
     variable = disp_z
-    boundary = 4
+    boundary = top_loading_center
     value = 0
   []
-  #bottom_left_support
-  [fix_bottom_left_support_y]
+
+  #=== LEFT SUPPORT LINE ===
+  # u_z = 0 on entire line (prevent out-of-plane motion)
+  [fix_left_support_line_z]
+    type = DirichletBC
+    variable = disp_z
+    boundary = left_support_line
+    value = 0
+  []
+  # u_y = 0 only at center point (vertical constraint at middle)
+  [fix_left_support_center_y]
     type = DirichletBC
     variable = disp_y
-    boundary = 2
+    boundary = left_support_center
     value = 0
   []
-  [fix_bottom_left_support_z]
+
+  #=== RIGHT SUPPORT LINE ===
+  # u_z = 0 on entire line (prevent out-of-plane motion)
+  [fix_right_support_line_z]
     type = DirichletBC
     variable = disp_z
-    boundary = 2
+    boundary = right_support_line
     value = 0
   []
-  #bottom_right_support
-  [fix_bottom_right_support_y]
+  # u_y = 0 only at center point (vertical constraint at middle)
+  [fix_right_support_center_y]
     type = DirichletBC
     variable = disp_y
-    boundary = 3
-    value = 0
-  []
-  [fix_bottom_right_support_z]
-    type = DirichletBC
-    variable = disp_z
-    boundary = 3
+    boundary = right_support_center
     value = 0
   []
 []

@@ -5,7 +5,7 @@ SetFactory("OpenCASCADE");
 //==============================================================================
 // Global mesh size parameters
 lc = 0.001;          // Global mesh size (1 mm)
-lc_refined = 5e-5;   // Refined mesh size in notch region (50 microns)
+lc_refined = 2.5e-4; //5e-5;   // Refined mesh size in notch region (50 microns)
 lc_support = 2.5e-4; // Refined mesh size at support regions (250 microns)
 extrude_z = 0.008;   // Total thickness in z-direction (8 mm)
 
@@ -19,7 +19,7 @@ notch_tip_y = 0.0016;
 // Hole position offset from notch tip
 // dx = hole_center_x - notch_tip_x
 // dy = hole_center_y - notch_tip_y
-dx = 0.002;          // Horizontal offset (1 mm to the right of notch tip)
+dx = 0.001;          // Horizontal offset (1 mm to the right of notch tip)
 dy = 0.0016;         // Vertical offset (1.6 mm above notch tip)
 
 // Hole geometry
