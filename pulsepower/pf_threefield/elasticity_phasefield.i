@@ -1029,19 +1029,16 @@ top_right2 = '3e-4 0.0025 0'
   [Controls]
     [./period0]
       type = TimePeriod
-      # Original disabled objects for first timestep
-      disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y
-  */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner
-  */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x
-  */dynamicdarcyflow_y'
+      # Disabled objects for first timestep (standard initialization)
+      disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y */poromechanic_wx */poromechanic_wy */insmass */af_x */af_y */vf_x */vf_y'
       start_time = 0
       end_time = 1e-8
     []
-    # ADD THIS: Keep fluid inertia disabled for entire simulation
-    [./disable_fluid_inertia]
+    # Disable ALL fluid displacement (wf) related kernels for entire simulation
+    # This reduces to a two-field-like formulation for testing energy conservation
+    [./disable_fluid_field]
       type = TimePeriod
-      disable_objects = '*/porefluidinertia_x */porefluidinertia_y
-  */dynamicdarcyflow_x */dynamicdarcyflow_y'
+      disable_objects = '*/porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y */poromechanic_wx */poromechanic_wy */insmass */af_x */af_y */vf_x */vf_y'
       start_time = 0
       end_time = 100e-5
     []
