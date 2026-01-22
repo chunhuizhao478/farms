@@ -1026,14 +1026,26 @@ top_right2 = '3e-4 0.0025 0'
 # =============================================================================
 # Controls
 # =============================================================================
-[Controls]
-  [./period0]
-    type = TimePeriod
-    disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y'
-    start_time = 0
-    end_time = 1e-8
+  [Controls]
+    [./period0]
+      type = TimePeriod
+      # Original disabled objects for first timestep
+      disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y
+  */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner
+  */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x
+  */dynamicdarcyflow_y'
+      start_time = 0
+      end_time = 1e-8
+    []
+    # ADD THIS: Keep fluid inertia disabled for entire simulation
+    [./disable_fluid_inertia]
+      type = TimePeriod
+      disable_objects = '*/porefluidinertia_x */porefluidinertia_y
+  */dynamicdarcyflow_x */dynamicdarcyflow_y'
+      start_time = 0
+      end_time = 100e-5
+    []
   []
-[../]
 
 # =============================================================================
 # Outputs
