@@ -1184,7 +1184,7 @@ top_right2 = '3e-4 0.0025 0'
     type = ParsedAux
     variable = fluid_kinetic_energy
     coupled_variables = 'vf_x vf_y porosity_aux'
-    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density} * ${tortosity} / porosity_aux"
+    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density}"
   []
 []
 
