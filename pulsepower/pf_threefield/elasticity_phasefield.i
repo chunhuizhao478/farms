@@ -40,7 +40,7 @@ viscosity = 1e-3
 porosity = 0.008
 solid_bulk_modulus_compliance = ${fparse 1.0/K}
 grain_bulk_modulus = ${fparse K_s}
-intrinsic_permeability = 5e-19 # m^2
+intrinsic_permeability = 5e-15 # m^2 #test high perm
 tortosity = 1.2
 
 # Darcy-Poiseuille permeability model
@@ -163,17 +163,18 @@ top_right2 = '3e-4 0.0025 0'
   [wf_x]
     order = SECOND
     family = LAGRANGE
-    scaling = 1e-6
+    scaling = 1e-12
   []
   [wf_y]
     order = SECOND
     family = LAGRANGE
-    scaling = 1e-6
+    scaling = 1e-12
   []
   # Pore pressure
   [p]
     order = FIRST
     family = LAGRANGE
+    scaling = 1e-6
   []
 []
 
@@ -317,6 +318,12 @@ top_right2 = '3e-4 0.0025 0'
   []
   [fdampy]
     order = SECOND
+    family = LAGRANGE
+  []
+  # Fluid boundary power for energy tracking (p * radial component of vf)
+  # For circular boundaries centered at origin: radial direction = (x,y)/|r|
+  [fluid_boundary_power]
+    order = FIRST
     family = LAGRANGE
   []
 []
@@ -632,6 +639,18 @@ top_right2 = '3e-4 0.0025 0'
     variable = strain_increment_22
     index_i = 2
     index_j = 2
+    execute_on = 'TIMESTEP_END'
+  []
+  # Fluid boundary power: p * (radial component of vf)
+  # For circular boundaries centered at origin, radial outward = (x,y)/|r|
+  # This computes p * (x*vf_x + y*vf_y) / |r|
+  # Positive when fluid moves radially outward under positive pressure
+  [fluid_boundary_power_aux]
+    type = ParsedAux
+    variable = fluid_boundary_power
+    coupled_variables = 'p vf_x vf_y'
+    use_xyzt = true
+    expression = 'p * (x*vf_x + y*vf_y) / sqrt(x*x + y*y + 1e-30)'
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -999,8 +1018,8 @@ top_right2 = '3e-4 0.0025 0'
   # Fixed point iteration for staggered MultiApp coupling
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
-  fixed_point_rel_tol = 1e-4
-  fixed_point_abs_tol = 1e-6
+  fixed_point_rel_tol = 1e-6
+  fixed_point_abs_tol = 1e-8
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
@@ -1009,7 +1028,7 @@ top_right2 = '3e-4 0.0025 0'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 12
     growth_factor = 1.2
-    max_time_step_bound = 5e-7
+    max_time_step_bound = 1e-8
   []
   [TimeIntegrator]
     type = NewmarkBeta
@@ -1048,7 +1067,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total external_work confinement_work damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total external_work confinement_work damping_work fluid_boundary_work_inner fluid_boundary_work_outer'
   []
 []
 
@@ -1092,13 +1111,45 @@ top_right2 = '3e-4 0.0025 0'
     boundary = '1'
     forces = 'fdampx fdampy'
   []
+  # Fluid boundary work: work done by pressure on fluid at boundaries
+  # For three-field formulation, pressure does work on both solid (tracked above) and fluid
+  # Inner boundary (3): pulse pressure does work on fluid moving radially
+  [fluid_boundary_work_rate_inner]
+    type = SideIntegralVariablePostprocessor
+    variable = fluid_boundary_power
+    boundary = 3
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [fluid_boundary_work_inner]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_boundary_work_rate_inner
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Outer boundary (1): confinement pressure does work on fluid
+  [fluid_boundary_work_rate_outer]
+    type = SideIntegralVariablePostprocessor
+    variable = fluid_boundary_power
+    boundary = 1
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [fluid_boundary_work_outer]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_boundary_work_rate_outer
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
 []
 
 [Postprocessors]
   [full_input_energy]
     type = ParsedPostprocessor
-    expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
-    pp_names = 'external_work confinement_work damping_work'
+    # Added fluid boundary work terms:
+    # - fluid_boundary_work_inner: work by pulse pressure on fluid at inner boundary
+    # - fluid_boundary_work_outer: work by confinement on fluid at outer boundary
+    # Sign convention: positive work = energy entering system
+    # Inner boundary: pressure pushes outward, fluid moving outward = positive work input
+    # Outer boundary: confinement pushes inward, fluid moving inward = positive work input (negative in formula)
+    expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work - fluid_boundary_work_inner + fluid_boundary_work_outer'
+    pp_names = 'external_work confinement_work damping_work fluid_boundary_work_inner fluid_boundary_work_outer'
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1173,13 +1224,10 @@ top_right2 = '3e-4 0.0025 0'
 
 [AuxKernels]
   [fluid_kinetic_energy]
-    # Note: Include tortosity/porosity factor to match momentum equation:
-    # Momentum: rho^f * tau_t / phi * a^f
-    # Kinetic energy: 0.5 * rho^f * tau_t / phi * |vf|^2
     type = ParsedAux
     variable = fluid_kinetic_energy
-    coupled_variables = 'vf_x vf_y porosity_aux'
-    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density} * ${tortosity} / porosity_aux"
+    coupled_variables = 'vf_x vf_y'
+    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density}"
   []
 []
 
