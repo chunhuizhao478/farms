@@ -152,29 +152,28 @@ top_right2 = '3e-4 0.0025 0'
   [disp_x]
     order = SECOND
     family = LAGRANGE
-    scaling = 1e-9
+    scaling = 1e-6
   []
   [disp_y]
     order = SECOND
     family = LAGRANGE
-    scaling = 1e-9
+    scaling = 1e-6
   []
   # Fluid relative displacement
   [wf_x]
     order = SECOND
     family = LAGRANGE
-    scaling = 1e-12
+    scaling = 1e-6
   []
   [wf_y]
     order = SECOND
     family = LAGRANGE
-    scaling = 1e-12
+    scaling = 1e-6
   []
   # Pore pressure
   [p]
     order = FIRST
     family = LAGRANGE
-    scaling = 1e-6
   []
 []
 
@@ -969,41 +968,37 @@ top_right2 = '3e-4 0.0025 0'
 # =============================================================================
 [Executioner]
   type = Transient
-  solve_type = NEWTON
-  automatic_scaling = true
-  compute_scaling_once = false
+  solve_type = NEWTON  # Jacobian-free Newton-Krylov (much faster, no Jacobian assembly)
 
   # Iterative solver with AMG preconditioner
-  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_gmres_restart -pc_hypre_boomeramg_strong_threshold -ksp_initial_guess_nonzero'
-  # petsc_options_value = 'gmres     hypre    boomeramg      300                0.7                                   True'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_gmres_restart -pc_hypre_boomeramg_strong_threshold -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre    boomeramg      300                0.7                                   True'
 
   #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   #petsc_options_value = 'lu       superlu_dist                 '
 
-  # Simple AMG preconditioner with very relaxed linear tolerance
-  # The key is allowing inexact linear solves for the nonlinear iteration
-  petsc_options_iname = '-pc_type -pc_hypre_type -ksp_type -ksp_gmres_restart'
-  petsc_options_value = 'hypre    boomeramg      gmres     100'
+  #petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type  -ksp_initial_guess_nonzero -ksp_pc_side -ksp_max_it -ksp_rtol -ksp_atol'
+  #petsc_options_value = 'gmres        hypre      boomeramg                   True        right       1500        1e-7      1e-9    '
 
   # Line search
   line_search = 'bt'
-  l_max_its = 100
-  l_tol = 0.1
+  l_max_its = 300
+  l_tol = 1e-4
 
-  # Relaxed nonlinear solver tolerances
-  nl_rel_tol = 1e-4
-  nl_abs_tol = 1e-6
-  nl_max_its = 30
+  # Nonlinear solver tolerances
+  nl_rel_tol = 1e-6
+  nl_abs_tol = 1e-8
+  nl_max_its = 25
   nl_div_tol = 1e10
 
-  # Disable preconditioner reuse for better convergence with direct solver
-  reuse_preconditioner = false
+  # Reuse preconditioner to reduce Jacobian computations
+  reuse_preconditioner = true
 
   end_time = 100e-5
 
   # Fixed point iteration for staggered MultiApp coupling
-  fixed_point_max_its = 15
-  accept_on_max_fixed_point_iteration = true
+  fixed_point_max_its = 10
+  accept_on_max_fixed_point_iteration = false
   fixed_point_rel_tol = 1e-4
   fixed_point_abs_tol = 1e-6
 
@@ -1011,10 +1006,10 @@ top_right2 = '3e-4 0.0025 0'
     type = FarmsIterationAdaptiveDT
     dt = 1e-8
     iteration_window = 2
-    cutback_factor_at_failure = 0.25
-    optimal_iterations = 8
-    growth_factor = 1.1
-    max_time_step_bound = 1e-8
+    cutback_factor_at_failure = 0.5
+    optimal_iterations = 12
+    growth_factor = 1.2
+    max_time_step_bound = 5e-7
   []
   [TimeIntegrator]
     type = NewmarkBeta
@@ -1026,23 +1021,14 @@ top_right2 = '3e-4 0.0025 0'
 # =============================================================================
 # Controls
 # =============================================================================
-  [Controls]
-    [./period0]
-      type = TimePeriod
-      # Disabled objects for first timestep (standard initialization)
-      disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y */poromechanic_wx */poromechanic_wy */insmass */af_x */af_y */vf_x */vf_y'
-      start_time = 0
-      end_time = 1e-8
-    []
-    # Disable ALL fluid displacement (wf) related kernels for entire simulation
-    # This reduces to a two-field-like formulation for testing energy conservation
-    [./disable_fluid_field]
-      type = TimePeriod
-      disable_objects = '*/porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y */poromechanic_wx */poromechanic_wy */insmass */af_x */af_y */vf_x */vf_y'
-      start_time = 0
-      end_time = 100e-5
-    []
+[Controls]
+  [./period0]
+    type = TimePeriod
+    disable_objects = '*/inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner */porefluidinertia_x */porefluidinertia_y */dynamicdarcyflow_x */dynamicdarcyflow_y'
+    start_time = 0
+    end_time = 1e-8
   []
+[../]
 
 # =============================================================================
 # Outputs
@@ -1193,7 +1179,7 @@ top_right2 = '3e-4 0.0025 0'
     type = ParsedAux
     variable = fluid_kinetic_energy
     coupled_variables = 'vf_x vf_y porosity_aux'
-    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density}"
+    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density} * ${tortosity} / porosity_aux"
   []
 []
 
