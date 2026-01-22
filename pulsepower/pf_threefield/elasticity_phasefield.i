@@ -1009,7 +1009,7 @@ top_right2 = '3e-4 0.0025 0'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 12
     growth_factor = 1.2
-    max_time_step_bound = 5e-7
+    max_time_step_bound = 1e-8
   []
   [TimeIntegrator]
     type = NewmarkBeta
