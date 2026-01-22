@@ -1048,7 +1048,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total external_work confinement_work damping_work'
   []
 []
 
@@ -1173,10 +1173,13 @@ top_right2 = '3e-4 0.0025 0'
 
 [AuxKernels]
   [fluid_kinetic_energy]
+    # Note: Include tortosity/porosity factor to match momentum equation:
+    # Momentum: rho^f * tau_t / phi * a^f
+    # Kinetic energy: 0.5 * rho^f * tau_t / phi * |vf|^2
     type = ParsedAux
     variable = fluid_kinetic_energy
-    coupled_variables = 'vf_x vf_y'
-    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density}"
+    coupled_variables = 'vf_x vf_y porosity_aux'
+    expression = "0.5 * (vf_x * vf_x + vf_y * vf_y) * ${fluid_density} * ${tortosity} / porosity_aux"
   []
 []
 
