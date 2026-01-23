@@ -51,7 +51,7 @@ hht_alpha = 0.1
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture_mesh2x.i
+    input_files = fracture_mesh2x_drained.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
