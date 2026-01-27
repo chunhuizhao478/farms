@@ -1093,7 +1093,7 @@ hht_alpha = 0.1
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 100
+    time_step_interval = 10
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
