@@ -484,10 +484,10 @@ hht_alpha = 0.1
 [Functions]
   [func_tri_pulse]
     type = ElkPulseLoadExperiment
-    shape_param_alpha = 0.3732
-    shape_param_beta = 5.891
-    rise_time = 0.5
-    single_pulse_duration = 10
+    shape_param_alpha = 5.500e+03
+    shape_param_beta = 4.941e+04
+    rise_time = 5e-5
+    single_pulse_duration = 1e-3
     EM = 0.0025
     gap = 0.008
     convert_efficiency = 1.0
@@ -1034,7 +1034,7 @@ hht_alpha = 0.1
                        */damp_left_x */damp_left_y */damp_right_x */damp_right_y
                        */pressure_inner_hole */pressure_inner_hole_fractures'
     start_time = 0
-    end_time = 1e-4 # dt used in the simulation
+    end_time = 5e-6 # dt used in the simulation
   []
 []
 
@@ -1076,12 +1076,12 @@ hht_alpha = 0.1
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 1e-4
+    dt = 5e-6
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 1e-2
+    max_time_step_bound = 1e-5
   []
   [./TimeIntegrator]
     type = NewmarkBeta
