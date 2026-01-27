@@ -496,7 +496,7 @@ hht_alpha = 0.1
     discharge_center = '0 0 0'
     number_of_pulses = 100
     base_factor = 8000
-    peak_pressure = 10e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 5e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
