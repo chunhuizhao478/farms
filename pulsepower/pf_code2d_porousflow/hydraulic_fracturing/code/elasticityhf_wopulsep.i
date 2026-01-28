@@ -58,7 +58,7 @@ hht_alpha = 0.1
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracturehf.i
+    input_files = fracturehf_wopulsep.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -618,12 +618,12 @@ hht_alpha = 0.1
     []
   []
   # add drained pressure
-  [./porepressure_drained]
-    type = FunctionDirichletBC
-    variable = pp
-    function = func_tri_pulse
-    boundary = hole_fracture
-  []
+  #[./porepressure_drained]
+  #  type = FunctionDirichletBC
+  #  variable = pp
+  #  function = func_tri_pulse
+  #  boundary = hole_fracture
+  #[]
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
