@@ -57,36 +57,54 @@ tau0 = 26546122.0   # Initial shear stress (Pa)
 [AuxVariables]
   # Slip (accumulated displacement jump)
   [slip]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
     initial_condition = 0.0
   []
   # Slip rate (solved from traction balance)
   [slip_rate]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
     initial_condition = ${Vinit}
   []
   # State variable - initialized using function
   [state_variable]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
   []
   # Elastic traction (from displacement field)
   [traction]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
     initial_condition = ${tau0}
   []
   # Rate-state parameter a (depth-dependent)
   [a_param]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
   []
   # Friction stress (for output)
   [friction_stress]
-    order = CONSTANT
+    order = FIRST
     family = MONOMIAL
+  []
+
+  # LAGRANGE variables for nodal output (projected from MONOMIAL)
+  [slip_nodal]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [slip_rate_nodal]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [state_nodal]
+    order = FIRST
+    family = LAGRANGE
+  []
+  [traction_nodal]
+    order = FIRST
+    family = LAGRANGE
   []
 []
 
@@ -187,6 +205,32 @@ tau0 = 26546122.0   # Initial shear stress (Pa)
     depth_direction = 1
     execute_on = 'TIMESTEP_END'
     boundary = fault
+  []
+
+  # Project MONOMIAL to LAGRANGE for nodal output at exact z=0
+  [project_slip]
+    type = ProjectionAux
+    variable = slip_nodal
+    v = slip
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [project_slip_rate]
+    type = ProjectionAux
+    variable = slip_rate_nodal
+    v = slip_rate
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [project_state]
+    type = ProjectionAux
+    variable = state_nodal
+    v = state_variable
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [project_traction]
+    type = ProjectionAux
+    variable = traction_nodal
+    v = traction
+    execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
@@ -304,28 +348,28 @@ tau0 = 26546122.0   # Initial shear stress (Pa)
 []
 
 [Postprocessors]
-  # Output at z = 0 km (free surface, y = 0) - VW region
+  # Output at z = 0 km (exact surface using projected LAGRANGE nodal values)
   [slip_z0]
     type = PointValue
-    variable = slip
+    variable = slip_nodal
     point = '0 0 0'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [slip_rate_z0]
     type = PointValue
-    variable = slip_rate
+    variable = slip_rate_nodal
     point = '0 0 0'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [shear_stress_z0]
     type = PointValue
-    variable = traction
+    variable = traction_nodal
     point = '0 0 0'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [state_z0]
     type = PointValue
-    variable = state_variable
+    variable = state_nodal
     point = '0 0 0'
     execute_on = 'INITIAL TIMESTEP_END'
   []
@@ -420,7 +464,7 @@ tau0 = 26546122.0   # Initial shear stress (Pa)
     growth_factor = 1.05
   []
 
-  end_time = 3786.84e7  # 120 year
+  end_time = 3786.84e7  # 1200 year
 []
 
 [Outputs]
