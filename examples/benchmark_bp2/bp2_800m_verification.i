@@ -563,7 +563,7 @@ nx = ${fparse L_x / dz}  # Number of elements each side = 125
   [exodus]
     type = Exodus
     execute_on = 'INITIAL TIMESTEP_END'
-    time_step_interval = 1
+    time_step_interval = 1000
   []
   [console]
     type = Console
