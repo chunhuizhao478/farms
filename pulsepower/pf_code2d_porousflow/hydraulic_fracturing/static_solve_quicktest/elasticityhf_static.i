@@ -106,7 +106,7 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '1 1 0'
+    coord = '10 10 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
