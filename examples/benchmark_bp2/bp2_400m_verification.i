@@ -420,7 +420,7 @@ tau0 = 26546122.0   # Initial shear stress (Pa)
     growth_factor = 1.05
   []
 
-  end_time = 3.1557e7  # 1 year
+  end_time = 3786.84e7  # 120 year
 []
 
 [Outputs]
