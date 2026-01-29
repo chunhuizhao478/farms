@@ -1056,7 +1056,7 @@ hht_alpha = 0.1
   []
   [./init_sol_components]
     type = SolutionUserObject
-    mesh = ../static_solve_quicktest/elasticityhf_static_exodus.e
+    mesh = elasticityhf_static_pfczm_exodus.e
     system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
     timestep = LATEST
     force_preaux = true
