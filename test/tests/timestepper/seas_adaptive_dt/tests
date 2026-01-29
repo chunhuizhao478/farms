@@ -1,0 +1,18 @@
+[Tests]
+  [seas_adaptive_dt_aseismic]
+    type = 'CSVDiff'
+    input = 'seas_adaptive_dt_test.i'
+    csvdiff = 'seas_adaptive_dt_test_out.csv'
+    requirement = 'The system shall provide adaptive time stepping for SEAS simulations during aseismic phase'
+    design = 'SEASAdaptiveDT.md'
+    issues = '#0'
+  []
+  [seas_adaptive_dt_seismic]
+    type = 'CSVDiff'
+    input = 'seas_adaptive_dt_seismic.i'
+    csvdiff = 'seas_adaptive_dt_seismic_out.csv'
+    requirement = 'The system shall use small time steps during seismic phase when slip rate exceeds threshold'
+    design = 'SEASAdaptiveDT.md'
+    issues = '#0'
+  []
+[]

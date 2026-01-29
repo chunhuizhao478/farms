@@ -1,0 +1,19 @@
+[Tests]
+  [dg_elasticity_antiplane]
+    type = 'Exodiff'
+    input = 'dg_elasticity_antiplane.i'
+    exodiff = 'dg_elasticity_antiplane_out.e'
+    requirement = 'The system shall solve 2D antiplane shear elasticity using SIPG DG method'
+    design = 'DGElasticityAntiplane.md'
+    issues = '#0'
+  []
+  [dg_elasticity_antiplane_csv]
+    type = 'CSVDiff'
+    input = 'dg_elasticity_antiplane.i'
+    csvdiff = 'dg_elasticity_antiplane_out.csv'
+    requirement = 'The system shall produce correct solution values at postprocessor points'
+    design = 'DGElasticityAntiplane.md'
+    issues = '#0'
+    prereq = 'dg_elasticity_antiplane'
+  []
+[]

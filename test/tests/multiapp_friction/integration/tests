@@ -1,0 +1,10 @@
+[Tests]
+  [multiapp_coupling]
+    type = 'CSVDiff'
+    input = 'main_test.i'
+    csvdiff = 'main_test_out.csv'
+    requirement = 'MultiApp coupling shall transfer traction and slip between elasticity and friction apps'
+    design = 'MultiApp_SEAS.md'
+    issues = '#SEAS-MultiApp'
+  []
+[]

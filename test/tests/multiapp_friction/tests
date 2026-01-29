@@ -1,0 +1,57 @@
+[Tests]
+  [state_evolution_kernel_steady]
+    type = 'CSVDiff'
+    input = 'state_evolution_kernel_test.i'
+    csvdiff = 'state_evolution_kernel_test_out.csv'
+    requirement = 'StateEvolutionKernel shall maintain steady state when V*theta/Dc = 1'
+    design = 'StateEvolutionKernel.md'
+    issues = '#SEAS-MultiApp'
+  []
+
+  [state_evolution_kernel_transient]
+    type = 'CSVDiff'
+    input = 'state_evolution_transient_test.i'
+    csvdiff = 'state_evolution_transient_test_out.csv'
+    rel_err = 1e-4
+    requirement = 'StateEvolutionKernel shall evolve state variable according to aging law'
+    design = 'StateEvolutionKernel.md'
+    issues = '#SEAS-MultiApp'
+  []
+
+  [slip_integration_aux]
+    type = 'CSVDiff'
+    input = 'slip_integration_aux_test.i'
+    csvdiff = 'slip_integration_aux_test_out.csv'
+    requirement = 'SlipIntegrationAux shall integrate slip rate to give accumulated slip'
+    design = 'SlipIntegrationAux.md'
+    issues = '#SEAS-MultiApp'
+  []
+
+  [friction_slip_rate_aux]
+    type = 'CSVDiff'
+    input = 'friction_slip_rate_aux_test.i'
+    csvdiff = 'friction_slip_rate_aux_test_out.csv'
+    requirement = 'FrictionSlipRateAux shall solve for slip rate from traction balance'
+    design = 'FrictionSlipRateAux.md'
+    issues = '#SEAS-MultiApp'
+  []
+
+  [elastic_traction_aux]
+    type = 'CSVDiff'
+    input = 'elastic_traction_aux_test.i'
+    csvdiff = 'elastic_traction_aux_test_out.csv'
+    rel_err = 1e-6
+    requirement = 'ElasticTractionAux shall compute traction from displacement gradient'
+    design = 'ElasticTractionAux.md'
+    issues = '#SEAS-MultiApp'
+  []
+
+  [seas_slip_rate_var_a]
+    type = 'CSVDiff'
+    input = 'seas_slip_rate_var_a_test.i'
+    csvdiff = 'seas_slip_rate_var_a_test_out.csv'
+    requirement = 'SEASSlipRateVarAAux shall solve for slip rate with spatially-varying a parameter'
+    design = 'SEASSlipRateVarAAux.md'
+    issues = '#SEAS-MultiApp'
+  []
+[]

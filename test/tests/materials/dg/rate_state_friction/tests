@@ -1,0 +1,10 @@
+[Tests]
+  [interface_material_aux]
+    type = 'CSVDiff'
+    input = 'interface_aux_test.i'
+    csvdiff = 'interface_aux_test_out.csv'
+    requirement = 'The system shall read interface material properties using InterfaceMaterialRealAux'
+    design = 'InterfaceMaterialRealAux.md'
+    issues = '#0'
+  []
+[]
