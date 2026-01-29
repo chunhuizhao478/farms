@@ -50,8 +50,8 @@ def solve_params(t0, td, epsilon):
 
 def main():
     # User settings (time unit: seconds)
-    td = 10  # fixed decay time (0.1 s)
-    t0_list = [0.5]  # peak time (5 ms = 0.005 s)
+    td = 0.0025  # fixed decay time (0.1 s)
+    t0_list = [5e-5]  # peak time (5 ms = 0.005 s)
     epsilon = 1e-6  # target near-zero value at t0+td
     colors = ["tab:blue", "tab:red"]
 
