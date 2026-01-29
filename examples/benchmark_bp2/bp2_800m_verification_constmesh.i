@@ -552,7 +552,7 @@ nx = ${fparse L_x / dz}  # Number of elements each side = 125
   []
 
   # Run for 1 year initially for testing (31557600 seconds)
-  end_time = 820.482e7  # 260 year in seconds for testing
+  end_time = 3786.84e7   # 1200 year
 []
 
 [Outputs]
