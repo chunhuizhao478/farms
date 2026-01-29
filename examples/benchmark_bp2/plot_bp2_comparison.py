@@ -11,7 +11,7 @@ import numpy as np
 
 # File paths
 script_dir = os.path.dirname(os.path.abspath(__file__))
-moose_csv = os.path.join(script_dir, "stiffness_test.csv")
+moose_csv = os.path.join(script_dir, "bp2_800m_verification_csv.csv")
 benchmark_file = "./benchmark_data/bp2-qd-z0km-res.txt"
 
 
@@ -67,7 +67,7 @@ def plot_comparison(moose, benchmark, save_prefix="bp2_comparison"):
         label="Benchmark (Barbot)",
     )
     ax1.set_ylabel("Slip Rate (m/s)", fontsize=12)
-    ax1.set_ylim([1e-16, 1e1])
+    ax1.set_ylim([1e-18, 1e1])
     ax1.axhline(
         y=1e-3, color="gray", linestyle=":", alpha=0.5, label="Seismic threshold"
     )
