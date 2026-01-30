@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../mesh/square_with_hole_quicktest.msh'
+    file =  '../mesh/square_with_hole.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator

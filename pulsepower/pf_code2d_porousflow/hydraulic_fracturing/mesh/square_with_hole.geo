@@ -23,10 +23,6 @@ left_branch_distance = 3.0;       // Distance from borehole to left branches (al
 right_branch_distance = 2.0;      // Distance from borehole to right branches (along main fracture)
 right_branch_angle = Pi/4;        // Angle of right branches from vertical (45 degrees)
 
-// Propagation zone parameters (user can modify these)
-propagation_length = 3.0;         // Length of refined mesh zone beyond fracture tips
-propagation_width = 1.0;          // Width of the propagation zone (perpendicular to propagation direction)
-
 // Derived parameters
 y_half = square_thickness / 2;       // Half-thickness in y direction
 x_outer_right = R + square_length;   // Outer x-coordinate of right main fracture
@@ -248,87 +244,3 @@ Physical Surface("branch_fractures") = {3, 4, 6, 7};   // All branch fractures
 
 // Mesh settings
 Mesh.Algorithm = 6;  // Frontal-Delaunay algorithm
-
-// ==================== MESH REFINEMENT FIELDS ====================
-// Extend refined mesh (lc_square) into propagation zones beyond fracture tips
-
-// --- Right main fracture tip propagation zone ---
-// Box extending from right fracture tip (x_outer_right) to x_outer_right + propagation_length
-Field[1] = Box;
-Field[1].VIn = lc_square;
-Field[1].VOut = lc_outer;
-Field[1].XMin = x_outer_right;
-Field[1].XMax = x_outer_right + propagation_length/2;
-Field[1].YMin = -propagation_width/4;
-Field[1].YMax = propagation_width/4;
-Field[1].ZMin = -1;
-Field[1].ZMax = 1;
-Field[1].Thickness = 4*propagation_width;  // Gradual transition
-
-// --- Left main fracture tip propagation zone ---
-// Box extending from left fracture tip (x_outer_left) to x_outer_left - propagation_length
-Field[2] = Box;
-Field[2].VIn = lc_square;
-Field[2].VOut = lc_outer;
-Field[2].XMin = x_outer_left - propagation_length/2;
-Field[2].XMax = x_outer_left;
-Field[2].YMin = -propagation_width/4;
-Field[2].YMax = propagation_width/4;
-Field[2].ZMin = -1;
-Field[2].ZMax = 1;
-Field[2].Thickness = 4*propagation_width;
-
-// --- Left upper branch tip propagation zone ---
-Field[3] = Box;
-Field[3].VIn = lc_square;
-Field[3].VOut = lc_outer;
-Field[3].XMin = x_left_branch - propagation_width/4;
-Field[3].XMax = x_left_branch + propagation_width/4;
-Field[3].YMin = y_branch_top;
-Field[3].YMax = y_branch_top + propagation_length/2;
-Field[3].ZMin = -1;
-Field[3].ZMax = 1;
-Field[3].Thickness = 4*propagation_width;
-
-// --- Left lower branch tip propagation zone ---
-Field[4] = Box;
-Field[4].VIn = lc_square;
-Field[4].VOut = lc_outer;
-Field[4].XMin = x_left_branch - propagation_width/4;
-Field[4].XMax = x_left_branch + propagation_width/4;
-Field[4].YMin = y_branch_bottom - propagation_length/2;
-Field[4].YMax = y_branch_bottom;
-Field[4].ZMin = -1;
-Field[4].ZMax = 1;
-Field[4].Thickness = 4*propagation_width;
-
-// --- Right upper branch tip propagation zone (inclined) ---
-Field[5] = Box;
-Field[5].VIn = lc_square;
-Field[5].VOut = lc_outer;
-Field[5].XMin = x_right_branch + right_branch_dx - propagation_width/4;
-Field[5].XMax = x_right_branch + right_branch_dx + propagation_width/4;
-Field[5].YMin = y_half + right_branch_dy;
-Field[5].YMax = y_half + right_branch_dy + propagation_length/2;
-Field[5].ZMin = -1;
-Field[5].ZMax = 1;
-Field[5].Thickness = 4*propagation_width;
-
-// --- Right lower branch tip propagation zone (inclined to the left) ---
-Field[6] = Box;
-Field[6].VIn = lc_square;
-Field[6].VOut = lc_outer;
-Field[6].XMin = x_right_branch - right_branch_base_shift - right_branch_dx - propagation_width/4;
-Field[6].XMax = x_right_branch - right_branch_base_shift - right_branch_dx + propagation_width/4;
-Field[6].YMin = -y_half - right_branch_dy - propagation_length/2;
-Field[6].YMax = -y_half - right_branch_dy;
-Field[6].ZMin = -1;
-Field[6].ZMax = 1;
-Field[6].Thickness = 4*propagation_width;
-
-// --- Combine all propagation zone fields ---
-Field[7] = Min;
-Field[7].FieldsList = {1, 2, 3, 4, 5, 6};
-
-// --- Set as background mesh field ---
-Background Field = 7;

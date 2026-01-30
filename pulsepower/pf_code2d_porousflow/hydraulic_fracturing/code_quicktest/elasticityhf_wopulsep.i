@@ -1,12 +1,13 @@
-fluid_elastic_energy_total_static = 0
-solid_elastic_energy_total_static = 0
-full_input_energy_static = 0
+#fluid_elastic_energy_total_static = 1.975529e+04
+#solid_elastic_energy_total_static = 4.609899e+05
+solid_dissipated_energy_total_static = 3.178643e+03
+full_input_energy_static = 480745.23923362
 
 #external load & pore pressure
 #----------------------------------------------------#
 maximum_principal_stress = 10e6
 minimum_principal_stress = 5e6
-initial_pore_pressure = 1e6
+#initial_pore_pressure = 1e6
 #----------------------------------------------------#
 
 #solid properties
@@ -52,7 +53,7 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.1
+hht_alpha = 0
 #----------------------------------------------------#
 
 [MultiApps]
@@ -62,6 +63,7 @@ hht_alpha = 0.1
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
+    sub_cycling = true
   []
 []
 
@@ -106,7 +108,7 @@ hht_alpha = 0.1
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.01 0.01 0'
+    coord = '10 10 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -128,7 +130,6 @@ hht_alpha = 0.1
   [pp]
     order = FIRST
     family = LAGRANGE
-    initial_condition = ${initial_pore_pressure}
   []
 []
 
@@ -357,27 +358,80 @@ hht_alpha = 0.1
     execute_on = TIMESTEP_BEGIN
   [../]
   ### PorousFlow Aux ###
-  #effective permeability
-  [effective_permeability_00]
+  #effective permeability - unified across all blocks for energy calculation
+  # Domain block: read from 'effective_perm' (ElkPorousFlowPermeabilityDamaged)
+  [effective_permeability_00_domain]
     type = MaterialRealTensorValueAux
     property = effective_perm
     row = 0
     column = 0
     variable = effective_perm00_aux
+    block = domain
   []
-  [effective_permeability_11]
+  [effective_permeability_11_domain]
     type = MaterialRealTensorValueAux
     property = effective_perm
     row = 1
     column = 1
     variable = effective_perm11_aux
+    block = domain
   []
-  [effective_permeability_01]
+  [effective_permeability_01_domain]
     type = MaterialRealTensorValueAux
     property = effective_perm
     row = 0
     column = 1
     variable = effective_perm01_aux
+    block = domain
+  []
+  # Fracture blocks: read from 'PorousFlow_permeability_qp' (PorousFlowPermeabilityConst)
+  [effective_permeability_00_main_fractures]
+    type = MaterialRealTensorValueAux
+    property = PorousFlow_permeability_qp
+    row = 0
+    column = 0
+    variable = effective_perm00_aux
+    block = main_fractures
+  []
+  [effective_permeability_11_main_fractures]
+    type = MaterialRealTensorValueAux
+    property = PorousFlow_permeability_qp
+    row = 1
+    column = 1
+    variable = effective_perm11_aux
+    block = main_fractures
+  []
+  [effective_permeability_01_main_fractures]
+    type = MaterialRealTensorValueAux
+    property = PorousFlow_permeability_qp
+    row = 0
+    column = 1
+    variable = effective_perm01_aux
+    block = main_fractures
+  []
+  [effective_permeability_00_branch_fractures]
+    type = MaterialRealTensorValueAux
+    property = PorousFlow_permeability_qp
+    row = 0
+    column = 0
+    variable = effective_perm00_aux
+    block = branch_fractures
+  []
+  [effective_permeability_11_branch_fractures]
+    type = MaterialRealTensorValueAux
+    property = PorousFlow_permeability_qp
+    row = 1
+    column = 1
+    variable = effective_perm11_aux
+    block = branch_fractures
+  []
+  [effective_permeability_01_branch_fractures]
+    type = MaterialRealTensorValueAux
+    property = PorousFlow_permeability_qp
+    row = 0
+    column = 1
+    variable = effective_perm01_aux
+    block = branch_fractures
   []
   ### Darcy Velocity
   [bulk_vel_x]
@@ -408,12 +462,29 @@ hht_alpha = 0.1
     property = psie_active_enhanced
     execute_on = 'TIMESTEP_END'
   []
-  #### get biot modulus
-  [biot_modulus_aux_kernel]
+  #### get biot modulus - unified across all blocks for energy calculation
+  # All blocks use ElkPorousFlowDamagedBiotModulus which outputs PorousFlow_constant_biot_modulus_qp
+  # IMPORTANT: execute_on includes INITIAL to prevent division by zero at t=0 in fluid compression energy
+  [biot_modulus_aux_kernel_domain]
     type = MaterialRealAux
     variable = biot_modulus_aux
     property = PorousFlow_constant_biot_modulus_qp
-    execute_on = 'TIMESTEP_END'
+    block = domain
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [biot_modulus_aux_kernel_main_fractures]
+    type = MaterialRealAux
+    variable = biot_modulus_aux
+    property = PorousFlow_constant_biot_modulus_qp
+    block = main_fractures
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [biot_modulus_aux_kernel_branch_fractures]
+    type = MaterialRealAux
+    variable = biot_modulus_aux
+    property = PorousFlow_constant_biot_modulus_qp
+    block = branch_fractures
+    execute_on = 'INITIAL TIMESTEP_END'
   []
   #### get damaged biot coefficient
   [biot_coefficient_aux_kernel]
@@ -496,7 +567,7 @@ hht_alpha = 0.1
     discharge_center = '0 0 0'
     number_of_pulses = 100
     base_factor = 8000
-    peak_pressure = 5e6 #if peak pressure is specified, the depth variation is ignored
+    peak_pressure = 10e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -1021,9 +1092,53 @@ hht_alpha = 0.1
     number_fluid_phases = 1
     number_fluid_components = 1
   []
+  [./init_sol_components]
+    type = SolutionUserObject
+    mesh = ../static_solve_quicktest/elasticityhf_static_exodus.e
+    system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    timestep = LATEST
+    force_preaux = true
+  [../]
 []
 
 [ICs]
+  [disp_x_ic]
+    type = SolutionIC
+    variable = disp_x
+    solution_uo = init_sol_components
+    from_variable = disp_x
+  []
+  [disp_y_ic]
+    type = SolutionIC
+    variable = disp_y
+    solution_uo = init_sol_components
+    from_variable = disp_y
+  []
+  [pp_ic]
+    type = SolutionIC
+    variable = pp
+    solution_uo = init_sol_components
+    from_variable = pp
+  []
+  # Initialize damage field to match static solve state
+  [d_ic_domain]
+    type = ConstantIC
+    variable = d
+    value = 0
+    block = domain
+  []
+  [d_ic_main_fractures]
+    type = ConstantIC
+    variable = d
+    value = 0.95
+    block = main_fractures
+  []
+  [d_ic_branch_fractures]
+    type = ConstantIC
+    variable = d
+    value = 0.95
+    block = branch_fractures
+  []
 []
 
 [Controls] # turns off time-dependent terms for the FIRST time step (steady solve with confinement only)
@@ -1032,9 +1147,12 @@ hht_alpha = 0.1
     disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y
                        */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y
                        */damp_left_x */damp_left_y */damp_right_x */damp_right_y
-                       */pressure_inner_hole */pressure_inner_hole_fractures'
+                       */pressure_inner_hole */pressure_inner_hole_fractures
+                       MultiApps/fracture
+                       Transfers/from_d Transfers/to_psie_active
+                       Transfers/pp_transfer_dissipated_energy_total Transfers/pp_transfer_dissipated_energy_first_step'
     start_time = 0
-    end_time = 5e-6 # dt used in the simulation
+    end_time = 1.5e-6
   []
 []
 
@@ -1050,17 +1168,21 @@ hht_alpha = 0.1
 
   solve_type = NEWTON
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  #petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  petsc_options_value = ' lu       mumps       100'
+  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart -ksp_initial_guess_nonzero'
+  #petsc_options_value = ' lu       mumps       100 True'
 
-  #petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  #petsc_options_value = 'gmres     hypre  boomeramg True'
+  # Direct solver for better convergence with large property contrasts
+  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  #petsc_options_value = 'lu       superlu_dist'
+
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
-  line_search = 'bt'
+  line_search = 'none'
 
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
@@ -1076,12 +1198,12 @@ hht_alpha = 0.1
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 2e-6
+    dt = 1e-6
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
-    growth_factor = 1.25
-    max_time_step_bound = 5e-6
+    growth_factor = 1.1
+    max_time_step_bound = 2e-6
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -1093,8 +1215,8 @@ hht_alpha = 0.1
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 10
-    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
+    time_step_interval = 40
+    show = 'd darcy_vel_x darcy_vel_y darcy_vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -1105,7 +1227,7 @@ hht_alpha = 0.1
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work dissipated_energy_first_step dissipated_energy_dynamic'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_compression_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total darcy_viscous_dissipation_total darcy_viscous_power damping_work confinement_work external_work fluid_injection_work fluid_injection_power dissipated_energy_first_step dissipated_energy_dynamic'
   []
 []
 
@@ -1126,8 +1248,8 @@ hht_alpha = 0.1
 [Postprocessors]
   [solid_dissipated_energy_total]
       type = ParsedPostprocessor
-      expression = 'dissipated_energy_dynamic - dissipated_energy_first_step'
-      pp_names = 'dissipated_energy_dynamic dissipated_energy_first_step'
+      expression = 'dissipated_energy_dynamic + ${solid_dissipated_energy_total_static}'
+      pp_names = 'dissipated_energy_dynamic'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1207,10 +1329,86 @@ hht_alpha = 0.1
   []
 []
 
+# Fluid injection work (pore pressure input energy)
+###############################################################################
+# Compute fluid injection work as: W = ∫∫ p * (q · n) dA dt
+# For hole_fracture boundary (circular arc centered at origin):
+#   outward normal n = (x/r, y/r) where r = sqrt(x² + y²)
+#   darcy_flux_normal = (darcy_vel_x * x + darcy_vel_y * y) / r
+# Sign: positive flux = outflow, negative flux = inflow (injection)
+###############################################################################
+[AuxVariables]
+  # Normal (radial) component of Darcy velocity at boundary
+  [darcy_flux_normal]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  # Pressure times normal Darcy flux for side integral
+  [pp_times_darcy_flux]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+[]
+
+[AuxKernels]
+  # Compute radial (normal) component of Darcy velocity
+  # For circular boundary centered at origin: n = (x,y)/r
+  # q·n = (darcy_vel_x * x + darcy_vel_y * y) / sqrt(x² + y²)
+  [compute_darcy_flux_normal]
+    type = ParsedAux
+    variable = darcy_flux_normal
+    coupled_variables = 'darcy_vel_x darcy_vel_y'
+    expression = '(darcy_vel_x * x + darcy_vel_y * y) / sqrt(x*x + y*y + 1e-20)'
+    use_xyzt = true
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Compute p * q·n for side integral
+  [compute_pp_times_darcy_flux]
+    type = ParsedAux
+    variable = pp_times_darcy_flux
+    coupled_variables = 'pp darcy_flux_normal'
+    expression = 'pp * darcy_flux_normal'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+[Postprocessors]
+  # Integrate p * (q·n) over hole_fracture boundary
+  # This gives instantaneous power (work rate) from fluid flux
+  # Positive = energy leaving system (outflow), Negative = energy input (injection)
+  [fluid_injection_power]
+    type = SideIntegralVariablePostprocessor
+    variable = pp_times_darcy_flux
+    boundary = 'hole_fracture'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Accumulate fluid injection work over time
+  # Sign convention: we want injection (inflow) to be positive input energy
+  # Since inflow has negative flux, we negate: fluid_injection_work = -∫ power dt
+  # Use TimeIntegratedPostprocessor because fluid_injection_power is a RATE (W = J/s)
+  # TimeIntegratedPostprocessor computes ∫ power × dt to get energy (J)
+  [fluid_injection_work_raw]
+    type = TimeIntegratedPostprocessor
+    value = fluid_injection_power
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Negate to get positive work for injection
+  [fluid_injection_work]
+    type = ParsedPostprocessor
+    expression = '-1.0 * fluid_injection_work_raw'
+    pp_names = 'fluid_injection_work_raw'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      #expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work + fluid_drainage_work'
+      # Note: fluid_injection_work is NOT included because:
+      # 1. No external pore pressure BC is applied (porepressure_drained is commented out)
+      # 2. The fluid flux is internal redistribution (compression-driven flow from fractures to domain)
+      # 3. Internal energy redistribution is already captured in stored energy terms
+      # If external pore pressure BC is enabled, add: + fluid_injection_work
       expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
       pp_names = 'external_work confinement_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
@@ -1250,13 +1448,17 @@ hht_alpha = 0.1
   [solid_elastic_energy_dynamic]
     type = ElementIntegralMaterialProperty
     mat_prop = psie
+    execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
 [Postprocessors]
+  # Note: solid_elastic_energy_dynamic already contains TOTAL elastic energy (not increment)
+  # No need to add static - the material property psie is computed from current state
+  # which includes the static solution loaded via ICs
   [solid_elastic_energy_total]
       type = ParsedPostprocessor
-      expression = 'solid_elastic_energy_dynamic + ${solid_elastic_energy_total_static}'
+      expression = 'solid_elastic_energy_dynamic'
       pp_names = 'solid_elastic_energy_dynamic'
       execute_on = 'INITIAL TIMESTEP_END'
   []
@@ -1288,86 +1490,98 @@ hht_alpha = 0.1
 []
 ###############################################################################
 
-# fluid elastic energy (using damaged biot coefficient for accounting)
+# fluid compression energy: E = (1/2M) * p²
+# where M is the Biot modulus (stored in biot_modulus_aux)
+# This is the thermodynamically correct stored energy for fluid in porous media
 ###############################################################################
 [AuxVariables]
-  [fluid_elastic_energy]
+  [fluid_compression_energy]
       order = CONSTANT
       family = MONOMIAL
   []
 []
 
 [AuxKernels]
-  [get_fluid_elastic_energy]
+  [get_fluid_compression_energy]
       type = ParsedAux
-      variable = fluid_elastic_energy
-      coupled_variables = 'strain_00 strain_11 strain_22 pp biot_coefficient_aux'
-      expression = "0.5 * biot_coefficient_aux * -pp * (strain_00+strain_11+strain_22)"
+      variable = fluid_compression_energy
+      coupled_variables = 'pp biot_modulus_aux'
+      # E = (1/2M) * p² where M is Biot modulus
+      expression = "0.5 / (biot_modulus_aux + 1e-30) * pp * pp"
+      execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
 [Postprocessors]
-  [fluid_elastic_energy_total_dynamic]
+  [fluid_compression_energy_total]
       type = ElementIntegralVariablePostprocessor
-      variable = fluid_elastic_energy
-  []
-[]
-
-[Postprocessors]
-  [fluid_elastic_energy_total]
-      type = ParsedPostprocessor
-      expression = '${fluid_elastic_energy_total_static} + fluid_elastic_energy_total_dynamic'
-      pp_names = 'fluid_elastic_energy_total_dynamic'
+      variable = fluid_compression_energy
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 ###############################################################################
 
-# fluid energy dissipation
+# fluid energy dissipation (Darcy viscous only)
+# Note: "fluid elastic dissipation" term was removed - it had no thermodynamic basis
+# and was double-counting with fracture dissipation
 ###############################################################################
 [AuxVariables]
-  [fluid_incremental_elastic_energy]
+  # Darcy viscous dissipation rate per unit volume: (μ/k) * |q|²
+  # Using Darcy's law: q·∇p = (μ/k) * |q|²
+  [darcy_viscous_dissipation_rate]
     order = CONSTANT
     family = MONOMIAL
   []
 []
 
 [AuxKernels]
-  [fluid_incremental_elastic_energy_per_vol]
-      type = ParsedAux
-      variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_inc_00 strain_inc_11 strain_inc_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_inc_00+strain_inc_11+strain_inc_22)"
+  # Compute Darcy viscous dissipation rate: (μ/k) * |q|² = q · ∇p
+  # For isotropic permeability k, viscosity μ: power = μ/k * (qx² + qy² + qz²)
+  # Uses effective_perm00_aux which contains the LOCAL permeability (unified across all blocks)
+  [compute_darcy_viscous_dissipation]
+    type = ParsedAux
+    variable = darcy_viscous_dissipation_rate
+    coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z effective_perm00_aux'
+    # Use local effective permeability. Add small value to avoid division by zero.
+    expression = '${viscosity} / (effective_perm00_aux + 1e-30) * (darcy_vel_x*darcy_vel_x + darcy_vel_y*darcy_vel_y + darcy_vel_z*darcy_vel_z)'
+    execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 
 [Postprocessors]
-  [fluid_incremental_elastic_energy]
-      type = ElementIntegralVariablePostprocessor
-      variable = fluid_incremental_elastic_energy
+  # Darcy viscous dissipation rate (power)
+  [darcy_viscous_power]
+    type = ElementIntegralVariablePostprocessor
+    variable = darcy_viscous_dissipation_rate
+    execute_on = 'INITIAL TIMESTEP_END'
   []
-  [fluid_incremental_elastic_energy_total]
-    type = CumulativeValuePostprocessor
-    postprocessor = fluid_incremental_elastic_energy
+  # Accumulated Darcy viscous dissipation over time
+  # Use TimeIntegratedPostprocessor because darcy_viscous_power is a RATE (W = J/s)
+  # TimeIntegratedPostprocessor computes ∫ power × dt to get energy (J)
+  [darcy_viscous_dissipation_total]
+    type = TimeIntegratedPostprocessor
+    value = darcy_viscous_power
+    execute_on = 'INITIAL TIMESTEP_END'
   []
+  # Total fluid dissipation = Darcy viscous only
+  # (fluid elastic dissipation removed - no thermodynamic basis)
   [fluid_dissipated_energy_total]
     type = ParsedPostprocessor
-    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
-    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
+    pp_names = 'darcy_viscous_dissipation_total'
+    expression = "darcy_viscous_dissipation_total"
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
 ###############################################################################
 
 # Full Energy
-# Note: Physics uses damaged properties (correct variational formulation from CMAME paper)
-# Energy accounting uses incremental work tracking to capture property evolution effects
+# Thermodynamically consistent energy balance for poroelastic phase-field fracture
 ###############################################################################
 [Postprocessors]
   [full_energy]
     type = ParsedPostprocessor
-    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
-    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
+    expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_compression_energy_total + fluid_dissipated_energy_total'
+    pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_compression_energy_total fluid_dissipated_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []

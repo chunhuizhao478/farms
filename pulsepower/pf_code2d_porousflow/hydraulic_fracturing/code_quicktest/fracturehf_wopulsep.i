@@ -1,7 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../mesh/square_with_hole_quicktest.msh'
+    file =  '../mesh/square_with_hole.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -12,35 +12,12 @@
   []
 []
 
-[Variables]
+# Change d from Variable to AuxVariable to completely freeze it (no evolution)
+[AuxVariables]
   [d]
     order = FIRST
     family = LAGRANGE
   []
-[]
-
-[ICs]
-  [d_ic_domain]
-    type = ConstantIC
-    variable = d
-    value = 0
-    block = domain
-  []
-  [d_ic_main_fractures]
-    type = ConstantIC
-    variable = d
-    value = 0.95
-    block = main_fractures
-  []
-  [d_ic_branch_fractures]
-    type = ConstantIC
-    variable = d
-    value = 0.95
-    block = branch_fractures
-  []
-[]
-
-[AuxVariables]
   [bounds_dummy]
   []
   [psie_active]
@@ -61,7 +38,30 @@
   []
 []
 
+# Set fixed damage values using AuxKernels (d is now an AuxVariable, not solved)
 [AuxKernels]
+  [set_d_domain]
+    type = ConstantAux
+    variable = d
+    value = 0
+    block = domain
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+  []
+  [set_d_main_fractures]
+    type = ConstantAux
+    variable = d
+    value = 1.0
+    block = main_fractures
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+  []
+  [set_d_branch_fractures]
+    type = ConstantAux
+    variable = d
+    value = 1.0
+    block = branch_fractures
+    execute_on = 'INITIAL TIMESTEP_BEGIN'
+  []
+  # Keep initial_damage_aux for reference (not used for bounds anymore)
   [define_initial_damage_block_domain]
     type = ConstantAux
     variable = initial_damage_aux
@@ -85,35 +85,23 @@
   []
 []
 
-[Bounds]
-  [irreversibility_first_step]
-    type = VariableConstantIrreversibleBounds
-    variable = bounds_dummy
-    bounded_variable = d
-    bound_type = lower
-    bound_value = initial_damage_aux
-  []
-  [upper]
-    type = ConstantBounds
-    variable = bounds_dummy
-    bounded_variable = d
-    bound_type = upper
-    bound_value = 1
+# Bounds removed - d is now AuxVariable, not bounded Variable
+# [Bounds]
+# []
+
+# Kernels removed - d is now AuxVariable, doesn't need kernels
+# Need a dummy variable with NullKernel to satisfy MOOSE requirement
+[Variables]
+  [dummy]
+    order = FIRST
+    family = LAGRANGE
   []
 []
 
 [Kernels]
-  [diff]
-    type = ADPFFDiffusion #
-    variable = d
-    fracture_toughness = Gc
-    regularization_length = l
-    normalization_constant = c0
-  []
-  [source]
-    type = ADPFFSource
-    variable = d
-    free_energy = psi
+  [null]
+    type = NullKernel
+    variable = dummy
   []
 []
 
@@ -201,11 +189,9 @@
   type = Transient
 
   solve_type = NEWTON
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -snes_type'
-  # petsc_options_value = 'lu       superlu_dist                  vinewtonrsls'
-
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
+  # No longer need vinewtonrsls since d is AuxVariable (no bounds)
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   automatic_scaling = true
 

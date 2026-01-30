@@ -524,3 +524,5 @@ pulsepower/pf_threefield/mesh/fieldscale_test1_2d_coarse.msh
 pulsepower/pf_threefield/mesh/fieldscale_test1_2d.msh
 pulsepower/pf_code2d_puresolid_pulseloadmaxmin/2dmeshfile/fieldscale_test1_2d_amr_fieldscale.msh
 pulsepower/3d_lab_experiment/3dmeshfile/cylinder_sample_refined_cross.msh
+threepointbending/meshfile/mesh_whole_3d_x1mm_y1.6mm_coarse.msh
+threepointbending/meshfile/mesh_whole_3d_x1mm_y1.6mm_forpresentation.msh
