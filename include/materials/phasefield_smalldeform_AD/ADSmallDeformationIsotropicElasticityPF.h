@@ -66,11 +66,17 @@ protected:
   /// The phase-field (damage) variable
   const ADVariableValue & _d;
 
-  /// Model type (AT1, AT2)
+  /// Model type (AT1, AT2, PF_CZM)
   const std::string _model_type;
 
   /// Minimum degradation (residual stiffness)
   const Real _eta;
+
+  /// PF-CZM parameters (only used when model_type == "PF_CZM")
+  const ADMaterialProperty<Real> * _a1_prop;
+  const ADMaterialProperty<Real> * _a2_prop;
+  const ADMaterialProperty<Real> * _a3_prop;
+  const ADMaterialProperty<Real> * _p_prop;
 
   /// Decomposition type
   const enum class Decomposition { none, spectral, voldev } _decomposition;

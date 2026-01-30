@@ -50,8 +50,14 @@ ADSmallDeformationIsotropicElasticityPF::validParams()
   params.addParam<MooseEnum>(
       "decomposition", MooseEnum("NONE SPECTRAL VOLDEV", "NONE"), "The decomposition method");
 
-  params.addParam<std::string>("model_type", "AT1", "The type of the model: AT1, AT2");
+  params.addParam<std::string>("model_type", "AT1", "The type of the model: AT1, AT2, PF_CZM");
   params.addRequiredParam<Real>("eta", "Parameter in the degradation function (residual stiffness)");
+
+  // PF-CZM specific parameters (only needed when model_type = PF_CZM)
+  params.addParam<MaterialPropertyName>("a1", "", "a1 parameter (only needed for PF_CZM)");
+  params.addParam<MaterialPropertyName>("a2", "", "a2 parameter (only needed for PF_CZM)");
+  params.addParam<MaterialPropertyName>("a3", "", "a3 parameter (only needed for PF_CZM)");
+  params.addParam<MaterialPropertyName>("p", "", "p parameter (only needed for PF_CZM)");
 
   params.addParam<bool>("porous_flow_coupling", false, "Enable porous flow coupling");
   params.addParam<Real>("intrinsic_permeability", 5e-19, "Intrinsic permeability in m^2");
@@ -84,6 +90,19 @@ ADSmallDeformationIsotropicElasticityPF::ADSmallDeformationIsotropicElasticityPF
     _d(adCoupledValue("phase_field")),
     _model_type(getParam<std::string>("model_type")),
     _eta(getParam<Real>("eta")),
+    // PF-CZM parameters: only retrieve if model_type is PF_CZM
+    _a1_prop(_model_type == "PF_CZM"
+                 ? &getADMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a1"))
+                 : nullptr),
+    _a2_prop(_model_type == "PF_CZM"
+                 ? &getADMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a2"))
+                 : nullptr),
+    _a3_prop(_model_type == "PF_CZM"
+                 ? &getADMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("a3"))
+                 : nullptr),
+    _p_prop(_model_type == "PF_CZM"
+                ? &getADMaterialPropertyByName<Real>(getParam<MaterialPropertyName>("p"))
+                : nullptr),
     _decomposition(getParam<MooseEnum>("decomposition").getEnum<Decomposition>()),
     _porous_flow_coupling(getParam<bool>("porous_flow_coupling")),
     _intrinsic_permeability(getParam<Real>("intrinsic_permeability")),
@@ -264,6 +283,57 @@ ADSmallDeformationIsotropicElasticityPF::computeGDerivatives()
     _g[_qp] = std::pow((1 - d), 2) * (1 - _eta) + _eta;
     _dg_dd[_qp] = -2 * (1 - _eta) * (1 - d);
     _d2g_dd2[_qp] = 2 * (1 - _eta);
+  }
+  else if (_model_type == "PF_CZM")
+  {
+    // Reference: Wu (2017) A unified phase-field theory for the mechanics of damage and
+    // quasi-brittle failure, JMPS; Gupta et al. (2022) An adaptive mesh refinement algorithm
+    // for phase-field fracture models
+    //
+    // Degradation function for PF-CZM:
+    //   g(d) = (1-d)^p / [(1-d)^p + a1*d*P(d)] * (1-eta) + eta
+    //   where P(d) = 1 + a2*d + a2*a3*d^2
+    //
+    // Parameters:
+    //   a1 = Gc/(psic*c0*l/xi) where xi=2 for alpha(d)=2d-d^2, c0=pi
+    //   a2, a3: softening parameters (-0.5, 0 for linear softening)
+    //   p: degradation exponent (typically 2)
+    //   eta: residual stiffness
+    //
+    const ADReal a1 = (*_a1_prop)[_qp];
+    const ADReal a2 = (*_a2_prop)[_qp];
+    const ADReal a3 = (*_a3_prop)[_qp];
+    const ADReal p = (*_p_prop)[_qp];
+    const Real eta = _eta;
+
+    // Compute U = (1-d)^p and V = a1 * (d + a2*d^2 + a2*a3*d^3)
+    // D = U + V
+    // g(d) = U/D * (1-eta) + eta
+    ADReal U = std::pow(1 - d, p);
+    ADReal Up = -p * std::pow(1 - d, p - 1);
+    ADReal Up2 = p * (p - 1) * std::pow(1 - d, p - 2);
+
+    ADReal V = a1 * (d + a2 * d * d + a2 * a3 * d * d * d);
+    ADReal Vp = a1 * (1 + 2 * a2 * d + 3 * a2 * a3 * d * d);
+    ADReal Vpp = a1 * (2 * a2 + 6 * a2 * a3 * d);
+
+    ADReal D = U + V;
+    ADReal Dp = Up + Vp;
+    ADReal Dpp = Up2 + Vpp;
+
+    // Degradation function: g = U/D * (1-eta) + eta
+    _g[_qp] = U / D * (1 - eta) + eta;
+
+    // First derivative: dg/dd = (Up*D - U*Dp) / D^2 * (1-eta)
+    _dg_dd[_qp] = (Up * D - U * Dp) / (D * D) * (1 - eta);
+
+    // Second derivative using quotient rule on (Up*D - U*Dp) / D^2
+    // Let N = Up*D - U*Dp, then dg/dd = N/D^2 * (1-eta)
+    // d2g/dd2 = (N'*D^2 - N*2*D*D') / D^4 * (1-eta)
+    //         = (N'/D^2 - 2*N*D'/D^3) * (1-eta)
+    ADReal N = Up * D - U * Dp;
+    ADReal Np = Up2 * D + Up * Dp - Up * Dp - U * Dpp;  // = Up2*D - U*Dpp
+    _d2g_dd2[_qp] = (Np / (D * D) - 2 * N * Dp / (D * D * D)) * (1 - eta);
   }
   else
     mooseError("Unknown model type: " + _model_type);
