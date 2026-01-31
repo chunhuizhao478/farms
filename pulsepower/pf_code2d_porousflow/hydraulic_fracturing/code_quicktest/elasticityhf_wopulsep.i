@@ -1227,7 +1227,7 @@ hht_alpha = 0
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_compression_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total darcy_viscous_dissipation_total darcy_viscous_power damping_work confinement_work external_work fluid_injection_work fluid_injection_power dissipated_energy_first_step dissipated_energy_dynamic'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_compression_energy_total fluid_compression_energy_domain fluid_compression_energy_main_fractures fluid_compression_energy_branch_fractures fluid_kinetic_energy_total fluid_dissipated_energy_total darcy_viscous_dissipation_total darcy_viscous_power damping_work confinement_work external_work fluid_injection_work fluid_injection_power dissipated_energy_first_step dissipated_energy_dynamic'
   []
 []
 
@@ -1516,6 +1516,25 @@ hht_alpha = 0
   [fluid_compression_energy_total]
       type = ElementIntegralVariablePostprocessor
       variable = fluid_compression_energy
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Block-specific fluid compression energy
+  [fluid_compression_energy_domain]
+      type = ElementIntegralVariablePostprocessor
+      variable = fluid_compression_energy
+      block = domain
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [fluid_compression_energy_main_fractures]
+      type = ElementIntegralVariablePostprocessor
+      variable = fluid_compression_energy
+      block = main_fractures
+      execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [fluid_compression_energy_branch_fractures]
+      type = ElementIntegralVariablePostprocessor
+      variable = fluid_compression_energy
+      block = branch_fractures
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
