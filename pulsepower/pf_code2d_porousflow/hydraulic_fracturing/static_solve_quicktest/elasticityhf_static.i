@@ -1121,11 +1121,11 @@ perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective p
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
 
-  #petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart -ksp_initial_guess_nonzero'
-  #petsc_options_value = ' lu       mumps       100 True'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart -ksp_initial_guess_nonzero'
+  petsc_options_value = ' lu       mumps       100 True'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  #petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  #petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
   line_search = 'bt'
