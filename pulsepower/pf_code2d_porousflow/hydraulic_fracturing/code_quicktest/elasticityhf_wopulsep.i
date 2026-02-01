@@ -1215,8 +1215,8 @@ hht_alpha = 0
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
-    show = 'd darcy_vel_x darcy_vel_y darcy_vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux'
+    time_step_interval = 10
+    show = 'd darcy_vel_x darcy_vel_y darcy_vel_z pp'
   [../]
   [checkpoint]
       type = Checkpoint

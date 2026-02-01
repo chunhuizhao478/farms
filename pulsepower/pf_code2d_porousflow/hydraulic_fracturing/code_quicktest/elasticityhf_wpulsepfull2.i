@@ -59,7 +59,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracturehf_wpulsep.i
+    input_files = fracturehf_wpulsepfull2.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -695,6 +695,12 @@ hht_alpha = 0
     function = func_tri_pulse
     boundary = hole_fracture
   []
+  [./porepressure_drained_hole]
+    type = FunctionDirichletBC
+    variable = pp
+    function = func_tri_pulse
+    boundary = hole
+  []
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -1147,7 +1153,7 @@ hht_alpha = 0
     disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y
                        */damp_top_x */damp_top_y */damp_bottom_x */damp_bottom_y
                        */damp_left_x */damp_left_y */damp_right_x */damp_right_y
-                       */pressure_inner_hole */pressure_inner_hole_fractures */porepressure_drained
+                       */pressure_inner_hole */pressure_inner_hole_fractures */porepressure_drained */porepressure_drained_hole
                        MultiApps/fracture
                        Transfers/from_d Transfers/to_psie_active
                        Transfers/pp_transfer_dissipated_energy_total Transfers/pp_transfer_dissipated_energy_first_step'
@@ -1227,7 +1233,7 @@ hht_alpha = 0
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_compression_energy_total fluid_compression_energy_domain fluid_compression_energy_main_fractures fluid_compression_energy_branch_fractures fluid_kinetic_energy_total fluid_dissipated_energy_total darcy_viscous_dissipation_total darcy_viscous_power damping_work confinement_work external_work fluid_injection_work fluid_injection_power dissipated_energy_first_step dissipated_energy_dynamic'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_compression_energy_total fluid_compression_energy_domain fluid_compression_energy_main_fractures fluid_compression_energy_branch_fractures fluid_kinetic_energy_total fluid_dissipated_energy_total darcy_viscous_dissipation_total darcy_viscous_power damping_work confinement_work external_work fluid_injection_work fluid_injection_power fluid_injection_power_hole fluid_injection_power_hole_fracture dissipated_energy_first_step dissipated_energy_dynamic'
   []
 []
 
@@ -1376,10 +1382,24 @@ hht_alpha = 0
   # Integrate p * (q·n) over hole_fracture boundary
   # This gives instantaneous power (work rate) from fluid flux
   # Positive = energy leaving system (outflow), Negative = energy input (injection)
-  [fluid_injection_power]
+  [fluid_injection_power_hole_fracture]
     type = SideIntegralVariablePostprocessor
     variable = pp_times_darcy_flux
     boundary = 'hole_fracture'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Integrate p * (q·n) over hole boundary (drained BC also applied here)
+  [fluid_injection_power_hole]
+    type = SideIntegralVariablePostprocessor
+    variable = pp_times_darcy_flux
+    boundary = 'hole'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Total fluid injection power from both boundaries
+  [fluid_injection_power]
+    type = ParsedPostprocessor
+    expression = 'fluid_injection_power_hole_fracture + fluid_injection_power_hole'
+    pp_names = 'fluid_injection_power_hole_fracture fluid_injection_power_hole'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   # Accumulate fluid injection work over time
