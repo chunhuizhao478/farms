@@ -303,9 +303,8 @@ z_center = 0.004  # extrude_z / 2
   dt = 0.1
   end_time = 20
 
-  [TimeStepper]
-    type = Compound
-    [./adaptive]
+  [TimeSteppers]
+    [adaptive]
       type = FarmsIterationAdaptiveDT
       dt = 0.001
       optimal_iterations = 6
@@ -313,11 +312,11 @@ z_center = 0.004  # extrude_z / 2
       growth_factor = 1.2
       cutback_factor = 0.5
       max_time_step_bound = 0.01
-    [../]
-    [./constant_after_6p5s]
+    []
+    [constant_after_6p5s]
       type = FunctionDT
       function = dt_after_6p5s
-    [../]
+    []
   []
 
   fixed_point_max_its = 20
