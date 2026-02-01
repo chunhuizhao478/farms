@@ -47,7 +47,7 @@ z_center = 0.004  # extrude_z / 2
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/mesh_whole_3d_x2.5mm_y1.6mm.msh'
+    file =  '../../meshfile/mesh_whole_3d_x2.0mm_y3.6mm_two_holes.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator

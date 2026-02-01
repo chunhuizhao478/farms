@@ -47,7 +47,7 @@ z_center = 0.004  # extrude_z / 2
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../meshfile/mesh_whole_3d_x2.5mm_y1.6mm.msh'
+    file =  '../../meshfile/mesh_whole_3d_x0.5mm_y3.6mm.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -66,8 +66,8 @@ z_center = 0.004  # extrude_z / 2
   [./elastic_region_3]
     type = SubdomainBoundingBoxGenerator
     input = elastic_region_2
-    bottom_left = '0.0135 0.007 0'
-    top_right = '0.0145 0.008 1'
+    bottom_left = '0.0139 0.007 0'
+    top_right = '0.0141 0.008 1'
     block_id = 2
   []
   # Create nodesets for LINE supports using BoundingBoxNodeSetGenerator
@@ -306,12 +306,13 @@ z_center = 0.004  # extrude_z / 2
   [TimeStepper]
     type = Compound
     [./adaptive]
-      type = IterationAdaptiveDT
+      type = FarmsIterationAdaptiveDT
       dt = 0.001
       optimal_iterations = 6
       iteration_window = 2
       growth_factor = 1.2
       cutback_factor = 0.5
+      max_time_step_bound = 0.01
     [../]
     [./constant_after_6p5s]
       type = FunctionDT
