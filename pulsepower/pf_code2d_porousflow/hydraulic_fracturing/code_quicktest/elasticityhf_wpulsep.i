@@ -38,8 +38,8 @@ grain_bulk_modulus = ${fparse K_s} #solid grain bulk modulus derived from alpha:
 
 #permeability by regions (domain, main fractures, branch fractures)
 intrinsic_permeability_domain = 1e-16 # m^2 #only domain accepts permeability enhancement
-intrinsic_permeability_main_fractures = 1e-10 # m^2 #pe
-intrinsic_permeability_branch_fractures = 1e-9 #m^2
+intrinsic_permeability_main_fractures = 1e-9 # m^2 #pe
+intrinsic_permeability_branch_fractures = 1e-10 #m^2
 
 ##exponential permeability model
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
