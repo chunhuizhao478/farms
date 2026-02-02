@@ -160,6 +160,19 @@ z_center = 0.004  # extrude_z / 2
     type = ParsedFunction
     expression = '-1e-4 * t'
   []
+  [dt_limit_fn]
+    type = PiecewiseLinear
+    x = '0     6.5   20'
+    y = '1e10  0.001 0.001'
+  []
+[]
+
+[Postprocessors]
+  [dt_limit_pp]
+    type = FunctionValuePostprocessor
+    function = dt_limit_fn
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
 []
 
 # LINE SUPPORT AND LINE LOADING BOUNDARY CONDITIONS
@@ -305,8 +318,7 @@ z_center = 0.004  # extrude_z / 2
     iteration_window = 2
     growth_factor = 1.2
     cutback_factor = 0.5
-    time_t  = '6.5  20'
-    time_dt = '0.001 0.001'
+    timestep_limiting_postprocessor = dt_limit_pp
   []
 
   fixed_point_max_its = 20
@@ -316,13 +328,17 @@ z_center = 0.004  # extrude_z / 2
 []
 
 [Outputs]
-  exodus = true
-  sync_times = '1 2 3 4 5 6
-                6.5 6.55 6.6 6.65 6.7 6.75 6.8 6.85 6.9 6.95
-                7.0 7.05 7.1 7.15 7.2 7.25 7.3 7.35 7.4 7.45
-                7.5 7.55 7.6 7.65 7.7 7.75 7.8 7.85 7.9 7.95 8.0
-                9 10 11 12 13 14 15 16 17 18 19 20'
-  sync_only = true
-  show = 'd'
+  [./exodus]
+    type = Exodus
+    sync_times = '1 2 3 4 5 6
+                  6.5 6.55 6.6 6.65 6.7 6.75 6.8 6.85 6.9 6.95
+                  7.0 7.05 7.1 7.15 7.2 7.25 7.3 7.35 7.4 7.45
+                  7.5 7.55 7.6 7.65 7.7 7.75 7.8 7.85 7.9 7.95 8.0
+                  8.05 8.1 8.15 8.2 8.25 8.3 8.35 8.4 8.45 8.5 8.55
+                  8.6 8.65 8.7 8.75 8.8 8.85 8.9 8.95
+                  9 10 11 12 13 14 15 16 17 18 19 20'
+    sync_only = true
+    show = 'd'
+  [../]
   print_linear_residuals = false
 []

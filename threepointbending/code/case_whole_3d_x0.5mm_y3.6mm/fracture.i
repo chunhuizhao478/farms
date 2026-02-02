@@ -1,8 +1,7 @@
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    #file =  '../../meshfile/mesh_whole_3d_x0.5mm_y3.6mm.msh'
-    file =  '../../meshfile/mesh_wohole_3d_quicktest.msh'
+    file =  '../../meshfile/mesh_whole_3d_x0.5mm_y3.6mm.msh'
   []
 []
 

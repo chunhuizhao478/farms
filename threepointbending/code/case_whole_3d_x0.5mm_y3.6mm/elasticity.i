@@ -47,8 +47,7 @@ z_center = 0.004  # extrude_z / 2
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    #file =  '../../meshfile/mesh_whole_3d_x0.5mm_y3.6mm.msh'
-    file =  '../../meshfile/mesh_wohole_3d_quicktest.msh'
+    file =  '../../meshfile/mesh_whole_3d_x0.5mm_y3.6mm.msh'
   []
   [./elastic_region_1]
     type = SubdomainBoundingBoxGenerator
@@ -329,15 +328,17 @@ z_center = 0.004  # extrude_z / 2
 []
 
 [Outputs]
-  [out]
+  [./exodus]
     type = Exodus
     sync_times = '1 2 3 4 5 6
                   6.5 6.55 6.6 6.65 6.7 6.75 6.8 6.85 6.9 6.95
                   7.0 7.05 7.1 7.15 7.2 7.25 7.3 7.35 7.4 7.45
                   7.5 7.55 7.6 7.65 7.7 7.75 7.8 7.85 7.9 7.95 8.0
+                  8.05 8.1 8.15 8.2 8.25 8.3 8.35 8.4 8.45 8.5 8.55
+                  8.6 8.65 8.7 8.75 8.8 8.85 8.9 8.95
                   9 10 11 12 13 14 15 16 17 18 19 20'
     sync_only = true
     show = 'd'
-  []
+  [../]
   print_linear_residuals = false
 []

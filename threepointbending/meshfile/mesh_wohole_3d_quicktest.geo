@@ -5,7 +5,7 @@ SetFactory("OpenCASCADE");
 //==============================================================================
 // Global mesh size parameters
 lc = 0.001;          // Global mesh size (1 mm)
-lc_refined = 1e-4;   // Refined mesh size in notch region (50 microns)
+lc_refined = 2.5e-4;   // Refined mesh size in notch region (50 microns)
 lc_support = 2.5e-4; // Refined mesh size at support regions (250 microns)
 extrude_z = 0.008;   // Total thickness in z-direction (8 mm)
 
