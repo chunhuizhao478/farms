@@ -43,12 +43,19 @@ protected:
   //rate-and-state friction coefficients
   Real _len;
   Real _f_o;
-  Real _rsf_a;
+  Real _rsf_a;        // constant value (used if rsf_a_var not provided)
   Real _rsf_b;
   Real _rsf_L;
   Real _delta_o;
-  Real _statevar_init;
+  Real _statevar_init; // constant value (used if statevar_init_var not provided)
   Real _sliprate_strike_init;
+
+  // Spatially variable RSF parameters (optional coupled variables)
+  const bool _use_coupled_rsf_a;
+  const VariableValue * _rsf_a_var;
+
+  const bool _use_coupled_statevar_init;
+  const VariableValue * _statevar_init_var;
 
   const MaterialProperty<Real> & _density;
 

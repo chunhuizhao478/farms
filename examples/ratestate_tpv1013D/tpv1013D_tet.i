@@ -61,7 +61,7 @@
   statevar_init = 1.606238999213454e9
 
   #element edge length (m)
-  len = 200
+  len = 100
 []
 
 [AuxVariables]
@@ -135,6 +135,16 @@
     order = FIRST
     family = MONOMIAL
   []
+  ###
+  # Spatially variable RSF parameters for TPV101 benchmark
+  [rsf_a_var]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [statevar_init_var]
+    order = FIRST
+    family = MONOMIAL
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -166,10 +176,33 @@
   [func_initial_strike_shear_stress]
     type = InitialStrikeShearStressPerturbRSF3D
   []
-  #[func_initial_strike_shear_stress]
-  #  type = ConstantFunction
-  #  value = 0
-  #[]
+  # Spatially variable RSF 'a' parameter according to TPV101 benchmark
+  # a(x,y) = a_0 + delta_a_0 * [1 - B(x;W,w) * B(y-y_0; W/2, w)]
+  [func_rsf_a]
+    type = RSFaParameterTPV101
+    a_0 = 0.008           # Base value in velocity-weakening region
+    delta_a_0 = 0.008     # Maximum increase for velocity-strengthening
+    W = 15000.0           # Half-width of VW region (m)
+    w = 3000.0            # Transition layer width (m)
+    y_0 = 7500.0          # Depth of center of VW region (m)
+  []
+  # Spatially variable initial state variable according to TPV101 benchmark
+  # theta_ini computed from Eq. 6 to maintain uniform initial stress
+  [func_statevar_init]
+    type = RSFInitialStateVarTPV101
+    f_0 = 0.6             # Reference friction coefficient
+    V_0 = 1e-6            # Reference slip velocity (m/s)
+    a_0 = 0.008           # Base value of a
+    b = 0.012             # Evolution effect parameter
+    L = 0.02              # Characteristic slip distance (m)
+    delta_a_0 = 0.008     # Maximum increase in a
+    tau_ini = 75e6        # Initial shear stress (Pa)
+    sigma_ini = 120e6     # Initial normal stress (Pa)
+    V_ini = 1e-12         # Initial slip velocity (m/s)
+    W = 15000.0           # Half-width of VW region (m)
+    w = 3000.0            # Transition layer width (m)
+    y_0 = 7500.0          # Depth of center of VW region (m)
+  []
 []
 
 [AuxKernels]
@@ -279,6 +312,21 @@
     variable = statevar_aux
     boundary = 'Block100_Block200'
   []
+  ##
+  # Compute spatially variable RSF 'a' parameter
+  [compute_rsf_a_var]
+    type = FunctionAux
+    variable = rsf_a_var
+    function = func_rsf_a
+    execute_on = 'INITIAL'
+  []
+  # Compute spatially variable initial state variable
+  [compute_statevar_init_var]
+    type = FunctionAux
+    variable = statevar_init_var
+    function = func_statevar_init
+    execute_on = 'INITIAL'
+  []
 []
 
 [Kernels]
@@ -341,6 +389,9 @@
       reaction_y = resid_ratestate_y
       reaction_z = resid_ratestate_z
       Ts_perturb = Ts_perturb
+      # Spatially variable RSF parameters for TPV101 benchmark
+      rsf_a_var = rsf_a_var
+      statevar_init_var = statevar_init_var
       boundary = 'Block100_Block200'
   [../]
 []
@@ -367,7 +418,7 @@
 
 [Outputs]
   exodus = true
-  show = 'vel_ratestate_x vel_ratestate_y vel_ratestate_z disp_ratestate_x disp_ratestate_y disp_ratestate_z Ts_perturb statevar_aux'
+  show = 'vel_ratestate_x vel_ratestate_y vel_ratestate_z disp_ratestate_x disp_ratestate_y disp_ratestate_z Ts_perturb statevar_aux rsf_a_var statevar_init_var'
   time_step_interval = 40
   [csv]
     type = CSV

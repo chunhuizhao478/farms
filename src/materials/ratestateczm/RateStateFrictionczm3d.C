@@ -26,12 +26,16 @@ RateStateFrictionczm3d::validParams()
   params.addRequiredParam<Real>("T3_o", "background shear traction in dip dir");
   params.addRequiredParam<Real>("len","element length");
   params.addRequiredParam<Real>("f_o","rate-and-state friction coefficients");
-  params.addRequiredParam<Real>("rsf_a","rate-and-state friction coefficients");
+  params.addParam<Real>("rsf_a", 0.008, "rate-and-state friction coefficient a (constant value, overridden if rsf_a_var provided)");
   params.addRequiredParam<Real>("rsf_b","rate-and-state friction coefficients");
   params.addRequiredParam<Real>("rsf_L","rate-and-state friction coefficients");
   params.addRequiredParam<Real>("delta_o","slip rate parameter");
-  params.addRequiredParam<Real>("statevar_init","initial value of state variable");
+  params.addParam<Real>("statevar_init", 1.606238999213454e9, "initial value of state variable (constant, overridden if statevar_init_var provided)");
   params.addRequiredParam<Real>("sliprate_strike_init","initial value of strike slip rate");
+
+  // Optional coupled variables for spatially variable RSF parameters
+  params.addCoupledVar("rsf_a_var", "Spatially variable RSF 'a' parameter (optional, overrides rsf_a)");
+  params.addCoupledVar("statevar_init_var", "Spatially variable initial state variable (optional, overrides statevar_init)");
   params.addRequiredCoupledVar("disp_x", "displacement in x dir");
   params.addRequiredCoupledVar("disp_y", "displacement in y dir");
   params.addRequiredCoupledVar("disp_z", "displacement in z dir");
@@ -62,6 +66,10 @@ RateStateFrictionczm3d::RateStateFrictionczm3d(const InputParameters & parameter
     _delta_o(getParam<Real>("delta_o")),
     _statevar_init(getParam<Real>("statevar_init")),
     _sliprate_strike_init(getParam<Real>("sliprate_strike_init")),
+    _use_coupled_rsf_a(isParamValid("rsf_a_var") && isCoupled("rsf_a_var")),
+    _rsf_a_var(_use_coupled_rsf_a ? &coupledValue("rsf_a_var") : nullptr),
+    _use_coupled_statevar_init(isParamValid("statevar_init_var") && isCoupled("statevar_init_var")),
+    _statevar_init_var(_use_coupled_statevar_init ? &coupledValue("statevar_init_var") : nullptr),
     _density(getMaterialPropertyByName<Real>(_base_name + "density")),
     _rot(getMaterialPropertyByName<RankTwoTensor>(_base_name + "czm_total_rotation")),
     _disp_x(coupledValue("disp_x")),
@@ -102,7 +110,11 @@ RateStateFrictionczm3d::RateStateFrictionczm3d(const InputParameters & parameter
 void
 RateStateFrictionczm3d::initQpStatefulProperties()
 {
-  _statevar[_qp]           = _statevar_init;
+  // Use coupled variable for initial state variable if provided, otherwise use constant
+  if (_use_coupled_statevar_init)
+    _statevar[_qp] = (*_statevar_init_var)[_qp];
+  else
+    _statevar[_qp] = _statevar_init;
 
   _slipratevar[_qp](0)     = 0;                     //normal
   _slipratevar[_qp](1)     = _sliprate_strike_init; //strike
@@ -113,6 +125,9 @@ RateStateFrictionczm3d::initQpStatefulProperties()
 void
 RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
 {
+  // Get local RSF 'a' parameter (spatially variable or constant)
+  Real rsf_a_local = _use_coupled_rsf_a ? (*_rsf_a_var)[_qp] : _rsf_a;
+
   // Global Displacement Jump
   RealVectorValue displacement_jump_global(
       _disp_x[_qp] - _disp_neighbor_x[_qp],
@@ -202,24 +217,26 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
 
   //const
   Real c = A * _dt * ( M + M ) / (M * M);
-  Real Z = 0.5 / _delta_o * exp((_f_o + _rsf_b * log(_delta_o * _statevar_old[_qp]/_rsf_L))/_rsf_a);
+  Real Z = 0.5 / _delta_o * exp((_f_o + _rsf_b * log(_delta_o * _statevar_old[_qp]/_rsf_L))/rsf_a_local);
 
   //Setup while loop
-  Real iterr = 1;
-  Real max_iter = 10000;
-  Real er = 1;
-  Real solution;
+  int iterr = 0;
+  const int max_iter = 10000;
+  const Real tol = 1e-10;
+  Real er = 1.0;
+  Real solution = sliprate_mag_old;
   Real guess_i = sliprate_mag_old; //slip rate at time t-dt/2
   Real residual;
   Real jacobian;
   Real guess_j;
-  while ( er > 1e-10 && iterr < max_iter ){
+
+  while ( er > tol && iterr < max_iter ){
 
       //Compute Residual
-      residual = guess_i + c * Tn * _rsf_a * asinh( 0.5*(guess_i+sliprate_mag_old) * Z ) - c * Tmag_trial;
+      residual = guess_i + c * Tn * rsf_a_local * asinh( 0.5*(guess_i+sliprate_mag_old) * Z ) - c * Tmag_trial;
 
       //Compute Jacobian
-      jacobian = 1.0 + c * Tn * _rsf_a * 0.5 * Z / sqrt( 1.0 + 0.5 * 0.5 * (guess_i+sliprate_mag_old) * (guess_i+sliprate_mag_old) * Z * Z );
+      jacobian = 1.0 + c * Tn * rsf_a_local * 0.5 * Z / sqrt( 1.0 + 0.5 * 0.5 * (guess_i+sliprate_mag_old) * (guess_i+sliprate_mag_old) * Z * Z );
 
       //Compute New guess
       guess_j = guess_i - residual / jacobian;
@@ -227,19 +244,22 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
       //save
       solution = guess_j;
 
-      //Compute err
-      er = abs(guess_j - guess_i)/abs(guess_j);
+      //Compute err (avoid division by zero)
+      er = (abs(guess_j) > 1e-20) ? abs(guess_j - guess_i)/abs(guess_j) : abs(guess_j - guess_i);
 
       //Update Old guess
       guess_i = guess_j;
 
       //update iterr
-      iterr = iterr + 1;
+      iterr++;
 
   }
 
-  if (iterr == max_iter){
-      mooseError("NOT CONVERGED!"); //strong convergence check
+  //Check convergence: only error if we hit max iterations AND did not converge
+  if (iterr >= max_iter && er > tol){
+      mooseError("Newton iteration in RateStateFrictionczm3d did not converge after ", max_iter,
+                 " iterations. Final error: ", er, ", Tolerance: ", tol,
+                 " at quadrature point ", _qp);
   }
 
   //obtain slip rate
@@ -252,7 +272,7 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
   Real statevar_tplusdt = coeff_LoverV + (_statevar_old[_qp] - coeff_LoverV) * coeff_exponent;
 
   //*Compute shear traction at time t*
-  Real T_mag = Tn * _rsf_a * asinh( 0.5*(sliprate_mag_old+sliprate_mag) * Z );
+  Real T_mag = Tn * rsf_a_local * asinh( 0.5*(sliprate_mag_old+sliprate_mag) * Z );
 
   ///Get Components
   Real T1 = T_mag * ( Ts_trial / Tmag_trial );
