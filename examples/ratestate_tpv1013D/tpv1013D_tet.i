@@ -145,6 +145,32 @@
     order = FIRST
     family = MONOMIAL
   []
+  ###
+  # Debug output variables
+  [Tn_debug_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [Tmag_trial_debug_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [T_mag_debug_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [sliprate_mag_debug_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [Z_debug_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
+  [newton_iters_debug_aux]
+    order = FIRST
+    family = MONOMIAL
+  []
 []
 
 [Physics/SolidMechanics/CohesiveZone]
@@ -327,6 +353,44 @@
     function = func_statevar_init
     execute_on = 'INITIAL'
   []
+  ##
+  # Debug output AuxKernels
+  [get_Tn_debug]
+    type = MaterialRealAux
+    property = Tn_debug
+    variable = Tn_debug_aux
+    boundary = 'Block100_Block200'
+  []
+  [get_Tmag_trial_debug]
+    type = MaterialRealAux
+    property = Tmag_trial_debug
+    variable = Tmag_trial_debug_aux
+    boundary = 'Block100_Block200'
+  []
+  [get_T_mag_debug]
+    type = MaterialRealAux
+    property = T_mag_debug
+    variable = T_mag_debug_aux
+    boundary = 'Block100_Block200'
+  []
+  [get_sliprate_mag_debug]
+    type = MaterialRealAux
+    property = sliprate_mag_debug
+    variable = sliprate_mag_debug_aux
+    boundary = 'Block100_Block200'
+  []
+  [get_Z_debug]
+    type = MaterialRealAux
+    property = Z_debug
+    variable = Z_debug_aux
+    boundary = 'Block100_Block200'
+  []
+  [get_newton_iters_debug]
+    type = MaterialRealAux
+    property = newton_iters_debug
+    variable = newton_iters_debug_aux
+    boundary = 'Block100_Block200'
+  []
 []
 
 [Kernels]
@@ -418,7 +482,7 @@
 
 [Outputs]
   exodus = true
-  show = 'vel_ratestate_x vel_ratestate_y vel_ratestate_z disp_ratestate_x disp_ratestate_y disp_ratestate_z Ts_perturb statevar_aux rsf_a_var statevar_init_var'
+  show = 'vel_ratestate_x vel_ratestate_y vel_ratestate_z disp_ratestate_x disp_ratestate_y disp_ratestate_z Ts_perturb statevar_aux rsf_a_var statevar_init_var Tn_debug_aux Tmag_trial_debug_aux T_mag_debug_aux sliprate_mag_debug_aux Z_debug_aux newton_iters_debug_aux'
   time_step_interval = 40
   [csv]
     type = CSV

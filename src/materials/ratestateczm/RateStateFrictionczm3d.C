@@ -97,7 +97,13 @@ RateStateFrictionczm3d::RateStateFrictionczm3d(const InputParameters & parameter
     _disp_z_old(coupledValueOld("disp_z")),
     _disp_neighbor_z_old(coupledNeighborValueOld("disp_z")),
     _Ts_perturb(coupledValue("Ts_perturb")),
-    _Ts_perturb_old(coupledValueOld("Ts_perturb"))
+    _Ts_perturb_old(coupledValueOld("Ts_perturb")),
+    _Tn_debug(declareProperty<Real>("Tn_debug")),
+    _Tmag_trial_debug(declareProperty<Real>("Tmag_trial_debug")),
+    _T_mag_debug(declareProperty<Real>("T_mag_debug")),
+    _sliprate_mag_debug(declareProperty<Real>("sliprate_mag_debug")),
+    _Z_debug(declareProperty<Real>("Z_debug")),
+    _newton_iters_debug(declareProperty<Real>("newton_iters_debug"))
 {
 
   // only works for small strain
@@ -217,7 +223,37 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
 
   //const
   Real c = A * _dt * ( M + M ) / (M * M);
-  Real Z = 0.5 / _delta_o * exp((_f_o + _rsf_b * log(_delta_o * _statevar_old[_qp]/_rsf_L))/rsf_a_local);
+
+  // FIX: Guard against non-positive state variable in log()
+  Real statevar_old_safe = std::max(_statevar_old[_qp], 1e-30);
+  Real Z = 0.5 / _delta_o * exp((_f_o + _rsf_b * log(_delta_o * statevar_old_safe/_rsf_L))/rsf_a_local);
+
+  // FIX 1: Guard against Tmag_trial ~ 0
+  // When trial traction magnitude is nearly zero, the fault is essentially
+  // unloaded — use sticking behavior (keep background traction, no slip change).
+  const Real Tmag_trial_tol = 1.0; // 1 Pa tolerance
+  if (Tmag_trial < Tmag_trial_tol)
+  {
+    // No meaningful shear load: stick with previous state
+    _interface_traction[_qp] = RealVectorValue(T2 + _T2_o, _T1_o, _T3_o);
+    _dinterface_traction_djump[_qp] = 0;
+    _statevar[_qp] = _statevar_old[_qp];
+    _slipratevar[_qp](1) = 0.0;
+    _slipratevar[_qp](2) = 0.0;
+
+    // Debug output
+    _Tn_debug[_qp] = Tn;
+    _Tmag_trial_debug[_qp] = Tmag_trial;
+    _T_mag_debug[_qp] = 0.0;
+    _sliprate_mag_debug[_qp] = 0.0;
+    _Z_debug[_qp] = Z;
+    _newton_iters_debug[_qp] = 0.0;
+    return;
+  }
+
+  // Compute trial shear direction (safe to divide now)
+  Real dir_s = Ts_trial / Tmag_trial;
+  Real dir_d = Td_trial / Tmag_trial;
 
   //Setup while loop
   int iterr = 0;
@@ -259,24 +295,38 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
   if (iterr >= max_iter && er > tol){
       mooseError("Newton iteration in RateStateFrictionczm3d did not converge after ", max_iter,
                  " iterations. Final error: ", er, ", Tolerance: ", tol,
-                 " at quadrature point ", _qp);
+                 ", at qp ", _qp,
+                 ". Diagnostics: Tn=", Tn,
+                 ", Tmag_trial=", Tmag_trial,
+                 ", sliprate_mag_old=", sliprate_mag_old,
+                 ", Z=", Z,
+                 ", c=", c,
+                 ", statevar_old=", _statevar_old[_qp],
+                 ", rsf_a_local=", rsf_a_local,
+                 ", solution=", solution);
   }
 
-  //obtain slip rate
-  Real sliprate_mag = abs(solution);
+  // FIX 2: Clamp negative Newton solutions to zero instead of abs().
+  // A negative solution means friction exceeds trial stress — fault decelerates.
+  // Clamping to zero maintains self-consistency (slip rate magnitude >= 0).
+  Real sliprate_mag = std::max(solution, 0.0);
+
+  // FIX 3: Floor slip rate for state variable update to prevent L/V -> Inf
+  const Real V_floor = 1e-20;
+  Real sliprate_for_statevar = std::max(sliprate_mag, V_floor);
 
   //update state variable
   // we apply separation of variables on first-order linear ODE of statevar
-  Real coeff_LoverV = _rsf_L / sliprate_mag;
-  Real coeff_exponent = exp(-sliprate_mag*_dt/_rsf_L);
+  Real coeff_LoverV = _rsf_L / sliprate_for_statevar;
+  Real coeff_exponent = exp(-sliprate_for_statevar*_dt/_rsf_L);
   Real statevar_tplusdt = coeff_LoverV + (_statevar_old[_qp] - coeff_LoverV) * coeff_exponent;
 
   //*Compute shear traction at time t*
   Real T_mag = Tn * rsf_a_local * asinh( 0.5*(sliprate_mag_old+sliprate_mag) * Z );
 
   ///Get Components
-  Real T1 = T_mag * ( Ts_trial / Tmag_trial );
-  Real T3 = T_mag * ( Td_trial / Tmag_trial );
+  Real T1 = T_mag * dir_s;
+  Real T3 = T_mag * dir_d;
 
   // Assign back traction in CZM
   RealVectorValue traction(T2 + _T2_o, -T1 + _T1_o, -T3 + _T3_o);
@@ -285,6 +335,14 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
 
   // Update statevar, slipratevar (strike, dip)
   _statevar[_qp] = statevar_tplusdt;
-  _slipratevar[_qp](1) = sliprate_mag * ( Ts_trial / Tmag_trial );
-  _slipratevar[_qp](2) = sliprate_mag * ( Td_trial / Tmag_trial );
+  _slipratevar[_qp](1) = sliprate_mag * dir_s;
+  _slipratevar[_qp](2) = sliprate_mag * dir_d;
+
+  // Store debug output
+  _Tn_debug[_qp] = Tn;
+  _Tmag_trial_debug[_qp] = Tmag_trial;
+  _T_mag_debug[_qp] = T_mag;
+  _sliprate_mag_debug[_qp] = sliprate_mag;
+  _Z_debug[_qp] = Z;
+  _newton_iters_debug[_qp] = static_cast<Real>(iterr);
 }

@@ -93,4 +93,12 @@ protected:
   ///Measure from current time step
   const VariableValue & _Ts_perturb;
   const VariableValue & _Ts_perturb_old;
+
+  // Debug output material properties
+  MaterialProperty<Real> & _Tn_debug;
+  MaterialProperty<Real> & _Tmag_trial_debug;
+  MaterialProperty<Real> & _T_mag_debug;
+  MaterialProperty<Real> & _sliprate_mag_debug;
+  MaterialProperty<Real> & _Z_debug;
+  MaterialProperty<Real> & _newton_iters_debug;
 };
