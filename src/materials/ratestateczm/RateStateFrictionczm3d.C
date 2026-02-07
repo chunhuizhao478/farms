@@ -255,60 +255,82 @@ RateStateFrictionczm3d::computeInterfaceTractionAndDerivatives()
   Real dir_s = Ts_trial / Tmag_trial;
   Real dir_d = Td_trial / Tmag_trial;
 
-  //Setup while loop
+  // =========================================================================
+  // Solve for slip rate magnitude using bisection.
+  //
+  // Residual: f(V) = V + c*Tn*a*asinh(0.5*(V+V_old)*Z) - c*Tmag_trial
+  // f is monotonically increasing (f' > 0 always), so bisection is guaranteed
+  // to converge. Newton fails when Z is very large (>~1e30) because the
+  // asinh flattens to log, making the Jacobian ~1 and Newton oscillates.
+  // =========================================================================
+
+  // Lambda for the residual function
+  auto resid_func = [&](Real V) -> Real {
+    return V + c * Tn * rsf_a_local * asinh(0.5 * (V + sliprate_mag_old) * Z) - c * Tmag_trial;
+  };
+
+  // Step 1: Find brackets [V_lo, V_hi] such that f(V_lo) < 0 and f(V_hi) > 0
+  Real V_lo, V_hi;
+  Real f_at_guess = resid_func(sliprate_mag_old);
+
+  if (abs(f_at_guess) < 1e-14)
+  {
+    // Already converged — slip rate unchanged
+    V_lo = sliprate_mag_old;
+    V_hi = sliprate_mag_old;
+  }
+  else if (f_at_guess > 0)
+  {
+    // Root is to the left of sliprate_mag_old
+    V_hi = sliprate_mag_old;
+    Real step = std::max(abs(sliprate_mag_old), 1e-15);
+    V_lo = V_hi - step;
+    while (resid_func(V_lo) > 0)
+    {
+      V_hi = V_lo;
+      step *= 2.0;
+      V_lo = V_hi - step;
+    }
+  }
+  else
+  {
+    // Root is to the right of sliprate_mag_old
+    V_lo = sliprate_mag_old;
+    Real step = std::max(abs(sliprate_mag_old), 1e-15);
+    V_hi = V_lo + step;
+    while (resid_func(V_hi) < 0)
+    {
+      V_lo = V_hi;
+      step *= 2.0;
+      V_hi = V_lo + step;
+    }
+  }
+
+  // Step 2: Bisection to find the root
   int iterr = 0;
-  const int max_iter = 10000;
-  const Real tol = 1e-10;
-  Real er = 1.0;
-  Real solution = sliprate_mag_old;
-  Real guess_i = sliprate_mag_old; //slip rate at time t-dt/2
-  Real residual;
-  Real jacobian;
-  Real guess_j;
+  const int max_iter = 200; // bisection converges in ~60 iterations for double precision
+  const Real bisect_tol = 1e-12;
+  Real solution = 0.5 * (V_lo + V_hi);
 
-  while ( er > tol && iterr < max_iter ){
+  while (iterr < max_iter)
+  {
+    solution = 0.5 * (V_lo + V_hi);
+    Real f_mid = resid_func(solution);
 
-      //Compute Residual
-      residual = guess_i + c * Tn * rsf_a_local * asinh( 0.5*(guess_i+sliprate_mag_old) * Z ) - c * Tmag_trial;
+    // Check convergence: relative interval width
+    Real interval = V_hi - V_lo;
+    if (interval / std::max(abs(solution), 1e-30) < bisect_tol || abs(f_mid) < 1e-14)
+      break;
 
-      //Compute Jacobian
-      jacobian = 1.0 + c * Tn * rsf_a_local * 0.5 * Z / sqrt( 1.0 + 0.5 * 0.5 * (guess_i+sliprate_mag_old) * (guess_i+sliprate_mag_old) * Z * Z );
+    if (f_mid > 0)
+      V_hi = solution;
+    else
+      V_lo = solution;
 
-      //Compute New guess
-      guess_j = guess_i - residual / jacobian;
-
-      //save
-      solution = guess_j;
-
-      //Compute err (avoid division by zero)
-      er = (abs(guess_j) > 1e-20) ? abs(guess_j - guess_i)/abs(guess_j) : abs(guess_j - guess_i);
-
-      //Update Old guess
-      guess_i = guess_j;
-
-      //update iterr
-      iterr++;
-
+    iterr++;
   }
 
-  //Check convergence: only error if we hit max iterations AND did not converge
-  if (iterr >= max_iter && er > tol){
-      mooseError("Newton iteration in RateStateFrictionczm3d did not converge after ", max_iter,
-                 " iterations. Final error: ", er, ", Tolerance: ", tol,
-                 ", at qp ", _qp,
-                 ". Diagnostics: Tn=", Tn,
-                 ", Tmag_trial=", Tmag_trial,
-                 ", sliprate_mag_old=", sliprate_mag_old,
-                 ", Z=", Z,
-                 ", c=", c,
-                 ", statevar_old=", _statevar_old[_qp],
-                 ", rsf_a_local=", rsf_a_local,
-                 ", solution=", solution);
-  }
-
-  // FIX 2: Clamp negative Newton solutions to zero instead of abs().
-  // A negative solution means friction exceeds trial stress — fault decelerates.
-  // Clamping to zero maintains self-consistency (slip rate magnitude >= 0).
+  // Clamp: slip rate magnitude >= 0
   Real sliprate_mag = std::max(solution, 0.0);
 
   // FIX 3: Floor slip rate for state variable update to prevent L/V -> Inf
