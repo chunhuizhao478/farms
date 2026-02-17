@@ -1446,12 +1446,11 @@ hht_alpha = 0
 
 [AuxKernels]
   [solid_kinetic_energy]
-      type = KineticEnergyAux
+      type = ParsedAux
       variable = solid_kinetic_energy
-      newmark_velocity_x = vel_x
-      newmark_velocity_y = vel_y
-      newmark_velocity_z = vel_z
-      density = density
+      coupled_variables = 'vel_x vel_y porosity_aux'
+      expression = "0.5 * ((1.0 - porosity_aux) * ${solid_density} + porosity_aux * ${fluid_density}) * (vel_x*vel_x + vel_y*vel_y)"
+      execute_on = 'TIMESTEP_END'
   []
 []
 
@@ -1497,8 +1496,8 @@ hht_alpha = 0
   [fluid_kinetic_energy]
       type = ParsedAux
       variable = fluid_kinetic_energy
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
-      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density}"
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z porosity_aux'
+      expression = "0.5 * (${fluid_density} / (porosity_aux * porosity_aux)) * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z)"
   []
 []
 
@@ -1526,8 +1525,8 @@ hht_alpha = 0
       type = ParsedAux
       variable = fluid_compression_energy
       coupled_variables = 'pp biot_modulus_aux'
-      # E = (1/2M) * p² where M is Biot modulus
-      expression = "0.5 / (biot_modulus_aux + 1e-30) * pp * pp"
+      # E = p²/(2M) where M is Biot modulus
+      expression = "0.5 * (1.0 / biot_modulus_aux) * pp * pp"
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1571,6 +1570,25 @@ hht_alpha = 0
     order = CONSTANT
     family = MONOMIAL
   []
+  # Fluid dissipation (Eq. 46): gradient of pore pressure components
+  [grad_pp_x]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [grad_pp_y]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  # Darcy flux dot grad(p): q · ∇p
+  [q_dot_grad_p]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  # Biot coupling term: α * p * δε_v
+  [alpha_p_eps_v_inc]
+    order = CONSTANT
+    family = MONOMIAL
+  []
 []
 
 [AuxKernels]
@@ -1583,6 +1601,37 @@ hht_alpha = 0
     coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z effective_perm00_aux'
     # Use local effective permeability. Add small value to avoid division by zero.
     expression = '${viscosity} / (effective_perm00_aux + 1e-30) * (darcy_vel_x*darcy_vel_x + darcy_vel_y*darcy_vel_y + darcy_vel_z*darcy_vel_z)'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Fluid dissipation (Eq. 46): pore pressure gradient components
+  [compute_grad_pp_x]
+    type = VariableGradientComponent
+    variable = grad_pp_x
+    gradient_variable = pp
+    component = x
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [compute_grad_pp_y]
+    type = VariableGradientComponent
+    variable = grad_pp_y
+    gradient_variable = pp
+    component = y
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # q · ∇p: Darcy velocity dotted with pressure gradient
+  [compute_q_dot_grad_p]
+    type = ParsedAux
+    variable = q_dot_grad_p
+    coupled_variables = 'darcy_vel_x darcy_vel_y grad_pp_x grad_pp_y'
+    expression = 'darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # α * p * δε_v: Biot coupling incremental volumetric work
+  [compute_alpha_p_eps_v_inc]
+    type = ParsedAux
+    variable = alpha_p_eps_v_inc
+    coupled_variables = 'biot_coefficient_aux pp strain_inc_00 strain_inc_11 strain_inc_22'
+    expression = 'biot_coefficient_aux * pp * (strain_inc_00 + strain_inc_11 + strain_inc_22)'
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1602,12 +1651,35 @@ hht_alpha = 0
     value = darcy_viscous_power
     execute_on = 'INITIAL TIMESTEP_END'
   []
-  # Total fluid dissipation = Darcy viscous only
-  # (fluid elastic dissipation removed - no thermodynamic basis)
-  [fluid_dissipated_energy_total]
+  # Fluid dissipation (Eq. 46): volume integral of q · ∇p
+  [q_dot_grad_p_integral]
+    type = ElementIntegralVariablePostprocessor
+    variable = q_dot_grad_p
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Fluid dissipation (Eq. 46): volume integral of α * p * δε_v
+  [alpha_p_eps_v_inc_integral]
+    type = ElementIntegralVariablePostprocessor
+    variable = alpha_p_eps_v_inc
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Current timestep size (needed for time integration of q · ∇p term)
+  [dt]
+    type = TimestepSize
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Incremental fluid dissipation energy per timestep (Eq. 46)
+  # = q · ∇p integrated over volume × dt  +  α * p * δε_v integrated over volume
+  [fluid_dissipation_incremental]
     type = ParsedPostprocessor
-    pp_names = 'darcy_viscous_dissipation_total'
-    expression = "darcy_viscous_dissipation_total"
+    pp_names = 'q_dot_grad_p_integral dt alpha_p_eps_v_inc_integral'
+    expression = 'q_dot_grad_p_integral * dt + alpha_p_eps_v_inc_integral'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # Cumulative fluid dissipation energy (sum of increments over all timesteps)
+  [fluid_dissipated_energy_total]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_dissipation_incremental
     execute_on = 'INITIAL TIMESTEP_END'
   []
 []
