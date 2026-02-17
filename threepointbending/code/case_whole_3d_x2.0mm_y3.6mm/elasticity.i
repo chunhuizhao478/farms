@@ -1,4 +1,4 @@
-E = 40e6
+E = 4.41e6
 nu = 0.25
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
@@ -158,7 +158,7 @@ z_center = 0.004  # extrude_z / 2
 [Functions]
   [func_loading]
     type = ParsedFunction
-    expression = '-1e-4 * t'
+    expression = '-1.667e-6 * t'
   []
   [dt_limit_fn]
     type = PiecewiseLinear
@@ -309,17 +309,17 @@ z_center = 0.004  # extrude_z / 2
   nl_max_its = 50
 
   dt = 0.1
-  end_time = 20
+  end_time = 1000
 
-  [TimeStepper]
-    type = IterationAdaptiveDT
-    dt = 0.001
-    optimal_iterations = 6
-    iteration_window = 2
-    growth_factor = 1.2
-    cutback_factor = 0.5
-    timestep_limiting_postprocessor = dt_limit_pp
-  []
+  # [TimeStepper]
+  #   type = IterationAdaptiveDT
+  #   dt = 0.001
+  #   optimal_iterations = 6
+  #   iteration_window = 2
+  #   growth_factor = 1.2
+  #   cutback_factor = 0.5
+  #   timestep_limiting_postprocessor = dt_limit_pp
+  # []
 
   fixed_point_max_its = 20
   accept_on_max_fixed_point_iteration = true
@@ -330,12 +330,13 @@ z_center = 0.004  # extrude_z / 2
 [Outputs]
   [./exodus]
     type = Exodus
-    sync_times = '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 16.5
-                  16.55 16.6 16.65 16.7 16.75 16.8 16.85 16.9 16.95
-                  17.0 17.05 17.1 17.15 17.2 17.25 17.3 17.35 17.4 17.45
-                  17.5 17.55 17.6 17.65 17.7 17.75 17.8 17.85 17.9 17.95 18.0
-                  19 20'
-    sync_only = true
+    # sync_times = '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 16.5
+    #               16.55 16.6 16.65 16.7 16.75 16.8 16.85 16.9 16.95
+    #               17.0 17.05 17.1 17.15 17.2 17.25 17.3 17.35 17.4 17.45
+    #               17.5 17.55 17.6 17.65 17.7 17.75 17.8 17.85 17.9 17.95 18.0
+    #               19 20'
+    # sync_only = true
+    interval = 50
     show = 'd disp_x disp_y'
   [../]
   print_linear_residuals = false
