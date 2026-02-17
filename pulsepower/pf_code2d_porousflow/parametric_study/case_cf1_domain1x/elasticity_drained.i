@@ -52,7 +52,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture.i
+    input_files = fracture_drained.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -104,7 +104,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2dmeshfile/fieldscale_test1_2d.msh'
+    file =  '../../../2dmeshfile/fieldscale_test1_2d.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -463,7 +463,7 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.00125
+    EM = 0.0025
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -985,12 +985,10 @@ top_right2 = '3e-4 0.0025 0'
 
 [AuxKernels]
   [solid_kinetic_energy]
-      type = KineticEnergyAux
+      type = ParsedAux
       variable = solid_kinetic_energy
-      newmark_velocity_x = vel_x
-      newmark_velocity_y = vel_y
-      newmark_velocity_z = vel_z
-      density = density
+      coupled_variables = 'vel_x vel_y vel_z porosity_aux'
+      expression = "0.5 * ((1.0 - porosity_aux) * ${solid_density} + porosity_aux * ${fluid_density}) * (vel_x*vel_x + vel_y*vel_y + vel_z*vel_z)"
   []
 []
 
@@ -1032,8 +1030,8 @@ top_right2 = '3e-4 0.0025 0'
   [fluid_kinetic_energy]
       type = ParsedAux
       variable = fluid_kinetic_energy
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
-      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density}"
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z porosity_aux'
+      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density} / (porosity_aux * porosity_aux)"
   []
 []
 
@@ -1058,8 +1056,8 @@ top_right2 = '3e-4 0.0025 0'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'strain_00 strain_11 strain_22 pp biot_coefficient_aux'
-      expression = "0.5 * biot_coefficient_aux * -pp * (strain_00+strain_11+strain_22)"
+      coupled_variables = 'pp biot_modulus_aux'
+      expression = "0.5 * (1.0 / biot_modulus_aux) * pp * pp"
   []
 []
 
@@ -1083,35 +1081,82 @@ top_right2 = '3e-4 0.0025 0'
 # fluid energy dissipation
 ###############################################################################
 [AuxVariables]
-  [fluid_incremental_elastic_energy]
+  [grad_pp_x]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [grad_pp_y]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [grad_pp_z]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [q_dot_grad_p]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [alpha_p_eps_v_inc]
     order = CONSTANT
     family = MONOMIAL
   []
 []
 
 [AuxKernels]
-  [fluid_incremental_elastic_energy_per_vol]
+  [grad_pp_x_kernel]
+      type = VariableGradientComponent
+      variable = grad_pp_x
+      gradient_variable = pp
+      component = x
+  []
+  [grad_pp_y_kernel]
+      type = VariableGradientComponent
+      variable = grad_pp_y
+      gradient_variable = pp
+      component = y
+  []
+  [grad_pp_z_kernel]
+      type = VariableGradientComponent
+      variable = grad_pp_z
+      gradient_variable = pp
+      component = z
+  []
+  [q_dot_grad_p_kernel]
       type = ParsedAux
-      variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_inc_00 strain_inc_11 strain_inc_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_inc_00+strain_inc_11+strain_inc_22)"
+      variable = q_dot_grad_p
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z grad_pp_x grad_pp_y grad_pp_z'
+      expression = "darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y + darcy_vel_z * grad_pp_z"
+  []
+  [alpha_p_eps_v_inc_kernel]
+      type = ParsedAux
+      variable = alpha_p_eps_v_inc
+      coupled_variables = 'biot_coefficient_aux pp strain_inc_00 strain_inc_11 strain_inc_22'
+      expression = "biot_coefficient_aux * pp * (strain_inc_00 + strain_inc_11 + strain_inc_22)"
   []
 []
 
 [Postprocessors]
-  [fluid_incremental_elastic_energy]
+  [q_dot_grad_p_integral]
       type = ElementIntegralVariablePostprocessor
-      variable = fluid_incremental_elastic_energy
+      variable = q_dot_grad_p
   []
-  [fluid_incremental_elastic_energy_total]
-    type = CumulativeValuePostprocessor
-    postprocessor = fluid_incremental_elastic_energy
+  [alpha_p_eps_v_inc_integral]
+      type = ElementIntegralVariablePostprocessor
+      variable = alpha_p_eps_v_inc
+  []
+  [dt]
+      type = TimestepSize
+  []
+  [fluid_dissipation_incremental]
+      type = ParsedPostprocessor
+      pp_names = 'q_dot_grad_p_integral alpha_p_eps_v_inc_integral dt'
+      expression = "q_dot_grad_p_integral * dt + alpha_p_eps_v_inc_integral"
+      execute_on = 'TIMESTEP_END'
   []
   [fluid_dissipated_energy_total]
-    type = ParsedPostprocessor
-    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
-    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
-    execute_on = 'INITIAL TIMESTEP_END'
+      type = CumulativeValuePostprocessor
+      postprocessor = fluid_dissipation_incremental
   []
 []
 ###############################################################################
