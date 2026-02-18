@@ -897,7 +897,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic q_dot_grad_p_integral alpha_p_eps_v_inc_integral fluid_dissipation_incremental fluid_boundary_work_rate dt'
   []
 []
 
@@ -976,7 +976,6 @@ top_right2 = '3e-4 0.0025 0'
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      #expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
       expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work - fluid_drainage_work'
       pp_names = 'external_work confinement_work damping_work fluid_drainage_work'
       execute_on = 'INITIAL TIMESTEP_END'
@@ -1110,16 +1109,18 @@ top_right2 = '3e-4 0.0025 0'
 
 [AuxKernels]
   [grad_pp_x_kernel]
-      type = VariableGradientComponent
+      type = MaterialStdVectorRealGradientAux
       variable = grad_pp_x
-      gradient_variable = pp
-      component = x
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 0
   []
   [grad_pp_y_kernel]
-      type = VariableGradientComponent
+      type = MaterialStdVectorRealGradientAux
       variable = grad_pp_y
-      gradient_variable = pp
-      component = y
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 1
   []
   [q_dot_grad_p_kernel]
       type = ParsedAux
