@@ -7,7 +7,7 @@ l = 5e-5 # N * h, N: number of elements, h: element size
 
 sigmat = 6.43e6
 
-Gc = '${fparse 8*l*sigmat*sigmat/(3*E)}'
+Gc = 3 #J/m^2
 psic = '${fparse sigmat*sigmat/(2*E)}'
 
 [MultiApps]
