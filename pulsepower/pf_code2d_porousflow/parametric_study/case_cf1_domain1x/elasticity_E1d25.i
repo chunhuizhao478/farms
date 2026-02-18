@@ -557,13 +557,13 @@ top_right2 = '3e-4 0.0025 0'
       save_in_disp_y = fconfinementy
     []
   []
-  # add drained pressure
-  [./porepressure_drained]
-    type = FunctionDirichletBC
-    variable = pp
-    function = func_tri_pulse
-    boundary = 3
-  []
+  # add drained pressure (disabled - undrained case)
+  # [./porepressure_drained]
+  #   type = FunctionDirichletBC
+  #   variable = pp
+  #   function = func_tri_pulse
+  #   boundary = 3
+  # []
   # fix ptr
   [./fix_cptr1_x]
     type = DirichletBC
@@ -926,16 +926,19 @@ top_right2 = '3e-4 0.0025 0'
 
 # input energy
 ###############################################################################
-#[AuxKernels]
-#  #### compute fluid drainage flux work density (pp × |darcy_vel|)
-#  [compute_fluid_drainage_work_density]
-#    type = ParsedAux
-#    variable = fluid_drainage_flux_work
-#    coupled_variables = 'pp darcy_vel_x darcy_vel_y darcy_vel_z'
-#    expression = 'pp * sqrt(darcy_vel_x*darcy_vel_x + darcy_vel_y*darcy_vel_y + darcy_vel_z*darcy_vel_z)'
-#    execute_on = 'TIMESTEP_END'
-#  []
-#[]
+# Fluid boundary work density: pp * (q dot n_outward) on boundary
+# For borehole centered at origin, outward normal = (-x/r, -y/r)
+# q dot n = -(darcy_vel_x * x + darcy_vel_y * y) / r
+[AuxKernels]
+  [compute_fluid_boundary_work_density]
+    type = ParsedAux
+    variable = fluid_drainage_flux_work
+    coupled_variables = 'pp darcy_vel_x darcy_vel_y'
+    use_xyzt = true
+    expression = 'pp * (-(darcy_vel_x * x + darcy_vel_y * y) / max(sqrt(x*x + y*y), 1e-30))'
+    execute_on = 'TIMESTEP_END'
+  []
+[]
 
 [Postprocessors]
   [external_work]
@@ -953,23 +956,29 @@ top_right2 = '3e-4 0.0025 0'
     boundary = '1'
     forces = 'fdampx fdampy fdampz'
   []
-  [fluid_drainage_work_rate]
+  [fluid_boundary_work_rate]
     type = SideIntegralVariablePostprocessor
     variable = fluid_drainage_flux_work
     boundary = 3
   []
+  [fluid_boundary_work_incremental]
+    type = ParsedPostprocessor
+    pp_names = 'fluid_boundary_work_rate dt'
+    expression = 'fluid_boundary_work_rate * dt'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
   [fluid_drainage_work]
     type = CumulativeValuePostprocessor
-    postprocessor = fluid_drainage_work_rate
+    postprocessor = fluid_boundary_work_incremental
   []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      #expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work + fluid_drainage_work'
-      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
-      pp_names = 'external_work confinement_work damping_work'
+      #expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
+      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work - fluid_drainage_work'
+      pp_names = 'external_work confinement_work damping_work fluid_drainage_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
