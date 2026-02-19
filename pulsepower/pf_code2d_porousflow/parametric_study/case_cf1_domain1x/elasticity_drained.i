@@ -463,7 +463,7 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.0025
+    EM = 0.00125
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
@@ -897,7 +897,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic q_dot_grad_p_integral alpha_p_eps_v_inc_integral fluid_dissipation_incremental fluid_boundary_work_rate dt'
   []
 []
 
@@ -926,16 +926,19 @@ top_right2 = '3e-4 0.0025 0'
 
 # input energy
 ###############################################################################
-#[AuxKernels]
-#  #### compute fluid drainage flux work density (pp × |darcy_vel|)
-#  [compute_fluid_drainage_work_density]
-#    type = ParsedAux
-#    variable = fluid_drainage_flux_work
-#    coupled_variables = 'pp darcy_vel_x darcy_vel_y darcy_vel_z'
-#    expression = 'pp * sqrt(darcy_vel_x*darcy_vel_x + darcy_vel_y*darcy_vel_y + darcy_vel_z*darcy_vel_z)'
-#    execute_on = 'TIMESTEP_END'
-#  []
-#[]
+# Fluid boundary work density: pp * (q dot n_outward) on boundary
+# For borehole centered at origin, outward normal = (-x/r, -y/r)
+# q dot n = -(darcy_vel_x * x + darcy_vel_y * y) / r
+[AuxKernels]
+  [compute_fluid_boundary_work_density]
+    type = ParsedAux
+    variable = fluid_drainage_flux_work
+    coupled_variables = 'pp darcy_vel_x darcy_vel_y'
+    use_xyzt = true
+    expression = 'pp * (-(darcy_vel_x * x + darcy_vel_y * y) / max(sqrt(x*x + y*y), 1e-30))'
+    execute_on = 'TIMESTEP_END'
+  []
+[]
 
 [Postprocessors]
   [external_work]
@@ -953,23 +956,28 @@ top_right2 = '3e-4 0.0025 0'
     boundary = '1'
     forces = 'fdampx fdampy fdampz'
   []
-  [fluid_drainage_work_rate]
+  [fluid_boundary_work_rate]
     type = SideIntegralVariablePostprocessor
     variable = fluid_drainage_flux_work
     boundary = 3
   []
+  [fluid_boundary_work_incremental]
+    type = ParsedPostprocessor
+    pp_names = 'fluid_boundary_work_rate dt'
+    expression = 'fluid_boundary_work_rate * dt'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
   [fluid_drainage_work]
     type = CumulativeValuePostprocessor
-    postprocessor = fluid_drainage_work_rate
+    postprocessor = fluid_boundary_work_incremental
   []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      #expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work + fluid_drainage_work'
-      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
-      pp_names = 'external_work confinement_work damping_work'
+      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work - fluid_drainage_work'
+      pp_names = 'external_work confinement_work damping_work fluid_drainage_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1150,8 +1158,8 @@ top_right2 = '3e-4 0.0025 0'
   []
   [fluid_dissipation_incremental]
       type = ParsedPostprocessor
-      pp_names = 'q_dot_grad_p_integral alpha_p_eps_v_inc_integral dt'
-      expression = "q_dot_grad_p_integral * dt + alpha_p_eps_v_inc_integral"
+      pp_names = 'q_dot_grad_p_integral dt'
+      expression = "-1.0 * q_dot_grad_p_integral * dt"
       execute_on = 'TIMESTEP_END'
   []
   [fluid_dissipated_energy_total]

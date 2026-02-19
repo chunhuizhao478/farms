@@ -1032,8 +1032,8 @@ top_right2 = '3e-4 0.0025 0'
   []
   [fluid_dissipation_incremental]
       type = ParsedPostprocessor
-      pp_names = 'q_dot_grad_p_integral dt alpha_p_eps_v_inc_integral'
-      expression = "q_dot_grad_p_integral * dt + alpha_p_eps_v_inc_integral"
+      pp_names = 'q_dot_grad_p_integral dt'
+      expression = "-1.0 * q_dot_grad_p_integral * dt"
       execute_on = 'TIMESTEP_END'
   []
   [fluid_dissipated_energy_total]

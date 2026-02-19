@@ -273,6 +273,11 @@ top_right1 = '0.002 4e-4 0.06'
     order = CONSTANT
     family = MONOMIAL
   []
+  # fluid drainage work density on boundary
+  [fluid_drainage_flux_work]
+    family = MONOMIAL
+    order = CONSTANT
+  []
 []
 
 [AuxKernels]
@@ -925,7 +930,7 @@ top_right1 = '0.002 4e-4 0.06'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 1e-7
+    max_time_step_bound = 1e-8
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -949,7 +954,7 @@ top_right1 = '0.002 4e-4 0.06'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 40
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic q_dot_grad_p_integral alpha_p_eps_v_inc_integral fluid_dissipation_incremental fluid_boundary_work_rate dt'
   []
 []
 
@@ -978,6 +983,20 @@ top_right1 = '0.002 4e-4 0.06'
 
 # input energy
 ###############################################################################
+# Fluid boundary work density: pp * (q dot n_outward) on boundary
+# For borehole along z-axis centered at origin, outward normal = (-x/r, -y/r, 0) where r = sqrt(x^2+y^2)
+# q dot n = -(darcy_vel_x * x + darcy_vel_y * y) / r
+[AuxKernels]
+  [compute_fluid_boundary_work_density]
+    type = ParsedAux
+    variable = fluid_drainage_flux_work
+    coupled_variables = 'pp darcy_vel_x darcy_vel_y'
+    use_xyzt = true
+    expression = 'pp * (-(darcy_vel_x * x + darcy_vel_y * y) / max(sqrt(x*x + y*y), 1e-30))'
+    execute_on = 'TIMESTEP_END'
+  []
+[]
+
 [Postprocessors]
   [external_work]
     type = FarmsExternalWork
@@ -994,13 +1013,28 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = '4'
     forces = 'fdampx fdampy fdampz'
   []
+  [fluid_boundary_work_rate]
+    type = SideIntegralVariablePostprocessor
+    variable = fluid_drainage_flux_work
+    boundary = 3
+  []
+  [fluid_boundary_work_incremental]
+    type = ParsedPostprocessor
+    pp_names = 'fluid_boundary_work_rate dt'
+    expression = 'fluid_boundary_work_rate * dt'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [fluid_drainage_work]
+    type = CumulativeValuePostprocessor
+    postprocessor = fluid_boundary_work_incremental
+  []
 []
 
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work'
-      pp_names = 'external_work confinement_work damping_work'
+      expression = '-1 * external_work - confinement_work + ${full_input_energy_static} - damping_work - fluid_drainage_work'
+      pp_names = 'external_work confinement_work damping_work fluid_drainage_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []
@@ -1076,7 +1110,7 @@ top_right1 = '0.002 4e-4 0.06'
 []
 ###############################################################################
 
-# fluid elastic energy
+# fluid elastic energy (using damaged biot coefficient for accounting)
 ###############################################################################
 [AuxVariables]
   [fluid_elastic_energy]
@@ -1089,8 +1123,8 @@ top_right1 = '0.002 4e-4 0.06'
   [get_fluid_elastic_energy]
       type = ParsedAux
       variable = fluid_elastic_energy
-      coupled_variables = 'strain_00 strain_11 strain_22 pp biot_coefficient_aux'
-      expression = "0.5 * biot_coefficient_aux * -pp * (strain_00+strain_11+strain_22)"
+      coupled_variables = 'pp biot_modulus_aux'
+      expression = "0.5 * (1.0 / biot_modulus_aux) * pp * pp"
   []
 []
 
@@ -1114,35 +1148,85 @@ top_right1 = '0.002 4e-4 0.06'
 # fluid energy dissipation
 ###############################################################################
 [AuxVariables]
-  [fluid_incremental_elastic_energy]
+  [grad_pp_x]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [grad_pp_y]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [grad_pp_z]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [q_dot_grad_p]
+    order = CONSTANT
+    family = MONOMIAL
+  []
+  [alpha_p_eps_v_inc]
     order = CONSTANT
     family = MONOMIAL
   []
 []
 
 [AuxKernels]
-  [fluid_incremental_elastic_energy_per_vol]
+  [grad_pp_x_kernel]
+      type = MaterialStdVectorRealGradientAux
+      variable = grad_pp_x
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 0
+  []
+  [grad_pp_y_kernel]
+      type = MaterialStdVectorRealGradientAux
+      variable = grad_pp_y
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 1
+  []
+  [grad_pp_z_kernel]
+      type = MaterialStdVectorRealGradientAux
+      variable = grad_pp_z
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 2
+  []
+  [q_dot_grad_p_kernel]
       type = ParsedAux
-      variable = fluid_incremental_elastic_energy
-      coupled_variables = 'strain_inc_00 strain_inc_11 strain_inc_22 pp biot_coefficient_aux'
-      expression = "biot_coefficient_aux * -pp * (strain_inc_00+strain_inc_11+strain_inc_22)"
+      variable = q_dot_grad_p
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z grad_pp_x grad_pp_y grad_pp_z'
+      expression = "darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y + darcy_vel_z * grad_pp_z"
+  []
+  [alpha_p_eps_v_inc_kernel]
+      type = ParsedAux
+      variable = alpha_p_eps_v_inc
+      coupled_variables = 'biot_coefficient_aux pp strain_inc_00 strain_inc_11 strain_inc_22'
+      expression = "biot_coefficient_aux * pp * (strain_inc_00 + strain_inc_11 + strain_inc_22)"
   []
 []
 
 [Postprocessors]
-  [fluid_incremental_elastic_energy]
+  [q_dot_grad_p_integral]
       type = ElementIntegralVariablePostprocessor
-      variable = fluid_incremental_elastic_energy
+      variable = q_dot_grad_p
   []
-  [fluid_incremental_elastic_energy_total]
-    type = CumulativeValuePostprocessor
-    postprocessor = fluid_incremental_elastic_energy
+  [alpha_p_eps_v_inc_integral]
+      type = ElementIntegralVariablePostprocessor
+      variable = alpha_p_eps_v_inc
+  []
+  [dt]
+      type = TimestepSize
+  []
+  [fluid_dissipation_incremental]
+      type = ParsedPostprocessor
+      pp_names = 'q_dot_grad_p_integral dt'
+      expression = "-1.0 * q_dot_grad_p_integral * dt"
+      execute_on = 'INITIAL TIMESTEP_END'
   []
   [fluid_dissipated_energy_total]
-    type = ParsedPostprocessor
-    pp_names = 'fluid_incremental_elastic_energy_total fluid_elastic_energy_total'
-    expression = "${fluid_elastic_energy_total_static} + fluid_incremental_elastic_energy_total - fluid_elastic_energy_total"
-    execute_on = 'INITIAL TIMESTEP_END'
+      type = CumulativeValuePostprocessor
+      postprocessor = fluid_dissipation_incremental
   []
 []
 ###############################################################################
