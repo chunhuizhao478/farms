@@ -277,8 +277,8 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
-  # fluid drainage work density on boundary
-  [fluid_drainage_flux_work]
+  # darcy flux normal component on boundary (without pp)
+  [darcy_flux_n]
     family = MONOMIAL
     order = CONSTANT
   []
@@ -897,7 +897,7 @@ top_right2 = '3e-4 0.0025 0'
     type = CSV
     execute_on = 'initial timestep_end'
     time_step_interval = 1
-    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic q_dot_grad_p_integral alpha_p_eps_v_inc_integral fluid_dissipation_incremental fluid_boundary_work_rate dt'
+    show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic q_dot_grad_p_integral alpha_p_eps_v_inc_integral fluid_dissipation_incremental fluid_boundary_work_rate darcy_flux_boundary3 pp_boundary_avg dt'
   []
 []
 
@@ -926,16 +926,18 @@ top_right2 = '3e-4 0.0025 0'
 
 # input energy
 ###############################################################################
-# Fluid boundary work density: pp * (q dot n_outward) on boundary
+# Fluid boundary work: pp_boundary * (q dot n_outward) on boundary
 # For borehole centered at origin, outward normal = (-x/r, -y/r)
 # q dot n = -(darcy_vel_x * x + darcy_vel_y * y) / r
+# NOTE: pp is evaluated at boundary face (SideAverageValue) instead of element center
+# to correctly capture the Dirichlet BC value when porepressure_drained is active
 [AuxKernels]
-  [compute_fluid_boundary_work_density]
+  [compute_darcy_flux_normal]
     type = ParsedAux
-    variable = fluid_drainage_flux_work
-    coupled_variables = 'pp darcy_vel_x darcy_vel_y'
+    variable = darcy_flux_n
+    coupled_variables = 'darcy_vel_x darcy_vel_y'
     use_xyzt = true
-    expression = 'pp * (-(darcy_vel_x * x + darcy_vel_y * y) / max(sqrt(x*x + y*y), 1e-30))'
+    expression = '-(darcy_vel_x * x + darcy_vel_y * y) / max(sqrt(x*x + y*y), 1e-30)'
     execute_on = 'TIMESTEP_END'
   []
 []
@@ -956,10 +958,21 @@ top_right2 = '3e-4 0.0025 0'
     boundary = '1'
     forces = 'fdampx fdampy fdampz'
   []
-  [fluid_boundary_work_rate]
+  [darcy_flux_boundary3]
     type = SideIntegralVariablePostprocessor
-    variable = fluid_drainage_flux_work
+    variable = darcy_flux_n
     boundary = 3
+  []
+  [pp_boundary_avg]
+    type = SideAverageValue
+    variable = pp
+    boundary = 3
+  []
+  [fluid_boundary_work_rate]
+    type = ParsedPostprocessor
+    pp_names = 'pp_boundary_avg darcy_flux_boundary3'
+    expression = 'pp_boundary_avg * darcy_flux_boundary3'
+    execute_on = 'INITIAL TIMESTEP_END'
   []
   [fluid_boundary_work_incremental]
     type = ParsedPostprocessor
@@ -1097,10 +1110,6 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
-  [grad_pp_z]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [q_dot_grad_p]
     order = CONSTANT
     family = MONOMIAL
@@ -1113,28 +1122,24 @@ top_right2 = '3e-4 0.0025 0'
 
 [AuxKernels]
   [grad_pp_x_kernel]
-      type = VariableGradientComponent
+      type = MaterialStdVectorRealGradientAux
       variable = grad_pp_x
-      gradient_variable = pp
-      component = x
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 0
   []
   [grad_pp_y_kernel]
-      type = VariableGradientComponent
+      type = MaterialStdVectorRealGradientAux
       variable = grad_pp_y
-      gradient_variable = pp
-      component = y
-  []
-  [grad_pp_z_kernel]
-      type = VariableGradientComponent
-      variable = grad_pp_z
-      gradient_variable = pp
-      component = z
+      property = PorousFlow_grad_porepressure_qp
+      index = 0
+      component = 1
   []
   [q_dot_grad_p_kernel]
       type = ParsedAux
       variable = q_dot_grad_p
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z grad_pp_x grad_pp_y grad_pp_z'
-      expression = "darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y + darcy_vel_z * grad_pp_z"
+      coupled_variables = 'darcy_vel_x darcy_vel_y grad_pp_x grad_pp_y'
+      expression = "darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y"
   []
   [alpha_p_eps_v_inc_kernel]
       type = ParsedAux
