@@ -1,4 +1,4 @@
-E = 40e6
+E = 4.41e6
 nu = 0.25
 K = '${fparse E/3/(1-2*nu)}'
 G = '${fparse E/2/(1+nu)}'
@@ -158,7 +158,7 @@ z_center = 0.004  # extrude_z / 2
 [Functions]
   [func_loading]
     type = ParsedFunction
-    expression = '-1e-4 * t'
+    expression = '-1.667e-6 * t'
   []
   [dt_limit_fn]
     type = PiecewiseLinear

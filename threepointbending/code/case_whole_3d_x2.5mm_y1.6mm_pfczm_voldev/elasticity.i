@@ -165,19 +165,6 @@ z_center = 0.004  # extrude_z / 2
     type = ParsedFunction
     expression = '-1.667e-6 * t'
   []
-  [dt_limit_fn]
-    type = PiecewiseLinear
-    x = '0     16.5   20'
-    y = '1e10  0.001 0.001'
-  []
-[]
-
-[Postprocessors]
-  [dt_limit_pp]
-    type = FunctionValuePostprocessor
-    function = dt_limit_fn
-    execute_on = 'INITIAL TIMESTEP_END'
-  []
 []
 
 # LINE SUPPORT AND LINE LOADING BOUNDARY CONDITIONS
@@ -323,12 +310,11 @@ z_center = 0.004  # extrude_z / 2
 
   [TimeStepper]
     type = IterationAdaptiveDT
-    dt = 0.01
+    dt = 1
     optimal_iterations = 6
     iteration_window = 2
     growth_factor = 1.2
     cutback_factor = 0.5
-    timestep_limiting_postprocessor = dt_limit_pp
   []
 
   fixed_point_max_its = 20
