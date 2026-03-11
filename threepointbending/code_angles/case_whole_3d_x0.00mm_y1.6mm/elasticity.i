@@ -162,7 +162,7 @@ z_center = 0.004  # extrude_z / 2
   []
   [dt_limit_fn]
     type = PiecewiseLinear
-    x = '0     16.5   20'
+    x = '0     14   20'
     y = '1e10  0.001 0.001'
   []
 []
@@ -309,7 +309,7 @@ z_center = 0.004  # extrude_z / 2
   nl_max_its = 50
 
   dt = 0.1
-  end_time = 20
+  end_time = 15
 
   [TimeStepper]
     type = IterationAdaptiveDT
@@ -330,11 +330,7 @@ z_center = 0.004  # extrude_z / 2
 [Outputs]
   [./exodus]
     type = Exodus
-    sync_times = '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 16.5
-                  16.55 16.6 16.65 16.7 16.75 16.8 16.85 16.9 16.95
-                  17.0 17.05 17.1 17.15 17.2 17.25 17.3 17.35 17.4 17.45
-                  17.5 17.55 17.6 17.65 17.7 17.75 17.8 17.85 17.9 17.95 18.0
-                  19 20'
+    sync_times = '1 2 3 4 5 6 7 8 9 10 11 12 13 14 14.1 14.2 14.3 14.4 14.5 14.6 14.7 14.8 14.9 15'
     sync_only = true
     show = 'd disp_x disp_y'
   [../]
