@@ -34,7 +34,7 @@ export MV2_SHOW_ENV_INFO=1
 export MOOSE_JOBS=6 METHODS=opt
 
 # Split mesh
-ibrun -n 1 ./farms-opt -i ${INPUT_PATH} --split-mesh ${NUM_SPLITS} --split-file ${SPLIT_PATH}
+ibrun -n 1 ../../farms-opt -i ${INPUT_PATH} --split-mesh ${NUM_SPLITS} --split-file ${SPLIT_PATH}
 
 # Run simulation
-ibrun ./farms-opt -i ${INPUT_PATH} --use-split --split-file ${SPLIT_PATH} --allow-unused
+ibrun ../../farms-opt -i ${INPUT_PATH} --use-split --split-file ${SPLIT_PATH} --allow-unused
