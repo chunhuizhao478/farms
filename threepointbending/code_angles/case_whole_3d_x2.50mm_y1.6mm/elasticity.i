@@ -160,18 +160,11 @@ z_center = 0.004  # extrude_z / 2
     type = ParsedFunction
     expression = '-1e-4 * t'
   []
-  [dt_limit_fn]
-    type = PiecewiseLinear
-    x = '0     16.5   20'
-    y = '1e10  0.001 0.001'
-  []
-[]
-
-[Postprocessors]
-  [dt_limit_pp]
-    type = FunctionValuePostprocessor
-    function = dt_limit_fn
-    execute_on = 'INITIAL TIMESTEP_END'
+  [dt_fn]
+    type = PiecewiseConstant
+    x = '0   14'
+    y = '0.1 0.001'
+    direction = LEFT_INCLUSIVE
   []
 []
 
@@ -307,18 +300,11 @@ z_center = 0.004  # extrude_z / 2
   nl_rel_tol = 1e-6
   nl_abs_tol = 1e-8
   nl_max_its = 50
-
-  dt = 0.1
   end_time = 20
 
   [TimeStepper]
-    type = IterationAdaptiveDT
-    dt = 0.001
-    optimal_iterations = 6
-    iteration_window = 2
-    growth_factor = 1.2
-    cutback_factor = 0.5
-    timestep_limiting_postprocessor = dt_limit_pp
+    type = FunctionDT
+    function = dt_fn
   []
 
   fixed_point_max_its = 20
@@ -330,11 +316,7 @@ z_center = 0.004  # extrude_z / 2
 [Outputs]
   [./exodus]
     type = Exodus
-    sync_times = '1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 16.5
-                  16.55 16.6 16.65 16.7 16.75 16.8 16.85 16.9 16.95
-                  17.0 17.05 17.1 17.15 17.2 17.25 17.3 17.35 17.4 17.45
-                  17.5 17.55 17.6 17.65 17.7 17.75 17.8 17.85 17.9 17.95 18.0
-                  19 20'
+    sync_times = '1 2 3 4 5 6 7 8 9 10 11 12 13 14 14.1 14.2 14.3 14.4 14.5 14.6 14.7 14.8 14.9 15.0 15.1 15.2 15.3 15.4 15.5 15.6 15.7 15.8 15.9 16.0 16.1 16.2 16.3 16.4 16.5 16.6 16.7 16.8 16.9 17.0 17.1 17.2 17.3 17.4 17.5 17.6 17.7 17.8 17.9 18.0 18.1 18.2 18.3 18.4 18.5 18.6 18.7 18.8 18.9 19.0 19.1 19.2 19.3 19.4 19.5 19.6 19.7 19.8 19.9 20.0'
     sync_only = true
     show = 'd disp_x disp_y'
   [../]
