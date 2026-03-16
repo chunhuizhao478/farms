@@ -184,35 +184,54 @@ def build_simulation_cases():
 # Example: 'x0.00mm': (0.0140, 0.0022)
 #
 CONTACT_POINTS = {
-    "0.00": (0.0148089),
-    "0.25": None,
-    "0.50": None,
-    "0.75": None,
-    "1.00": None,
-    "1.25": None,
-    "1.50": None,
-    "1.75": None,
-    "2.00": None,
+    "0.00": (0.0140519, 0.00216102),
+    "0.25": (0.0141461, 0.00216226),
+    "0.50": (0.0142292, 0.00223738),
+    "0.75": (0.01425, 0.00233397),
+    "1.00": (0.0143383, 0.00245022),
+    "1.25": (0.0144529, 0.0025962),
+    "1.50": (0.0145603, 0.00285798),
+    "1.75": (0.014755, 0.00310043),
+    "2.00": (0.0150444, 0.00349476),
     "2.25": None,
     "2.50": None,
     "2.75": None,
     "3.00": None,
 }
 
+# Manual angle overrides (raw angle before the -1* flip in plotting)
+# -1 * 180 = -180 displayed for positive num_radii
+# mirror: -1 * (-180) = +180 displayed for negative num_radii
+MANUAL_ANGLES = {
+    "2.25": -180,
+    "2.50": -180,
+    "2.75": -180,
+    "3.00": -180,
+}
+
 
 # =============================================================================
 # Compute simulation angles
 # =============================================================================
-def compute_simulation_data(cases, contact_points):
-    """Compute angles for all cases with contact points."""
+def compute_simulation_data(cases, contact_points, manual_angles):
+    """Compute angles for all cases with contact points or manual overrides.
+    Also mirrors positive num_radii data to negative side by anti-symmetry."""
     num_radii_list = []
     angle_list = []
     for case in cases:
-        cp = contact_points.get(case["label"])
-        if cp is not None:
-            angle = compute_intersection_angle(case["hole_center"], cp)
-            num_radii_list.append(case["num_radii"])
-            angle_list.append(angle)
+        label = case["label"]
+        if label in manual_angles:
+            angle = manual_angles[label]
+        elif contact_points.get(label) is not None:
+            angle = compute_intersection_angle(case["hole_center"], contact_points[label])
+        else:
+            continue
+        num_radii_list.append(case["num_radii"])
+        angle_list.append(angle)
+        # Mirror: angle(-num_radii) = -angle(num_radii)
+        if case["num_radii"] != 0:
+            num_radii_list.append(-case["num_radii"])
+            angle_list.append(-angle)
     return np.array(num_radii_list), np.array(angle_list)
 
 
@@ -258,18 +277,19 @@ def create_plot(sim_num_radii, sim_angles, output_path):
 
     # Trend line (experimental best fit)
     ax.plot(
-        trend_x, trend_y, "k--", linewidth=1, alpha=0.5, label="Experiment (best fit)"
+        trend_x, trend_y, "r--", linewidth=1, alpha=0.5, label="Experiment (best fit)"
     )
 
-    # Simulation data
+    # Simulation data (sorted by num_radii, connected with line)
     if len(sim_num_radii) > 0:
+        order = np.argsort(sim_num_radii)
         ax.plot(
-            sim_num_radii,
-            sim_angles,
+            sim_num_radii[order],
+            -1 * sim_angles[order],
             "o",
             color="black",
-            markersize=8,
-            markerfacecolor="black",
+            markersize=6,
+            markerfacecolor="none",
             markeredgewidth=1.5,
             label="Simulation (1mm radius)",
         )
@@ -315,7 +335,7 @@ if __name__ == "__main__":
         )
 
     # Compute simulation angles
-    sim_nr, sim_ang = compute_simulation_data(cases, CONTACT_POINTS)
+    sim_nr, sim_ang = compute_simulation_data(cases, CONTACT_POINTS, MANUAL_ANGLES)
     if len(sim_nr) > 0:
         print(f"\nSimulation results ({len(sim_nr)} points):")
         for nr, ang in zip(sim_nr, sim_ang):
