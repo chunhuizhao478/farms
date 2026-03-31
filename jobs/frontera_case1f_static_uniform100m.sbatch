@@ -4,7 +4,7 @@
 #SBATCH -e case1f_static_u100m.e%j
 #SBATCH -p normal
 #SBATCH -N 6
-#SBATCH -n 336
+#SBATCH -n 168
 #SBATCH -t 48:00:00
 #SBATCH --mail-type=all
 #SBATCH -A EAR20006
