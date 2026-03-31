@@ -315,6 +315,14 @@ ComputeDamageBreakageStress3DSlipWeakeningNonlocal::computeQpStress()
     // Assign value for elastic strain, which is equal to the mechanical strain
     _elastic_strain[_qp] = eps_e; //- _static_initial_strain_tensor[_qp];
 
+    // Compute total energy density
+    // Psi = (1 - B) Psi_s + B Psi_b
+    // Psi_s = 0.5 * lambda * I_1 ^ 2 + mu * I_2 - gamma * I_1 * sqrt(I_2)
+    // Psi_b = a0 * I_1 + a_1 * I_1 * sqrt(I_2) + a_2 * I_1^2 + a_3 * I_1^3 / sqrt(I_2)
+    Real Psi_s = 0.5 * lambda_out * pow(I1, 2) + shear_modulus_out * I2 - gamma_damaged_out * I1 * sqrt(I2);
+    Real Psi_b = a0 * I1 + a1 * I1 * sqrt(I2) + a2 * pow(I1, 2) + a3 * pow(I1, 3) / sqrt(I2);
+    _total_energy_density[_qp] = (1 - B_out) * Psi_s + B_out * Psi_b;
+
     // Compute tangent
     RankFourTensor tangent;
     computeQpTangentModulus(tangent,I1,I2,xi,eps_e,

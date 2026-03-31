@@ -26,7 +26,7 @@ shear_modulus_o = 3.204e10 #second lame constant
 Dc = 0.8 #0.4 #characteristic length (m)
 q = 0.4 #damping ratio
 mu_s = 0.8 #static friction coefficient
-mu_d = 0.6  #dynamic friction coefficient
+mu_d = 0.6 #dynamic friction coefficient
 ##-------------------------##
 
 ##Cohesion parameters##
@@ -70,12 +70,6 @@ tapering_depth_A = 15000 #depth at which tapering starts to be applied (m)
 tapering_depth_B = 20000 #depth at which tapering stops to be applied (m)
 ##------------------------------------------------------------------##
 
-##overpressure parameters##
-use_overpressure = true #use overpressure for initial stress
-overpressure_depth_A = 6000 #overpressure depth A (m)
-overpressure_depth_B = 8000 #overpressure depth B (m)
-##------------------------------------------------------------------##
-
 #nucleation parameters
 nucl_center_x = -16000 #nucleation center x coordinate
 nucl_center_y = 0 #nucleation center y coordinate
@@ -85,29 +79,61 @@ Vs = 3464 #shear wave speed (m/s)
 t0 = 0.5 #nucleation time (s)
 ##------------------------------------------------------------------##
 
-[Mesh]
-  [./msh]
-    type = FileMeshGenerator
-    #file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault.msh'
-    file = '../../mesh/tpv26_400m_nonlocal_occ.msh'
-  []
-  [./sidesets]
-    input = msh
-    type = SideSetsFromNormalsGenerator
-    normals = '-1 0 0
-                1 0 0
-                0 -1 0
-                0 1 0
-                0 0 -1
-                0 0 1'
-    new_boundary = 'left right back front bottom top'
-  []
-  [./extranodeset1]
+ [Mesh]
+    parallel_type = DISTRIBUTED
+
+    [./msh]
+      type = FileMeshGenerator
+      file = '../../mesh/
+  tpv26_100m_nonlocal_occ_40kmfault_uniform200m_tensileside.ms
+  h'
+    []
+
+    [./new_block_1]
+      type = ParsedSubdomainMeshGenerator
+      input = msh
+      combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
+      block_id = 100
+    []
+
+    [./new_block_2]
+      type = ParsedSubdomainMeshGenerator
+      input = new_block_1
+      combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y >${ymin_fault}'
+      block_id = 200
+    []
+
+    [./split_1]
+      type = BreakMeshByBlockGenerator
+      input = new_block_2
+      split_interface = true
+      block_pairs = '100 200'
+    []
+
+    [./sidesets]
+      type = SideSetsFromNormalsGenerator
+      input = split_1
+      fixed_normal = true
+      normals = '-1 0 0
+                  1 0 0
+                  0 -1 0
+                  0 1 0
+                  0 0 -1
+                  0 0 1'
+      new_boundary = 'left right bottom top back front'
+    []
+
+    [./extranodeset1]
       type = ExtraNodesetGenerator
+      input = sidesets
       coord = ${bottom_nodes_coord}
       new_boundary = corner_ptr
-      input = sidesets
-  []
+    []
+
+    [Partitioner]
+      type = PetscExternalPartitioner
+      part_package = parmetis
+    []
 []
 
 [GlobalParams]
@@ -194,14 +220,9 @@ t0 = 0.5 #nucleation time (s)
     displacements = 'disp_x disp_y disp_z'
   [../]
   [gravity_z]
-    type = EffectiveBodyForceTPV26
+    type = BodyForce
     variable = disp_z
-    fluid_density = ${fluid_density}
-    rock_density = ${density}
-    gravity = ${gravity}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
+    value = ${fparse -1 * density * gravity + 1 * fluid_density * gravity}
   []
 []
 
@@ -353,9 +374,6 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_xx_stress]
     type = CompositeFunction
@@ -384,9 +402,6 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_xy_stress]
     type = CompositeFunction
@@ -415,9 +430,6 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
   []
   ##
   [./func_initial_stress_yy]
@@ -436,9 +448,6 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_yy_stress]
     type = CompositeFunction
@@ -467,9 +476,6 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_initial_stress_zz]
     type = InitialStressStrainTPV26
@@ -487,9 +493,6 @@ t0 = 0.5 #nucleation time (s)
     use_tapering = ${use_tapering}
     tapering_depth_A = ${tapering_depth_A}
     tapering_depth_B = ${tapering_depth_B}
-    use_overpressure = ${use_overpressure}
-    overpressure_depth_A = ${overpressure_depth_A}
-    overpressure_depth_B = ${overpressure_depth_B}
   []
   [./func_pos_zz_stress]
     type = CompositeFunction

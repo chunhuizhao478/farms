@@ -490,3 +490,6 @@ development/paper_draft_tabular_zones/mesh/tpv26_100m_nonlocal_occ.msh
 development/paper_draft_tabular_zones/mesh/tpv26_400m_nonlocal_occ.msh
 development/paper_draft_visco_poro_db/mesh/tpv26_400m_nonlocal_occ.msh
 development/paper_draft_visco_poro_db/mesh/tpv26_100m_nonlocal_occ.msh
+
+# All mesh files
+*.msh

@@ -1,0 +1,12 @@
+[Tests]
+  issues = '#0000'
+  design = 'ConfigurationalForceUserObject.md'
+
+  [simple_tension]
+    type = 'Exodiff'
+    input = 'simple_tension_test.i'
+    exodiff = 'simple_tension_test_out.e'
+    requirement = 'The system shall compute configurational forces using the Eshelby stress tensor for a simple bar under tension.'
+    abs_zero = 1e-8
+  []
+[]
