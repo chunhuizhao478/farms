@@ -80,7 +80,6 @@ t0 = 0.5 #nucleation time (s)
 ##------------------------------------------------------------------##
 
 [Mesh]
-  parallel_type = DISTRIBUTED
   [./msh]
     type = FileMeshGenerator
     file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform100m_tensileside.msh'

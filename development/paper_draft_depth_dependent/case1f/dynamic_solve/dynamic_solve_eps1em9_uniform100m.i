@@ -116,7 +116,6 @@ checkpoint_num_files = 2 #number of files for checkpoint output
 ##------------------------------------------------------------------------##
 
 [Mesh]
-  parallel_type = DISTRIBUTED
   [./msh]
     type = FileMeshGenerator
     file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform200m_tensileside.msh'
