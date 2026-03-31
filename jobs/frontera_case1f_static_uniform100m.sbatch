@@ -4,7 +4,7 @@
 #SBATCH -e case1f_static_u100m.e%j
 #SBATCH -p normal
 #SBATCH -N 6
-#SBATCH -n 72
+#SBATCH -n 336
 #SBATCH -t 48:00:00
 #SBATCH --mail-type=all
 #SBATCH -A EAR20006
@@ -34,4 +34,11 @@ APP_ROOT=/scratch2/10024/zhaochun/projects/farms_benchmark_03302026
 INPUT_FILE=$APP_ROOT/development/paper_draft_depth_dependent/case1f/static_solve/static_solve_uniform100m.i
 
 cd "$APP_ROOT"
-ibrun ./farms-opt -i "$INPUT_FILE"
+
+# Step 1: Pre-split mesh on single rank (avoids full-mesh-on-every-rank OOM)
+echo "=== Splitting mesh into 336 partitions ==="
+ibrun -np 1 ./farms-opt --split-mesh 336 -i "$INPUT_FILE"
+
+# Step 2: Run solve using pre-split mesh
+echo "=== Running static solve with pre-split mesh ==="
+ibrun ./farms-opt -i "$INPUT_FILE" --use-split
