@@ -2,10 +2,10 @@
 #SBATCH -J case1f_static_u100m
 #SBATCH -o case1f_static_u100m.o%j
 #SBATCH -e case1f_static_u100m.e%j
-#SBATCH -p normal
-#SBATCH -N 6
-#SBATCH -n 336
-#SBATCH -t 48:00:00
+#SBATCH -p development
+#SBATCH -N 8
+#SBATCH -n 448
+#SBATCH -t 02:00:00
 #SBATCH --mail-type=all
 #SBATCH -A EAR20006
 #SBATCH --mail-user=chunhui3@illinois.edu
@@ -38,9 +38,9 @@ cd "$APP_ROOT"
 # Step 1: Pre-split mesh on single rank (avoids full-mesh-on-every-rank OOM)
 SPLIT_FILE=$APP_ROOT/development/paper_draft_depth_dependent/case1f/static_solve/static_solve_uniform100m_split
 
-echo "=== Splitting mesh into 336 partitions ==="
-ibrun -np 1 ./farms-opt --split-mesh 336 --split-file "$SPLIT_FILE" -i "$INPUT_FILE"
+echo "=== Splitting mesh into 96 partitions ==="
+ibrun -np 1 ./farms-opt --split-mesh 100 --split-file "$SPLIT_FILE" -i "$INPUT_FILE"
 
-# Step 2: Run solve using pre-split mesh
-echo "=== Running static solve with pre-split mesh ==="
-ibrun ./farms-opt -i "$INPUT_FILE" --use-split --split-file "$SPLIT_FILE"
+# Step 2: Run solve using pre-split mesh (12 cores/node × 8 nodes = ~16 GB/core)
+echo "=== Running static solve with pre-split mesh (100 cores) ==="
+ibrun -np 100 ./farms-opt -i "$INPUT_FILE" --use-split --split-file "$SPLIT_FILE"
