@@ -43,4 +43,4 @@ ibrun -np 1 ./farms-opt --split-mesh 100 --split-file "$SPLIT_FILE" -i "$INPUT_F
 
 # Step 2: Run solve using pre-split mesh (12 cores/node × 8 nodes = ~16 GB/core)
 echo "=== Running static solve with pre-split mesh (100 cores) ==="
-ibrun -np 100 ./farms-opt -i "$INPUT_FILE" --use-split --split-file "$SPLIT_FILE"
+ibrun -np 100 ./farms-opt -i "$INPUT_FILE" --use-split --split-file "$SPLIT_FILE" --allow-unused
