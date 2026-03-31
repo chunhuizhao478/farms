@@ -79,61 +79,30 @@ Vs = 3464 #shear wave speed (m/s)
 t0 = 0.5 #nucleation time (s)
 ##------------------------------------------------------------------##
 
- [Mesh]
-    parallel_type = DISTRIBUTED
-
-    [./msh]
-      type = FileMeshGenerator
-      file = '../../mesh/
-  tpv26_100m_nonlocal_occ_40kmfault_uniform200m_tensileside.ms
-  h'
-    []
-
-    [./new_block_1]
-      type = ParsedSubdomainMeshGenerator
-      input = msh
-      combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y > 0 & y < ${ymax_fault}'
-      block_id = 100
-    []
-
-    [./new_block_2]
-      type = ParsedSubdomainMeshGenerator
-      input = new_block_1
-      combinatorial_geometry = 'x >= ${xmin_fault} & x <= ${xmax_fault} & z >= ${zmin_fault} & y < 0 & y >${ymin_fault}'
-      block_id = 200
-    []
-
-    [./split_1]
-      type = BreakMeshByBlockGenerator
-      input = new_block_2
-      split_interface = true
-      block_pairs = '100 200'
-    []
-
-    [./sidesets]
-      type = SideSetsFromNormalsGenerator
-      input = split_1
-      fixed_normal = true
-      normals = '-1 0 0
-                  1 0 0
-                  0 -1 0
-                  0 1 0
-                  0 0 -1
-                  0 0 1'
-      new_boundary = 'left right bottom top back front'
-    []
-
-    [./extranodeset1]
+[Mesh]
+  parallel_type = DISTRIBUTED
+  [./msh]
+    type = FileMeshGenerator
+    file = '../../mesh/tpv26_100m_nonlocal_occ_40kmfault_uniform100m_tensileside.msh'
+  []
+  [./sidesets]
+    input = msh
+    type = SideSetsFromNormalsGenerator
+    fixed_normal = true
+    normals = '-1 0 0
+                1 0 0
+                0 -1 0
+                0 1 0
+                0 0 -1
+                0 0 1'
+    new_boundary = 'left right back front bottom top'
+  []
+  [./extranodeset1]
       type = ExtraNodesetGenerator
-      input = sidesets
       coord = ${bottom_nodes_coord}
       new_boundary = corner_ptr
-    []
-
-    [Partitioner]
-      type = PetscExternalPartitioner
-      part_package = parmetis
-    []
+      input = sidesets
+  []
 []
 
 [GlobalParams]
