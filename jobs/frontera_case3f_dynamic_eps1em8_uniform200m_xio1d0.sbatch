@@ -3,8 +3,8 @@
 #SBATCH -o case3f_dyn_eps1em8_u200m_xio1d0.o%j
 #SBATCH -e case3f_dyn_eps1em8_u200m_xio1d0.e%j
 #SBATCH -p development
-#SBATCH -N 8
-#SBATCH -n 448
+#SBATCH -N 4
+#SBATCH -n 200
 #SBATCH -t 02:00:00
 #SBATCH --mail-type=all
 #SBATCH -A EAR20006
@@ -42,9 +42,9 @@ make -j $MOOSE_JOBS
 # Step 1: Pre-split mesh on single rank (avoids full-mesh-on-every-rank OOM)
 SPLIT_FILE=$APP_ROOT/development/paper_draft_depth_dependent/case3f/dynamic_solve/dynamic_solve_eps1em8_uniform200m_xio1d0_split
 
-echo "=== Splitting mesh into 448 partitions ==="
-ibrun -np 1 ./farms-opt --split-mesh 448 --split-file "$SPLIT_FILE" -i "$INPUT_FILE"
+echo "=== Splitting mesh into 200 partitions ==="
+ibrun -np 1 ./farms-opt --split-mesh 200 --split-file "$SPLIT_FILE" -i "$INPUT_FILE"
 
 # Step 2: Run solve using pre-split mesh
-echo "=== Running dynamic solve with pre-split mesh (448 cores) ==="
-ibrun -np 448 ./farms-opt -i "$INPUT_FILE" --use-split --split-file "$SPLIT_FILE" --allow-unused
+echo "=== Running dynamic solve with pre-split mesh (200 cores) ==="
+ibrun -np 200 ./farms-opt -i "$INPUT_FILE" --use-split --split-file "$SPLIT_FILE" --allow-unused
