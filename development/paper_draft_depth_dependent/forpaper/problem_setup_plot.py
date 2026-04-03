@@ -349,9 +349,9 @@ ax4.plot(xi_c1, depth_km, color=Xi_12, ls="-", lw=2.5, zorder=LZ)
 ax4.plot(xi_c3, depth_km, color=Xi_3, ls="--", lw=2.5, zorder=LZ)
 
 ax4.invert_yaxis()
-ax4.set_xlabel(r"$\xi = I_1 / \sqrt{I_2}$")
+ax4.set_xlabel(r"$\xi = I_1 / I_2\ (t=0)$")
 ax4.set_ylabel("Depth (km)")
-ax4.set_title(r"Strain Invariant Ratio ($\xi$)")
+ax4.set_title(r"Initial Strain Invariant Ratio ($\xi(t=0)$)")
 ax4.set_xlim(-1.8, 0)
 ax4.grid(True, which="both", ls=":", alpha=0.5)
 
