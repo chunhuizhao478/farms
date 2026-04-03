@@ -35,6 +35,10 @@ INPUT_FILE=$APP_ROOT/development/paper_draft_depth_dependent/case3f/dynamic_solv
 
 cd "$APP_ROOT"
 
+# Build
+echo "=== Building farms ==="
+make -j $MOOSE_JOBS
+
 # Step 1: Pre-split mesh on single rank (avoids full-mesh-on-every-rank OOM)
 SPLIT_FILE=$APP_ROOT/development/paper_draft_depth_dependent/case3f/dynamic_solve/dynamic_solve_eps1em8_uniform200m_xio0d6_split
 
