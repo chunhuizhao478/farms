@@ -15,7 +15,7 @@ Macaulay(const ADReal x, const bool deriv)
 {
   if (deriv)
     return x > 0 ? 1 : 0;
-  return 0.5 * (x + std::abs(x));
+  return 0.5 * (x + abs(x));
 }
 
 std::vector<ADReal>
@@ -46,7 +46,7 @@ log(const ADRankTwoTensor & r2t)
   ADRankTwoTensor V, D;
   r2t.symmetricEigenvaluesEigenvectors(d, V);
   for (auto & di : d)
-    di = std::log(di);
+    di = log(di);
   D.fillFromInputVector(d);
   return V * D * V.transpose();
 }
@@ -58,7 +58,7 @@ exp(const ADRankTwoTensor & r2t)
   ADRankTwoTensor V, D;
   r2t.symmetricEigenvaluesEigenvectors(d, V);
   for (auto & di : d)
-    di = std::exp(di);
+    di = exp(di);
   D.fillFromInputVector(d);
   return V * D * V.transpose();
 }

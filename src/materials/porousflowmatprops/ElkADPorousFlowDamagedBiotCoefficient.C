@@ -49,7 +49,7 @@ ElkADPorousFlowDamagedBiotCoefficient::computeQpProperties()
   ADReal dmg = std::min(std::max(_damage[_qp], ADReal(0.0)), ADReal(1.0));
 
   // Degradation function g(d) = (1 - d)^2, with minimum for stability
-  ADReal g = std::max(std::pow(1.0 - dmg, 2), ADReal(_min_degradation));
+  ADReal g = std::max(pow(1.0 - dmg, 2), ADReal(_min_degradation));
 
   // Damaged bulk modulus
   ADReal Kc = g * _bulk_modulus_intact;

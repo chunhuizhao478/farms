@@ -53,7 +53,7 @@ ElkADPorousFlowDamagedPorosity::computeQpProperties()
   ADReal dmg = std::min(std::max(_damage[_qp], ADReal(0.0)), ADReal(1.0));
 
   // Degradation function g(d) = (1 - d)^2 (valid for AT1 or AT2 model)
-  ADReal g = std::pow(1.0 - dmg, 2);
+  ADReal g = pow(1.0 - dmg, 2);
 
   // Damaged porosity: phi(d) = phi_0 + (1 - phi_0) * (1 - g)
   ADReal phi_raw = _initial_porosity + (1.0 - _initial_porosity) * (1.0 - g);

@@ -428,6 +428,8 @@ ElkADComputeSmearedCrackingStress::updateLocalElasticityTensor()
 void
 ElkADComputeSmearedCrackingStress::updateCrackingStateAndStress()
 {
+  const ADReal poissons_ratio =
+      ElasticityTensorTools::getIsotropicPoissonsRatio(_elasticity_tensor[_qp]);
   const ADReal youngs_modulus =
       ElasticityTensorTools::getIsotropicYoungsModulus(_elasticity_tensor[_qp]);
 
@@ -509,7 +511,8 @@ ElkADComputeSmearedCrackingStress::updateCrackingStateAndStress()
                                                      _crack_initiation_strain[_qp](i),
                                                      _crack_max_strain[_qp](i),
                                                      cracking_stress,
-                                                     youngs_modulus);
+                                                     youngs_modulus,
+                                                     poissons_ratio);
         _crack_damage[_qp](i) = 1.0 - stiffness_ratio;
       }
 
@@ -693,9 +696,9 @@ ElkADComputeSmearedCrackingStress::updatePermeabilityForCracking(ADRealVectorVal
 
   // Compute aperture
   // Here we make an assumption that aperture along the principal direction is positive
-  ADReal aperture_dir1 = std::max(strain_in_crack_dir(0) * elemsize, 0.0);
-  ADReal aperture_dir2 = std::max(strain_in_crack_dir(1) * elemsize, 0.0);
-  ADReal aperture_dir3 = std::max(strain_in_crack_dir(2) * elemsize, 0.0);
+  ADReal aperture_dir1 = std::max(strain_in_crack_dir(0) * elemsize, ADReal(0.0));
+  ADReal aperture_dir2 = std::max(strain_in_crack_dir(1) * elemsize, ADReal(0.0));
+  ADReal aperture_dir3 = std::max(strain_in_crack_dir(2) * elemsize, ADReal(0.0));
   
   // Compute effective permeability
   // Here the initial permeability is the minimum value, so the permeability must be > 0

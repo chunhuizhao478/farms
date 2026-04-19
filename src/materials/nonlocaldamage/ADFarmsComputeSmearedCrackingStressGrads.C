@@ -121,25 +121,25 @@ ADFarmsComputeSmearedCrackingStressGrads::computeQpStress()
   ADReal p0 = Macaulay(eps_dir(0),false);
   ADReal p1 = Macaulay(eps_dir(1),false);
   ADReal p2 = Macaulay(eps_dir(2),false);
-  ADReal eqstrain_local = std::sqrt(p0 * p0 + p1 * p1 + p2 * p2);
+  ADReal eqstrain_local = sqrt(p0 * p0 + p1 * p1 + p2 * p2);
   _eqstrain_local[_qp] = eqstrain_local;
 
   // History with nonlocal regularization (monotonic): kappa = max(kappa_old, nonlocal_eq)
-  _kappa[_qp] = std::fmax(_kappa_old[_qp], _eqstrain_nonlocal[_qp]);
+  _kappa[_qp] = fmax(_kappa_old[_qp], _eqstrain_nonlocal[_qp]);
   ADReal kappa = _kappa[_qp];
 
   // Damage law (ensure safe when kappa ~ eps0)
   ADReal omega = _initial_crack_damage[_qp];
   if (kappa > eps0)
   {
-    ADReal term = 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * std::exp(_paramB * (eps0 - kappa)));
-    omega = std::fmax(term, omega);
+    ADReal term = 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * exp(_paramB * (eps0 - kappa)));
+    omega = fmax(term, omega);
   }
 
   // Irreversibility
-  omega = std::fmax(omega, _crack_damage_old[_qp]);
+  omega = fmax(omega, _crack_damage_old[_qp]);
   // Clamp upper bound
-  omega = std::fmin(omega, 0.999999);
+  omega = fmin(omega, ADReal(0.999999));
   _crack_damage[_qp] = omega;
 
   // update the local elasticity tensor
@@ -208,7 +208,7 @@ ADFarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
   // Initialize effective permeability new
   // exponential permeability model 
   if (_exponential_permeability_model){
-    effective_perm_new = perm_intrinsic * std::exp(_crack_damage[_qp] * _coeff_b);
+    effective_perm_new = perm_intrinsic * exp(_crack_damage[_qp] * _coeff_b);
   }
   // darcy-poiseuille permeability model
   else if (_darcy_poiseuille_permeability_model){
@@ -217,10 +217,10 @@ ADFarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
     ADReal w = _crack_damage[_qp] * _wc; 
 
     // Compute permeability in the damage zone
-    ADRankTwoTensor kf = std::pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
+    ADRankTwoTensor kf = pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
 
     // Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(_crack_damage[_qp], _perm_exponent) * (kf - perm_intrinsic);
+    effective_perm_new = perm_intrinsic + pow(_crack_damage[_qp], _perm_exponent) * (kf - perm_intrinsic);
   }
   else {
     mooseError("Unknown permeability model type.");
@@ -282,5 +282,5 @@ ADFarmsComputeSmearedCrackingStressGrads::Macaulay(const ADReal x, const bool de
 {
   if (deriv)
     return x > 0 ? 1 : 0;
-  return 0.5 * (x + std::abs(x));
+  return 0.5 * (x + abs(x));
 }

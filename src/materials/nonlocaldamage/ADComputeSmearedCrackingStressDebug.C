@@ -466,7 +466,7 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
     ADReal strain_dir2_positive = MetaPhysicL::raw_value(strain_in_crack_dir(2)) > 0.0 ? 
                               strain_in_crack_dir(2) : 0.0;
     
-    ADReal eqstrain_local = std::sqrt(strain_dir0_positive * strain_dir0_positive +
+    ADReal eqstrain_local = sqrt(strain_dir0_positive * strain_dir0_positive +
                                     strain_dir1_positive * strain_dir1_positive +
                                     strain_dir2_positive * strain_dir2_positive);
     
@@ -480,11 +480,11 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
     switch (_model_type)
     {
         case ModelType::LOCAL:
-        eqstrain = std::max(_eqstrain_local[_qp], 0.0);
+        eqstrain = std::max(_eqstrain_local[_qp], ADReal(0.0));
         break;
 
         case ModelType::NONLOCAL:
-        eqstrain = std::max(_eqstrain_nonlocal[_qp], 0.0);
+        eqstrain = std::max(_eqstrain_nonlocal[_qp], ADReal(0.0));
         break;
     }
 
@@ -543,7 +543,7 @@ ADComputeSmearedCrackingStressDebug::updateCrackingStateAndStress()
         cracked = true;
         //** crack damage and principal stress **/
         /** update crack damage **/
-        _crack_damage[_qp](i) = 1.0 - cracking_strain / _crack_max_strain[_qp](i) * std::exp(-(_crack_max_strain[_qp](i) - cracking_strain)/(_damage_evolution_law_span*cracking_strain));
+        _crack_damage[_qp](i) = 1.0 - cracking_strain / _crack_max_strain[_qp](i) * exp(-(_crack_max_strain[_qp](i) - cracking_strain)/(_damage_evolution_law_span*cracking_strain));
       
         if (_crack_damage[_qp](i) > 1.0)
           _crack_damage[_qp](i) = 1.0;
@@ -728,7 +728,7 @@ ADComputeSmearedCrackingStressDebug::updatePermeabilityForCracking()
   // Initialize effective permeability new
   // exponential permeability model 
   if (_exponential_permeability_model){
-    effective_perm_new = perm_intrinsic * std::exp(_crack_damage[_qp](0) * _coeff_b);
+    effective_perm_new = perm_intrinsic * exp(_crack_damage[_qp](0) * _coeff_b);
   }
   // darcy-poiseuille permeability model
   else if (_darcy_poiseuille_permeability_model){
@@ -737,10 +737,10 @@ ADComputeSmearedCrackingStressDebug::updatePermeabilityForCracking()
     ADReal w = _crack_damage[_qp](0) * _wc; 
 
     //Compute permeability in the damage zone
-    ADRankTwoTensor kf = std::pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
+    ADRankTwoTensor kf = pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
 
     //Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(_crack_damage[_qp](0), _perm_exponent) * (kf - perm_intrinsic);
+    effective_perm_new = perm_intrinsic + pow(_crack_damage[_qp](0), _perm_exponent) * (kf - perm_intrinsic);
   }
   else {
     mooseError("Unknown permeability model type.");

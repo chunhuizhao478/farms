@@ -59,7 +59,7 @@ ExponentialHardening::plasticEnergy(const ADReal & ep, const unsigned int deriva
   {
     _psip_active[_qp] =
         _sigma_ult[_qp] * ep +
-        _ep0[_qp] * (_sigma_ult[_qp] - _sigma_y[_qp]) * (std::exp(-ep / _ep0[_qp]) - 1) +
+        _ep0[_qp] * (_sigma_ult[_qp] - _sigma_y[_qp]) * (exp(-ep / _ep0[_qp]) - 1) +
         0.5 * _H[_qp] * ep * ep;
     _psip[_qp] = _gp[_qp] * _psip_active[_qp];
     _dpsip_dd[_qp] = _dgp_dd[_qp] * _psip_active[_qp];
@@ -68,12 +68,12 @@ ExponentialHardening::plasticEnergy(const ADReal & ep, const unsigned int deriva
 
   if (derivative == 1)
     return _gp[_qp] *
-           (_sigma_ult[_qp] - (_sigma_ult[_qp] - _sigma_y[_qp]) * std::exp(-ep / _ep0[_qp]) +
+           (_sigma_ult[_qp] - (_sigma_ult[_qp] - _sigma_y[_qp]) * exp(-ep / _ep0[_qp]) +
             _H[_qp] * ep);
 
   if (derivative == 2)
     return _gp[_qp] *
-           ((_sigma_ult[_qp] - _sigma_y[_qp]) * std::exp(-ep / _ep0[_qp]) / _ep0[_qp] + _H[_qp]);
+           ((_sigma_ult[_qp] - _sigma_y[_qp]) * exp(-ep / _ep0[_qp]) / _ep0[_qp] + _H[_qp]);
 
   mooseError(name(), "internal error: unsupported derivative order.");
   return 0;

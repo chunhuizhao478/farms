@@ -121,7 +121,7 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
   Real p0 = Macaulay(eps_dir(0),false);
   Real p1 = Macaulay(eps_dir(1),false);
   Real p2 = Macaulay(eps_dir(2),false);
-  Real eqstrain_local = std::sqrt(p0 * p0 + p1 * p1 + p2 * p2);
+  Real eqstrain_local = sqrt(p0 * p0 + p1 * p1 + p2 * p2);
   _eqstrain_local[_qp] = eqstrain_local;
 
   // History with nonlocal regularization (monotonic): kappa = max(kappa_old, nonlocal_eq)
@@ -132,7 +132,7 @@ FarmsComputeSmearedCrackingStressGrads::computeQpStress()
   Real omega = _initial_crack_damage[_qp];
   if (kappa > eps0)
   {
-    Real term = 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * std::exp(_paramB * (eps0 - kappa)));
+    Real term = 1.0 - eps0 / (kappa + tiny) * ((1.0 - _paramA) + _paramA * exp(_paramB * (eps0 - kappa)));
     omega = std::fmax(term, omega);
   }
 
@@ -207,7 +207,7 @@ FarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
   // Initialize effective permeability new
   // exponential permeability model 
   if (_exponential_permeability_model){
-    effective_perm_new = perm_intrinsic * std::exp( _crack_damage[_qp] * _coeff_b );
+    effective_perm_new = perm_intrinsic * exp( _crack_damage[_qp] * _coeff_b );
   }
   // darcy-poiseuille permeability model
   else if (_darcy_poiseuille_permeability_model){
@@ -216,10 +216,10 @@ FarmsComputeSmearedCrackingStressGrads::updatePermeabilityForCracking()
     Real w = _crack_damage[_qp] * _wc; 
 
     //Compute permeability in the damage zone
-    RankTwoTensor kf = std::pow(w, 2) / (12.0) * RankTwoTensor::Identity();
+    RankTwoTensor kf = pow(w, 2) / (12.0) * RankTwoTensor::Identity();
 
     //Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(_crack_damage[_qp], _perm_exponent) * (kf - perm_intrinsic);
+    effective_perm_new = perm_intrinsic + pow(_crack_damage[_qp], _perm_exponent) * (kf - perm_intrinsic);
   }
   else {
     mooseError("Unknown permeability model type.");

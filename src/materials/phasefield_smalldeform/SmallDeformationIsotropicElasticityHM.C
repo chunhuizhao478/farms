@@ -237,7 +237,7 @@ SmallDeformationIsotropicElasticityHM::updatePermeabilityForCracking()
   // Initialize effective permeability new
   // exponential permeability model 
   if (_exponential_permeability_model){
-    effective_perm_new = perm_intrinsic * std::exp( _d[_qp] * _coeff_b );
+    effective_perm_new = perm_intrinsic * exp( _d[_qp] * _coeff_b );
   }
   // darcy-poiseuille permeability model
   else if (_darcy_poiseuille_permeability_model){
@@ -246,10 +246,10 @@ SmallDeformationIsotropicElasticityHM::updatePermeabilityForCracking()
     ADReal w = _d[_qp] * _wc; 
 
     //Compute permeability in the damage zone
-    ADRankTwoTensor kf = std::pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
+    ADRankTwoTensor kf = pow(w, 2) / (12.0) * ADRankTwoTensor::Identity();
 
     //Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(_d[_qp], _perm_exponent) * (kf - perm_intrinsic);
+    effective_perm_new = perm_intrinsic + pow(_d[_qp], _perm_exponent) * (kf - perm_intrinsic);
   }
   else {
     mooseError("Unknown permeability model type.");

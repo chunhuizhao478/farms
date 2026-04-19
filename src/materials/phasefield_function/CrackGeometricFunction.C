@@ -97,7 +97,7 @@ Real
 CrackGeometricFunction::normalizationIntegrand(const ADReal & d)
 {
   _func_params[_d_idx] = d;
-  return 4.0 * std::sqrt(raw_value(evaluate(_func_F, _name)));
+  return 4.0 * sqrt(raw_value(evaluate(_func_F, _name)));
 }
 
 void

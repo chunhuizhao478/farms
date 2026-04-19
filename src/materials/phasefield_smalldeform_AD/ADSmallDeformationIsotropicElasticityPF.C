@@ -274,13 +274,13 @@ ADSmallDeformationIsotropicElasticityPF::computeGDerivatives()
 
   if (_model_type == "AT2")
   {
-    _g[_qp] = std::pow((1 - d), 2) * (1 - _eta) + _eta;
+    _g[_qp] = pow((1 - d), 2) * (1 - _eta) + _eta;
     _dg_dd[_qp] = -2 * (1 - _eta) * (1 - d);
     _d2g_dd2[_qp] = 2 * (1 - _eta);
   }
   else if (_model_type == "AT1")
   {
-    _g[_qp] = std::pow((1 - d), 2) * (1 - _eta) + _eta;
+    _g[_qp] = pow((1 - d), 2) * (1 - _eta) + _eta;
     _dg_dd[_qp] = -2 * (1 - _eta) * (1 - d);
     _d2g_dd2[_qp] = 2 * (1 - _eta);
   }
@@ -309,9 +309,9 @@ ADSmallDeformationIsotropicElasticityPF::computeGDerivatives()
     // Compute U = (1-d)^p and V = a1 * (d + a2*d^2 + a2*a3*d^3)
     // D = U + V
     // g(d) = U/D * (1-eta) + eta
-    ADReal U = std::pow(1 - d, p);
-    ADReal Up = -p * std::pow(1 - d, p - 1);
-    ADReal Up2 = p * (p - 1) * std::pow(1 - d, p - 2);
+    ADReal U = pow(1 - d, p);
+    ADReal Up = -p * pow(1 - d, p - 1);
+    ADReal Up2 = p * (p - 1) * pow(1 - d, p - 2);
 
     ADReal V = a1 * (d + a2 * d * d + a2 * a3 * d * d * d);
     ADReal Vp = a1 * (1 + 2 * a2 * d + 3 * a2 * a3 * d * d);
@@ -385,7 +385,7 @@ ADSmallDeformationIsotropicElasticityPF::updatePermeabilityForCracking()
 
   if (_exponential_permeability_model)
   {
-    effective_perm_new = perm_intrinsic * std::exp(d * _coeff_b);
+    effective_perm_new = perm_intrinsic * exp(d * _coeff_b);
   }
   else if (_darcy_poiseuille_permeability_model)
   {
@@ -393,10 +393,10 @@ ADSmallDeformationIsotropicElasticityPF::updatePermeabilityForCracking()
     ADReal w = d * _wc;
 
     // Compute permeability in the damage zone
-    ADRankTwoTensor kf = std::pow(w, 2) / 12.0 * ADRankTwoTensor::Identity();
+    ADRankTwoTensor kf = pow(w, 2) / 12.0 * ADRankTwoTensor::Identity();
 
     // Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(d, _perm_exponent) * (kf - perm_intrinsic);
+    effective_perm_new = perm_intrinsic + pow(d, _perm_exponent) * (kf - perm_intrinsic);
   }
   else
   {
@@ -413,7 +413,7 @@ ADSmallDeformationIsotropicElasticityPF::updatePermeabilityForCracking()
 ADReal
 ADSmallDeformationIsotropicElasticityPF::Macaulay(const ADReal & x)
 {
-  return 0.5 * (x + std::abs(x));
+  return 0.5 * (x + abs(x));
 }
 
 std::vector<ADReal>
