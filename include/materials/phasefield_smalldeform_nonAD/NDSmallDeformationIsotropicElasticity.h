@@ -42,6 +42,9 @@ private:
   Real Macaulay(const Real x, const bool deriv = false);
   std::vector<Real> Macaulay(const std::vector<Real> & v, const bool deriv = false);
   RankTwoTensor spectralDecomposition(const RankTwoTensor & r2t);
+  // Return the characteristic length h_c used in the normal-strain permeability
+  // model. Source depends on `characteristic_length_type`.
+  Real getCharacteristicLength() const;
   // @}
 
   // Compute g and its derivatives
@@ -113,6 +116,41 @@ private:
   const bool _darcy_poiseuille_permeability_model; // flag to indicate if Darcy-Poiseuille permeability model is used
   const Real _wc; // characteristic width for the Darcy-Poiseuille model
   const Real _perm_exponent; // exponent for the Darcy-Poiseuille model
+
+  /// Permeability model selection (canonical storage for the enum); legacy
+  /// boolean flags above are mapped into this enum in the constructor.
+  enum class PermeabilityModel { none, exponential, darcy_poiseuille, normal_strain };
+  const PermeabilityModel _permeability_model;
+
+  /// Source of the unit crack normal n_d for the normal-strain model.
+  enum class CrackNormalSource { damage_gradient, principal_strain };
+  const CrackNormalSource _normal_source;
+
+  /// Source of the characteristic length h_c in w_c = h_c * |1 + eps_nn|.
+  enum class LcType { element_size, regularization_length, constant };
+  const LcType _lc_type;
+
+  // Damage gradient (used by the normal-strain model when
+  // _normal_source == damage_gradient). Bound to coupledGradient("phase_field")
+  // in the constructor; zero-cost when not used.
+  const VariableGradient & _grad_d;
+
+  // Regularization length material property (only valid when
+  // _lc_type == regularization_length; nullptr otherwise).
+  const MaterialProperty<Real> * _l_mat_prop;
+
+  // Local element size coupled variable (only valid when
+  // _lc_type == element_size; nullptr otherwise).
+  const VariableValue * _h_elem;
+
+  // Constant characteristic length (only valid when _lc_type == constant).
+  const Real _lc_const;
+
+  // Anisotropy, threshold, roughness, tolerance for the normal-strain model.
+  const bool _perm_anisotropic;
+  const Real _d_perm_threshold;
+  const Real _fc;
+  const Real _grad_d_tol;
 
   // Damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
   MaterialProperty<Real> & _solid_bulk_compliance_damaged;

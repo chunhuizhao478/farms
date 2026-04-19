@@ -1,0 +1,83 @@
+[Tests]
+  design = 'NDSmallDeformationIsotropicElasticity.md'
+  issues = '#permeability_normal_strain'
+
+  [isotropic_axis]
+    type = 'Exodiff'
+    input = 'isotropic_axis.i'
+    exodiff = 'isotropic_axis_out.e'
+    requirement = 'The system shall compute the Heider (2021) normal-strain '
+                  'permeability with isotropic fallback and an axis-aligned '
+                  'damage gradient, producing an isotropic effective permeability '
+                  'tensor with magnitude K = k0*I + d^b * (h_c*|1+eps_nn|)^2/12 * I.'
+  []
+
+  [anisotropic_axis]
+    type = 'Exodiff'
+    input = 'anisotropic_axis.i'
+    exodiff = 'anisotropic_axis_out.e'
+    requirement = 'The system shall compute the Heider (2021) normal-strain '
+                  'permeability with anisotropic tangential projector and '
+                  'axis-aligned damage gradient, producing zero enhancement in '
+                  'the crack-normal direction and full cubic-law enhancement in '
+                  'the two tangential directions.'
+  []
+
+  [anisotropic_rotated]
+    type = 'Exodiff'
+    input = 'anisotropic_rotated.i'
+    exodiff = 'anisotropic_rotated_out.e'
+    requirement = 'The system shall correctly apply the tangential projector '
+                  'I - n_d (x) n_d in the global frame for a 45-degree damage '
+                  'gradient, producing K_xx = K_yy = k0 + alpha/2 and '
+                  'K_xy = -alpha/2 (sign-sensitive verification).'
+  []
+
+  [anisotropic_rotated_analytical_sign]
+    # Analytical sign-test: the gold CSV contains hand-computed values (see
+    # EXPECTED_VALUES.md for the derivation). A projector built as I + n_d*n_d
+    # (wrong sign), or an off-by-one in the outer-product loop, would flip the
+    # sign of K_xy and fail this check.
+    type = 'CSVDiff'
+    input = 'anisotropic_rotated.i'
+    csvdiff = 'anisotropic_rotated_csv.csv'
+    rel_err = 1e-10
+    prereq = 'anisotropic_rotated'
+    requirement = 'The 45-degree rotation case shall match hand-computed '
+                  'analytical values for K_xx, K_yy, K_zz and K_xy to '
+                  'machine precision, catching any sign error in the '
+                  'tangential projector or outer-product indexing.'
+  []
+
+  [principal_strain_fallback]
+    type = 'Exodiff'
+    input = 'principal_strain_fallback.i'
+    exodiff = 'principal_strain_fallback_out.e'
+    requirement = 'The system shall use the most-tensile principal-strain '
+                  'eigenvector as the crack normal n_d when '
+                  'crack_normal_source = principal_strain, even where the '
+                  'damage gradient is identically zero.'
+  []
+
+  [legacy_darcy_poiseuille]
+    type = 'Exodiff'
+    input = 'legacy_darcy_poiseuille.i'
+    exodiff = 'legacy_darcy_poiseuille_out.e'
+    requirement = 'The system shall preserve the pre-existing '
+                  'darcy_poiseuille_permeability_model branch behavior, '
+                  'producing the same effective_perm as before the '
+                  'normal-strain refactor when the legacy flag is enabled.'
+  []
+
+  [heaviside_boundary]
+    type = 'Exodiff'
+    input = 'heaviside_boundary.i'
+    exodiff = 'heaviside_boundary_out.e'
+    requirement = 'At d = d_threshold exactly, the Heaviside gate '
+                  'chi_d = H(d - d_threshold) shall evaluate to 1 '
+                  '(plan convention H(0) = 1, "d >= threshold"), so the '
+                  'fracture permeability activates at the boundary and '
+                  'K_yy = k0 + d^b * k_w (NOT K_yy = k0). This test '
+                  'verifies the Phase-1 acceptance criterion at d = 0.5.'
+  []
+[]

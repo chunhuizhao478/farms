@@ -68,6 +68,54 @@ NDSmallDeformationIsotropicElasticity::validParams()
   params.addParam<Real>("perm_exponent", -1.0,
                         "Exponent for the Darcy-Poiseuille model for the effective permeability");
 
+  // Canonical permeability-model enum. When set to anything other than "none"
+  // it overrides the legacy booleans above.
+  params.addParam<MooseEnum>(
+      "permeability_model",
+      MooseEnum("none exponential darcy_poiseuille normal_strain", "none"),
+      "Permeability enhancement model to apply when porous_flow_coupling=true");
+
+  // Normal-strain (Heider 2021 eqs. 46-48) parameters
+  params.addParam<MooseEnum>(
+      "crack_normal_source",
+      MooseEnum("damage_gradient principal_strain", "damage_gradient"),
+      "Source of the unit crack normal n_d. 'damage_gradient' uses grad(d)/|grad(d)| "
+      "(Heider 2021 eq. 46). 'principal_strain' uses the eigenvector of the "
+      "most-tensile principal strain (existing code path).");
+  params.addParam<Real>(
+      "damage_gradient_tolerance", 1e-30,
+      "When |grad(d)| is below this tolerance, fall back to K = K_poro "
+      "(no enhancement). Avoids division by zero in undamaged regions.");
+  params.addParam<MooseEnum>(
+      "characteristic_length_type",
+      MooseEnum("element_size regularization_length constant", "element_size"),
+      "Source of h_c in w_c = h_c*(...). 'element_size' matches the paper's "
+      "1-D line element (default). 'regularization_length' uses l. 'constant' "
+      "uses a user-supplied value.");
+  params.addParam<MaterialPropertyName>(
+      "regularization_length_name", "l",
+      "Name of the material property holding the regularization length "
+      "(used when characteristic_length_type = regularization_length).");
+  params.addCoupledVar(
+      "element_size_variable",
+      "Name of an aux variable holding the local element size h (used when "
+      "characteristic_length_type = element_size).");
+  params.addParam<Real>(
+      "characteristic_length_value", -1.0,
+      "Constant h_c (used when characteristic_length_type = constant).");
+  params.addParam<bool>(
+      "permeability_anisotropic", true,
+      "If true, K_frac = (w^2/12)*(I - n_d (x) n_d) (Heider eq. 46). "
+      "If false, K_frac = (w^2/12)*I (isotropic fallback).");
+  params.addParam<Real>(
+      "damage_threshold_for_permeability", 0.5,
+      "Heaviside gate chi_d = H(d - threshold) (Heider eq. 46). "
+      "K_frac is zero where d < threshold. Default 0.5 matches the paper.");
+  params.addParam<Real>(
+      "correction_factor_fc", 1.0,
+      "Roughness correction factor f_c in w_h = f_c*w_c*chi_d (Heider eq. 46). "
+      "Default 1.0 (smooth walls).");
+
   //only used for PF_CZM model
   params.addParam<MaterialPropertyName>("a1", "", "a1 (only needed for PF_CZM)");
   params.addParam<MaterialPropertyName>("a2", "", "a2 (only needed for PF_CZM)");
@@ -140,23 +188,125 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     // Darcy-Poiseuille permeability model
     _darcy_poiseuille_permeability_model(getParam<bool>("darcy_poiseuille_permeability_model")),
     _wc(getParam<Real>("wc")),
-  _perm_exponent(getParam<Real>("perm_exponent")),
-  _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
+    _perm_exponent(getParam<Real>("perm_exponent")),
+    // Canonical enum, overrides legacy bools if non-"none"
+    _permeability_model([&]() -> PermeabilityModel {
+      const std::string choice = getParam<MooseEnum>("permeability_model");
+      if (choice == "exponential") return PermeabilityModel::exponential;
+      if (choice == "darcy_poiseuille") return PermeabilityModel::darcy_poiseuille;
+      if (choice == "normal_strain") return PermeabilityModel::normal_strain;
+      // "none": fall back to legacy boolean flags (backward compatibility).
+      if (getParam<bool>("exponential_permeability_model"))
+        return PermeabilityModel::exponential;
+      if (getParam<bool>("darcy_poiseuille_permeability_model"))
+        return PermeabilityModel::darcy_poiseuille;
+      return PermeabilityModel::none;
+    }()),
+    _normal_source(getParam<MooseEnum>("crack_normal_source") == "damage_gradient"
+                     ? CrackNormalSource::damage_gradient
+                     : CrackNormalSource::principal_strain),
+    _lc_type([&]() -> LcType {
+      const std::string choice = getParam<MooseEnum>("characteristic_length_type");
+      if (choice == "regularization_length") return LcType::regularization_length;
+      if (choice == "constant") return LcType::constant;
+      return LcType::element_size;
+    }()),
+    _grad_d(coupledGradient("phase_field")),
+    _l_mat_prop(nullptr),
+    _h_elem(nullptr),
+    _lc_const(getParam<Real>("characteristic_length_value")),
+    _perm_anisotropic(getParam<bool>("permeability_anisotropic")),
+    _d_perm_threshold(getParam<Real>("damage_threshold_for_permeability")),
+    _fc(getParam<Real>("correction_factor_fc")),
+    _grad_d_tol(getParam<Real>("damage_gradient_tolerance")),
+    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
 {
-  //Check placed to ensure parameters are valid
-  if(_porous_flow_coupling && !_exponential_permeability_model &&
-     !_darcy_poiseuille_permeability_model)
+  // Warn only when the new enum and the legacy boolean flags *disagree*.
+  // Same-choice redundancy (e.g. enum=darcy_poiseuille + legacy_dp=true) is a
+  // common user mistake and should be silent; only emit when the enum picks
+  // one branch while the other legacy bool is also true (or normal_strain is
+  // picked but a legacy bool is also on).
+  {
+    const std::string enum_choice = getParam<MooseEnum>("permeability_model");
+    const bool leg_exp = getParam<bool>("exponential_permeability_model");
+    const bool leg_dp = getParam<bool>("darcy_poiseuille_permeability_model");
+    const bool enum_is_exp = (enum_choice == "exponential");
+    const bool enum_is_dp = (enum_choice == "darcy_poiseuille");
+    const bool enum_is_ns = (enum_choice == "normal_strain");
+    const bool inconsistent =
+        (enum_is_exp && leg_dp) ||
+        (enum_is_dp && leg_exp) ||
+        (enum_is_ns && (leg_exp || leg_dp));
+    if (inconsistent)
+      mooseDoOnce(mooseWarning(
+          "permeability_model = '", enum_choice,
+          "' conflicts with the legacy boolean flags "
+          "(exponential=", leg_exp, ", darcy_poiseuille=", leg_dp,
+          "); the permeability_model enum wins."));
+  }
+
+  // Look up optional l_c sources based on the selected lc_type.
+  // Only required when the normal-strain permeability model is active; legacy
+  // branches (exponential, darcy_poiseuille) do not consume h_c.
+  if (_permeability_model == PermeabilityModel::normal_strain)
+  {
+    if (_lc_type == LcType::regularization_length)
+      _l_mat_prop = &getMaterialPropertyByName<Real>(
+          getParam<MaterialPropertyName>("regularization_length_name"));
+    if (_lc_type == LcType::element_size)
+    {
+      if (!isCoupled("element_size_variable"))
+        paramError("characteristic_length_type",
+                   "characteristic_length_type = element_size requires "
+                   "`element_size_variable` to be coupled. Set "
+                   "`element_size_variable = <aux var>` or pick a different "
+                   "characteristic_length_type.");
+      _h_elem = &coupledValue("element_size_variable");
+    }
+  }
+
+  // Generic validity checks (apply to any enabled permeability path).
+  if (_porous_flow_coupling &&
+      _permeability_model == PermeabilityModel::none)
     paramError("porous_flow_coupling",
-               "Porous flow coupling is enabled, but no permeability model is selected. "
-               "Please enable either exponential or Darcy-Poiseuille permeability model.");
-  if (_darcy_poiseuille_permeability_model && ( _wc <= 0.0 || _perm_exponent <= 0.0))
+               "Porous flow coupling is enabled, but no permeability model is "
+               "selected. Set `permeability_model` to exponential, "
+               "darcy_poiseuille, or normal_strain, or enable the corresponding "
+               "legacy boolean flag.");
+
+  if (_permeability_model == PermeabilityModel::darcy_poiseuille &&
+      (_wc <= 0.0 || _perm_exponent <= 0.0))
     paramError("darcy_poiseuille_permeability_model",
                "Darcy-Poiseuille permeability model is enabled, but wc and perm_exponent "
                "must be positive values. Please check the input parameters.");
-  if (_exponential_permeability_model && _coeff_b <= 0.0)
+
+  if (_permeability_model == PermeabilityModel::exponential && _coeff_b <= 0.0)
     paramError("exponential_permeability_model",
                "Exponential permeability model is enabled, but coeff_b must be a positive value. "
                "Please check the input parameters.");
+
+  // Normal-strain model validity checks (Heider 2021 eqs. 46-48).
+  if (_permeability_model == PermeabilityModel::normal_strain)
+  {
+    if (!_porous_flow_coupling)
+      paramError("permeability_model",
+                 "permeability_model = normal_strain requires "
+                 "porous_flow_coupling = true.");
+    if (_perm_exponent <= 0.0)
+      paramError("perm_exponent",
+                 "permeability_model = normal_strain requires perm_exponent > 0.");
+    if (_lc_type == LcType::constant && _lc_const <= 0.0)
+      paramError("characteristic_length_value",
+                 "characteristic_length_type = constant requires "
+                 "characteristic_length_value > 0.");
+    if (_fc <= 0.0 || _fc > 1.0)
+      paramError("correction_factor_fc",
+                 "correction_factor_fc must satisfy 0 < f_c <= 1.");
+    if (_d_perm_threshold < 0.0 || _d_perm_threshold >= 1.0)
+      paramError("damage_threshold_for_permeability",
+                 "damage_threshold_for_permeability must satisfy "
+                 "0 <= threshold < 1.");
+  }
 }
 
 RankTwoTensor
@@ -242,11 +392,14 @@ NDSmallDeformationIsotropicElasticity::computeStressSpectralDecomposition(
   _dpsie_dd[_qp] = _dg_dd[_qp] * _psie_active[_qp];
 
   //Porous flow coupling
-  /* Compute Principal Strains and Rotation Matrix */
-  RealVectorValue strain_in_crack_dir; //principal strains
-  computeCrackStrainAndOrientation(strain_in_crack_dir);
+  /* Populate _crack_rotation[_qp] via computeCrackStrainAndOrientation's
+     side effect. The principal-strain out-param is not consumed by the
+     permeability update (which reads _crack_rotation and _grad_d directly),
+     so the local is intentionally unused. */
+  RealVectorValue unused_principal_strains;
+  computeCrackStrainAndOrientation(unused_principal_strains);
 
-  // Compute effective permeability
+  // Compute effective permeability.
   updatePermeabilityForCracking();
 
   return stress;
@@ -488,40 +641,162 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
   if (!_porous_flow_coupling)
     return;
 
-  // Get transformation matrix
+  // Get transformation matrix (used by legacy exponential/Darcy branches)
   const RankTwoTensor & R = _crack_rotation[_qp];
-
-  // Initialize effective permeability new
-  RankTwoTensor effective_perm_new;
 
   //Compute the intrinsic permeability
   RankTwoTensor perm_intrinsic = _intrinsic_permeability * RankTwoTensor::Identity();
 
-  // Initialize effective permeability new
-  // exponential permeability model
-  if (_exponential_permeability_model){
-    effective_perm_new = perm_intrinsic * std::exp( _d[_qp] * _coeff_b );
+  // Dispatch on the canonical permeability model enum.
+  if (_permeability_model == PermeabilityModel::exponential)
+  {
+    // Legacy exponential permeability model (unchanged)
+    RankTwoTensor effective_perm_new = perm_intrinsic * std::exp(_d[_qp] * _coeff_b);
+    effective_perm_new.rotate(R);
+    _effective_perm[_qp] = effective_perm_new;
   }
-  // darcy-poiseuille permeability model
-  else if (_darcy_poiseuille_permeability_model){
-    //Compute crack opening
-    //wc is the ultimate crack opening
+  else if (_permeability_model == PermeabilityModel::darcy_poiseuille)
+  {
+    // Legacy Darcy-Poiseuille model (unchanged): w = d * wc
     Real w = _d[_qp] * _wc;
-
-    //Compute permeability in the damage zone
     RankTwoTensor kf = std::pow(w, 2) / (12.0) * RankTwoTensor::Identity();
-
-    //Compute permeability
-    effective_perm_new = perm_intrinsic + std::pow(_d[_qp], _perm_exponent) * (kf - perm_intrinsic);
+    RankTwoTensor effective_perm_new =
+        perm_intrinsic + std::pow(_d[_qp], _perm_exponent) * (kf - perm_intrinsic);
+    effective_perm_new.rotate(R);
+    _effective_perm[_qp] = effective_perm_new;
   }
-  else {
+  else if (_permeability_model == PermeabilityModel::normal_strain)
+  {
+    // Heider 2021 eqs. 46-48: normal-strain-driven aperture with tangential
+    // projector. K = K_poro + (d^b) * K_frac, where
+    //   K_frac = (w_h^2 / 12) * (I - n_d (x) n_d)     (anisotropic), or
+    //   K_frac = (w_h^2 / 12) * I                      (isotropic fallback).
+    // w_h = f_c * w_c * chi_d,
+    // w_c = h_c * |1 + n_d . eps . n_d|,
+    // chi_d = H(d - d_threshold)   (strict: H(0) = 0),
+    // n_d is either grad(d)/|grad(d)| or the most-tensile principal eigenvector.
+
+    // (a) Determine unit crack normal n_d.
+    RealVectorValue n_d;
+    bool have_normal = false;
+
+    if (_normal_source == CrackNormalSource::damage_gradient)
+    {
+      const Real gnorm = _grad_d[_qp].norm();
+      if (gnorm > _grad_d_tol)
+      {
+        n_d = _grad_d[_qp] / gnorm;
+        have_normal = true;
+      }
+    }
+    else // principal_strain fallback
+    {
+      // _crack_rotation[_qp] column 0 is the most-tensile eigenvector, which
+      // symmetricEigenvaluesEigenvectors guarantees to be unit-norm. The early
+      // return above (!_porous_flow_coupling) is the only path that could leave
+      // _crack_rotation uninitialized, so by the time we reach here have_normal
+      // is always true.
+      n_d(0) = R(0, 0);
+      n_d(1) = R(1, 0);
+      n_d(2) = R(2, 0);
+      have_normal = true;
+    }
+
+    const Real k0 = _intrinsic_permeability;
+    const RankTwoTensor I2 = RankTwoTensor::Identity();
+    const Real d = _d[_qp];
+
+    // Heaviside gate chi_d (Heider eq. 46). Plan convention: H(0) = 1, i.e.
+    // "1 if d >= threshold, else 0". The fracture contributes permeability
+    // once damage *reaches* the threshold — required for the Phase-1
+    // acceptance criterion at d = 0.5 (equal to the default threshold).
+    const Real chi_d = (d >= _d_perm_threshold) ? 1.0 : 0.0;
+
+    // Fall back to matrix perm if the normal is ill-defined, the Heaviside
+    // gate is closed, or the damage is zero.
+    if (!have_normal || chi_d == 0.0 || d <= 0.0)
+    {
+      _effective_perm[_qp] = k0 * I2;
+      return;
+    }
+
+    // (b) Normal strain eps_nn = n_d . eps . n_d (explicit double contraction).
+    Real eps_nn = 0.0;
+    for (unsigned int i = 0; i < 3; ++i)
+      for (unsigned int j = 0; j < 3; ++j)
+        eps_nn += n_d(i) * _elastic_strain[_qp](i, j) * n_d(j);
+
+    // Small-strain regime check (plan Risk §3). Warn once per run when the
+    // normal strain enters the non-small regime; the actual clamp below is
+    // what guarantees w_c = 0 for eps_nn < -1.
+    if (eps_nn < -0.5)
+      mooseDoOnce(mooseWarning(
+          "Normal strain eps_nn = ", eps_nn,
+          " < -0.5 violates small-strain assumptions in the normal-strain "
+          "permeability model; further occurrences suppressed."));
+
+    // Plan §Edge Case 3: clamp 1 + eps_nn to 0 for eps_nn < -1, so the
+    // aperture does not spuriously re-grow under strong compression (Risk §3).
+    const Real one_plus = std::max(1.0 + eps_nn, 0.0);
+
+    // (c) Aperture (Heider eq. 47 with compression clamp):
+    //     w_c = h_c * max(1 + eps_nn, 0)
+    const Real h_c = getCharacteristicLength();
+
+    // Guard against h_c <= 0: can happen at INITIAL with an ElementLengthAux
+    // that has not yet been populated for a pre-damaged configuration. Fall
+    // back to matrix perm rather than silently producing K_frac = 0.
+    if (h_c <= 0.0)
+    {
+      _effective_perm[_qp] = k0 * I2;
+      return;
+    }
+
+    const Real w_c = h_c * one_plus; // one_plus already >= 0 from clamp
+
+    // (d) Roughness-corrected aperture (Heider eq. 46): w_h = f_c * w_c * chi_d.
+    const Real w_h = _fc * w_c * chi_d;
+    const Real k_w = w_h * w_h / 12.0;
+
+    // (e) Fracture permeability tensor.
+    RankTwoTensor K_frac;
+    if (_perm_anisotropic)
+    {
+      // Tangential projector K_frac = k_w * (I - n_d (x) n_d).
+      RankTwoTensor n_outer_n;
+      for (unsigned int i = 0; i < 3; ++i)
+        for (unsigned int j = 0; j < 3; ++j)
+          n_outer_n(i, j) = n_d(i) * n_d(j);
+      K_frac = k_w * (I2 - n_outer_n);
+    }
+    else
+    {
+      K_frac = k_w * I2;
+    }
+
+    // (f) Damage-weighted total perm (Heider eq. 48).
+    const Real weight = std::pow(d, _perm_exponent);
+    _effective_perm[_qp] = k0 * I2 + weight * K_frac;
+  }
+  else
+  {
     mooseError("Unknown permeability model type.");
   }
 
-  // Rotate back to global frame
-  effective_perm_new.rotate(R);
+}
 
-  // Update effective perm
-  _effective_perm[_qp] = effective_perm_new;
-
+Real
+NDSmallDeformationIsotropicElasticity::getCharacteristicLength() const
+{
+  switch (_lc_type)
+  {
+    case LcType::regularization_length:
+      return (*_l_mat_prop)[_qp];
+    case LcType::element_size:
+      return (*_h_elem)[_qp];
+    case LcType::constant:
+      return _lc_const;
+  }
+  mooseError("Unknown characteristic_length_type.");
+  return 0.0; // unreachable; silences -Wreturn-type
 }
