@@ -12,21 +12,16 @@
 
 
 # Load necessary modules
-ml reset
-ml gcc/11.2.0
-ml impi/19.0.9
-ml cuda/12.0
-ml eigen/3.4.0
-ml hdf5/1.14.6
-ml netcdf/4.9.2
-ml cmake/4.1.1
-
-echo $CC $CXX $FC $F90 $F77
+module swap intel gcc
+module load cuda
+export CXXFLAGS=-I/opt/apps/gcc/9.1.0/include/c++/9.1.0/
 export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77
 
-export MOOSE_DIR=/work/10024/zhaochun/ls6/projects/moose-src
-export PETSC_DIR=$MOOSE_DIR/petsc
-export PETSC_ARCH=arch-moose
+# Enable MPI debugging
+export MV2_DEBUG=1
+export MV2_SHOW_ENV_INFO=1
+
+export MOOSE_JOBS=6 METHODS=opt
 
 # Run the simulation
 ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch/10024/zhaochun/projects/farms_cdms/pulsepower/cmame_revision/2d_solid/num_initial_fracture/case_2fracture/elasticity.i --allow-unused
