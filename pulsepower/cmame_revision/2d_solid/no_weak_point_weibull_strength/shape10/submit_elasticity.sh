@@ -7,7 +7,7 @@
 #SBATCH -n 200                                 # Total # of mpi tasks
 #SBATCH -t 24:00:00                            # Run time (hh:mm:ss)
 #SBATCH --mail-type=all                        # Send email at begin and end of job
-#SBATCH -A ASC25096                            # Project/Allocation name
+#SBATCH -A EAR20006                            # Project/Allocation name
 #SBATCH --mail-user=chunhui3@illinois.edu
 
 
