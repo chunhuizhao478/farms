@@ -3,7 +3,7 @@
 # Submit every Frontera job under 2d_solid/ in one shot.
 #
 # Runs on the Frontera login node after the inputs have been synced into
-# scratch. Discovers every submit_elasticity.sh at depth <= 4 and submits
+# scratch. Discovers every submit_elasticity.sbatch at depth <= 4 and submits
 # each from its own case directory so the SLURM .o*/.e* logs and MOOSE
 # output files land next to the input files.
 #
@@ -53,9 +53,9 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-# Discover every submit_elasticity.sh.  -maxdepth 4 handles the three nesting
+# Discover every submit_elasticity.sbatch.  -maxdepth 4 handles the three nesting
 # levels in use today (./<case>/, ./<group>/<case>/, ./<group>/<sub>/<case>/).
-mapfile -t SCRIPTS < <(find "$SCRIPT_DIR" -maxdepth 4 -name 'submit_elasticity.sh' -type f | sort)
+mapfile -t SCRIPTS < <(find "$SCRIPT_DIR" -maxdepth 4 -name 'submit_elasticity.sbatch' -type f | sort)
 
 if [[ -n "$PATTERN" ]]; then
     FILTERED=()
@@ -68,7 +68,7 @@ if [[ -n "$PATTERN" ]]; then
 fi
 
 if [[ ${#SCRIPTS[@]} -eq 0 ]]; then
-    echo "ERROR: no submit_elasticity.sh scripts matched ${PATTERN:-<everything>} under $SCRIPT_DIR" >&2
+    echo "ERROR: no submit_elasticity.sbatch scripts matched ${PATTERN:-<everything>} under $SCRIPT_DIR" >&2
     exit 1
 fi
 
@@ -100,7 +100,7 @@ for script in "${SCRIPTS[@]}"; do
     case_dir="$(dirname "$script")"
     case_name="${case_dir#$SCRIPT_DIR/}"
     pushd "$case_dir" > /dev/null
-    OUT="$(sbatch submit_elasticity.sh 2>&1)" || true
+    OUT="$(sbatch submit_elasticity.sbatch 2>&1)" || true
     popd > /dev/null
     if [[ "$OUT" =~ Submitted\ batch\ job\ ([0-9]+) ]]; then
         JID="${BASH_REMATCH[1]}"
