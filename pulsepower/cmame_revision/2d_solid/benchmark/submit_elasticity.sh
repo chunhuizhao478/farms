@@ -24,4 +24,4 @@ export MV2_SHOW_ENV_INFO=1
 export MOOSE_JOBS=6 METHODS=opt
 
 # Run the simulation
-ibrun /scratch/10024/zhaochun/projects/farms_cdms/farms-opt -i /scratch/10024/zhaochun/projects/farms_cdms/pulsepower/cmame_revision/2d_solid/benchmark/elasticity.i --allow-unused
+ibrun /scratch/10024/zhaochun/projects/farms_cdms_04192026/farms-opt -i /scratch/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/2d_solid/benchmark/elasticity.i --allow-unused

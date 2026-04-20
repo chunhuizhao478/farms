@@ -32,7 +32,7 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REMOTE_ROOT="/scratch/10024/zhaochun/projects/farms_cdms/pulsepower/cmame_revision/2d_solid"
+REMOTE_ROOT="/scratch/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/2d_solid"
 
 # --- parse args (host and/or --dry-run, in any order) ---
 REMOTE=""
