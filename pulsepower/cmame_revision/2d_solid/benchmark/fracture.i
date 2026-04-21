@@ -1,10 +1,10 @@
 #initial damage box 1
-bottom_left1 = '-0.0025 -2e-4 0'
-top_right1 = '0.0025 2e-4 0'
+bottom_left1 = '-0.0025 -3e-4 0'
+top_right1 = '0.0025 3e-4 0'
 
 #initial damage box 2
-bottom_left2 = '-2e-4 -0.0025 0'
-top_right2 = '2e-4 0.0025 0'
+bottom_left2 = '-3e-4 -0.0025 0'
+top_right2 = '3e-4 0.0025 0'
 
 [Mesh]
   [./msh]
@@ -13,7 +13,7 @@ top_right2 = '2e-4 0.0025 0'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.01 0.01 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
