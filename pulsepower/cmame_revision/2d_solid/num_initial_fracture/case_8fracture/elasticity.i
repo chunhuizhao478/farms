@@ -1,12 +1,15 @@
 E = 50e9
-nu = 0.373
+nu = 0.3
 # ft = 25.5e6
 Gc_const = 100
 density = 2600
 
+##parametric study on confinement pressure##
+confinement_pressure = 1000000.0
+
 K = '${fparse E/3.0/(1.0-2.0*nu)}'
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  1e-4
+l =  2e-4
 #'${fparse 3.0/8.0 * E*Gc_const/(ft*ft)}' # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/density)}'
@@ -63,7 +66,7 @@ hht_alpha = 0 #match energy budget
 
 # Case: 8 initial fractures — 4 stripes at 0 deg, 45 deg, 90 deg, 135 deg
 # (tips every 45 deg around the origin). Stripe dimensions match the benchmark:
-# full length 0.005 m, full width 4e-4 m, centered at origin. The 0 deg and
+# full length 0.005 m, full width 6e-4 m, centered at origin. The 0 deg and
 # 90 deg stripes are the benchmark's box 1 and box 2; 45 deg and 135 deg are
 # the additional rotated stripes.
 
@@ -74,7 +77,7 @@ hht_alpha = 0 #match energy budget
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.01 0.01 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -85,7 +88,7 @@ hht_alpha = 0 #match energy budget
     input = extranodeset1
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '1 0 0'
     width_direction = '0 1 0'
@@ -97,7 +100,7 @@ hht_alpha = 0 #match energy budget
     input = subdomain_id_0deg
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '0.7071068 0.7071068 0'
     width_direction = '-0.7071068 0.7071068 0'
@@ -109,7 +112,7 @@ hht_alpha = 0 #match energy budget
     input = subdomain_id_45deg
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '0 1 0'
     width_direction = '-1 0 0'
@@ -121,7 +124,7 @@ hht_alpha = 0 #match energy budget
     input = subdomain_id_90deg
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '-0.7071068 0.7071068 0'
     width_direction = '-0.7071068 -0.7071068 0'
@@ -194,6 +197,12 @@ hht_alpha = 0 #match energy budget
   [fy]
   []
   [fz]
+  []
+  [fconfinementx]
+  []
+  [fconfinementy]
+  []
+  [fconfinementz]
   []
   [fdampx]
   []
@@ -303,13 +312,15 @@ hht_alpha = 0 #match energy budget
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.03
-    gap = 0.001
+    EM = 0.005
+    gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
-    discharge_center = '0 0 0.0005'
+    fitting_param_exponent = 0.25
+    discharge_center = '0 0 0'
     number_of_pulses = 100
-    peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
+    base_factor = 8000
+    # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
 []
 
@@ -324,6 +335,15 @@ hht_alpha = 0 #match energy budget
       use_displaced_mesh = false
       save_in_disp_x = fx
       save_in_disp_y = fy
+    []
+    #assign pressure on outer surface
+    [static_pressure_outer]
+      boundary = 1
+      factor = ${confinement_pressure}
+      displacements = 'disp_x disp_y'
+      use_displaced_mesh = false
+      save_in_disp_x = fconfinementx
+      save_in_disp_y = fconfinementy
     []
   []
   # fix ptr
@@ -421,11 +441,11 @@ hht_alpha = 0 #match energy budget
 
   solve_type = NEWTON
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
-  # petsc_options_value = 'lu       superlu_dist                 '
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
+  petsc_options_value = 'lu       superlu_dist                 '
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  #petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  #petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
   line_search = 'basic'
@@ -446,12 +466,12 @@ hht_alpha = 0 #match energy budget
 
   [TimeStepper]
     type = FarmsIterationAdaptiveDT
-    dt = 1e-8
+    dt = 5e-8
     iteration_window = 0 #the adaptive time stepping happens at number of iterations <-> 'optimal_iterations plus/minus iteration_window'
     cutback_factor_at_failure = 0.5
     optimal_iterations = 20
     growth_factor = 1.25
-    max_time_step_bound = 1e-7
+    max_time_step_bound = 5e-8
   []
   [./TimeIntegrator]
     type = NewmarkBeta
@@ -463,8 +483,8 @@ hht_alpha = 0 #match energy budget
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 40
-    show = 'd vel_x vel_y vel_z'
+    time_step_interval = 20
+    show = 'd vel_x vel_y vel_z stress_00 stress_11 stress_01'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -529,6 +549,11 @@ hht_alpha = 0 #match energy budget
     boundary = '3'
     forces = 'fx fy fz'
   []
+  [confinement_work]
+    type = FarmsExternalWork
+    boundary = '1'
+    forces = 'fconfinementx fconfinementy fconfinementz'
+  []
   [damping_work]
     type = FarmsExternalWork
     boundary = '1'
@@ -539,8 +564,8 @@ hht_alpha = 0 #match energy budget
 [Postprocessors]
   [full_input_energy]
       type = ParsedPostprocessor
-      expression = '-1 * external_work - damping_work'
-      pp_names = 'external_work damping_work'
+      expression = '-1 * external_work - confinement_work - damping_work'
+      pp_names = 'external_work confinement_work damping_work'
       execute_on = 'INITIAL TIMESTEP_END'
   []
 []

@@ -8,7 +8,7 @@
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.01 0.01 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -19,7 +19,7 @@
     input = extranodeset1
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '1 0 0'
     width_direction = '0 1 0'
@@ -31,7 +31,7 @@
     input = subdomain_id_0deg
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '0.7071068 0.7071068 0'
     width_direction = '-0.7071068 0.7071068 0'
@@ -43,7 +43,7 @@
     input = subdomain_id_45deg
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '0 1 0'
     width_direction = '-1 0 0'
@@ -55,7 +55,7 @@
     input = subdomain_id_90deg
     center = '0 0 0'
     length = 0.005
-    width = 4e-4
+    width = 6e-4
     height = 1
     length_direction = '-0.7071068 0.7071068 0'
     width_direction = '-0.7071068 -0.7071068 0'

@@ -1,7 +1,7 @@
 # Case: 2 initial fractures — 1 stripe along x-axis (tips at 0 deg and 180 deg).
-#initial damage box 1 (horizontal stripe, axis-aligned)
-bottom_left1 = '-0.0025 -2e-4 0'
-top_right1 = '0.0025 2e-4 0'
+#initial damage box 1 (horizontal stripe, axis-aligned; matches benchmark box 1)
+bottom_left1 = '-0.0025 -3e-4 0'
+top_right1 = '0.0025 3e-4 0'
 
 [Mesh]
   [./msh]
@@ -10,7 +10,7 @@ top_right1 = '0.0025 2e-4 0'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.01 0.01 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
