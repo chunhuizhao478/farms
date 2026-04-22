@@ -61,8 +61,24 @@ done
 REMOTE="${REMOTE:-${FRONTERA_HOST:-frontera}}"
 LOCAL_DEST="${DEST_ARG:-${LOCAL_DEST:-$DEFAULT_DEST}}"
 
+# Refuse to run when the destination lives under /Volumes/<drive> but that
+# drive isn't mounted. Otherwise mkdir -p silently creates stub directories
+# on the internal disk under /Volumes and rsync then fails with a confusing
+# "Permission denied" when SIP blocks writes to the nested path.
+if [[ "$LOCAL_DEST" == /Volumes/* ]]; then
+    vol_name="${LOCAL_DEST#/Volumes/}"
+    vol_name="${vol_name%%/*}"
+    if [[ ! -d "/Volumes/$vol_name" ]]; then
+        echo "ERROR: /Volumes/$vol_name is not mounted; mount the drive or pass --dest <path>." >&2
+        exit 1
+    fi
+fi
+
 # Make sure the destination exists; rsync will create subdirs but not the root.
-mkdir -p "$LOCAL_DEST"
+mkdir -p "$LOCAL_DEST" || {
+    echo "ERROR: cannot create destination $LOCAL_DEST (check drive is writable)." >&2
+    exit 1
+}
 
 echo "Remote: $REMOTE:$REMOTE_ROOT"
 echo "Local:  $LOCAL_DEST"
