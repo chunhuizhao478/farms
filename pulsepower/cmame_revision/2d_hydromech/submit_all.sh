@@ -13,13 +13,18 @@
 # Use --with-static to also submit the static job first and chain the
 # elasticity job with --dependency=afterok:<static_jid>.
 #
-# Discovers every submit_elasticity.sbatch at depth <= 4 and submits it
+# Discovers every submit_elasticity.sbatch at depth <= 5 and submits it
 # from the case directory so SLURM .o*/.e* logs and MOOSE output files land
 # next to the input files.
 #
 # Cases discovered today:
 #   benchmark/
-#   permeability_formula/
+#   permeability_formula/                                 (original single case)
+#   permeability_formula/undrained/em_{0p005..0p100}/     (EM sweep, undrained)
+#   permeability_formula/drained/em_{0p005..0p100}/       (EM sweep, drained)
+#   permeability_formula/order_test/em_0p005/             (2nd-order disp + 1st-order pp)
+# All sub-cases share ../../static_solve_out.e (must be uploaded to the
+# parent permeability_formula/ on Frontera before submitting).
 #
 # Usage:
 #   ./submit_all.sh                 # submit elasticity only (with confirmation)
@@ -27,7 +32,10 @@
 #   ./submit_all.sh --dry-run       # show what would be submitted
 #   ./submit_all.sh --with-static   # also submit static (chain via afterok)
 #   ./submit_all.sh benchmark       # only cases matching 'benchmark'
-#   ./submit_all.sh permeability    # only cases matching 'permeability'
+#   ./submit_all.sh undrained       # only undrained EM sweep
+#   ./submit_all.sh drained         # only drained EM sweep
+#   ./submit_all.sh em_0p040        # only the EM=0.040 cases (both drained and undrained)
+#   ./submit_all.sh order_test      # only the mixed-order test
 #
 # Artifacts:
 #   submitted_jobs.txt  — JOBID:case_path:stage for each successful
@@ -64,8 +72,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Discover case directories by finding every submit_elasticity.sbatch
-# (each case has exactly one). -maxdepth 4 handles ./<case>/, ./<group>/<case>/, ...
-mapfile -t ELAST_SCRIPTS < <(find "$SCRIPT_DIR" -maxdepth 4 -name 'submit_elasticity.sbatch' -type f | sort)
+# (each case has exactly one). -maxdepth 5 handles ./<case>/, ./<group>/<case>/, ...
+# Portable array fill for bash 3.2+ (mapfile is bash 4+ only).
+ELAST_SCRIPTS=()
+while IFS= read -r s; do
+    ELAST_SCRIPTS+=("$s")
+done < <(find "$SCRIPT_DIR" -maxdepth 5 -name 'submit_elasticity.sbatch' -type f | sort)
 
 if [[ -n "$PATTERN" ]]; then
     FILTERED=()
