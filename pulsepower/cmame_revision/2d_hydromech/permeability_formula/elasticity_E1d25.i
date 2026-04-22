@@ -15,7 +15,7 @@ full_input_energy_static = 5.489768e-03
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.3 # Poisson's ratio
-Gc_const = 40  # critical energy release rate, N * m
+Gc_const = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3
 K = '${fparse E/3.0/(1.0-2.0*nu)}' #bulk modulus of porous material
 K_s = 50e9 #bulk modulus of solid grains, material property
@@ -478,7 +478,7 @@ top_right2 = '3e-4 0.0025 0'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.00125
+    EM = 0.005
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
