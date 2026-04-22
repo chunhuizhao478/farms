@@ -154,9 +154,23 @@ for elast_script in "${ELAST_SCRIPTS[@]}"; do
             continue   # don't submit elasticity without a valid dependency
         fi
     else
-        # Sanity check: the elasticity run needs static_solve_out.e in the
-        # case directory (SolutionUserObject reads it). Warn if missing.
-        if [[ ! -f "static_solve_out.e" ]]; then
+        # Sanity check: resolve the static-solve output path referenced by
+        # this case's elasticity input (SolutionUserObject 'mesh = ...e').
+        # Some cases use ./static_solve_out.e, others use ../../static_solve_out.e
+        # (shared parent). Warn only if the referenced file isn't actually there.
+        static_ref=""
+        for input_i in elasticity*.i; do
+            [[ -f "$input_i" ]] || continue
+            static_ref=$(grep -Eo 'mesh = [^[:space:]]+\.e' "$input_i" | head -1 | sed 's|^mesh = ||')
+            [[ -n "$static_ref" ]] && break
+        done
+        if [[ -n "$static_ref" ]]; then
+            if [[ ! -f "$static_ref" ]]; then
+                echo "  [WARN] $case_name: referenced static-solve output '$static_ref' not found (upload it before the job starts)."
+            fi
+        elif [[ ! -f "static_solve_out.e" ]]; then
+            # No SolutionUserObject reference parsed; fall back to the
+            # historical check against ./static_solve_out.e.
             echo "  [WARN] $case_name: static_solve_out.e not found; elasticity job will fail until you upload it."
         fi
     fi
