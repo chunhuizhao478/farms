@@ -4,6 +4,7 @@
 *.d
 *.o
 *.a
+*.msh
 *-opt
 *-dbg
 *-oprof
