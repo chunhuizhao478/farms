@@ -15,7 +15,7 @@ CASE_NAME="x2.50mm_y1.6mm"
 #=====================================
 
 # Derived paths
-PROJECT_BASE="/scratch2/10024/zhaochun/projects/farms_cdms_01292026"
+PROJECT_BASE="/scratch2/10024/zhaochun/projects/farms_cdms_04192026"
 CASE_PATH="${PROJECT_BASE}/threepointbending/code_angles/case_whole_3d_${CASE_NAME}"
 INPUT_PATH="${CASE_PATH}/elasticity.i"
 SPLIT_PATH="${CASE_PATH}/foo.cpr"
