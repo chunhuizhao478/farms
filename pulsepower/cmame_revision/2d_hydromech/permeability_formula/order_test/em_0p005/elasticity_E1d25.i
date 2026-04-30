@@ -170,24 +170,24 @@ top_right2 = '3e-4 0.0025 0'
   []
   [vel_x]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   [vel_y]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   [vel_z]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   #
   [accel_x]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   [accel_y]
     family = LAGRANGE
-    order = FIRST
+    order = SECOND
   []
   #
   [pulse_load_aux]
@@ -884,11 +884,11 @@ top_right2 = '3e-4 0.0025 0'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package'
   # petsc_options_value = 'lu       superlu_dist                 '
 
-  # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
-  # petsc_options_value = ' lu       mumps       100'
+  petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
+  petsc_options_value = ' lu       mumps       100'
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
-  petsc_options_value = 'gmres     hypre  boomeramg True'
+  #petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  #petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
   line_search = 'bt'
@@ -924,7 +924,7 @@ top_right2 = '3e-4 0.0025 0'
 [Outputs]
   [./exodus]
     type = Exodus
-    time_step_interval = 100
+    time_step_interval = 20
     show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux effective_perm00_aux effective_perm11_aux effective_perm01_aux'
   [../]
   [checkpoint]

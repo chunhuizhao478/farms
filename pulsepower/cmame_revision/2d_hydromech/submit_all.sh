@@ -17,21 +17,21 @@
 # from the case directory so SLURM .o*/.e* logs and MOOSE output files land
 # next to the input files.
 #
-# Cases discovered today:
-#   benchmark/
+# Cases discovered today (only under permeability_formula/):
 #   permeability_formula/                                 (original single case)
 #   permeability_formula/undrained/em_{0p005..0p100}/     (EM sweep, undrained)
 #   permeability_formula/drained/em_{0p005..0p100}/       (EM sweep, drained)
 #   permeability_formula/order_test/em_0p005/             (2nd-order disp + 1st-order pp)
 # All sub-cases share ../../static_solve_out.e (must be uploaded to the
-# parent permeability_formula/ on Frontera before submitting).
+# parent permeability_formula/ on Frontera before submitting). Other
+# subdirectories of 2d_hydromech (e.g. benchmark/) are NOT submitted by
+# this script.
 #
 # Usage:
 #   ./submit_all.sh                 # submit elasticity only (with confirmation)
 #   ./submit_all.sh --yes           # submit without confirmation
 #   ./submit_all.sh --dry-run       # show what would be submitted
 #   ./submit_all.sh --with-static   # also submit static (chain via afterok)
-#   ./submit_all.sh benchmark       # only cases matching 'benchmark'
 #   ./submit_all.sh undrained       # only undrained EM sweep
 #   ./submit_all.sh drained         # only drained EM sweep
 #   ./submit_all.sh em_0p040        # only the EM=0.040 cases (both drained and undrained)
@@ -45,6 +45,13 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Restrict discovery to the permeability_formula tree only. Other subdirs
+# of 2d_hydromech (e.g. benchmark/) are not submitted by this script.
+SEARCH_ROOT="$SCRIPT_DIR/permeability_formula"
+if [[ ! -d "$SEARCH_ROOT" ]]; then
+    echo "ERROR: search root not found: $SEARCH_ROOT" >&2
+    exit 1
+fi
 
 DRY_RUN=0
 SKIP_CONFIRM=0
@@ -77,7 +84,7 @@ done
 ELAST_SCRIPTS=()
 while IFS= read -r s; do
     ELAST_SCRIPTS+=("$s")
-done < <(find "$SCRIPT_DIR" -maxdepth 5 -name 'submit_elasticity.sbatch' -type f | sort)
+done < <(find "$SEARCH_ROOT" -maxdepth 5 -name 'submit_elasticity.sbatch' -type f | sort)
 
 if [[ -n "$PATTERN" ]]; then
     FILTERED=()

@@ -209,15 +209,15 @@ top_right2 = '3e-4 0.0025 0'
   #
   [effective_perm00_aux]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
   [effective_perm11_aux]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
   [effective_perm01_aux]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
   [fx]
   []
