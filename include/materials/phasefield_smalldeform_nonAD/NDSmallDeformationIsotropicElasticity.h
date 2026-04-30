@@ -152,6 +152,19 @@ private:
   const Real _fc;
   const Real _grad_d_tol;
 
+  // Residual aperture w_r (Heider 2021 eq. 46 closed-crack branch). When the
+  // open-crack aperture w_c shrinks below w_r under crack closure, w_h floors
+  // at f_c * w_r * chi_d so the fracture conductivity does not collapse to
+  // zero. Default 0.0 reproduces the open-only formulation (legacy behavior).
+  const Real _w_res;
+
+  // Heider eq. (47) uses the total linearized strain ε^S = ½(∇u + ∇^T u),
+  // i.e. the "mechanical_strain" property declared by ComputeSmallStrain. We
+  // bind it explicitly here (equal to _elastic_strain in pure elasticity, but
+  // the right thing if a plasticity model is later attached and `_elastic_strain`
+  // diverges from the kinematic strain).
+  const MaterialProperty<RankTwoTensor> * _total_strain;
+
   // Damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
   MaterialProperty<Real> & _solid_bulk_compliance_damaged;
 };

@@ -115,6 +115,14 @@ NDSmallDeformationIsotropicElasticity::validParams()
       "correction_factor_fc", 1.0,
       "Roughness correction factor f_c in w_h = f_c*w_c*chi_d (Heider eq. 46). "
       "Default 1.0 (smooth walls).");
+  params.addRangeCheckedParam<Real>(
+      "residual_aperture", 0.0, "residual_aperture >= 0.0",
+      "Residual (closed-crack) aperture w_r in Heider eq. (46): "
+      "w_h = max{(f_c*w_c)*chi_d, (f_c*w_r)*chi_d}. When the open-crack "
+      "aperture collapses under closure (eps_nn -> -1), w_h floors at "
+      "f_c*w_r*chi_d so the fracture conductivity decays to "
+      "(f_c*w_r)^2/12 instead of zero. Default 0.0 reproduces the open-only "
+      "formulation. Typical jointed-rock value: 1e-5 m.");
 
   //only used for PF_CZM model
   params.addParam<MaterialPropertyName>("a1", "", "a1 (only needed for PF_CZM)");
@@ -219,6 +227,8 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     _d_perm_threshold(getParam<Real>("damage_threshold_for_permeability")),
     _fc(getParam<Real>("correction_factor_fc")),
     _grad_d_tol(getParam<Real>("damage_gradient_tolerance")),
+    _w_res(getParam<Real>("residual_aperture")),
+    _total_strain(nullptr),
     _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
 {
   // Warn only when the new enum and the legacy boolean flags *disagree*.
@@ -263,6 +273,24 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
                    "characteristic_length_type.");
       _h_elem = &coupledValue("element_size_variable");
     }
+    // Heider eq. (47) explicitly uses the total linearized strain
+    // ε^S = ½(∇u + ∇^T u). Bind it via the "mechanical_strain" property declared
+    // by ComputeSmallStrain. In pure elasticity this equals _elastic_strain
+    // exactly (see NDSmallDeformationElasticityModel.C:67). If a plasticity
+    // model is later attached, both this _total_strain read AND the
+    // _elastic_strain eigendecomposition in computeCrackStrainAndOrientation
+    // (used for the principal-strain fallback for n_d) need to be revisited
+    // for full Heider-eq.-(47) consistency — n_d would be derived from
+    // (mechanical_strain - plastic_strain) while eps_nn would be derived
+    // from mechanical_strain.
+    if (!hasMaterialPropertyByName<RankTwoTensor>(prependBaseName("mechanical_strain")))
+      paramError("permeability_model",
+                 "permeability_model = normal_strain requires the kinematic "
+                 "strain tensor 'mechanical_strain' to be declared by a "
+                 "ComputeSmallStrain (or compatible) material in [Materials]. "
+                 "Add `[strain] type = ComputeSmallStrain []` to your input.");
+    _total_strain = &getMaterialPropertyByName<RankTwoTensor>(
+        prependBaseName("mechanical_strain"));
   }
 
   // Generic validity checks (apply to any enabled permeability path).
@@ -720,11 +748,15 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
       return;
     }
 
-    // (b) Normal strain eps_nn = n_d . eps . n_d (explicit double contraction).
+    // (b) Normal strain eps_nn = n_d . eps^S . n_d (explicit double
+    // contraction). Heider eq. (47) defines eps^S as the total linearized
+    // (kinematic) strain, eq. (63). We bind _total_strain to the
+    // "mechanical_strain" property of ComputeSmallStrain so this remains the
+    // kinematic strain even if a plasticity model is later attached.
     Real eps_nn = 0.0;
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j)
-        eps_nn += n_d(i) * _elastic_strain[_qp](i, j) * n_d(j);
+        eps_nn += n_d(i) * (*_total_strain)[_qp](i, j) * n_d(j);
 
     // Small-strain regime check (plan Risk §3). Warn once per run when the
     // normal strain enters the non-small regime; the actual clamp below is
@@ -754,8 +786,14 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
 
     const Real w_c = h_c * one_plus; // one_plus already >= 0 from clamp
 
-    // (d) Roughness-corrected aperture (Heider eq. 46): w_h = f_c * w_c * chi_d.
-    const Real w_h = _fc * w_c * chi_d;
+    // (d) Roughness-corrected aperture (Heider eq. 46):
+    //     w_h = max{ (f_c * w_c) * chi_d,    (open branch)
+    //                (f_c * w_r) * chi_d }   (closed branch).
+    // The residual aperture w_r floors w_h once damage exceeds the threshold,
+    // so K_frac decays to (f_c*w_r)^2/12 under closure rather than to zero.
+    // With _w_res = 0 (default), the closed branch is inactive and the
+    // formula reduces to the open-only legacy form.
+    const Real w_h = std::max(_fc * w_c * chi_d, _fc * _w_res * chi_d);
     const Real k_w = w_h * w_h / 12.0;
 
     // (e) Fracture permeability tensor.

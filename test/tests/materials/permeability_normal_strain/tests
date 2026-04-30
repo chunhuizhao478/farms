@@ -80,4 +80,17 @@
                   'K_yy = k0 + d^b * k_w (NOT K_yy = k0). This test '
                   'verifies the Phase-1 acceptance criterion at d = 0.5.'
   []
+
+  [residual_aperture]
+    type = 'Exodiff'
+    input = 'residual_aperture.i'
+    exodiff = 'residual_aperture_out.e'
+    requirement = 'When the open-crack aperture w_c falls below the residual '
+                  'aperture w_r (Heider 2021 eq. 46 closed-crack branch), the '
+                  'system shall use w_h = f_c*w_r*chi_d so the fracture '
+                  'permeability decays to (f_c*w_r)^2/12 * (I - n_d (x) n_d) '
+                  'rather than collapsing to zero. With residual_aperture = 0 '
+                  '(default) the closed branch is inactive and legacy '
+                  'open-only behavior is preserved.'
+  []
 []

@@ -86,12 +86,49 @@ Heider 2021 model equations:
 - **Expected**: `K_ii = k₀ + d^10·(k_f − k₀) ≈ 2.034e-17`, isotropic, off-diag = 0.
 - **Observed**: `K_ii = 2.084456e-17`, off-diag = 0. The ~2.5% offset between hand calc and observed is unexplained at the QP-averaging level, but it is consistent with the pre-refactor Darcy-Poiseuille branch behavior (the code path is byte-identical to before this change). The gold file therefore captures legacy behavior accurately.
 
+## Test 7: `residual_aperture.i` (Heider eq. 46 closed-crack branch)
+
+- Uniform `d = 0.7`, `disp_x = 1e-3·x`, `disp_y = 0`. So `ε_xx = 1e-3` is the
+  unique most-tensile eigenvalue and `n_d = e_x` deterministically (no
+  reliance on LAPACK tie-breaking of a degenerate zero tensor).
+- `crack_normal_source = principal_strain` (grad(d) = 0 for uniform d, so
+  the damage-gradient path falls back).
+- `characteristic_length_value = h_c = 1e-7` m (deliberately tiny so that
+  `w_c < w_r`).
+- `residual_aperture = w_r = 1e-5` m.
+- `f_c = 1`, `permeability_anisotropic = true`, `perm_exponent = b = 2`,
+  `damage_threshold_for_permeability = 0.5`.
+
+Hand calc:
+- `ε_nn = e_x · ε · e_x = ε_xx = 1e-3`.
+- `w_c = h_c · (1 + ε_nn) = 1e-7 · 1.001 = 1.001e-7`.
+- Open branch:    `f_c · w_c · χ_d = 1 · 1.001e-7 · 1 ≈ 1.001e-7`.
+- Closed branch:  `f_c · w_r · χ_d = 1 · 1e-5 · 1 = 1e-5`.
+- `w_h = max(1.001e-7, 1e-5) = 1e-5` <- closed branch wins.
+- `k_w = w_h² / 12 = 8.3333e-12`.
+- `d^b = 0.7² = 0.49`.
+- `(I − n_d ⊗ n_d) = diag(0, 1, 1)` for `n_d = e_x`.
+- `K = k₀·I + 0.49·k_w·diag(0,1,1)`:
+- **Expected**: `K_xx = k₀ = 5e-19`, `K_yy = K_zz = 5e-19 + 0.49 · 8.3333e-12
+  ≈ 4.0833e-12`, `K_xy = 0`.
+- **Observed**: `K_xx = 5.000000e-19`, `K_yy = K_zz = 4.083334e-12`,
+  `K_xy ≈ 2.8e-29` (machine zero, ~10¹⁰× smaller than k₀). ✓
+- **Critical**: with the legacy `residual_aperture = 0` formula, `w_h` would
+  reduce to `f_c · w_c · χ_d ≈ 1.001e-7`, giving `k_w ≈ 8.35e-16` and
+  `K_yy = K_zz ≈ 4.09e-16` — about 4 orders of magnitude smaller. The
+  ~10⁴× jump in this test directly verifies that the `max{}` branch in
+  Heider eq. (46) is wired in correctly.
+- **Portability**: applying `disp_x = 1e-3·x` makes `n_d` LAPACK-tie-breaking-
+  independent. A previous draft used zero displacement, which made `n_d`
+  depend on the eigendecomposition's basis choice for the degenerate zero
+  tensor — non-portable across BLAS/LAPACK implementations.
+
 ## Regenerating gold files
 
 If the physics changes (e.g. `chi_d` Heaviside convention flip, or `perm_exponent` default), regenerate gold files with:
 
 ```bash
-for i in isotropic_axis anisotropic_axis anisotropic_rotated principal_strain_fallback legacy_darcy_poiseuille heaviside_boundary; do
+for i in isotropic_axis anisotropic_axis anisotropic_rotated principal_strain_fallback legacy_darcy_poiseuille heaviside_boundary residual_aperture; do
   farms-opt -i ${i}.i
   cp ${i}_out.e gold/
 done
