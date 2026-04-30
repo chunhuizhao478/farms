@@ -898,7 +898,7 @@ top_right2 = '3e-4 0.0025 0'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 100e-5
+  end_time = 30e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
