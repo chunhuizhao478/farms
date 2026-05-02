@@ -24,4 +24,5 @@ export MV2_SHOW_ENV_INFO=1
 export MOOSE_JOBS=6 METHODS=opt
 
 # Run the simulation
-ibrun /scratch2/10024/zhaochun/projects/farms_cdms_04192026/farms-opt -i /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/3d_hydromech/em_50J/elasticity_mesh2x.i --allow-unused
+ibrun -n 1 /scratch2/10024/zhaochun/projects/farms_cdms_04192026/farms-opt -i /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/3d_hydromech/em_50J/elasticity_mesh2x.i --allow-unused --split-mesh 500 --split-file /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/3d_hydromech/em_50J/foo.cpr
+ibrun /scratch2/10024/zhaochun/projects/farms_cdms_04192026/farms-opt -i /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/3d_hydromech/em_50J/elasticity_mesh2x.i --allow-unused --use-split --split-file /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/3d_hydromech/em_50J/foo.cpr
