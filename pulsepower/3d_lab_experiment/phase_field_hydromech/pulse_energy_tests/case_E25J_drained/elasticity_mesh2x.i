@@ -35,7 +35,6 @@ intrinsic_permeability = 5e-19 # m^2
 # coeff_b = 10 # coefficient for the exponential function in the effective permeability
 
 ##darcy-poiseuille permeability model: ultimate crack opening width
-wc = ${fparse Gc_const / ft } # m
 perm_exponent = 10 # exponent for the Darcy-Poiseuille model for the effective permeability
 #----------------------------------------------------#
 
@@ -715,11 +714,16 @@ top_right1 = '0.002 4e-4 0.06'
     # porous flow coupling
     ##---------------------------------------------##
     porous_flow_coupling = true
-    ##-----darcy_poiseuille_permeability_model-----##
-    darcy_poiseuille_permeability_model = true
+    ##-----normal_strain_permeability_model (Heider 2021, eqs. 46-48)-----##
+    permeability_model = normal_strain
     intrinsic_permeability = ${intrinsic_permeability}
-    wc = ${wc}
-    perm_exponent = ${perm_exponent}
+    perm_exponent = ${perm_exponent}          # exponent b in K = K_poro + d^b*K_frac
+    crack_normal_source = damage_gradient     # n_d = grad(d)/|grad(d)|
+    characteristic_length_type = element_size # h_c = element size (paper default)
+    element_size_variable = mesh_size         # reuse existing mesh_size AuxVariable
+    permeability_anisotropic = true           # K_frac = (w^2/12)(I - n_d (x) n_d)
+    damage_threshold_for_permeability = 0.5   # chi_d = H(d - 0.5) per eq. (46)
+    correction_factor_fc = 1.0                # smooth-walled default
     ##---------------------------------------------##
   []
   [stress]
