@@ -53,6 +53,10 @@ private:
   // out-of-plane eps_zz = 0 and e_1 = e_z -- is not given a spurious aperture.
   RealVectorValue maxPrincipalStrainDirection(const RankTwoTensor & strain,
                                               Real & eps1) const;
+  // Bulk modulus extracted from the degraded SPECTRAL elastic tangent C(d, eps)
+  // via the volumetric contraction K = (1/9) I:C:I. Builds C with the TRUE
+  // I (x) I (outerProduct), NOT the diagonal-only RankFourTensor(initIdentity).
+  Real computeSpectralBulkModulus(const RankTwoTensor & strain);
   // @}
 
   // Compute g and its derivatives
@@ -184,4 +188,7 @@ private:
 
   // Damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
   MaterialProperty<Real> & _solid_bulk_compliance_damaged;
+
+  /// Bulk modulus K = (1/9) I:C:I of the degraded SPECTRAL elastic tangent.
+  MaterialProperty<Real> & _bulk_modulus_degraded;
 };

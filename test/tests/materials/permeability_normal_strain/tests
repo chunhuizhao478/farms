@@ -170,4 +170,70 @@
                   'matrix permeability K = k0*I instead of enhancing the in-plane '
                   'permeability.'
   []
+
+  [bulk_modulus_spectral_undamaged]
+    # d=0 -> g=1 -> C = C_intact -> K_eff = K, regardless of strain (tension imposed).
+    type = 'CSVDiff'
+    input = 'bulk_modulus_spectral.i'
+    cli_args = 'AuxKernels/d_aux/function=0
+                AuxKernels/disp_x_aux/function=1e-3*x
+                AuxKernels/disp_y_aux/function=2e-3*y
+                Outputs/csv/file_base=bulk_modulus_spectral_undamaged'
+    csvdiff = 'bulk_modulus_spectral_undamaged.csv'
+    rel_err = 1e-8
+    requirement = 'The system shall extract the bulk modulus K_eff = K = (1/9) I:C:I '
+                  'from the degraded SPECTRAL elastic tangent in the undamaged limit '
+                  '(g=1), independent of the strain state.'
+  []
+
+  [bulk_modulus_spectral_compression]
+    # d=0.7, biaxial compression -> tr eps < 0 (H_tr=0), N+=0 -> K_eff = K (crack closure).
+    type = 'CSVDiff'
+    input = 'bulk_modulus_spectral.i'
+    cli_args = 'AuxKernels/d_aux/function=0.7
+                AuxKernels/disp_x_aux/function=-1e-3*x
+                AuxKernels/disp_y_aux/function=-2e-3*y
+                Outputs/csv/file_base=bulk_modulus_spectral_compression'
+    csvdiff = 'bulk_modulus_spectral_compression.csv'
+    rel_err = 1e-8
+    requirement = 'The system shall extract the full bulk modulus K_eff = K from the '
+                  'SPECTRAL tensor under pure compression at d=0.7, since the spectral '
+                  'split degrades no volumetric stiffness when the crack is closed.'
+  []
+
+  [bulk_modulus_spectral_tension]
+    # d=0.7, biaxial tension eps=diag(1e-3,2e-3,0) -> H_tr=1, N+=2 (out-of-plane eig=0).
+    # K_eff = K + (g-1)(K - 2G/9) = 7.6389229168e9 (depends only on H_tr and N+).
+    type = 'CSVDiff'
+    input = 'bulk_modulus_spectral.i'
+    cli_args = 'AuxKernels/d_aux/function=0.7
+                AuxKernels/disp_x_aux/function=1e-3*x
+                AuxKernels/disp_y_aux/function=2e-3*y
+                Outputs/csv/file_base=bulk_modulus_spectral_tension'
+    csvdiff = 'bulk_modulus_spectral_tension.csv'
+    rel_err = 1e-8
+    requirement = 'The system shall extract the degraded bulk modulus from the SPECTRAL '
+                  'tensor under tension at d=0.7, matching the analytic '
+                  'K + (g-1)(K - 2G/9) with N+=2; this discriminates the true I (x) I '
+                  'contraction from the diagonal-only RankFourTensor(initIdentity).'
+  []
+
+  [bulk_modulus_none_compression]
+    # decomposition=NONE has no tension/compression split: K_eff = g*K for ANY strain.
+    # d=0.7 -> g=0.09000091 -> g*K = 3.7500379167e9. Under compression the SPECTRAL
+    # formula would give K=4.1666666667e10, so this pins the NONE fallback (R-002).
+    type = 'CSVDiff'
+    input = 'bulk_modulus_spectral.i'
+    cli_args = 'Materials/elasticity/decomposition=NONE
+                AuxKernels/d_aux/function=0.7
+                AuxKernels/disp_x_aux/function=-1e-3*x
+                AuxKernels/disp_y_aux/function=-2e-3*y
+                Outputs/csv/file_base=bulk_modulus_none_compression'
+    csvdiff = 'bulk_modulus_none_compression.csv'
+    rel_err = 1e-8
+    allow_warnings = true
+    requirement = 'For decomposition = NONE the system shall report K_eff = g*K '
+                  'independent of strain (not the spectral split value), emitting a '
+                  'one-time warning that the exact contraction is spectral-only.'
+  []
 []

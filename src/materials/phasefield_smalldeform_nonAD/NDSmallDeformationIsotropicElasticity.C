@@ -257,7 +257,8 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     _crack_normal_reg_eps(getParam<Real>("crack_normal_regularization")),
     _w_res(getParam<Real>("residual_aperture")),
     _total_strain(nullptr),
-    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
+    _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged")),
+    _bulk_modulus_degraded(declareProperty<Real>("bulk_modulus_degraded"))
 {
   // Warn only when the new enum and the legacy boolean flags *disagree*.
   // Same-choice redundancy (e.g. enum=darcy_poiseuille + legacy_dp=true) is a
@@ -402,6 +403,24 @@ NDSmallDeformationIsotropicElasticity::computeStress(const RankTwoTensor & strai
     stress = computeStressVolDevDecomposition(strain);
   else
     paramError("decomposition", "Unsupported decomposition type.");
+
+  // Bulk modulus from the degraded elastic tangent. g(d) is already set by
+  // computeGDerivatives() above. The SPECTRAL tangent is contracted exactly
+  // (K_eff = (1/9) I:C:I); for other decompositions we report g*K (exact for
+  // NONE) and warn once, rather than mislead with the spectral split value.
+  if (_decomposition == Decomposition::spectral)
+    _bulk_modulus_degraded[_qp] = computeSpectralBulkModulus(strain);
+  else
+  {
+    mooseDoOnce(mooseWarning(
+        "bulk_modulus_degraded uses g*K for decomposition != SPECTRAL; the "
+        "exact contraction is only computed for the spectral tangent."));
+    _bulk_modulus_degraded[_qp] = _g[_qp] * _K[_qp];
+  }
+
+  // Reciprocal damaged solid bulk compliance C_s(d) = 1 / K_eff (populates the
+  // previously never-assigned property).
+  _solid_bulk_compliance_damaged[_qp] = 1.0 / std::max(_bulk_modulus_degraded[_qp], 1e-30);
 
   return stress;
 }
@@ -687,14 +706,6 @@ NDSmallDeformationIsotropicElasticity::computeGDerivatives()
   }
   else
     mooseError("Unknown model type: " + _model_type);
-
-  // // Update damaged solid bulk compliance C_s(d) = 1 / (g(d) * K)
-  // // Use a small floor on g to avoid division by zero when damage is nearly complete.
-  // const Real g_eff = std::max(_g[_qp], 1e-12);
-  // // K may be spatially varying; evaluate at current qp
-  // const Real K_eff = _K[_qp] * g_eff;
-  // // Declare/update property lazily via reference member
-  // _solid_bulk_compliance_damaged[_qp] = 1.0 / std::max(K_eff, 1e-24);
 }
 
 void
@@ -944,4 +955,50 @@ NDSmallDeformationIsotropicElasticity::getCharacteristicLength() const
   }
   mooseError("Unknown characteristic_length_type.");
   return 0.0; // unreachable; silences -Wreturn-type
+}
+
+Real
+NDSmallDeformationIsotropicElasticity::computeSpectralBulkModulus(const RankTwoTensor & strain)
+{
+  // Bulk modulus extracted from the degraded SPECTRAL elastic tangent C(d, eps)
+  // by the volumetric contraction K = (1/9) I:C:I = (1/9) sum_{i,k} C_iikk.
+  //
+  // C        = C_intact + (g - 1) * C_pos
+  // C_intact = K (I (x) I) + 2G (I4_sym - (1/3) I (x) I)
+  // C_pos    = lambda * H(tr eps) * (I (x) I) + 2G * P_pos,  lambda = K - 2G/LIBMESH_DIM
+  //
+  // IMPORTANT: build the TRUE second-order identity dyad I (x) I = delta_ij delta_kl
+  // via outerProduct. Do NOT use RankFourTensor(initIdentity): in this MOOSE build
+  // that constructor is diagonal-only ((i,i,i,i)=1), so I:(initIdentity):I = 3 != 9
+  // and the extracted bulk modulus would be wrong. We therefore do not reuse
+  // computeJacobianSpectralDecomposition (which builds C with initIdentity).
+  const Real g = _g[_qp]; // set by computeGDerivatives() before this call
+  const Real K = _K[_qp];
+  const Real G = _G[_qp];
+  const Real lambda = K - 2.0 * G / LIBMESH_DIM; // matches the spectral stress/Jacobian
+
+  const RankTwoTensor I2 = RankTwoTensor::Identity();
+  const RankFourTensor IxI = I2.outerProduct(I2); // delta_ij delta_kl
+  const RankFourTensor I4_sym(RankFourTensor::initIdentitySymmetricFour);
+
+  // Intact isotropic tangent.
+  const RankFourTensor C_intact = K * IxI + 2.0 * G * (I4_sym - IxI / 3.0);
+
+  // Positive-projection part (spectral split), consistent with
+  // computeStressSpectralDecomposition / computeJacobianSpectralDecomposition.
+  RankTwoTensor eigvecs;
+  std::vector<Real> eigvals(LIBMESH_DIM);
+  const RankFourTensor P_pos = strain.positiveProjectionEigenDecomposition(eigvals, eigvecs);
+  const Real H_tr = (strain.trace() > 0.0) ? 1.0 : 0.0;
+  const RankFourTensor C_pos = lambda * H_tr * IxI + 2.0 * G * P_pos;
+
+  // Degraded spectral elastic tangent.
+  const RankFourTensor C = C_intact + (g - 1.0) * C_pos;
+
+  // Volumetric contraction K_eff = (1/9) I:C:I = (1/9) sum_{i,k} C_iikk.
+  Real ICI = 0.0;
+  for (unsigned int i = 0; i < LIBMESH_DIM; ++i)
+    for (unsigned int k = 0; k < LIBMESH_DIM; ++k)
+      ICI += C(i, i, k, k);
+  return ICI / 9.0;
 }

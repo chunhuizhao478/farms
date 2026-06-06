@@ -908,7 +908,7 @@ top_right2 = '3e-4 0.0025 0'
   [./exodus]
     type = Exodus
     time_step_interval = 100
-    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux effective_perm00_aux effective_perm11_aux effective_perm01_aux'
+    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux effective_perm00_aux effective_perm11_aux effective_perm01_aux bulk_modulus_degraded_aux'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -1193,5 +1193,24 @@ top_right2 = '3e-4 0.0025 0'
     expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
     pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+# Degraded bulk modulus K_eff = (1/9) I:C:I from the SPECTRAL elastic tangent,
+# surfaced via the explicit AuxVariable + MaterialRealAux pattern (parity with
+# effective_perm / biot_modulus, guaranteed to render in the exodus `show` list).
+[AuxVariables]
+  [bulk_modulus_degraded_aux]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+[]
+
+[AuxKernels]
+  [bulk_modulus_degraded_kernel]
+    type = MaterialRealAux
+    variable = bulk_modulus_degraded_aux
+    property = bulk_modulus_degraded
+    execute_on = 'TIMESTEP_END'
   []
 []

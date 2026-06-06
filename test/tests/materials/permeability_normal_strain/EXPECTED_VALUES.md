@@ -230,6 +230,59 @@ Because `ε₁ = 0 ≤ 0`, the `have_normal = (ε₁ > 0)` gate is **false**, so
   back to `k₀ = 5e-19` pins down the tensile-opening gate; a closed crack under
   compression must not be assigned an open-crack fracture permeability.
 
+## Degraded bulk modulus (SPECTRAL) — `bulk_modulus_spectral.i`
+
+These tests check `bulk_modulus_degraded`, the bulk modulus **extracted from the
+degraded SPECTRAL elastic tangent** `C(d, ε)` by the volumetric contraction
+
+```
+K_eff = (1/9) I : C : I = (1/9) Σ_{i,k} C_iikk .
+```
+
+`C` is assembled in `computeSpectralBulkModulus` from the TRUE second-order
+identity dyad `I⊗I = δ_ij δ_kl` (built with `outerProduct`), **not** the
+diagonal-only `RankFourTensor(initIdentity)` — that distinction is exactly what
+the tension case below pins down. Contracting the correctly-built `C` gives the
+closed form
+
+```
+K_eff = K + (g − 1) · ( λ·H(tr ε) + (2G/9)·N⁺ ) ,   λ = K − 2G/LIBMESH_DIM
+      = K + (g − 1) · ( K − 2G/9 )                  when H_tr = 1 and N⁺ = 2,
+```
+
+with `H(tr ε) = 1` if `tr ε > 0` else `0`, and `N⁺` = number of strictly
+positive principal strains. The identity `I:P⁺:I = N⁺` makes `K_eff` independent
+of the positive eigenvalue *magnitudes* (only their count and the sign of the
+trace matter), which is why the tension case uses non-degenerate
+`ε = diag(1e-3, 2e-3, 0)` yet still lands on the `N⁺ = 2` value.
+
+Constants: `E = 50e9`, `ν = 0.3` ⇒ `K = 4.1666666667e10`,
+`G = 1.9230769231e10`, `λ = K − 2G/3 = 2.8846153846e10`. AT1 degradation
+`g(d) = (1−d)²(1−η) + η`, `η = 1e-6`. Strain is uniform across the element
+(constant `d`, linear displacements), so the `ElementAverageValue` equals the
+single-QP `K_eff`.
+
+| test | `d` | strain | `g` | regime | `K_eff` (gold) |
+|------|-----|--------|-----|--------|----------------|
+| `bulk_modulus_spectral_undamaged`   | 0   | `diag(1e-3, 2e-3, 0)`  | 1.0        | `g=1` ⇒ `C=C_intact` | `K = 4.1666666667e10` |
+| `bulk_modulus_spectral_compression` | 0.7 | `diag(-1e-3,-2e-3, 0)` | 0.09000091 | `tr<0`: `H_tr=0, N⁺=0` ⇒ `C_pos=0` | `K = 4.1666666667e10` |
+| `bulk_modulus_spectral_tension`     | 0.7 | `diag(1e-3, 2e-3, 0)`  | 0.09000091 | `tr>0`: `H_tr=1, N⁺=2` | `K + (g−1)(K − 2G/9) = 7.6389229168e9` |
+
+Tension derivation: `K − 2G/9 = 4.1666666667e10 − 4.2735042736e9 =
+3.7393162393e10`; `K_eff = 4.1666666667e10 + (0.09000091 − 1)·3.7393162393e10 =
+4.1666666667e10 − 3.4027743750e10 = 7.6389229168e9`.
+
+A regression to the diagonal-only `initIdentity` would change the contraction
+(`I:C_intact:I` would be `3K+4G` instead of `9K`), shifting all three values —
+the undamaged/compression cases would no longer equal `K`, and the tension value
+would change by ~order unity. The `rel_err = 1e-8` CSVDiff catches this.
+
+Non-SPECTRAL fallback (`bulk_modulus_none_compression`): `decomposition = NONE`
+has no tension/compression split, so `K_eff = g·K` for any strain. At `d = 0.7`,
+`g·K = 0.09000091 × 4.1666666667e10 = 3.7500379167e9`. The compression strain is
+chosen because the (now-removed) spectral-for-all behavior would have reported
+`K = 4.1666666667e10` here; the gold `3.7500379167e9` pins the `g·K` fallback.
+
 ## Regenerating gold files
 
 If the physics changes (e.g. `chi_d` Heaviside convention flip, or `perm_exponent` default), regenerate gold files with:
