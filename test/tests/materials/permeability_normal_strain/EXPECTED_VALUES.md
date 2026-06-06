@@ -123,12 +123,119 @@ Hand calc:
   depend on the eigendecomposition's basis choice for the degenerate zero
   tensor — non-portable across BLAS/LAPACK implementations.
 
+## Test 8: `regularized_normal_core.i` (regularized crack normal, isotropic core)
+
+- Uniform `d = 0.7`, `disp_x = 1e-3·x`, `disp_y = 0`.
+- `crack_normal_source = damage_gradient`, **`regularize_crack_normal = true`**,
+  `crack_normal_regularization = eps = 1e-6`, `permeability_anisotropic = true`,
+  `characteristic_length_value = h_c = 1e-3`, `perm_exponent = b = 2`,
+  `damage_threshold_for_permeability = 0.5`, `f_c = 1`.
+- Because `d` is uniform, `grad(d) = 0` exactly at every QP, so the regularized
+  normal is `n_d = (0,0,0) / (0 + eps) = (0,0,0)` for **any** `eps > 0` (the
+  result is independent of the `eps` value in this test).
+
+Hand calc:
+- `ε_nn = n_d · ε · n_d = 0` (because `n_d = 0`, regardless of `ε_xx = 1e-3`).
+- `w_c = h_c · |1 + ε_nn| = 1e-3 · 1 = 1e-3`.
+- `χ_d = H(d − 0.5) = 1` (`d = 0.7 ≥ 0.5`).
+- `w_h = f_c · w_c · χ_d = 1e-3`.
+- `k_w = w_h² / 12 = (1e-3)² / 12 = 8.333333e-8`.
+- `(I − n_d ⊗ n_d) = I` (since `n_d = 0`) ⇒ **isotropic**, even though
+  `permeability_anisotropic = true`.
+- `d^b = 0.7² = 0.49` exactly (uniform, no QP averaging).
+- `K = k₀·I + 0.49 · k_w · I`:
+- **Expected**: `K_xx = K_yy = K_zz = 5e-19 + 0.49 · 8.333333e-8 = 4.083333e-8`,
+  `K_xy = 0`.
+- **Observed**: _pending gold regeneration_ (the executable could not be linked
+  in the authoring environment; see note below). The values above are
+  hand-computed and must be confirmed against `regularized_normal_core_out.e`
+  before the gold file is committed.
+- **Critical contrast**: with `regularize_crack_normal = false` (legacy), this
+  same setup has `|grad(d)| = 0 < damage_gradient_tolerance`, so `have_normal`
+  is false and the code falls back to `K = k₀·I = 5e-19` (matrix perm). The
+  ~11-order-of-magnitude jump from `5e-19` to `4.08e-8` is the behavior this
+  test pins down: the regularized normal yields isotropic *fracture*
+  permeability at the crack core (`grad(d) → 0`, `d → 1`) instead of matrix
+  permeability.
+
+## Test 9: `regularized_normal_undamaged.i` (regularized normal, undamaged d=0 side)
+
+- Uniform `d = 0.3` (below `damage_threshold_for_permeability = 0.5`),
+  `disp_x = 1e-3·x`, `disp_y = 0`.
+- `crack_normal_source = damage_gradient`, **`regularize_crack_normal = true`**,
+  `crack_normal_regularization = eps = 1e-6`, `permeability_anisotropic = true`,
+  `characteristic_length_value = h_c = 1e-3`, `perm_exponent = b = 2`,
+  `damage_threshold_for_permeability = 0.5`, `f_c = 1`.
+- Companion to Test 8: identical mechanism (uniform `d` ⇒ `grad(d) = 0` ⇒
+  regularized `n_d = (0,0,0)/(0 + eps) = 0`, `have_normal = true`), but the
+  damage is now **below** the threshold.
+
+Hand calc:
+- The regularized normal sets `n_d = 0` and `have_normal = true` exactly as in
+  Test 8, so the fallback is NOT triggered by `!have_normal`.
+- The Heaviside gate is `χ_d = H(d − 0.5) = 0` because `d = 0.3 < 0.5`.
+- The fallback `if (!have_normal || χ_d == 0 || d <= 0)` therefore fires on the
+  `χ_d == 0` term → `K = k₀·I`.
+- **Expected**: `K_xx = K_yy = K_zz = k₀ = 5e-19`, `K_xy = 0`.
+- **Observed**: _pending gold regeneration_ (executable could not be linked in
+  the authoring environment; see Test 8 note).
+- **Critical (the d=0 vs d=1 separation)**: Test 8 (`d = 0.7`) and Test 9
+  (`d = 0.3`) feed the *identical* `n_d = 0` into the model and get opposite
+  results — `4.083333e-8` (isotropic fracture perm) vs `5e-19` (matrix perm) —
+  decided purely by the `χ_d` gate. This is what guarantees the regularized
+  normal leaves the undamaged formulation unchanged.
+
+## Test 10: `strain_based_normal.i` (strain-based crack normal, Liu 2024 eqs. 29–30)
+
+- `d(x,y) = 0.5 + 0.4·x` ⇒ `grad(d) = (0.4, 0, 0)` ∥ `e_x`. A damage-gradient
+  normal would be `n_d = e_x`.
+- `disp_x = 0`, `disp_y = 1e-3·y` ⇒ `ε = diag(0, 1e-3, 0)`. Max principal strain
+  `ε₁ = 1e-3` (unique) with eigenvector `e₁ = e_y`.
+- `crack_normal_source = principal_strain` ⇒ strain-based normal `n_F = e_y`,
+  **orthogonal** to `grad(d)`. `h_c = 1e-3` (constant), `f_c = 1`, `b = 2`,
+  threshold `0.5`, anisotropic.
+
+Hand calc (strain-based normal `n_F = e_y`):
+- `ε_nn = n_F·ε·n_F = ε_yy = 1e-3`.
+- `w_c = h_c·|1 + ε_nn| = 1e-3·1.001 = 1.001e-3`; `χ_d = H(d − 0.5) = 1` (all QPs
+  `d ≥ 0.5`); `w_h = 1.001e-3`; `k_w = (1.001e-3)²/12 = 8.350008e-8`.
+- `I − n_F⊗n_F = diag(1, 0, 1)` for `n_F = e_y` ⇒ blocks y, enhances x,z.
+- `d_qp = 0.5 + 0.4·{0.2113, 0.7887} = {0.58452, 0.81548}` (d independent of y).
+  `⟨d²⟩ = ½(0.58452² + 0.81548²) = 0.503336`.
+- `α = ⟨d²⟩·k_w = 0.503336·8.350008e-8 = 4.202838e-8`.
+- **Expected**: `K_yy = k₀ = 5e-19`, `K_xx = K_zz = k₀ + α = 4.202838e-8`,
+  `K_xy = 0`.
+- **Observed**: _pending gold regeneration_.
+- **Critical discriminator**: a damage-gradient normal (`n_d = e_x`) would block
+  the x-direction instead (`K_xx = k₀`, `K_yy = K_zz = α`). The observed swap —
+  `K_yy` (not `K_xx`) collapsing to `k₀` — proves the normal is the
+  maximum-principal-strain eigenvector `e₁` (Eqs. 29–30), not the damage gradient.
+
+## Test 11: `strain_based_compression.i` (R-001 regression: tensile-opening gate)
+
+- Uniform `d = 0.7` (≥ threshold 0.5). `disp_x = −1e-3·x`, `disp_y = −1e-3·y` ⇒
+  `ε = diag(−1e-3, −1e-3, 0)`. Eigenvalues ascending `{−1e-3, −1e-3, 0}`, so the
+  maximum principal strain `ε₁ = 0` (out-of-plane) and `e₁ = e_z`.
+- `crack_normal_source = principal_strain`, `h_c = 1e-3` (constant), `b = 2`,
+  threshold `0.5`, anisotropic.
+
+Because `ε₁ = 0 ≤ 0`, the `have_normal = (ε₁ > 0)` gate is **false**, so the
+`if (!have_normal …) → k0·I` fallback fires (no tensile opening = closed crack):
+- **Expected (with the R-001 fix)**: `K_xx = K_yy = K_zz = k₀ = 5e-19`, `K_xy = 0`.
+- **Without the fix (legacy)**: `n_F = e_z`, `ε_nn = ε_zz = 0`, `w_c = h_c = 1e-3`,
+  `k_w = (1e-3)²/12 = 8.333333e-8`, projector `diag(1,1,0)`, `d^b = 0.49`, giving
+  `K_xx = K_yy = 0.49·k_w = 4.083333e-8` (SPURIOUS) and `K_zz = k₀`.
+- **Observed**: _pending gold regeneration_.
+- **Critical**: the ~8-order-of-magnitude collapse of `K_xx, K_yy` from `4.08e-8`
+  back to `k₀ = 5e-19` pins down the tensile-opening gate; a closed crack under
+  compression must not be assigned an open-crack fracture permeability.
+
 ## Regenerating gold files
 
 If the physics changes (e.g. `chi_d` Heaviside convention flip, or `perm_exponent` default), regenerate gold files with:
 
 ```bash
-for i in isotropic_axis anisotropic_axis anisotropic_rotated principal_strain_fallback legacy_darcy_poiseuille heaviside_boundary residual_aperture; do
+for i in isotropic_axis anisotropic_axis anisotropic_rotated principal_strain_fallback legacy_darcy_poiseuille heaviside_boundary residual_aperture regularized_normal_core regularized_normal_undamaged strain_based_normal strain_based_compression; do
   farms-opt -i ${i}.i
   cp ${i}_out.e gold/
 done
