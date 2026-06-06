@@ -6,7 +6,7 @@
 # Test cases with phi_0 = 0.008:
 #   d = 0.0: g = 1.0, phi = 0.008 + 0.992 * (1 - 1.0) = 0.008
 #   d = 0.5: g = 0.25, phi = 0.008 + 0.992 * (1 - 0.25) = 0.008 + 0.744 = 0.752
-#   d = 1.0: g = 0.0, phi = 0.008 + 0.992 * (1 - 0.0) = 1.0 (clamped to upper bound)
+#   d = 1.0: g = 0.0, phi_raw = 0.008 + 0.992 * (1 - 0.0) = 1.0 -> clamped to porosity_upper_bound = 0.999
 
 [Mesh]
   type = GeneratedMesh

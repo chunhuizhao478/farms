@@ -24,9 +24,16 @@ ElkADPorousFlowDamagedPorosity::validParams()
   params.addRequiredRangeCheckedParam<Real>(
       "initial_porosity", "initial_porosity>=0 & initial_porosity<=1", "Undamaged porosity phi_0");
   params.addParam<Real>(
-      "porosity_lower_bound", 0.0, "Lower clamp applied to the updated porosity.");
+      "porosity_lower_bound",
+      0.0,
+      "Lower clamp applied to the updated porosity (intact-granite anchor; see "
+      "test/tests/materials/damaged_porosity/POROSITY_BOUNDS_REFERENCE.md).");
   params.addParam<Real>(
-      "porosity_upper_bound", 0.999, "Upper clamp applied to the updated porosity.");
+      "porosity_upper_bound",
+      0.999,
+      "Upper clamp applied to the updated porosity; the default 0.999 regularizes the "
+      "fully-damaged phi->1 void limit (see "
+      "test/tests/materials/damaged_porosity/POROSITY_BOUNDS_REFERENCE.md).");
   params.addClassDescription("AD material that computes damage-dependent porosity phi(d) = phi_0 + (1 - phi_0)[1 - (1 - d)^2]");
   return params;
 }
