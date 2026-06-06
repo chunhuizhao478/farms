@@ -61,7 +61,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture_E1d25.i
+    input_files = fracture_E1d25_refined.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -113,7 +113,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../2d_mesh/2d_mesh.msh'
+    file =  '../../../2d_mesh/2d_mesh_refined.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -677,7 +677,9 @@ top_right2 = '3e-4 0.0025 0'
     permeability_model = normal_strain
     intrinsic_permeability = ${intrinsic_permeability}
     perm_exponent = ${perm_exponent}          # exponent b in K = K_poro + d^b*K_frac
-    crack_normal_source = principal_strain    # n_F = e_1 (max principal strain), Liu 2024 CMAME eqs. 29-30
+    crack_normal_source = damage_gradient     # n_d = grad(d)/|grad(d)|
+    regularize_crack_normal = true            # n_d = grad(d)/(|grad(d)|+eps) (A/B baseline)
+    crack_normal_regularization = 1e-8
     characteristic_length_type = element_size # h_c = element size (paper default)
     element_size_variable = mesh_size         # reuse existing mesh_size AuxVariable
     permeability_anisotropic = true           # K_frac = (w^2/12)(I - n_d (x) n_d)
@@ -812,7 +814,7 @@ top_right2 = '3e-4 0.0025 0'
   []
   [./init_sol_components]
     type = SolutionUserObject
-    mesh = ../static_solve_out.e
+    mesh = ../static_solve_refined_out.e
     system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
     timestep = LATEST
     force_preaux = true

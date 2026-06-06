@@ -677,7 +677,7 @@ top_right2 = '3e-4 0.0025 0'
     permeability_model = normal_strain
     intrinsic_permeability = ${intrinsic_permeability}
     perm_exponent = ${perm_exponent}          # exponent b in K = K_poro + d^b*K_frac
-    crack_normal_source = principal_strain    # n_F = e_1 (max principal strain), Liu 2024 CMAME eqs. 29-30
+    crack_normal_source = damage_gradient     # n_d = grad(d)/|grad(d)| (baseline: original model, no new changes)
     characteristic_length_type = element_size # h_c = element size (paper default)
     element_size_variable = mesh_size         # reuse existing mesh_size AuxVariable
     permeability_anisotropic = true           # K_frac = (w^2/12)(I - n_d (x) n_d)

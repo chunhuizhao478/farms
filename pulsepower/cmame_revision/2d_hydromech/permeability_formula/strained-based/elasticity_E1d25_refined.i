@@ -61,7 +61,7 @@ hht_alpha = 0
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture_E1d25.i
+    input_files = fracture_E1d25_refined.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -113,7 +113,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../../2d_mesh/2d_mesh.msh'
+    file =  '../../../2d_mesh/2d_mesh_refined.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -812,7 +812,7 @@ top_right2 = '3e-4 0.0025 0'
   []
   [./init_sol_components]
     type = SolutionUserObject
-    mesh = ../static_solve_out.e
+    mesh = ../static_solve_refined_out.e
     system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
     timestep = LATEST
     force_preaux = true
