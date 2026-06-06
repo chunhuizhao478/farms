@@ -1,0 +1,48 @@
+[Tests]
+  design = 'ElkPorousFlowDamagedPorosity.md'
+  issues = '#strain_based_porosity'
+
+  [damage_model]
+    type = 'CSVDiff'
+    input = 'damage_model.i'
+    csvdiff = 'damage_model_out.csv'
+    requirement = 'ElkPorousFlowDamagedPorosity shall, with the default damage update law, '
+                  'reproduce the damage-driven bounded-maximum porosity '
+                  'phi = phi0 + (1-phi0)[1-(1-d)^2] for a piecewise-constant damage field '
+                  '(0.31111662, 0.752, 0.97244334 at d = 1/6, 1/2, 5/6).'
+  []
+
+  [strain_tension]
+    type = 'CSVDiff'
+    input = 'strain_model.i'
+    csvdiff = 'strain_model_out.csv'
+    rel_err = 1e-6
+    requirement = 'ElkPorousFlowDamagedPorosity shall, with porosity_update_model = strain, '
+                  'compute phi = phi0 + eps_1 (Liu et al. 2024 eq. 40) from the maximum '
+                  'principal mechanical strain, giving 0.009 for eps_xx = 1e-3, the upper '
+                  'clamp 0.999 for eps_xx = 2.0, and phi0 = 0.008 under compression '
+                  '(eps_xx = -0.5, eps_1 = 0).'
+  []
+
+  [strain_lower_clamp]
+    type = 'CSVDiff'
+    input = 'strain_model.i'
+    cli_args = 'Materials/porosity_strain/porosity_lower_bound=0.05 Outputs/file_base=strain_lower_clamp_out'
+    csvdiff = 'strain_lower_clamp_out.csv'
+    rel_err = 1e-6
+    prereq = 'strain_tension'
+    requirement = 'ElkPorousFlowDamagedPorosity shall apply the lower porosity clamp to the '
+                  'strain update law, raising phi to porosity_lower_bound = 0.05 where '
+                  'phi0 + eps_1 (0.009 and 0.008) falls below it, while the upper-clamped '
+                  'element remains 0.999.'
+  []
+
+  [strain_missing_strain_error]
+    type = 'RunException'
+    input = 'strain_missing_strain.i'
+    expect_err = 'mechanical_strain'
+    requirement = 'ElkPorousFlowDamagedPorosity shall error when porosity_update_model = strain '
+                  'is selected but the kinematic strain tensor (mechanical_strain) is not '
+                  'supplied by any material, rather than silently using a zero strain.'
+  []
+[]
