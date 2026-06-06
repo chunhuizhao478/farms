@@ -9,7 +9,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2d_mesh/2d_mesh.msh'
+    file =  '../../../2d_mesh/2d_mesh.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator

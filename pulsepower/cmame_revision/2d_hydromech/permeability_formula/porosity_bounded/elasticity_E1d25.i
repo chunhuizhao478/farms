@@ -113,7 +113,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2d_mesh/2d_mesh.msh'
+    file =  '../../../2d_mesh/2d_mesh.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -812,7 +812,7 @@ top_right2 = '3e-4 0.0025 0'
   []
   [./init_sol_components]
     type = SolutionUserObject
-    mesh = ../permeability_formula/static_solve_out.e
+    mesh = ../static_solve_out.e
     system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
     timestep = LATEST
     force_preaux = true

@@ -178,7 +178,7 @@ modulus and solid-fraction-weighted terms finite and physical.
 
 The production default is `0.999` (void-limit regularization, above). A separate
 sensitivity case —
-`pulsepower/cmame_revision/2d_hydromech/porosity_bounded/elasticity_E1d25.i`,
+`pulsepower/cmame_revision/2d_hydromech/permeability_formula/porosity_bounded/elasticity_E1d25.i`,
 copied from `permeability_formula/undrained/em_0p005` — instead sets
 `porosity_upper_bound = 0.065`, the **maximum measured fractured/altered granite
 porosity** (§3, Staněk & Géraud 2019). This deliberately models the fully-damaged
@@ -204,7 +204,7 @@ Audit run on branch `porosity-bounded` (from `cdms`):
   `pf_threefield`, hydraulic-fracturing cases): **89** `.i` files set
   `porosity_upper_bound = 0.999`; **83** set `porosity_lower_bound = 0.008`
   (4 use `${porosity}`, which equals `0.008`).
-- **Sensitivity case** (this work): `cmame_revision/2d_hydromech/porosity_bounded/`
+- **Sensitivity case** (this work): `cmame_revision/2d_hydromech/permeability_formula/porosity_bounded/`
   sets `porosity_upper_bound = 0.065` (the physically-bounded cap, §4a), copied
   from `permeability_formula/undrained/em_0p005`. The "89 files set 0.999" count
   above predates this case and excludes it.

@@ -12,7 +12,7 @@
   - `src/materials/porousflowmatprops/ElkPorousFlowDamagedPorosity.C` (description strings)
   - `src/materials/porousflowmatprops/ElkADPorousFlowDamagedPorosity.C` (description strings)
   - `pulsepower/unit_tests/phase1_materials/test_ad_damaged_porosity.i` (comment)
-  - `pulsepower/cmame_revision/2d_hydromech/porosity_bounded/{elasticity_E1d25.i, fracture_E1d25.i, submit_elasticity.sbatch}` (new case)
+  - `pulsepower/cmame_revision/2d_hydromech/permeability_formula/porosity_bounded/{elasticity_E1d25.i, fracture_E1d25.i, submit_elasticity.sbatch}` (new case)
 - Domain context: companion `permeability_normal_strain/EXPECTED_VALUES.md`; sibling
   cases `permeability_formula/undrained/em_0p005` (source) and `em_0p010` (depth/path control).
 
@@ -74,7 +74,7 @@ bottom-line:
 ```diff
 - My recommendation: keep `0.999` and justify it as the void-limit regularization
 + Default: `0.999` (void-limit regularization). The `porosity_bounded` sensitivity
-+ case (`pulsepower/cmame_revision/2d_hydromech/porosity_bounded/`) instead caps at
++ case (`pulsepower/cmame_revision/2d_hydromech/permeability_formula/porosity_bounded/`) instead caps at
 + `0.065` — the maximum *measured* fractured/altered granite porosity (§3, Staněk &
 + Géraud 2019) — to model the damaged zone as a still-granular solid skeleton rather
 + than an open void. This deliberately trades the conduit interpretation (§4 caveat)
@@ -114,7 +114,7 @@ picture of branch contents.
 ```diff
 + ## Phase 4 — porosity_bounded sensitivity case  ✅
 + - Copied `permeability_formula/undrained/em_0p005/{elasticity_E1d25.i,
-+   fracture_E1d25.i, submit_elasticity.sbatch}` → `2d_hydromech/porosity_bounded/`.
++   fracture_E1d25.i, submit_elasticity.sbatch}` → `2d_hydromech/permeability_formula/porosity_bounded/`.
 + - Set `porosity_upper_bound = 0.065` (measured-max physical cap; see reference doc §3).
 + - Corrected relative paths for the shallower folder depth (drop two `../`):
 +   mesh `../../../../2d_mesh/2d_mesh.msh` → `../../2d_mesh/2d_mesh.msh` (both inputs);
@@ -132,7 +132,7 @@ grep -q "0.065"            POROSITY_BOUNDS_PLAN.md
 
 ---
 
-### [R-003] LOW `pulsepower/cmame_revision/2d_hydromech/porosity_bounded/submit_elasticity.sbatch` — job/log names still identify the source case
+### [R-003] LOW `pulsepower/cmame_revision/2d_hydromech/permeability_formula/porosity_bounded/submit_elasticity.sbatch` — job/log names still identify the source case
 
 **Category:** QUALITY
 

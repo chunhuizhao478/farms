@@ -24,5 +24,5 @@ export MV2_SHOW_ENV_INFO=1
 export MOOSE_JOBS=6 METHODS=opt
 
 # Shares the parent permeability_formula/static_solve_out.e (referenced by
-# SolutionUserObject in elasticity_E1d25.i via 'mesh = ../permeability_formula/static_solve_out.e').
-ibrun /scratch2/10024/zhaochun/projects/farms_cdms_04192026/farms-opt -i /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/2d_hydromech/porosity_bounded/elasticity_E1d25.i --allow-unused
+# SolutionUserObject in elasticity_E1d25.i via 'mesh = ../static_solve_out.e').
+ibrun /scratch2/10024/zhaochun/projects/farms_cdms_04192026/farms-opt -i /scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/2d_hydromech/permeability_formula/porosity_bounded/elasticity_E1d25.i --allow-unused

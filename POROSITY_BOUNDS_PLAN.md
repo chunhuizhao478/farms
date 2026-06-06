@@ -54,14 +54,15 @@ literature, and document the justification in the codebase.
 
 ## Phase 4 — `porosity_bounded` sensitivity case  ✅
 - Copied `permeability_formula/undrained/em_0p005/{elasticity_E1d25.i,
-  fracture_E1d25.i, submit_elasticity.sbatch}` → `2d_hydromech/porosity_bounded/`.
+  fracture_E1d25.i, submit_elasticity.sbatch}` →
+  `2d_hydromech/permeability_formula/porosity_bounded/`.
 - Set `porosity_upper_bound = 0.065` (measured-max physical cap; reference doc §3/§4a).
-- Corrected relative paths for the shallower folder depth (drop two `../`):
-  mesh `../../../../2d_mesh/2d_mesh.msh` → `../../2d_mesh/2d_mesh.msh` (both inputs);
-  solution `../../static_solve_out.e` → `../permeability_formula/static_solve_out.e`
-  (verified to resolve to the same shared static-solve output as sibling cases).
-- Submit script input path repointed to `porosity_bounded`; cluster base
-  `/scratch2/.../farms_cdms_04192026/` kept (will merge to cluster later); job/log
+- Relative paths set for the final folder depth (1 level below `permeability_formula`,
+  matching sibling `oil_water_mixture/`):
+  mesh `../../../2d_mesh/2d_mesh.msh` (both inputs);
+  solution `../static_solve_out.e` (shared parent static-solve output, as in `em_0p005`).
+- Submit script `-i` path points to `permeability_formula/porosity_bounded/`; cluster
+  base `/scratch2/.../farms_cdms_04192026/` kept (will merge to cluster later); job/log
   names renamed to `cmame_2dhm_poro_0p065`.
 
 ## Verification notes / caveats
