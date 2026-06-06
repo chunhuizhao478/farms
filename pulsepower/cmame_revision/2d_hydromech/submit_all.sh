@@ -37,11 +37,16 @@
 #   ./submit_all.sh                 # submit elasticity only (with confirmation)
 #   ./submit_all.sh --yes           # submit without confirmation
 #   ./submit_all.sh --dry-run       # show what would be submitted
+#   ./submit_all.sh --new           # ONLY the 5-case comparison set x 2 meshes = 10 jobs
+#   ./submit_all.sh --new --yes     # ... the 10 jobs, no confirmation prompt
 #   ./submit_all.sh --with-static   # also submit static (chain via afterok)
 #   ./submit_all.sh undrained       # only undrained EM sweep
 #   ./submit_all.sh drained         # only drained EM sweep
 #   ./submit_all.sh em_0p040        # only the EM=0.040 cases (both drained and undrained)
 #   ./submit_all.sh order_test      # only the mixed-order test
+#
+#   --new restricts to: baseline, regularized_normal, strained-based,
+#   porosity_bounded, porosity-strain-based (base + refined mesh of each).
 #
 # Artifacts:
 #   submitted_jobs.txt  — JOBID:case_path:stage for each successful
@@ -62,15 +67,21 @@ fi
 DRY_RUN=0
 SKIP_CONFIRM=0
 WITH_STATIC=0
+NEW_ONLY=0
 PATTERN=""
+
+# The 5 case directories added for the permeability comparison set (each ships a
+# base + refined mesh job => 10 jobs). --new restricts submission to exactly these.
+NEW_CASES=(baseline regularized_normal strained-based porosity_bounded porosity-strain-based)
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --dry-run)       DRY_RUN=1 ;;
         --yes|-y)        SKIP_CONFIRM=1 ;;
         --with-static)   WITH_STATIC=1 ;;
+        --new)           NEW_ONLY=1 ;;
         -h|--help)
-            sed -n '2,48p' "$0"
+            sed -n '2,53p' "$0"
             exit 0
             ;;
         --*)
@@ -102,6 +113,23 @@ if [[ -n "$PATTERN" ]]; then
         if [[ "$s" == *"$PATTERN"* ]]; then
             FILTERED+=("$s")
         fi
+    done
+    ELAST_SCRIPTS=("${FILTERED[@]}")
+fi
+
+# --new: keep only jobs whose case directory is one of the 5 NEW_CASES
+# (matched on the case-dir basename, so base + refined of each are both kept,
+# while the sweep/order/viscosity/top-level cases are dropped) => 10 jobs.
+if [[ $NEW_ONLY -eq 1 ]]; then
+    FILTERED=()
+    for s in "${ELAST_SCRIPTS[@]}"; do
+        case_base="$(basename "$(dirname "$s")")"
+        for nc in "${NEW_CASES[@]}"; do
+            if [[ "$case_base" == "$nc" ]]; then
+                FILTERED+=("$s")
+                break
+            fi
+        done
     done
     ELAST_SCRIPTS=("${FILTERED[@]}")
 fi
