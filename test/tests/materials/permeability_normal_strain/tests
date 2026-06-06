@@ -93,4 +93,81 @@
                   '(default) the closed branch is inactive and legacy '
                   'open-only behavior is preserved.'
   []
+
+  [regularized_normal_core]
+    type = 'Exodiff'
+    input = 'regularized_normal_core.i'
+    exodiff = 'regularized_normal_core_out.e'
+    # The gold could not be generated in the authoring environment (the app
+    # executable will not link on macOS Tahoe 26.5 - see the toolchain note).
+    # Remove this skip and add gold/regularized_normal_core_out.e once the app
+    # builds: `farms-opt -i regularized_normal_core.i && cp
+    # regularized_normal_core_out.e gold/` (verify against EXPECTED_VALUES Test 8).
+    skip = 'gold pending: regularized_normal_core_out.e not yet generated (toolchain link failure)'
+    requirement = 'When regularize_crack_normal = true, the system shall '
+                  'compute the crack normal as n_d = grad(d)/(|grad(d)| + eps), '
+                  'so that at the fully-damaged crack core where grad(d) = 0 '
+                  'the normal collapses to zero and the tangential projector '
+                  '(I - n_d (x) n_d) reduces to the identity, producing an '
+                  'ISOTROPIC fracture permeability K = k0*I + d^b*(h_c^2/12)*I '
+                  'there instead of the legacy hard-cutoff fallback to the '
+                  'matrix permeability k0*I.'
+  []
+
+  [regularized_normal_undamaged]
+    type = 'Exodiff'
+    input = 'regularized_normal_undamaged.i'
+    exodiff = 'regularized_normal_undamaged_out.e'
+    # Gold pending for the same toolchain reason as regularized_normal_core.
+    # Generate once the app builds: `farms-opt -i regularized_normal_undamaged.i
+    # && cp regularized_normal_undamaged_out.e gold/` (verify K = k0*I = 5e-19).
+    skip = 'gold pending: regularized_normal_undamaged_out.e not yet generated (toolchain link failure)'
+    requirement = 'With regularize_crack_normal = true and uniform damage '
+                  'd below damage_threshold_for_permeability, the system shall '
+                  'fall back to the matrix permeability K = k0*I via the chi_d '
+                  'gate (even though the regularized normal sets n_d = 0 and '
+                  'have_normal = true), so the regularized normal does NOT '
+                  'manufacture fracture permeability in undamaged material. '
+                  'This verifies the d=0 side of the d=0/d=1 separation.'
+  []
+
+  [regularized_normal_requires_eps]
+    type = 'RunException'
+    input = 'regularized_normal_requires_eps.i'
+    expect_err = 'regularize_crack_normal = true requires crack_normal_regularization to be set explicitly'
+    requirement = 'When regularize_crack_normal = true but '
+                  'crack_normal_regularization is left at its default, the '
+                  'system shall error during construction, because the default '
+                  'epsilon is far below the phase-field gradient scale and the '
+                  'regularization would otherwise be a silent no-op.'
+  []
+
+  [strain_based_normal]
+    type = 'Exodiff'
+    input = 'strain_based_normal.i'
+    exodiff = 'strain_based_normal_out.e'
+    requirement = 'With crack_normal_source = principal_strain, the system shall '
+                  'compute the crack normal as n_F = e_1, the eigenvector of the '
+                  'maximum principal strain of the mechanical strain (Liu 2024 '
+                  'CMAME eqs. 29-30), so that when grad(d) is parallel to e_x but '
+                  'e_1 = e_y the tangential projector blocks the y-direction '
+                  '(K_yy = k0) and enhances the x,z directions '
+                  '(K_xx = K_zz = k0 + d^b*k_w) -- the opposite diagonal entry '
+                  'from what the damage-gradient normal would block, proving the '
+                  'normal is strain-based and not damage-based.'
+  []
+
+  [strain_based_compression]
+    type = 'Exodiff'
+    input = 'strain_based_compression.i'
+    exodiff = 'strain_based_compression_out.e'
+    requirement = 'With crack_normal_source = principal_strain, a damaged element '
+                  '(d >= threshold) under in-plane compression (both in-plane '
+                  'principal strains negative, so the plane-strain maximum '
+                  'principal strain is the out-of-plane eps_zz = 0 with e_1 = e_z) '
+                  'shall NOT receive a spurious fracture permeability: the '
+                  'eps_1 > 0 tensile-opening gate routes the closed crack to the '
+                  'matrix permeability K = k0*I instead of enhancing the in-plane '
+                  'permeability.'
+  []
 []

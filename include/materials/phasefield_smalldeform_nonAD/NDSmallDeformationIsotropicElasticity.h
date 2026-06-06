@@ -45,6 +45,14 @@ private:
   // Return the characteristic length h_c used in the normal-strain permeability
   // model. Source depends on `characteristic_length_type`.
   Real getCharacteristicLength() const;
+  // Liu et al. 2024 CMAME eqs. (29)-(30): return the unit eigenvector e_1 of the
+  // MAXIMUM principal strain of `strain` (the strain-based crack normal n_F).
+  // The maximum principal strain value eps_1 is returned via `eps1`; callers gate
+  // the fracture-permeability enhancement on eps_1 > 0 (tensile opening) so that a
+  // closed/compressed crack -- where the plane-strain max eigenvalue is the
+  // out-of-plane eps_zz = 0 and e_1 = e_z -- is not given a spurious aperture.
+  RealVectorValue maxPrincipalStrainDirection(const RankTwoTensor & strain,
+                                              Real & eps1) const;
   // @}
 
   // Compute g and its derivatives
@@ -151,6 +159,15 @@ private:
   const Real _d_perm_threshold;
   const Real _fc;
   const Real _grad_d_tol;
+
+  // Regularized crack-normal option (damage_gradient source only). When true,
+  // n_d = grad(d) / (|grad(d)| + _crack_normal_reg_eps) replaces the hard
+  // |grad(d)| > _grad_d_tol cutoff. As |grad(d)| -> 0 (crack core, d -> 1),
+  // n_d -> 0 so the tangential projector (I - n_d (x) n_d) -> I, giving
+  // isotropic fracture permeability at the core instead of matrix-perm
+  // fallback. _crack_normal_reg_eps > 0 (range-checked) avoids div-by-zero.
+  const bool _regularize_crack_normal;
+  const Real _crack_normal_reg_eps;
 
   // Residual aperture w_r (Heider 2021 eq. 46 closed-crack branch). When the
   // open-crack aperture w_c shrinks below w_r under crack closure, w_h floors

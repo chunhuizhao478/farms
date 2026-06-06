@@ -79,13 +79,39 @@ NDSmallDeformationIsotropicElasticity::validParams()
   params.addParam<MooseEnum>(
       "crack_normal_source",
       MooseEnum("damage_gradient principal_strain", "damage_gradient"),
-      "Source of the unit crack normal n_d. 'damage_gradient' uses grad(d)/|grad(d)| "
-      "(Heider 2021 eq. 46). 'principal_strain' uses the eigenvector of the "
-      "most-tensile principal strain (existing code path).");
+      "Source of the unit crack normal n_F. 'damage_gradient' uses "
+      "grad(d)/|grad(d)| (Heider 2021 eq. 46), optionally regularized via "
+      "regularize_crack_normal. 'principal_strain' uses the strain-based normal "
+      "n_F = e_1, the eigenvector of the maximum principal strain of the model's "
+      "mechanical strain (Liu et al. 2024 CMAME eqs. 29-30); it is unit-norm "
+      "everywhere and needs no regularization.");
   params.addParam<Real>(
       "damage_gradient_tolerance", 1e-30,
       "When |grad(d)| is below this tolerance, fall back to K = K_poro "
-      "(no enhancement). Avoids division by zero in undamaged regions.");
+      "(no enhancement). Avoids division by zero in undamaged regions. "
+      "Ignored when regularize_crack_normal = true.");
+  params.addParam<bool>(
+      "regularize_crack_normal", false,
+      "When true (and crack_normal_source = damage_gradient), compute the crack "
+      "normal as n_d = grad(d) / (|grad(d)| + eps) instead of grad(d)/|grad(d)| "
+      "with a hard |grad(d)| cutoff. As |grad(d)| -> 0 at the fully-damaged "
+      "crack core (d -> 1), n_d -> 0, so the tangential projector "
+      "(I - n_d (x) n_d) -> I and the fracture permeability becomes ISOTROPIC "
+      "there instead of falling back to the matrix permeability k0*I. The "
+      "epsilon is set by `crack_normal_regularization`. Default false preserves "
+      "the legacy hard-cutoff behavior. NOTE: as n_d -> 0 the normal strain "
+      "eps_nn = n_d.eps.n_d -> 0 too, so at the core the aperture w_c -> h_c "
+      "loses its strain dependence and K_frac becomes the strain-independent "
+      "isotropic value d^b*(h_c^2/12)*I.");
+  params.addRangeCheckedParam<Real>(
+      "crack_normal_regularization", 1e-8, "crack_normal_regularization > 0.0",
+      "Regularization epsilon added to |grad(d)| in the denominator of the "
+      "regularized crack normal n_d = grad(d)/(|grad(d)| + eps) (only used when "
+      "regularize_crack_normal = true). Has units of 1/length (same as "
+      "|grad(d)|). Choose it small relative to the typical |grad(d)| ~ 1/l so "
+      "that n_d stays ~unit away from the crack core, yet large enough that "
+      "n_d -> 0 (isotropic permeability) as the core (grad(d) -> 0) is "
+      "approached. Must be > 0 to avoid division by zero.");
   params.addParam<MooseEnum>(
       "characteristic_length_type",
       MooseEnum("element_size regularization_length constant", "element_size"),
@@ -227,6 +253,8 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
     _d_perm_threshold(getParam<Real>("damage_threshold_for_permeability")),
     _fc(getParam<Real>("correction_factor_fc")),
     _grad_d_tol(getParam<Real>("damage_gradient_tolerance")),
+    _regularize_crack_normal(getParam<bool>("regularize_crack_normal")),
+    _crack_normal_reg_eps(getParam<Real>("crack_normal_regularization")),
     _w_res(getParam<Real>("residual_aperture")),
     _total_strain(nullptr),
     _solid_bulk_compliance_damaged(declareProperty<Real>("solid_bulk_compliance_damaged"))
@@ -334,6 +362,27 @@ NDSmallDeformationIsotropicElasticity::NDSmallDeformationIsotropicElasticity(
       paramError("damage_threshold_for_permeability",
                  "damage_threshold_for_permeability must satisfy "
                  "0 <= threshold < 1.");
+    if (_regularize_crack_normal &&
+        _normal_source != CrackNormalSource::damage_gradient)
+      paramError("regularize_crack_normal",
+                 "regularize_crack_normal = true only applies to "
+                 "crack_normal_source = damage_gradient. The principal-strain "
+                 "normal is already a well-defined unit eigenvector and needs "
+                 "no regularization.");
+    // The default crack_normal_regularization (1e-8 /length) is far below the
+    // phase-field gradient scale |grad(d)| ~ 1/l, so leaving it at the default
+    // makes the shrink factor |grad d|/(|grad d|+eps) ~ 1 at every quadrature
+    // point and the regularization a silent no-op. Require an explicit value so
+    // the user picks eps on the gradient scale they want to isotropize.
+    if (_regularize_crack_normal &&
+        !isParamSetByUser("crack_normal_regularization"))
+      paramError("crack_normal_regularization",
+                 "regularize_crack_normal = true requires "
+                 "crack_normal_regularization to be set explicitly. The default "
+                 "(1e-8) is far below the phase-field gradient scale "
+                 "|grad(d)| ~ 1/l, so the regularization would have no effect at "
+                 "the quadrature points. Set eps on the order of the near-core "
+                 "|grad(d)| you want to isotropize (e.g. a fraction of 1/l).");
   }
 }
 
@@ -559,6 +608,22 @@ NDSmallDeformationIsotropicElasticity::spectralDecomposition(const RankTwoTensor
   return eigvecs * eigvals_pos * eigvecs.transpose();
 }
 
+RealVectorValue
+NDSmallDeformationIsotropicElasticity::maxPrincipalStrainDirection(
+    const RankTwoTensor & strain, Real & eps1) const
+{
+  // Liu et al. 2024 CMAME eq. (29): eps = sum_i eps_i e_i, with the eigenvalues
+  // returned in ASCENDING order by symmetricEigenvaluesEigenvectors.
+  std::vector<Real> eigval(3, 0.0);
+  RankTwoTensor eigvec;
+  strain.symmetricEigenvaluesEigenvectors(eigval, eigvec);
+  // Liu et al. 2024 CMAME eq. (30): n_F = e_1 = eigenvector of the largest
+  // (most-tensile) principal strain. Ascending order => column(2). The
+  // eigenvectors are unit-norm by construction, so n_F is a valid unit normal.
+  eps1 = eigval[2]; // maximum principal strain eps_1 (caller gates on eps_1 > 0)
+  return eigvec.column(2);
+}
+
 void
 NDSmallDeformationIsotropicElasticity::computeGDerivatives()
 {
@@ -704,30 +769,67 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
     // chi_d = H(d - d_threshold)   (strict: H(0) = 0),
     // n_d is either grad(d)/|grad(d)| or the most-tensile principal eigenvector.
 
-    // (a) Determine unit crack normal n_d.
+    // (a) Determine crack normal n_d. NOTE: with regularize_crack_normal = true
+    //     this is grad(d)/(|grad(d)| + eps), whose magnitude is < 1 (it tends to
+    //     0 at the crack core); it is a true unit vector only on the legacy
+    //     hard-cutoff and principal-strain paths.
     RealVectorValue n_d;
     bool have_normal = false;
 
     if (_normal_source == CrackNormalSource::damage_gradient)
     {
       const Real gnorm = _grad_d[_qp].norm();
-      if (gnorm > _grad_d_tol)
+      if (_regularize_crack_normal)
+      {
+        // Regularized crack normal n_d = grad(d) / (|grad(d)| + eps). As
+        // |grad(d)| -> 0 at the fully-damaged crack core (d -> 1), n_d -> 0,
+        // so the tangential projector (I - n_d (x) n_d) below tends to I and
+        // the fracture permeability becomes isotropic there, instead of
+        // falling back to the matrix permeability k0*I. eps > 0 (enforced by
+        // the range check on crack_normal_regularization) guarantees no
+        // division by zero, so have_normal is always true on this path.
+        //
+        // Note both d -> 0 (undamaged) and d -> 1 (crack core) have
+        // |grad(d)| -> 0 and hence n_d -> 0 here, but the two are SEPARATED
+        // downstream by the chi_d / d>0 gate: at d -> 0 the Heaviside gate
+        // chi_d = 0 routes the point to matrix perm k0*I (undamaged
+        // formulation unchanged), while at d -> 1 chi_d = 1 keeps the
+        // isotropic fracture perm. So this regularized normal only changes
+        // behavior at the damaged core, never in the undamaged bulk.
+        n_d = _grad_d[_qp] / (gnorm + _crack_normal_reg_eps);
+        have_normal = true;
+      }
+      else if (gnorm > _grad_d_tol)
       {
         n_d = _grad_d[_qp] / gnorm;
         have_normal = true;
       }
     }
-    else // principal_strain fallback
+    else // principal_strain: strain-based crack normal, Liu 2024 eqs. (29)-(30)
     {
-      // _crack_rotation[_qp] column 0 is the most-tensile eigenvector, which
-      // symmetricEigenvaluesEigenvectors guarantees to be unit-norm. The early
-      // return above (!_porous_flow_coupling) is the only path that could leave
-      // _crack_rotation uninitialized, so by the time we reach here have_normal
-      // is always true.
-      n_d(0) = R(0, 0);
-      n_d(1) = R(1, 0);
-      n_d(2) = R(2, 0);
-      have_normal = true;
+      // Eq. (29)-(30): n_F = e_1 = eigenvector of the maximum principal strain.
+      // Derive it from the model's mechanical strain `_total_strain` (the same
+      // strain used for eps_nn below), NOT from _crack_rotation/_elastic_strain,
+      // so the normal and the normal-strain aperture are computed from one
+      // self-consistent strain tensor (identical in pure elasticity; the correct
+      // total strain if plasticity is later attached). Eigenvectors are
+      // unit-norm, so n_d is a valid unit normal everywhere (no |grad d|
+      // division, no regularization needed -- contrast
+      // crack_normal_source = damage_gradient).
+      //
+      // This re-eigendecomposes the TOTAL strain on purpose (self-consistent
+      // with eps_nn); _crack_rotation (from _elastic_strain) is intentionally
+      // not reused here -- it is dead work on this path but still feeds the
+      // legacy exponential/Darcy branches.
+      Real eps1 = 0.0;
+      n_d = maxPrincipalStrainDirection((*_total_strain)[_qp], eps1);
+      // Only enhance permeability when there is a tensile opening (eps_1 > 0).
+      // Under in-plane compression (plane strain eps_zz = 0 is the max eigenvalue
+      // => e_1 = e_z) or zero strain, eps_1 <= 0; have_normal is then false and
+      // the chi_d / d-gate below routes the point to matrix perm k0*I, avoiding a
+      // spurious aperture for a closed crack and a non-deterministic e_1 for a
+      // degenerate (zero) strain.
+      have_normal = (eps1 > 0.0);
     }
 
     const Real k0 = _intrinsic_permeability;
@@ -741,7 +843,12 @@ NDSmallDeformationIsotropicElasticity::updatePermeabilityForCracking()
     const Real chi_d = (d >= _d_perm_threshold) ? 1.0 : 0.0;
 
     // Fall back to matrix perm if the normal is ill-defined, the Heaviside
-    // gate is closed, or the damage is zero.
+    // gate is closed, or the damage is zero. This is also the d=0 vs d=1
+    // separator for the regularized-normal path: with regularize_crack_normal
+    // = true, have_normal is always true, so the fallback is driven purely by
+    // damage -- chi_d == 0 (d < threshold) or d <= 0 sends the UNDAMAGED bulk
+    // to k0*I, while the fully-damaged core (d >= threshold, chi_d = 1, d > 0)
+    // proceeds to the isotropic fracture perm below.
     if (!have_normal || chi_d == 0.0 || d <= 0.0)
     {
       _effective_perm[_qp] = k0 * I2;
