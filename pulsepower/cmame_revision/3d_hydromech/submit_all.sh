@@ -7,8 +7,10 @@
 # files land next to the input files.
 #
 # Cases discovered today:
-#   em_25J/   (EM=0.025)
-#   em_50J/   (EM=0.050)
+#   em_25J/          (EM=0.025, undrained borehole)
+#   em_50J/          (EM=0.050, undrained borehole)
+#   em_5J_drained/   (EM=0.005, drained borehole: pp=func_tri_pulse on boundary 3)
+#   em_10J_drained/  (EM=0.010, drained borehole: pp=func_tri_pulse on boundary 3)
 #
 # Usage:
 #   ./submit_all.sh                 # submit everything (with confirmation)

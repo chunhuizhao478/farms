@@ -1,22 +1,30 @@
-fluid_elastic_energy_total_static = 0
-solid_elastic_energy_total_static = 0
-full_input_energy_static = 0
-initial_pore_pressure = 0.0965e6
+# Permeability enhancement: Heider (2021) normal-strain formulation (eqs. 46-48)
+# Crack normal n_d = grad(d)/|grad(d)|, aperture w_c = h_c*|1 + n_d.eps.n_d|,
+# fracture perm K_frac = (w_c^2/12)(I - n_d (x) n_d), total K = k0*I + d^b*K_frac.
+# Replaces the prior simplified w = d*wc formulation.
+#
+# Static energy values from static solve
+# Note: NOW using damage-dependent Biot coefficient with incremental accounting approach
+# Porosity is kept constant, only Biot coefficient evolves with damage
+# This value should be recomputed from static solve with the updated formulation
+fluid_elastic_energy_total_static = 8.081664e-05
+solid_elastic_energy_total_static = 5.408951e-03
+full_input_energy_static = 5.489768e-03
 
 #solid properties
 #----------------------------------------------------#
 E = 50e9 # Young's modulus
 nu = 0.3 # Poisson's ratio
-Gc_const = 40  # critical energy release rate, N * m
+Gc_const = 100  # critical energy release rate, N * m
 solid_density = 2600 # kg/m^3
-K = '${fparse E/3.0/(1.0-2.0*nu)}'
+K = '${fparse E/3.0/(1.0-2.0*nu)}' #bulk modulus of porous material
 K_s = 50e9 #bulk modulus of solid grains, material property
 G = '${fparse E/2.0/(1.0+nu)}'
-l =  2e-4 #5e-4 # length scale, m
+l =  2e-4 # length scale, m
 ft = '${fparse sqrt(3.0/8.0 * E*Gc_const/l)}'#137 MPa # AT1 model, N * h, N: number of elements, h: element size -> l = 1.64e-3 m -> this only works for CZM model
 Cs = '${fparse sqrt(G/solid_density)}'
 Cp = '${fparse sqrt((K + 4.0/3.0 * G)/solid_density)}'
-confinement_pressure  = 1e6
+confinement_pressure  = 1000000.0
 #----------------------------------------------------#
 
 #hydraulic properties
@@ -47,15 +55,13 @@ perm_exponent = 10 # damage localization exponent b (see options above)
 #----------------------------------------------------#
 newmark_beta = 0.25
 newmark_gamma = 0.5
-hht_alpha = 0.1
+hht_alpha = 0
 #----------------------------------------------------#
-
-#fieldscale small: dx = 1e-3 < l = 1.64e-3, 3x adaptivity levels
 
 [MultiApps]
   [fracture]
     type = TransientMultiApp
-    input_files = fracture_mesh2x.i
+    input_files = fracture_E1d25.i
     cli_args = 'Gc_const=${Gc_const};l=${l}'
     execute_on = 'TIMESTEP_END'
     clone_parent_mesh = true
@@ -92,22 +98,26 @@ hht_alpha = 0.1
 []
 
 [GlobalParams]
-  displacements = 'disp_x disp_y disp_z'
+  displacements = 'disp_x disp_y'
   PorousFlowDictator = dictator #All porous modules must contain
 []
 
-#initial damage box
-bottom_left1 = '-0.002 -4e-4 0'
-top_right1 = '0.002 4e-4 0.06'
+#initial damage box 1
+bottom_left1 = '-0.0025 -3e-4 0'
+top_right1 = '0.0025 3e-4 0'
+
+#initial damage box 2
+bottom_left2 = '-3e-4 -0.0025 0'
+top_right2 = '3e-4 0.0025 0'
 
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../3d_mesh/cylinder_sample.msh'
+    file =  '../../../2d_mesh/2d_mesh.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
-    coord = '0.1 0.1 0'
+    coord = '0.01 0.01 0'
     new_boundary = corner_ptr
     input = msh
     use_closest_node=true
@@ -117,10 +127,18 @@ top_right1 = '0.002 4e-4 0.06'
     bottom_left = ${bottom_left1}
     top_right = ${top_right1}
     location = INSIDE
-    block_id = 2
+    block_id = 1
     input = extranodeset1
   []
-  displacements = 'disp_x disp_y disp_z'
+  [./subdomain_id2]
+    type = SubdomainBoundingBoxGenerator
+    bottom_left = ${bottom_left2}
+    top_right = ${top_right2}
+    location = INSIDE
+    block_id = 1
+    input = subdomain_id
+  []
+  displacements = 'disp_x disp_y'
 []
 
 [Variables]
@@ -130,11 +148,6 @@ top_right1 = '0.002 4e-4 0.06'
     scaling = 1e-6
   []
   [disp_y]
-    order = FIRST
-    family = LAGRANGE
-    scaling = 1e-6
-  []
-  [disp_z]
     order = FIRST
     family = LAGRANGE
     scaling = 1e-6
@@ -178,10 +191,6 @@ top_right1 = '0.002 4e-4 0.06'
     family = LAGRANGE
     order = FIRST
   []
-  [accel_z]
-    family = LAGRANGE
-    order = FIRST
-  []
   #
   [pulse_load_aux]
     order = CONSTANT
@@ -200,15 +209,15 @@ top_right1 = '0.002 4e-4 0.06'
   #
   [effective_perm00_aux]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
   [effective_perm11_aux]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
   [effective_perm01_aux]
     family = MONOMIAL
-    order = FIRST
+    order = CONSTANT
   []
   [fx]
   []
@@ -319,22 +328,6 @@ top_right1 = '0.002 4e-4 0.06'
     type = NewmarkVelAux
     variable = vel_y
     acceleration = accel_y
-    gamma = ${newmark_gamma}
-    execute_on = 'TIMESTEP_END'
-  []
-  #
-  [accel_z]
-    type = NewmarkAccelAux
-    variable = accel_z
-    displacement = disp_z
-    velocity = vel_z
-    beta = ${newmark_beta}
-    execute_on = 'TIMESTEP_END'
-  []
-  [vel_z]
-    type = NewmarkVelAux
-    variable = vel_z
-    acceleration = accel_z
     gamma = ${newmark_gamma}
     execute_on = 'TIMESTEP_END'
   []
@@ -485,13 +478,13 @@ top_right1 = '0.002 4e-4 0.06'
     shape_param_beta = 4.661e5
     rise_time = 3e-6
     single_pulse_duration = 1e-5
-    EM = 0.025 #
+    EM = 0.005
     gap = 0.008
     convert_efficiency = 1.0
     fitting_param_alpha = 0.35
     fitting_param_exponent = 0.25
-    discharge_center = '0 0 0.03'
-    number_of_pulses = 50
+    discharge_center = '0 0 0'
+    number_of_pulses = 100
     base_factor = 8000
     # peak_pressure = 200e6 #if peak pressure is specified, the depth variation is ignored
   []
@@ -517,15 +510,6 @@ top_right1 = '0.002 4e-4 0.06'
       gamma = 0.5
       eta = 0
   []
-  [inertia_z]
-      type = InertialForce
-      variable = disp_z
-      acceleration = accel_z
-      velocity = vel_z
-      beta = 0.25
-      gamma = 0.5
-      eta = 0
-  []
   [dispkernel_x]
       type = StressDivergenceTensors
       variable = disp_x
@@ -535,11 +519,6 @@ top_right1 = '0.002 4e-4 0.06'
       type = StressDivergenceTensors
       variable = disp_y
       component = 1
-  []
-  [dispkernel_z]
-      type = StressDivergenceTensors
-      variable = disp_z
-      component = 2
   []
   #pressure coupling on stress tensor
   [poro_x]
@@ -552,12 +531,6 @@ top_right1 = '0.002 4e-4 0.06'
       type = ElkPorousFlowEffectiveStressCoupling
       variable = disp_y
       component = 1
-      use_damaged_biot = true
-  []
-  [poro_z]
-      type = ElkPorousFlowEffectiveStressCoupling
-      variable = disp_z
-      component = 2
       use_damaged_biot = true
   []
   #alpha * volumetric strain rate * test + 1 / biot modulus * pressure rate * test
@@ -584,22 +557,27 @@ top_right1 = '0.002 4e-4 0.06'
     [pressure_inner]
       boundary = 3
       function = func_tri_pulse
-      displacements = 'disp_x disp_y disp_z'
+      displacements = 'disp_x disp_y'
       use_displaced_mesh = false
       save_in_disp_x = fx
       save_in_disp_y = fy
-      save_in_disp_z = fz
     []
     #assign pressure on outer surface
     [static_pressure_outer]
-      boundary = 4
+      boundary = 1
       factor = ${confinement_pressure}
-      displacements = 'disp_x disp_y disp_z'
+      displacements = 'disp_x disp_y'
       use_displaced_mesh = false
       save_in_disp_x = fconfinementx
       save_in_disp_y = fconfinementy
-      save_in_disp_z = fconfinementz
     []
+  []
+  # add drained pressure (active - drained case)
+  [./porepressure_drained]
+    type = FunctionDirichletBC
+    variable = pp
+    function = func_tri_pulse
+    boundary = 3
   []
   # fix ptr
   [./fix_cptr1_x]
@@ -614,21 +592,15 @@ top_right1 = '0.002 4e-4 0.06'
     boundary = corner_ptr
     value = 0
   []
-  [./fix_cptr3_z]
-    type = DirichletBC
-    variable = disp_z
-    boundary = corner_ptr
-    value = 0
-  []
   #add dampers
   [damp_outer_x]
     type = FarmsNonReflectDashpotBC
     variable = disp_x
-    displacements = 'disp_x disp_y disp_z'
-    velocities = 'vel_x vel_y vel_z'
-    accelerations = 'accel_x accel_y accel_z'
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
     component = 0
-    boundary = 4
+    boundary = 1
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
     alpha = ${hht_alpha}
@@ -640,11 +612,11 @@ top_right1 = '0.002 4e-4 0.06'
   [damp_outer_y]
     type = FarmsNonReflectDashpotBC
     variable = disp_y
-    displacements = 'disp_x disp_y disp_z'
-    velocities = 'vel_x vel_y vel_z'
-    accelerations = 'accel_x accel_y accel_z'
+    displacements = 'disp_x disp_y'
+    velocities = 'vel_x vel_y'
+    accelerations = 'accel_x accel_y'
     component = 1
-    boundary = 4
+    boundary = 1
     beta = ${newmark_beta}
     gamma = ${newmark_gamma}
     alpha = ${hht_alpha}
@@ -652,22 +624,6 @@ top_right1 = '0.002 4e-4 0.06'
     p_wave_speed = ${Cp}
     density = ${solid_density}
     save_in = fdampy
-  []
-  [damp_outer_z]
-    type = FarmsNonReflectDashpotBC
-    variable = disp_z
-    displacements = 'disp_x disp_y disp_z'
-    velocities = 'vel_x vel_y vel_z'
-    accelerations = 'accel_x accel_y accel_z'
-    component = 2
-    boundary = 4
-    beta = ${newmark_beta}
-    gamma = ${newmark_gamma}
-    alpha = ${hht_alpha}
-    shear_wave_speed = ${Cs}
-    p_wave_speed = ${Cp}
-    density = ${solid_density}
-    save_in = fdampz
   []
 []
 
@@ -693,8 +649,8 @@ top_right1 = '0.002 4e-4 0.06'
     shear_modulus = G
     phase_field = d
     strain_energy_density = psie
-    strain_energy_density_inactive = psie_inactive
     strain_energy_density_active = psie_active
+    strain_energy_density_inactive = psie_inactive
     strain_energy_density_derivative = dpsie_dd
     degradation_function = g
     degradation_function_derivative = dg_dd
@@ -711,8 +667,7 @@ top_right1 = '0.002 4e-4 0.06'
     # constants
     ##---------------------------------------------##
     eta = 1e-6
-    #output_properties = 'elastic_strain psie_active'
-    output_properties = 'psie_active'
+    output_properties = 'elastic_strain psie_active'
     outputs = exodus
     ##---------------------------------------------##
     # porous flow coupling
@@ -722,7 +677,7 @@ top_right1 = '0.002 4e-4 0.06'
     permeability_model = normal_strain
     intrinsic_permeability = ${intrinsic_permeability}
     perm_exponent = ${perm_exponent}          # exponent b in K = K_poro + d^b*K_frac
-    crack_normal_source = damage_gradient     # n_d = grad(d)/|grad(d)|
+    crack_normal_source = damage_gradient     # n_d = grad(d)/|grad(d)| (baseline: original model, no new changes)
     characteristic_length_type = element_size # h_c = element size (paper default)
     element_size_variable = mesh_size         # reuse existing mesh_size AuxVariable
     permeability_anisotropic = true           # K_frac = (w^2/12)(I - n_d (x) n_d)
@@ -733,8 +688,8 @@ top_right1 = '0.002 4e-4 0.06'
   [stress]
     type = NDComputeSmallDeformationStress ###
     elasticity_model = elasticity
-    #output_properties = 'stress strain_increment'
-    #outputs = exodus
+    output_properties = 'stress strain_increment'
+    outputs = exodus
   []
   #enhanced history energy with pressure-dependent term (from CMAME paper Appendix A)
   [history_energy_enhanced]
@@ -817,7 +772,6 @@ top_right1 = '0.002 4e-4 0.06'
     output_properties = 'PorousFlow_constant_biot_modulus_qp'
     outputs = exodus
   []
-  ##----------------------------------------------------------##
   #Compute density and viscosity
   [simple_fluid_qp]
     type = PorousFlowSingleComponentFluid
@@ -852,47 +806,45 @@ top_right1 = '0.002 4e-4 0.06'
 [UserObjects]
   [dictator]
     type = PorousFlowDictator
-    porous_flow_vars = 'pp disp_x disp_y disp_z'
+    porous_flow_vars = 'pp disp_x disp_y'
     number_fluid_phases = 1
     number_fluid_components = 1
   []
-  #[./init_sol_components]
-  #  type = SolutionUserObject
-  #  mesh = ../../static_solve_mesh2x_out.e
-  #  system_variables = 'disp_x disp_y disp_z pp'
-  #  timestep = LATEST
-  #  force_preaux = true
-  #[../]
+  [./init_sol_components]
+    type = SolutionUserObject
+    mesh = ../static_solve_out.e
+    system_variables = 'disp_x disp_y pp elastic_strain_00 elastic_strain_01 elastic_strain_02 elastic_strain_11 elastic_strain_12 elastic_strain_22'
+    timestep = LATEST
+    force_preaux = true
+  [../]
 []
 
 [ICs]
-    [disp_x_ic]
-        type = ConstantIC
-        variable = disp_x
-        value = 0
-    []
-    [disp_y_ic]
-        type = ConstantIC
-        variable = disp_y
-        value = 0
-    []
-    [disp_z_ic]
-        type = ConstantIC
-        variable = disp_z
-        value = 0
-    []
-    [pp_ic]
-        type = ConstantIC
-        variable = pp
-        value = ${initial_pore_pressure}
-    []
+  [disp_x_ic]
+    type = SolutionIC
+    variable = disp_x
+    solution_uo = init_sol_components
+    from_variable = disp_x
+  []
+  [disp_y_ic]
+    type = SolutionIC
+    variable = disp_y
+    solution_uo = init_sol_components
+    from_variable = disp_y
+  []
+  [pp_ic]
+    type = SolutionIC
+    variable = pp
+    solution_uo = init_sol_components
+    from_variable = pp
+  []
 []
 
 [Controls] # turns off inertial terms for the SECOND time step
   [./period0]
     type = TimePeriod
-    disable_objects = '*/mass0 */inertia_x */inertia_y */inertia_z */vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */damp_outer_x */damp_outer_y */damp_outer_z */pressure_inner'
-    # disable_objects = '*/mass0 */inertia_x */inertia_y */inertia_z */vel_x */vel_y */vel_z */accel_x */accel_y */accel_z */damp_outer_x */damp_outer_y */damp_outer_z */pressure_inner'
+    disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */damp_outer_x */damp_outer_y */pressure_inner'
+    # disable_objects = '*/mass0 */inertia_x */inertia_y */vel_x */vel_y */accel_x */accel_y */pressure_inner'
     start_time = 0
     end_time = 1e-8 # dt used in the simulation
   []
@@ -916,12 +868,8 @@ top_right1 = '0.002 4e-4 0.06'
   # petsc_options_iname = '-pc_type -pc_factor_mat_solver_package -ksp_gmres_restart'
   # petsc_options_value = ' lu       mumps       100'
 
-  #scalable to large problems
-  # petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero -snes_type'
-  # petsc_options_value = 'gmres     hypre  boomeramg True vinewtonrsls'
-
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
-  petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 0.3 vinewtonrsls 100'
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -ksp_initial_guess_nonzero'
+  petsc_options_value = 'gmres     hypre  boomeramg True'
 
   # automatic_scaling = true
   line_search = 'bt'
@@ -931,7 +879,7 @@ top_right1 = '0.002 4e-4 0.06'
   nl_max_its = 50
 
   # dt = 0.5e-7
-  end_time = 50e-5
+  end_time = 3e-5
 
   fixed_point_max_its = 10
   accept_on_max_fixed_point_iteration = false
@@ -958,7 +906,7 @@ top_right1 = '0.002 4e-4 0.06'
   [./exodus]
     type = Exodus
     time_step_interval = 100
-    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux effective_perm00_aux effective_perm11_aux effective_perm01_aux'
+    show = 'd vel_x vel_y vel_z pp psie_active_enhanced biot_modulus_aux biot_coefficient_aux porosity_aux effective_perm00_aux effective_perm11_aux effective_perm01_aux bulk_modulus_degraded_aux stress_00 stress_01 stress_11'
   [../]
   [checkpoint]
       type = Checkpoint
@@ -968,7 +916,7 @@ top_right1 = '0.002 4e-4 0.06'
   [csv]
     type = CSV
     execute_on = 'initial timestep_end'
-    time_step_interval = 40
+    time_step_interval = 1
     show = 'full_energy full_input_energy solid_elastic_energy_total solid_kinetic_energy_total solid_dissipated_energy_total fluid_elastic_energy_total fluid_kinetic_energy_total fluid_dissipated_energy_total damping_work confinement_work external_work fluid_drainage_work dissipated_energy_first_step dissipated_energy_dynamic q_dot_grad_p_integral alpha_p_eps_v_inc_integral fluid_dissipation_incremental fluid_boundary_work_rate dt'
   []
 []
@@ -999,7 +947,7 @@ top_right1 = '0.002 4e-4 0.06'
 # input energy
 ###############################################################################
 # Fluid boundary work density: pp * (q dot n_outward) on boundary
-# For borehole along z-axis centered at origin, outward normal = (-x/r, -y/r, 0) where r = sqrt(x^2+y^2)
+# For borehole centered at origin, outward normal = (-x/r, -y/r)
 # q dot n = -(darcy_vel_x * x + darcy_vel_y * y) / r
 [AuxKernels]
   [compute_fluid_boundary_work_density]
@@ -1020,12 +968,12 @@ top_right1 = '0.002 4e-4 0.06'
   []
   [confinement_work]
     type = FarmsExternalWork
-    boundary = '4'
+    boundary = '1'
     forces = 'fconfinementx fconfinementy fconfinementz'
   []
   [damping_work]
     type = FarmsExternalWork
-    boundary = '4'
+    boundary = '1'
     forces = 'fdampx fdampy fdampz'
   []
   [fluid_boundary_work_rate]
@@ -1065,12 +1013,10 @@ top_right1 = '0.002 4e-4 0.06'
 
 [AuxKernels]
   [solid_kinetic_energy]
-      type = KineticEnergyAux
+      type = ParsedAux
       variable = solid_kinetic_energy
-      newmark_velocity_x = vel_x
-      newmark_velocity_y = vel_y
-      newmark_velocity_z = vel_z
-      density = density
+      coupled_variables = 'vel_x vel_y porosity_aux'
+      expression = "0.5 * ((1.0 - porosity_aux) * ${solid_density} + porosity_aux * ${fluid_density}) * (vel_x*vel_x + vel_y*vel_y)"
   []
 []
 
@@ -1112,8 +1058,8 @@ top_right1 = '0.002 4e-4 0.06'
   [fluid_kinetic_energy]
       type = ParsedAux
       variable = fluid_kinetic_energy
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z'
-      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density}"
+      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z porosity_aux'
+      expression = "0.5 * (darcy_vel_x * darcy_vel_x + darcy_vel_y * darcy_vel_y + darcy_vel_z * darcy_vel_z) * ${fluid_density} / (porosity_aux * porosity_aux)"
   []
 []
 
@@ -1171,10 +1117,6 @@ top_right1 = '0.002 4e-4 0.06'
     order = CONSTANT
     family = MONOMIAL
   []
-  [grad_pp_z]
-    order = CONSTANT
-    family = MONOMIAL
-  []
   [q_dot_grad_p]
     order = CONSTANT
     family = MONOMIAL
@@ -1200,18 +1142,11 @@ top_right1 = '0.002 4e-4 0.06'
       index = 0
       component = 1
   []
-  [grad_pp_z_kernel]
-      type = MaterialStdVectorRealGradientAux
-      variable = grad_pp_z
-      property = PorousFlow_grad_porepressure_qp
-      index = 0
-      component = 2
-  []
   [q_dot_grad_p_kernel]
       type = ParsedAux
       variable = q_dot_grad_p
-      coupled_variables = 'darcy_vel_x darcy_vel_y darcy_vel_z grad_pp_x grad_pp_y grad_pp_z'
-      expression = "darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y + darcy_vel_z * grad_pp_z"
+      coupled_variables = 'darcy_vel_x darcy_vel_y grad_pp_x grad_pp_y'
+      expression = "darcy_vel_x * grad_pp_x + darcy_vel_y * grad_pp_y"
   []
   [alpha_p_eps_v_inc_kernel]
       type = ParsedAux
@@ -1247,6 +1182,8 @@ top_right1 = '0.002 4e-4 0.06'
 ###############################################################################
 
 # Full Energy
+# Note: Physics uses damaged properties (correct variational formulation from CMAME paper)
+# Energy accounting uses incremental work tracking to capture property evolution effects
 ###############################################################################
 [Postprocessors]
   [full_energy]
@@ -1254,5 +1191,24 @@ top_right1 = '0.002 4e-4 0.06'
     expression = 'solid_kinetic_energy_total + solid_elastic_energy_total + solid_dissipated_energy_total + fluid_kinetic_energy_total + fluid_elastic_energy_total + fluid_dissipated_energy_total'
     pp_names = 'solid_kinetic_energy_total solid_elastic_energy_total solid_dissipated_energy_total fluid_kinetic_energy_total fluid_elastic_energy_total fluid_dissipated_energy_total'
     execute_on = 'INITIAL TIMESTEP_END'
+  []
+[]
+
+# Degraded bulk modulus K_eff = (1/9) I:C:I from the SPECTRAL elastic tangent,
+# surfaced via the explicit AuxVariable + MaterialRealAux pattern (parity with
+# effective_perm / biot_modulus, guaranteed to render in the exodus `show` list).
+[AuxVariables]
+  [bulk_modulus_degraded_aux]
+    family = MONOMIAL
+    order = CONSTANT
+  []
+[]
+
+[AuxKernels]
+  [bulk_modulus_degraded_kernel]
+    type = MaterialRealAux
+    variable = bulk_modulus_degraded_aux
+    property = bulk_modulus_degraded
+    execute_on = 'TIMESTEP_END'
   []
 []

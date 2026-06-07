@@ -4,11 +4,12 @@
 #
 # Run this on your LOCAL machine (Mac), not on Frontera.
 #
-# All non-archive case directories under 3d_hydromech/ are pulled. Edit
-# SUBDIRS below to change the selection.
+# Pulls case_* subdirectories under
+#   3d_lab_experiment/phase_field_hydromech/pulse_energy_tests/
+# Edit SUBDIRS below to change the selection.
 #
 # Default destination:
-#   /Volumes/One Touch/Research/PulsePowerFracturing/cmame_revision/3d_hydromech
+#   /Volumes/One Touch/Research/PulsePowerFracturing/3d_lab_experiment/phase_field_hydromech/pulse_energy_tests
 # Override with --dest <path> or the LOCAL_DEST environment variable.
 #
 # Usage:
@@ -36,15 +37,18 @@
 set -u
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REMOTE_ROOT="/scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cmame_revision/3d_hydromech"
-DEFAULT_DEST="/Volumes/One Touch/Research/PulsePowerFracturing/cmame_revision/3d_hydromech"
+REMOTE_ROOT="/scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/3d_lab_experiment/phase_field_hydromech/pulse_energy_tests"
+DEFAULT_DEST="/Volumes/One Touch/Research/PulsePowerFracturing/3d_lab_experiment/phase_field_hydromech/pulse_energy_tests"
 
 # Subdirectories under REMOTE_ROOT to sync. Each becomes a separate rsync pass.
 SUBDIRS=(
-    "em_5J_drained"
-    "em_10J_drained"
-    "em_25J"
-    "em_50J"
+    "case_E5J"
+    "case_E5J_engtrack"
+)
+
+# Subdirectories where only *.csv should be transferred (skip *.e).
+CSV_ONLY_SUBDIRS=(
+    "case_E5J_engtrack"
 )
 
 # --- parse args (host, --dry-run, --dest <path>, in any order) ---
@@ -86,19 +90,42 @@ echo "Mode:   ${DRY:-live}"
 echo
 
 for sub in "${SUBDIRS[@]}"; do
-    echo "==> Syncing $sub"
-    mkdir -p "$LOCAL_DEST/$sub"
-    rsync -avz --progress $DRY \
-        --prune-empty-dirs \
-        --include='*/' \
-        --exclude='elasticity_mesh2x_out_fracture0.e' \
-        --include='*.e' \
-        --include='*.csv' \
-        --exclude='checkpoint/***' \
-        --exclude='.jitcache/***' \
-        --exclude='*' \
-        "$REMOTE:$REMOTE_ROOT/$sub/" \
-        "$LOCAL_DEST/$sub/"
+    # Decide whether to include *.e for this case.
+    include_exodus=1
+    for csvonly in "${CSV_ONLY_SUBDIRS[@]}"; do
+        if [[ "$sub" == "$csvonly" ]]; then
+            include_exodus=0
+            break
+        fi
+    done
+
+    if (( include_exodus )); then
+        echo "==> Syncing $sub (csv + exodus)"
+        mkdir -p "$LOCAL_DEST/$sub"
+        rsync -avz --progress $DRY \
+            --prune-empty-dirs \
+            --include='*/' \
+            --exclude='elasticity_mesh2x_out_fracture0.e' \
+            --include='*.e' \
+            --include='*.csv' \
+            --exclude='checkpoint/***' \
+            --exclude='.jitcache/***' \
+            --exclude='*' \
+            "$REMOTE:$REMOTE_ROOT/$sub/" \
+            "$LOCAL_DEST/$sub/"
+    else
+        echo "==> Syncing $sub (csv only)"
+        mkdir -p "$LOCAL_DEST/$sub"
+        rsync -avz --progress $DRY \
+            --prune-empty-dirs \
+            --include='*/' \
+            --include='*.csv' \
+            --exclude='checkpoint/***' \
+            --exclude='.jitcache/***' \
+            --exclude='*' \
+            "$REMOTE:$REMOTE_ROOT/$sub/" \
+            "$LOCAL_DEST/$sub/"
+    fi
     echo
 done
 

@@ -40,9 +40,14 @@ REMOTE_ROOT="/scratch2/10024/zhaochun/projects/farms_cdms_04192026/pulsepower/cm
 DEFAULT_DEST="/Volumes/One Touch/Research/PulsePowerFracturing/cmame_revision/2d_hydromech"
 
 # Subdirectories under REMOTE_ROOT to sync. Each becomes a separate rsync pass.
+# Currently set to the 5-case permeability-formula comparison set (each case has
+# a baseline elasticity_E1d25.i and a refined elasticity_E1d25_refined.i twin).
 SUBDIRS=(
-    "benchmark"
-    "permeability_formula"
+    "permeability_formula/baseline"
+    "permeability_formula/porosity-strain-based"
+    "permeability_formula/porosity_bounded"
+    "permeability_formula/regularized_normal"
+    "permeability_formula/strained-based"
 )
 
 # --- parse args (host, --dry-run, --dest <path>, in any order) ---

@@ -9,7 +9,7 @@ top_right2 = '3e-4 0.0025 0'
 [Mesh]
   [./msh]
     type = FileMeshGenerator
-    file =  '../../2d_mesh/2d_mesh.msh'
+    file =  '../../../2d_mesh/2d_mesh.msh'
   []
   [./extranodeset1]
     type = ExtraNodesetGenerator
@@ -50,6 +50,10 @@ top_right2 = '3e-4 0.0025 0'
     order = CONSTANT
     family = MONOMIAL
   []
+  [Gc_var]
+    order = CONSTANT
+    family = MONOMIAL
+  []
   [mesh_size]
     order = CONSTANT
     family = MONOMIAL
@@ -57,10 +61,6 @@ top_right2 = '3e-4 0.0025 0'
   [initial_damage_aux]
     family = LAGRANGE
     order = FIRST
-  []
-  [Gc_const_aux]
-    order = CONSTANT
-    family = MONOMIAL
   []
 []
 
@@ -76,11 +76,6 @@ top_right2 = '3e-4 0.0025 0'
     variable = initial_damage_aux
     value = 0
     block = '4 5'
-  []
-  [get_gc_const]
-    type = ConstantAux
-    variable = Gc_const_aux
-    value = ${Gc_const}
   []
 []
 
@@ -122,6 +117,13 @@ top_right2 = '3e-4 0.0025 0'
     prop_names = 'l Gc'
     prop_values = '${l} ${Gc_const}'
   []
+  # [Gc_var]
+  #   type = ADParsedMaterial
+  #   property_name = Gc
+  #   coupled_variables = 'Gc_var'
+  #   expression = 'Gc_var'
+  #   # outputs = exodus
+  # []
   [degradation]
     type = PowerDegradationFunction
     property_name = g
@@ -139,7 +141,7 @@ top_right2 = '3e-4 0.0025 0'
   [psi]
     type = ADDerivativeParsedMaterial
     property_name = psi
-    expression = 'alpha*Gc/c0/l+g*psie_active'
+    expression = 'alpha*Gc/c0/l+0.5*g*psie_active' #<-there is a 0.5 because 2 is taken within psie_active
     coupled_variables = 'd psie_active'
     material_property_names = 'alpha(d) g(d) Gc c0 l'
     derivative_order = 1
