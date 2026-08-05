@@ -55,6 +55,24 @@ BreakageVarForcingFuncDevOld::validParams()
   //add healing
   params.addParam<bool>("healing", false, "if turn on healing, true = on, false = off, default is false = off");
 
+  //alpha_cr calibration.
+  //alpha_cr is a closed form in xi whose coefficients bake in the elastic moduli, so a
+  //given polynomial is only valid for the moduli it was derived for. The default
+  //reproduces this branch's historical behaviour; select stiff_3p204e10 for decks with
+  //lambda_o = shear_modulus_o = 3.204e10 (e.g. examples/damage_paper_zhaoetal2024).
+  params.addParam<MooseEnum>(
+      "alphacr_calibration",
+      MooseEnum("soft_2p73e9 stiff_3p204e10", "soft_2p73e9"),
+      "Elastic-moduli calibration of the closed-form alpha_cr polynomial. "
+      "soft_2p73e9: derived for lambda_o = shear_modulus_o = 2.73e9 (default, historical). "
+      "stiff_3p204e10: derived for lambda_o = shear_modulus_o = 3.204e10.");
+
+  //Optional, purely for validating the choice above. Normally supplied via [GlobalParams].
+  params.addParam<Real>("lambda_o", "initial lambda (first Lame constant) [Pa]; only used "
+                                    "to check that alphacr_calibration matches the material");
+  params.addParam<Real>("shear_modulus_o", "initial shear modulus [Pa]; only used to check "
+                                           "that alphacr_calibration matches the material");
+
   return params;
 }
 
@@ -86,8 +104,41 @@ BreakageVarForcingFuncDevOld::BreakageVarForcingFuncDevOld(const InputParameters
   _mechanical_strain_rate(coupledValue("mechanical_strain_rate")),
   _option(getParam<int>("option")),
   _Cd_constant(getParam<Real>("Cd_constant")),
-  _healing(getParam<bool>("healing"))
+  _healing(getParam<bool>("healing")),
+  _alphacr_calibration(getParam<MooseEnum>("alphacr_calibration")),
+  _has_moduli(isParamValid("lambda_o") && isParamValid("shear_modulus_o")),
+  _lambda_o(_has_moduli ? getParam<Real>("lambda_o") : 0.0),
+  _shear_modulus_o(_has_moduli ? getParam<Real>("shear_modulus_o") : 0.0)
 {
+  // alpha_cr's coefficients bake in the elastic moduli, so a calibration that disagrees
+  // with the material being simulated yields a plausible-looking but wrong granular
+  // transition -- with no error. Catch that here rather than in the results.
+  if (_has_moduli)
+  {
+    const Real expected = (_alphacr_calibration == "stiff_3p204e10") ? 3.204e10 : 2.73e9;
+    const Real tol = 0.01; // 1% relative
+    const bool lambda_bad =
+        std::abs(_lambda_o - expected) > tol * expected;
+    const bool mu_bad =
+        std::abs(_shear_modulus_o - expected) > tol * expected;
+
+    if (lambda_bad || mu_bad)
+      mooseError("alphacr_calibration = '", _alphacr_calibration,
+                 "' is derived for lambda_o = shear_modulus_o = ", expected,
+                 " Pa, but this deck sets lambda_o = ", _lambda_o,
+                 " Pa and shear_modulus_o = ", _shear_modulus_o,
+                 " Pa. alpha_cr would be inconsistent with the material and the granular "
+                 "transition would be wrong without any other symptom. Select the matching "
+                 "calibration, or add one derived for these moduli.");
+  }
+  else
+  {
+    mooseInfo("BreakageVarForcingFuncDevOld: lambda_o/shear_modulus_o are not visible to "
+              "this kernel, so the alphacr_calibration consistency check was SKIPPED. "
+              "Using calibration '", _alphacr_calibration,
+              "'. To enable the check, set lambda_o and shear_modulus_o (normally in "
+              "[GlobalParams]).");
+  }
 }
 
 Real
@@ -209,7 +260,19 @@ BreakageVarForcingFuncDevOld::computeAlphaCr(Real xi)
     //alphacr = ((xi*2.76e5-7.100521107637101e2*xi*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e+2*pow(xi,3)*1.25e2+pow(xi,3)*4.6e4+sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(xi*(-1.44e3)-pow(xi,2)*2.1e3+pow(xi,3)*5.6e2+pow(xi,4)*3.0e2+pow(xi,6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(xi*3.837588e7-7.100521107637101e2*xi*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*pow(xi,2)*2.76e4+pow(xi,2)*2.3984925e7-3.517789e6);
     //alphacr = ((xi*1.616908125e11-1.420703785875508e6*xi*1.875e5-1.420703785875508e6*4.2875e5+sqrt((1.420703785875508e6*8.62351e5-1.381024247201e12)*(xi*-4.41e4-pow(xi,2)*5.25e4+pow(xi,3)*1.715e4+pow(xi,4)*7.5e3+pow(xi,6)*6.25e2+9.6609e4)*(-1.201932276327807e-1))*5.099e3-1.420703785875508e6*pow(xi,3)*3.125e4+pow(xi,3)*2.694846875e10+3.6973299125e11)*(-2.5495e3))/(xi*5.075264108463675e15-1.420703785875508e6*xi*3.169139925e9-1.420703785875508e6*4.53596626e8-1.420703785875508e6*pow(xi,2)*1.616908125e9+pow(xi,2)*2.589420463501875e15+7.26418754027726e14);
     //alphacr = ((xi*7.8715734375e13-3.700182237757216e6*8.00625e7-3.700182237757216e6*pow(xi,3)*5.859375e6+sqrt((3.700182237757216e6*2.0151228e7-8.4170623661651e13)*(xi*(-1.098e6)-pow(xi,2)*1.3125e6+pow(xi,3)*4.27e5+pow(xi,4)*1.875e5+pow(xi,6)*1.5625e4+2.410824e6)*(-4.771054923027554e-1))*3.1991e4+pow(xi,3)*1.31192890625e13-3.700182237757216e6*xi*3.515625e7+1.7926196575e14)*(-7.99775e3))/(xi*7.701612065041066e18-3.700182237757216e6*2.55134697708e11-3.700182237757216e6*pow(xi,2)*9.445888125e11+pow(xi,2)*3.945497984139891e18-3.700182237757216e6*xi*1.843837362e12+1.065684266180163e18);
-    alphacr = ((xi*7.8715734375e13-3.700182237757216e6*8.00625e7-3.700182237757216e6*pow(xi,3)*5.859375e6+sqrt((3.700182237757216e6*2.0151228e7-8.4170623661651e13)*(xi*(-1.098e6)-pow(xi,2)*1.3125e6+pow(xi,3)*4.27e5+pow(xi,4)*1.875e5+pow(xi,6)*1.5625e4+2.410824e6)*(-4.771054923027554e-1))*3.1991e4+pow(xi,3)*1.31192890625e13-3.700182237757216e6*xi*3.515625e7+1.7926196575e14)*(-7.99775e3))/(xi*7.701612065041066e18-3.700182237757216e6*2.55134697708e11-3.700182237757216e6*pow(xi,2)*9.445888125e11+pow(xi,2)*3.945497984139891e18-3.700182237757216e6*xi*1.843837362e12+1.065684266180163e18);
+    if (_alphacr_calibration == "stiff_3p204e10")
+    {
+      //lambda_o,shear_modulus_o = 32.04e9 -- the damage-paper calibration.
+      //Verbatim from cdbm@99b41e9c. (That commit wrote 'alphacr = alphacr = ...'
+      //on the second branch; the duplicated self-assignment is a no-op and is
+      //written once here. Value is unchanged.)
+      alphacr = ((xi*2.76e5-7.100521107637101e2*xi*7.5e2-7.100521107637101e2*1.4e3-7.100521107637101e+2*pow(xi,3)*1.25e2+pow(xi,3)*4.6e4+sqrt((7.100521107637101e2*3.68e2-3.19799e5)*(xi*(-1.44e3)-pow(xi,2)*2.1e3+pow(xi,3)*5.6e2+pow(xi,4)*3.0e2+pow(xi,6)*2.5e1+3.576e3)*(-3.590922148807814e-1))*5.9e1+5.152e5)*(-5.9e1/4.0))/(xi*3.837588e7-7.100521107637101e2*xi*4.416e4+7.100521107637101e2*4.048e3-7.100521107637101e2*pow(xi,2)*2.76e4+pow(xi,2)*2.3984925e7-3.517789e6);
+    }
+    else
+    {
+      //lambda_o,shear_modulus_o = 2.73e9 -- historical default on this branch.
+      alphacr = ((xi*7.8715734375e13-3.700182237757216e6*8.00625e7-3.700182237757216e6*pow(xi,3)*5.859375e6+sqrt((3.700182237757216e6*2.0151228e7-8.4170623661651e13)*(xi*(-1.098e6)-pow(xi,2)*1.3125e6+pow(xi,3)*4.27e5+pow(xi,4)*1.875e5+pow(xi,6)*1.5625e4+2.410824e6)*(-4.771054923027554e-1))*3.1991e4+pow(xi,3)*1.31192890625e13-3.700182237757216e6*xi*3.515625e7+1.7926196575e14)*(-7.99775e3))/(xi*7.701612065041066e18-3.700182237757216e6*2.55134697708e11-3.700182237757216e6*pow(xi,2)*9.445888125e11+pow(xi,2)*3.945497984139891e18-3.700182237757216e6*xi*1.843837362e12+1.065684266180163e18);
+    }
   }
   else if ( xi > _xi_1 && xi <= _xi_max )
   {
@@ -219,7 +282,19 @@ BreakageVarForcingFuncDevOld::computeAlphaCr(Real xi)
     //alphacr = 6.408e10/(7.100521107637101e2*1.737762711864407e8+xi*(7.100521107637101e2*1.086101694915254e8-3.996854237288136e10)-6.394966779661017e10);
     //alphacr = 6.408e10/(1.420703785875508e6*1.231582663267307e5+xi*(1.420703785875508e6*6.283585016669935e4-5.418655822710335e10)-1.062056541251226e11);
     //alphacr = 5.46e9/(3.700182237757216e6*3.997844393735738e3+xi*(3.700182237757216e6*2.048076021381013e3-4.585694096464631e9)-8.951274876298959e9);
-    alphacr = 5.46e9/(3.700182237757216e6*3.997844393735738e3+xi*(3.700182237757216e6*2.048076021381013e3-4.585694096464631e9)-8.951274876298959e9);
+    if (_alphacr_calibration == "stiff_3p204e10")
+    {
+      //lambda_o,shear_modulus_o = 32.04e9 -- the damage-paper calibration.
+      //Verbatim from cdbm@99b41e9c. (That commit wrote 'alphacr = alphacr = ...'
+      //on the second branch; the duplicated self-assignment is a no-op and is
+      //written once here. Value is unchanged.)
+      alphacr = 6.408e10/(7.100521107637101e2*1.737762711864407e8+xi*(7.100521107637101e2*1.086101694915254e8-3.996854237288136e10)-6.394966779661017e10);
+    }
+    else
+    {
+      //lambda_o,shear_modulus_o = 2.73e9 -- historical default on this branch.
+      alphacr = 5.46e9/(3.700182237757216e6*3.997844393735738e3+xi*(3.700182237757216e6*2.048076021381013e3-4.585694096464631e9)-8.951274876298959e9);
+    }
   }
   else
   {

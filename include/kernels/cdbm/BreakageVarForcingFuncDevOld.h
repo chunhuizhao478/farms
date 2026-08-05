@@ -68,5 +68,19 @@ private:
     /// add healing option
     bool _healing;
 
+    /// Which elastic-moduli calibration of the closed-form alpha_cr polynomial to use.
+    /// alpha_cr is a closed form in xi whose coefficients bake in lambda_o and
+    /// shear_modulus_o, so it is only valid for the moduli it was derived for.
+    /// Default "soft_2p73e9" preserves this branch's historical behaviour exactly.
+    const MooseEnum & _alphacr_calibration;
+
+    /// Elastic moduli, if the deck makes them visible to this kernel (they are normally
+    /// set in [GlobalParams] for the CDBM material). Used only to check that the selected
+    /// alpha_cr calibration matches the rock actually being simulated. Optional: when
+    /// absent the check is skipped and a mooseInfo says so.
+    const bool _has_moduli;
+    const Real _lambda_o;
+    const Real _shear_modulus_o;
+
     Real computeAlphaCr(Real xi);
 };
