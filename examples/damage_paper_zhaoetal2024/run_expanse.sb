@@ -1,0 +1,92 @@
+#!/bin/bash
+#SBATCH --job-name=damage_paper_zhaoetal2024
+#SBATCH --account=CHANGE_ME
+#SBATCH --partition=compute
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=128
+#SBATCH --mem=240G
+#SBATCH --time=24:00:00
+#SBATCH --output=%x-%j.out
+#SBATCH --error=%x-%j.err
+#
+# Worked SLURM example for examples/damage_paper_zhaoetal2024 (SDSC Expanse).
+# Adapt --account, the module lines and FARMS_EXE for your site.
+#
+#   sbatch run_expanse.sb
+#
+# Measured on Expanse (2 x AMD EPYC 7742, 128 cores/node): 22 h 09 m wall,
+# ~2,836 core-hours, ~12 GB of Exodus output. Budget 24 h; it finished with
+# under 2 h to spare, so do not trim the request.
+
+set -o pipefail
+
+FARMS_EXE="${FARMS_EXE:-$(cd "$(dirname "$0")/../.." && pwd)/farms-opt}"
+INPUT=test_planarfault_main.i
+SUB=test_planarfault_sub.i
+MESH=mesh/planarfault2_uniform_adaptive.msh
+
+# ---------------------------- environment ----------------------------------
+# Never pipe `module load` -- module is a shell function, so a pipeline runs it in
+# a subshell and the environment change is silently discarded.
+. /etc/profile.d/lmod.sh 2>/dev/null
+. /etc/profile.d/modules.sh 2>/dev/null
+module load cpu/0.17.3b
+module load gcc/10.2.0
+module load openmpi/4.1.3
+module list 2>&1
+
+export METHOD=opt METHODS=opt
+export OMP_NUM_THREADS=1
+
+# --------------------------- preflight asserts -----------------------------
+# These are cheap and they run before a node-day is spent.
+fail() { echo "PREFLIGHT FAIL: $*" >&2; exit 2; }
+
+[ -x "$FARMS_EXE" ] || fail "farms-opt not found or not executable: $FARMS_EXE"
+[ -f "$INPUT" ]     || fail "$INPUT not in $PWD -- run this from the example directory"
+[ -f "$SUB" ]       || fail "$SUB not beside $INPUT (the MultiApp loads it by relative name)"
+[ -f "$MESH" ]      || fail "$MESH missing"
+ldd "$FARMS_EXE" 2>&1 | grep -q "not found" && fail "unresolved shared libraries in $FARMS_EXE"
+
+# The deck must be the production configuration, not a debug throttle. The sibling
+# copy on branch cdbm HEAD has num_steps active and interval = 1; running that by
+# accident costs a node-day and produces 5 ms of a 3 s rupture, or terabytes of output.
+grep -qE '^\s*num_steps\s*=' "$INPUT" && \
+  fail "num_steps is ACTIVE in $INPUT -- it must stay commented; end_time = 3.0 governs"
+grep -qE '^\s*interval\s*=\s*200\s*$' "$INPUT" || \
+  fail "Outputs/interval is not 200 in $INPUT -- interval = 1 would write ~2.3 TB"
+grep -qE '^\s*end_time\s*=\s*3\.0\s*$' "$INPUT" || fail "end_time is not 3.0 in $INPUT"
+
+# The reproduction-critical one.
+n=$(grep -c 'alphacr_calibration = stiff_3p204e10' "$SUB")
+[ "$n" -eq 2 ] || fail "expected alphacr_calibration = stiff_3p204e10 on both breakage kernels in $SUB, found $n"
+
+AVAIL_KB=$(df -Pk . | awk 'NR==2{print $4}')
+[ "$AVAIL_KB" -gt 31457280 ] || fail "under 30 GB free in $PWD (the Exodus is ~12 GB)"
+
+echo "=================== RUN CONFIG ==================="
+echo "job       : $SLURM_JOB_ID on $SLURM_JOB_NUM_NODES node(s), $SLURM_NTASKS ranks"
+echo "exe       : $FARMS_EXE"
+echo "input     : $PWD/$INPUT"
+echo "expected  : 6000 steps (dt 5e-4 to t = 3.0), 31 Exodus writes, ~12 GB"
+echo "free      : $((AVAIL_KB/1024/1024)) GB"
+echo "=================================================="
+
+echo "START $(date)"
+SECONDS=0
+mpirun -np "$SLURM_NTASKS" "$FARMS_EXE" -i "$INPUT"
+RC=$?
+echo "END   $(date)  elapsed=${SECONDS}s  exit=$RC"
+[ $RC -ne 0 ] && { echo "RUN FAILED (rc=$RC)" >&2; exit $RC; }
+
+OUT=test_planarfault_main_out.e
+[ -f "$OUT" ] || { echo "POSTFLIGHT FAIL: no $OUT produced" >&2; exit 3; }
+SZ=$(stat -c %s "$OUT")
+echo "$OUT = $SZ bytes"
+# ~12 GB when complete; under 1 GB means it stopped early.
+[ "$SZ" -gt 1073741824 ] || { echo "POSTFLIGHT FAIL: $OUT is only $SZ bytes -- run stopped early" >&2; exit 3; }
+
+echo
+echo "Now verify the physics -- file size alone proves nothing:"
+echo "  python3 verify_fingerprint.py $OUT"
+echo "RUN COMPLETE OK"
