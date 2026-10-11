@@ -1,0 +1,17 @@
+mesh	status	nodes	tets	tags	inverted	orphans	v_rel	d_m2s_um	d_s2m_um	tol_um	line_nodes	lines_ok	q_min	q_lt_0p1	h_band_um
+mesh_2holes_asym_3d_xL3.00mm_xR2.00mm_y3.6mm_radi1.0mm	PASS	323962	1914878	1	0	0	+4.5e-05	4.8	0.9	10	33/33/81	True	0.317	0	131
+mesh_2holes_asym_3d_xL3.00mm_xR2.50mm_y3.6mm_radi1.0mm	PASS	340741	2018562	1	0	0	+4.5e-05	4.8	0.9	10	33/33/81	True	0.305	0	131
+mesh_2holes_asym_3d_xL3.50mm_xR2.50mm_y3.6mm_radi1.0mm	PASS	357482	2120765	1	0	0	+4.5e-05	4.8	0.9	10	33/33/81	True	0.335	0	131
+mesh_2holes_connected_3d_DL1.5mm_DR2.0mm_x1.50mm_y3.6mm_upline	PASS	252787	1471507	1	0	0	+4.2e-05	4.8	1.7	10	33/33/81	True	0.177	0	131
+mesh_2holes_connected_3d_DL1.5mm_DR2.0mm_x1.50mm_y3.6mm_downline	PASS	253191	1474111	1	0	0	+4.2e-05	4.8	1.7	10	33/33/81	True	0.335	0	131
+mesh_2holes_connected_3d_DL1.5mm_DR2.0mm_x1.00mm_y3.6mm_overlap	PASS	220612	1283879	1	0	0	+4.5e-05	4.8	1.3	10	33/33/81	True	0.354	0	131
+mesh_2holes_connected_3d_DL1.5mm_DR2.0mm_x2.00mm_y3.6mm_midline	PASS	285436	1669512	1	0	0	+4.4e-05	4.8	1.6	10	33/33/81	True	0.351	0	131
+mesh_2holes_connected_3d_DL1.5mm_DR2.0mm_x2.00mm_y3.6mm_downline	PASS	285151	1664982	1	0	0	+4.2e-05	4.8	1.7	10	33/33/81	True	0.382	0	131
+mesh_2holes_connected_3d_DL2.0mm_DR2.0mm_x2.00mm_y3.6mm_upline	PASS	290786	1694634	1	0	0	+4.2e-05	4.7	1.1	10	33/33/81	True	0.345	0	131
+mesh_2holes_connected_3d_DL2.0mm_DR2.0mm_x2.00mm_y3.6mm_downline	PASS	290495	1692374	1	0	0	+4.2e-05	4.7	1.1	10	33/33/81	True	0.306	0	131
+mesh_2holes_connected_3d_DL2.0mm_DR2.0mm_x1.50mm_y3.6mm_downline	PASS	256705	1490620	1	0	0	+4.2e-05	4.7	1.1	10	33/33/81	True	0.323	0	131
+mesh_2holes_connected_3d_DL2.0mm_DR2.0mm_x1.00mm_y3.6mm_overlap	PASS	223722	1301097	1	0	0	+4.2e-05	4.8	1.0	10	33/33/81	True	0.366	0	131
+mesh_sinewave_3d_D1.0mm_y1.6mm_amp2.0mm_centered	PASS	215359	1272124	1	0	0	+3.4e-05	16.1	17.1	40	33/33/81	True	0.369	0	130
+mesh_sinewave_3d_D1.0mm_y1.6mm_amp2.0mm_1ampoffset	PASS	216586	1279134	1	0	0	+3.4e-05	16.2	16.9	40	33/33/81	True	0.350	0	130
+mesh_pillars_3d_welded_mismatch_2onN	PASS	296226	1638975	1	0	0	-1.2e-04	4.3	0.0	10	33/33/81	True	0.333	0	130
+mesh_pillars_3d_welded_mismatch_3onN	PASS	294270	1626270	1	0	0	-1.1e-04	4.3	0.0	10	33/33/81	True	0.293	0	131

@@ -1,0 +1,16 @@
+% Self-contained pandoc/xelatex header for the develop_new_algorithm documents.
+% Does NOT use the shared parts_dev/_assets/pdf-style.tex (its Shaded renew fails on
+% documents without language-tagged fences).
+\usepackage{fvextra}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines,breakanywhere,fontsize=\small}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+\usepackage{array}
+\renewcommand{\arraystretch}{1.15}
+\usepackage{float}
+\floatplacement{figure}{H}
+% --- added for the amp10 p5 settings document (from the house plan-extra.tex, ucvm/pdf) ---
+% Tables: smaller font and a little more row air; every pandoc table is a longtable, so one hook covers them all.
+\usepackage{etoolbox}
+\AtBeginEnvironment{longtable}{\footnotesize\renewcommand{\arraystretch}{1.18}}
