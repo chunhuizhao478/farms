@@ -24,8 +24,13 @@ STEPS
 CHECKS
     Every substitution must match exactly once; --check-input must exit 0.
 
+    Packed jobs (--pack NAME): jobs_dtprobe/job_pack_NAME.sbatch runs several probes side
+    by side in one development job, 10 nodes / 400 ranks each (ibrun -n 400 -o offset);
+    20 nodes on one probe ran only ~1.2x faster than 10 (8.3 s vs ~10 s per step).
+
 USAGE
     python make_dt_probe.py TAG [--check]
+    python make_dt_probe.py TAG1 TAG2 --pack NAME [--check]
       TAG e.g. xL3.00mm_xR2.00mm_y3.6mm_radi1.0mm (a case_tag of CASES)
 """
 
@@ -103,6 +108,78 @@ def probe_job_text(case):
     return t
 
 
+PACK_RANKS_PER_CASE = 400   # 10 nodes x 40 ranks, the production layout (20 nodes gave only ~1.2x)
+PACK_JOB_HEADER = """#!/bin/bash
+#SBATCH -J 3dptrbend_dtprobe_{name}        # Job name
+#SBATCH -o 3dptrbend_dtprobe_{name}.o%j    # Name of stdout output file
+#SBATCH -e 3dptrbend_dtprobe_{name}.e%j    # Name of stderr error file
+#SBATCH -p development     # Queue (partition) name
+#SBATCH -N {nodes}               # Total # of nodes
+#SBATCH -n {ranks}              # Total # of mpi tasks
+#SBATCH -t 02:00:00        # Run time (hh:mm:ss)
+#SBATCH --mail-type=all    # Send email at begin and end of job
+#SBATCH -A EAR20006        # Project/Allocation name (req'd if you have more than 1)
+#SBATCH --mail-user=chunhui3@illinois.edu
+
+# dt probes (dt 0.1 to t = 50, make_dt_probe.py) of {count} cases side by side, each on its own
+# {nodes_each} nodes / {each} ranks (ibrun -n {each} -o offset). Each probe writes split.log,
+# probe.log, elasticity_out.csv and elasticity_exodus.e in its own case folder.
+#=== USER PARAMETERS - MODIFY THIS ===
+CASES=(
+{cases}
+)
+#=====================================
+
+# Derived paths
+PROJECT_BASE="/scratch2/10024/zhaochun/projects/farms_cdms_04192026"
+RANKS_PER_CASE={each}
+
+# Load necessary modules
+module swap intel gcc
+module load cuda
+export CXXFLAGS=-I/opt/apps/gcc/9.1.0/include/c++/9.1.0/
+export CC=mpicc CXX=mpicxx FC=mpif90 F90=mpif90 F77=mpif77
+
+# Enable MPI debugging
+export MV2_DEBUG=1
+export MV2_SHOW_ENV_INFO=1
+
+export MOOSE_JOBS=6 METHODS=opt
+
+# Split each mesh (serial), side by side
+for i in "${{!CASES[@]}}"; do
+  C="${{PROJECT_BASE}}/threepointbending/${{CASES[$i]}}"
+  ibrun -n 1 -o $((i * RANKS_PER_CASE)) ../../farms-opt -i ${{C}}/elasticity.i --split-mesh ${{RANKS_PER_CASE}} --split-file ${{C}}/foo.cpr > ${{C}}/split.log 2>&1 &
+done
+wait
+
+# Run each probe on its own nodes, side by side
+for i in "${{!CASES[@]}}"; do
+  C="${{PROJECT_BASE}}/threepointbending/${{CASES[$i]}}"
+  ibrun -n ${{RANKS_PER_CASE}} -o $((i * RANKS_PER_CASE)) ../../farms-opt -i ${{C}}/elasticity.i --use-split --split-file ${{C}}/foo.cpr --allow-unused > ${{C}}/probe.log 2>&1 &
+done
+wait
+"""
+
+
+def packed_job_text(name, case_list):
+    """One development job running the probes of case_list side by side (10 nodes each)."""
+    each = PACK_RANKS_PER_CASE
+    rel = [f'  "code_{c["family"]}/{cases.case_dir_name(c)}{PROBE_SUFFIX}"' for c in case_list]
+    return PACK_JOB_HEADER.format(name=name, count=len(case_list), nodes=len(case_list) * each // 40,
+                                  ranks=len(case_list) * each, nodes_each=each // 40, each=each,
+                                  cases="\n".join(rel))
+
+
+def write_probe_case(case):
+    """Write the probe deck folder of one case; return its path."""
+    case_dir = os.path.join(geos.TPB_DIR, f"code_{case['family']}", cases.case_dir_name(case) + PROBE_SUFFIX)
+    elastic, fracture = probe_deck_texts(case)
+    cases.write(os.path.join(case_dir, "elasticity.i"), elastic)
+    cases.write(os.path.join(case_dir, "fracture.i"), fracture)
+    return case_dir
+
+
 def check_with_moose(deck, scratch):
     """--check-input with the local farms-opt under the memory guard; returns the status."""
     import check_decks_moose as checker
@@ -120,21 +197,27 @@ def check_with_moose(deck, scratch):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("tag")
+    ap.add_argument("tags", nargs="+", help="case tags; with --pack, the cases of one packed job")
+    ap.add_argument("--pack", metavar="NAME", help="write ONE development job running all tags side by side")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--scratch", default="/tmp/dtprobe_check")
     args = ap.parse_args()
-    case = find_case(args.tag)
-    fam = case["family"]
-    case_dir = os.path.join(geos.TPB_DIR, f"code_{fam}", cases.case_dir_name(case) + PROBE_SUFFIX)
-    elastic, fracture = probe_deck_texts(case)
-    cases.write(os.path.join(case_dir, "elasticity.i"), elastic)
-    cases.write(os.path.join(case_dir, "fracture.i"), fracture)
-    job = os.path.join(geos.TPB_DIR, f"jobs_{fam}_dtprobe", f"job_{args.tag}{PROBE_SUFFIX}.sbatch")
-    cases.write(job, probe_job_text(case))
-    print(f"wrote {os.path.relpath(case_dir, geos.TPB_DIR)}/ and {os.path.relpath(job, geos.TPB_DIR)}")
-    if args.check and check_with_moose(os.path.join(case_dir, "elasticity.i"), args.scratch) != "ok":
-        return 1
+    case_list = [find_case(t) for t in args.tags]
+    case_dirs = [write_probe_case(c) for c in case_list]
+    for d in case_dirs:
+        print(f"wrote {os.path.relpath(d, geos.TPB_DIR)}/")
+    if args.pack:
+        job = os.path.join(geos.TPB_DIR, "jobs_dtprobe", f"job_pack_{args.pack}.sbatch")
+        cases.write(job, packed_job_text(args.pack, case_list))
+    else:
+        assert len(case_list) == 1, "several tags need --pack"
+        case = case_list[0]
+        job = os.path.join(geos.TPB_DIR, f"jobs_{case['family']}_dtprobe", f"job_{args.tags[0]}{PROBE_SUFFIX}.sbatch")
+        cases.write(job, probe_job_text(case))
+    print(f"wrote {os.path.relpath(job, geos.TPB_DIR)}")
+    for d in case_dirs if args.check else []:
+        if check_with_moose(os.path.join(d, "elasticity.i"), args.scratch) != "ok":
+            return 1
     return 0
 
 
