@@ -1,0 +1,17 @@
+case	maxd_15p5	crack_t	source	fine_start	end_time
+xL3.00mm_xR2.00mm_y3.6mm_radi1.0mm	0.2011	21.8	measured	20.0	50
+xL3.00mm_xR2.50mm_y3.6mm_radi1.0mm	0.1897	22.4	fitted	20.5	50
+xL3.50mm_xR2.50mm_y3.6mm_radi1.0mm	0.1754	23.1	fitted	21.5	50
+DL1.5mm_DR2.0mm_x1.50mm_y3.6mm_upline	0.1164	27.5	fitted	25.5	50
+DL1.5mm_DR2.0mm_x1.50mm_y3.6mm_downline	0.1136	28.0	measured	26.5	50
+DL1.5mm_DR2.0mm_x1.00mm_y3.6mm_overlap	0.1500	24.5	fitted	23.0	50
+DL1.5mm_DR2.0mm_x2.00mm_y3.6mm_midline	0.1010	29.5	fitted	27.5	50
+DL1.5mm_DR2.0mm_x2.00mm_y3.6mm_downline	0.1101	28.2	fitted	26.5	50
+DL2.0mm_DR2.0mm_x2.00mm_y3.6mm_upline	0.0958	30.0	measured	28.5	50
+DL2.0mm_DR2.0mm_x2.00mm_y3.6mm_downline	0.1097	28.3	fitted	26.5	50
+DL2.0mm_DR2.0mm_x1.50mm_y3.6mm_downline	0.1329	25.8	fitted	24.0	50
+DL2.0mm_DR2.0mm_x1.00mm_y3.6mm_overlap	0.1110	28.1	fitted	26.5	50
+D1.0mm_y1.6mm_amp2.0mm_centered	0.1760	22.9	measured	21.0	50
+D1.0mm_y1.6mm_amp2.0mm_1ampoffset	0.1800	22.9	fitted	21.0	50
+welded_mismatch_2onN	0.1550	24.5	measured	23.0	50
+welded_mismatch_3onN	0.1528	24.4	fitted	22.5	50
