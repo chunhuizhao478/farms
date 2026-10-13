@@ -10,7 +10,7 @@ WHAT
       - dt_fn       0.1 from t = 0 to t_fine, then 0.001  (t_fine as make_restart_decks.py:
                     crack - 1.5, down to 0.5, >= 20)
       - end_time    50 (as the Frontera restarts; the wall time ends the run first)
-      - sync_times  every 1.0 up to t_fine, every 0.1 after it
+      - sync_times  every 1.0 up to t_fine (and at t_fine), every 0.1 after it
       - per-step CSV: max d, fixed-point / nonlinear / linear iterations, wall time (PerfGraphData)
         and peak process memory (MemoryUsage), to measure the step rate and memory need
     Physics and solver settings are the production deck's (code_2holes template).  Hourly
@@ -78,6 +78,8 @@ def discovery_deck_texts(case, t_fine):
     start = elastic.index("sync_times = '")
     end = elastic.index("'", start + len("sync_times = '"))
     coarse = [f"{float(k):.1f}" for k in range(1, int(t_fine) + 1)]
+    if t_fine != int(t_fine):                       # e.g. 26.5: also output where the fine steps begin
+        coarse.append(f"{t_fine:.1f}")
     n_fine = int(round((restart.END_TIME - t_fine) / restart.SYNC_STEP))
     fine = [f"{t_fine + restart.SYNC_STEP * k:.1f}" for k in range(1, n_fine + 1)]
     elastic = elastic[:start] + "sync_times = '" + " ".join(coarse + fine) + elastic[end:]
