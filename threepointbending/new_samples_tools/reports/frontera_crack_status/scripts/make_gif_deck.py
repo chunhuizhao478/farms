@@ -147,7 +147,9 @@ def main(root, out):
     prs.slide_width, prs.slide_height = SLIDE_W, SLIDE_H
     for case, gif in found:
         add_case_slide(prs, case, gif)
-    prs.save(out)
+    partial = out + ".part.pptx"
+    prs.save(partial)
+    os.replace(partial, out)                   # swap in whole: a copy open in PowerPoint is never half-written
     n = check_deck(out, found)
     print("wrote %s: %d slides (%s), %.1f MB; checks passed (animated GIFs embedded byte-identical)"
           % (out, n, " ".join(c[0] for c, _ in found), os.path.getsize(out) / 1e6))

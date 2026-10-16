@@ -9,7 +9,8 @@ WHAT    the approved C1 format (render_c1_gif_volume.py) for any case: transluce
         the supports (y >= SLAB_Y_MIN_MM) inside the central window SLAB_X_WINDOW_MM, padded by SLAB_PAD_MM.
 STEPS   1 reader + merged grid + shell + edges   2 slab from the final damage   3 styles + labels   4 camera
         5 time frames   6 orbit frames
-USAGE   pvpython render_case_gif.py EXODUS OUT_DIR --title "..." --t-from T [--test] [--orbit-only]
+USAGE   pvpython render_case_gif.py EXODUS OUT_DIR --title "..." --t-from T [--end-label TEXT] [--test] [--orbit-only]
+        (--end-label: word(s) after the last time, default "final"; e.g. "last output so far" for a run still going)
 """
 import argparse
 import math
@@ -146,6 +147,7 @@ def main():
     ap.add_argument("out_dir")
     ap.add_argument("--title", required=True)
     ap.add_argument("--t-from", type=float, required=True)
+    ap.add_argument("--end-label", default="final")
     ap.add_argument("--test", action="store_true")
     ap.add_argument("--orbit-only", action="store_true")
     a = ap.parse_args()
@@ -170,7 +172,7 @@ def main():
             setattr(view, name, value)
     style(view, damage, shell, edges)
     clock_src = labels(view, a.title)
-    final = "t = %.1f (final)    load-line displacement %.2f mm" % (times[-1], LOAD_MM_PER_T * times[-1])
+    final = "t = %.1f (%s)    load-line displacement %.2f mm" % (times[-1], a.end_label, LOAD_MM_PER_T * times[-1])
     if a.test:
         view.ViewTime = times[-1]
         clock_src.Text = final

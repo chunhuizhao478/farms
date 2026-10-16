@@ -3,8 +3,10 @@
 #   Each GIF goes next to its case's solution file:  $DST/<case>/<ID>_crack_plane_xray_damage_t<from>-<to>.gif
 #   Start time: about 3.5 before the case's crack onset (first step with >= 5 fixed-point iterations in the Frontera
 #   log), rounded down to 0.5, so every GIF shows the build-up and the jump. Frames + per-case logs go to $FRAMES_ROOT.
-# USAGE   bash make_case_gifs.sh C2 D1 D2 D3
-#         (run under a memory kill-switch on the 36 GB laptop, e.g. run_guarded.sh <logfile> bash make_case_gifs.sh ...;
+# USAGE   bash make_case_gifs.sh [--test] C2 D1 D2 D3
+#         END_LABEL="last output so far" bash make_case_gifs.sh C3   (label after the last time; default "final")
+#         (--test: final state from the main camera only, $FRAMES_ROOT/gif_test_<ID>/test_main.png, no GIF;
+#          run under a memory kill-switch on the 36 GB laptop, e.g. run_guarded.sh <logfile> bash make_case_gifs.sh ...;
 #          8 cases took 4 min with a peak of 2.9 GB for both lanes)
 HERE=$(cd "$(dirname "$0")" && pwd)                    # render_case_gif.py and make_gif.py sit next to this script
 DST=${DST:-"/Volumes/Extreme SSD/threepointbending/new_sample"}
@@ -12,6 +14,7 @@ FRAMES_ROOT=${FRAMES_ROOT:-${TMPDIR:-/tmp}/tpb_gif_frames}
 PV=${PV:-/Applications/ParaView-6.2.0-RC1.app/Contents/bin/pvpython}
 PY=${PY:-/Users/chunhuizhao/miniforge/envs/pythonenv/bin/python}
 mkdir -p "$FRAMES_ROOT"
+TEST=0; [ "${1:-}" = "--test" ] && { TEST=1; shift; }
 
 spec() {   # ID -> "case folder|title|t_from"
   case $1 in
@@ -38,11 +41,20 @@ run_case() {   # ID
   local s=$(spec $1) folder title t_from frames log
   [ -n "$s" ] || { echo "$1 unknown case ID"; return; }
   folder=${s%%|*}; s=${s#*|}; title=${s%%|*}; t_from=${s#*|}
+  if [ $TEST = 1 ]; then
+    log=$FRAMES_ROOT/gif_test_$1.log
+    "$PV" --force-offscreen-rendering "$HERE/render_case_gif.py" "$DST/$folder/elasticity_exodus.e" "$FRAMES_ROOT/gif_test_$1" \
+          --title "$title" --t-from $t_from --test > "$log" 2>&1 \
+      && echo "$1 test view $FRAMES_ROOT/gif_test_$1/test_main.png  ($(grep '^slab' "$log"))" \
+      || echo "$1 test FAILED (see $log)"
+    return
+  fi
   frames=$FRAMES_ROOT/gif_frames_$1
   log=$FRAMES_ROOT/gif_$1.log
   rm -rf "$frames"
   "$PV" --force-offscreen-rendering "$HERE/render_case_gif.py" "$DST/$folder/elasticity_exodus.e" "$frames" \
-        --title "$title" --t-from $t_from > "$log" 2>&1 || { echo "$1 render FAILED (see $log)"; return; }
+        --title "$title" --t-from $t_from ${END_LABEL:+--end-label "$END_LABEL"} > "$log" 2>&1 \
+        || { echo "$1 render FAILED (see $log)"; return; }
   "$PY" "$HERE/make_gif.py" "$frames" "$DST/$folder/$1_crack_plane_xray_damage_$(cat "$frames/range.txt").gif" >> "$log" 2>&1 \
      && echo "$1 $(tail -n 1 "$log")" || echo "$1 GIF FAILED (see $log)"
 }
