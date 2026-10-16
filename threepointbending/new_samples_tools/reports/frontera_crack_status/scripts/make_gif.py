@@ -28,7 +28,12 @@ def main(frame_dir, out):
         montage.paste(im, (0, k * h))
     palette = montage.quantize(colors=256, method=Image.Quantize.MEDIANCUT)
     quantized = [im.quantize(palette=palette, dither=Image.Dither.NONE) for im in frames]
-    durations = [FRAME_MS] * (len(quantized) - 1) + [HOLD_LAST_MS]
+    timing = os.path.join(frame_dir, "durations.txt")          # per-frame ms written by the renderer, if any
+    if os.path.exists(timing):
+        durations = [int(line) for line in open(timing) if line.strip()]
+        assert len(durations) == len(quantized), "durations.txt has %d lines for %d frames" % (len(durations), len(quantized))
+    else:
+        durations = [FRAME_MS] * (len(quantized) - 1) + [HOLD_LAST_MS]
     quantized[0].save(out, save_all=True, append_images=quantized[1:], duration=durations, loop=0, optimize=False)
     print("wrote %s: %d frames, %dx%d, %.1f MB" % (out, len(quantized), w, h, os.path.getsize(out) / 1e6))
 

@@ -32,6 +32,17 @@ CAMERA_DIR = (0.80, 0.42, 0.85)  # chosen from TEST_CAMERAS: front face, right e
 CAMERA_DIST_M = 0.047
 TEST_CAMERAS = {"A": (0.42, 0.34, 1.0), "B": (0.80, 0.42, 0.85), "C": (1.0, 0.55, 0.45)}
 LOAD_MM_PER_T = 0.1
+ORBIT_DEG = 180.0                # after the last time: camera swings this far about the vertical axis
+ORBIT_FRAMES = 60                # 3 degrees per frame
+TIME_MS, HOLD_FINAL_TIME_MS, ORBIT_MS, HOLD_END_MS = 100, 1200, 80, 1500   # GIF frame durations (durations.txt)
+
+
+def rotate_about_y(direction, degrees):
+    """Camera direction turned about the vertical (y) axis; positive angles swing it from +z toward +x first."""
+    import math
+    a = math.radians(degrees)
+    x, y, z = direction
+    return (x * math.cos(a) + z * math.sin(a), y, -x * math.sin(a) + z * math.cos(a))
 
 
 def build(path):
@@ -94,7 +105,7 @@ def camera(view, bounds, direction):
     view.CameraViewAngle = 30.0
 
 
-def main(path, out_dir, test):
+def main(path, out_dir, test, orbit_only=False):
     os.makedirs(out_dir, exist_ok=True)
     reader, shell, edges, crack, zone = build(path)
     times = [t for t in reader.TimestepValues if t >= T_FROM - 1e-9]
@@ -119,12 +130,23 @@ def main(path, out_dir, test):
         print("wrote %d test views at t = %.1f" % (len(TEST_CAMERAS), times[-1]))
         return
     camera(view, bounds, CAMERA_DIR)
-    for k, t in enumerate(times):
-        view.ViewTime = t
-        clock_src.Text = "t = %.1f    load-line displacement %.2f mm" % (t, LOAD_MM_PER_T * t)
-        SaveScreenshot(os.path.join(out_dir, "frame_%03d.png" % k), view, ImageResolution=IMAGE)
-    print("wrote %d frames, t = %.1f .. %.1f" % (len(times), times[0], times[-1]))
+    if not orbit_only:
+        for k, t in enumerate(times):
+            view.ViewTime = t
+            clock_src.Text = "t = %.1f    load-line displacement %.2f mm" % (t, LOAD_MM_PER_T * t)
+            SaveScreenshot(os.path.join(out_dir, "frame_%03d.png" % k), view, ImageResolution=IMAGE)
+        print("wrote %d time frames, t = %.1f .. %.1f" % (len(times), times[0], times[-1]))
+    # final state seen from around the specimen: half a circle about the vertical axis
+    view.ViewTime = times[-1]
+    clock_src.Text = "t = %.1f (final)    load-line displacement %.2f mm" % (times[-1], LOAD_MM_PER_T * times[-1])
+    for j in range(1, ORBIT_FRAMES + 1):
+        camera(view, bounds, rotate_about_y(CAMERA_DIR, ORBIT_DEG * j / ORBIT_FRAMES))
+        SaveScreenshot(os.path.join(out_dir, "frame_%03d.png" % (len(times) - 1 + j)), view, ImageResolution=IMAGE)
+    print("wrote %d orbit frames (%.0f degrees)" % (ORBIT_FRAMES, ORBIT_DEG))
+    durations = [TIME_MS] * (len(times) - 1) + [HOLD_FINAL_TIME_MS] + [ORBIT_MS] * (ORBIT_FRAMES - 1) + [HOLD_END_MS]
+    with open(os.path.join(out_dir, "durations.txt"), "w") as fh:
+        fh.write("\n".join(str(ms) for ms in durations) + "\n")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], "--test" in sys.argv)
+    main(sys.argv[1], sys.argv[2], "--test" in sys.argv, "--orbit-only" in sys.argv)
