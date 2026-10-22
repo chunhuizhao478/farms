@@ -29,3 +29,19 @@ No email notifications in this script.
 
 72 ranks each on one `gg` node. The same two cases run on Discovery from
 `../cases/discovery_att_eta0p5_{free,absorb}/` (20 cores each, slower).
+
+## Build and the first production run (2026-10-22)
+
+Build chain on Vista: PETSc 3.25.4 on the login node; libMesh + WASP as job 1089062 on `gg`
+(`--disable-netgen`, MOOSE_JOBS=64); farms as job 1089064; input check
+`farms-opt -i elasticity_absorbing.i ... --check-input` = Syntax OK. The gcc14 OpenMPI libtool
+archives mix two UCX versions; the workaround (a shadow lib dir without `.la` files, patched into
+the PETSc link variables and reported by the wrappers through `OMPI_LDFLAGS`) is documented in
+`$WORK/build_logs/README_vista_build.md` and applied by `$WORK/build_logs/env_moose.sh`.
+
+Job 1089067 (one `gg` node, 72 ranks per case, 12 h) started 02:45 PDT. Pace: the absorbing case
+covers about 120 us of the train per hour (pulse 7 after 3 h, so 20 pulses in roughly 10 h); the
+free case ran 25 us per 10 min until pulse 4 and then slowed to about 20 us per hour (corner
+fragments at 60-97 m/s keep the adaptive step far below `dt_max`). A job that ends by wall time is
+continued with `sbatch --export=ALL,RECOVER=1 submit_vista_att.sbatch` (the session watcher does
+this, up to three times). Results are tabulated in `../../local_runs/README.md`.

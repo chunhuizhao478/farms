@@ -56,3 +56,33 @@ pulse at the same peak carries more impulse and makes everything worse. Picture:
 | absorbing faces (job 13297782) | 2.65 / 6.39 mm, 7 cracks | nothing (no node above d = 0.1); dashpots absorb 76 % of the pressure work |
 
 Picture: `discovery_att_eta0p5_free_vs_absorb_pulse2.png`. Both jobs continue toward 20 pulses.
+
+## Attenuated 20-pulse cases, progress after seven pulses (2026-10-22, 06:00 PDT)
+
+Vista job 1089067 and Discovery jobs 13297781/13297782 run the same two inputs and agree to the
+step. Crack extent from the borehole wall at the end of each 60 us window: `core` is
+`fracture_extent_core` (d >= 0.5 inside r = 15 mm) and `total` is `fracture_extent` (farthest
+damaged node). The core measure saturates at 10.85 mm (15 mm minus the 4.15 mm hole radius), so
+read the total once the radial cracks pass it; in the free case the total is set by the corner
+cracks instead.
+
+| after pulse | absorbing faces, core / total (mm) | crack energy (J/m) | free faces, core / total (mm) | crack energy (J/m) | paper (mm) |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 2.65 / 2.65 | 47.5 | 2.65 / 2.65 | 58 | |
+| 2 | 6.39 / 6.39 | 98 | 6.48 / 21.49 (corner diagonals) | 207 | |
+| 3 | 8.35 / 8.35 | 127 | 10.81 / 32.28 (corners cut through) | 348 | |
+| 4 | 9.83 / 9.83 | 150 | 10.81 / 32.28, core area 62 -> 83 mm2 | 424 | |
+| 5 | 10.85 (cap) / 11.04 | 168 | crawling at 226 us | | 7.97 |
+| 6 | 10.85 (cap) / 12.42 | 184 | | | |
+| 7 (at 378 us) | 10.85 (cap) / 12.71 | 192 | | | |
+| 11 | | | | | 13.90 |
+| 15 | | | | | 15.66 |
+| 20 | | | | | 20.45 |
+
+Energy: the pressure work is about 700 J/m per pulse in both cases; the dashpots of the absorbing
+case take 540-560 J/m of it per pulse (3766 J/m after 6.3 pulses) and its far field stays
+undamaged. Growth per pulse of the absorbing case: 2.65, 3.74, 1.96, 1.48, 1.21, 1.38 mm, about
+3 mm ahead of the measured 7.97 mm after five pulses; the next check is 13.90 mm after eleven.
+The free case is no longer comparable after pulse 3: with the corner diagonals cut, pulse 4 spends
+its energy on the fragments (v_max 60-97 m/s through the whole window) and the adaptive step
+collapses.
