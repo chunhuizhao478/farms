@@ -51,3 +51,15 @@ correct results": corner diagonals and a fragmented sample) by killing its `prte
 (`$WORK/build_logs/kill_free_case.sh`; on Vista `ibrun` runs OpenMPI's prterun, so the two cases are not
 separate SLURM steps). `att_eta0p5_absorb` continues alone in job 1089067. The sbatch now takes
 `ONLY=<case>` to launch or continue a single case.
+
+## Homogeneous-toughness twins (job 1090509, submitted 2026-10-22 13:08 PDT)
+
+`submit_vista_homog.sbatch` runs two 20-pulse trains on one Grace node (72 ranks each), both with
+the constant toughness of `fracture.i` (Gc = 2721 J/m^2, no scatter), absorbing side faces,
+zeta_pulse = 1e-8 s and the quench: `att_homog_eta0p4_absorb` (eta = 0.4) and
+`att_homog_eta0p5_absorb` (eta = 0.5). They are the user's test of the near-borehole picture
+(2026-10-22): the local single-pulse eta = 0.4 run gave only a uniform damage ring (d = 0.32,
+frozen after 6 us), so these cases ask whether repeated pulses grow that ring or nucleate
+cracks, and what the homogeneous eta = 0.5 medium does against the Gaussian production case.
+Same RECOVER=1 / ONLY= switches as `submit_vista_att.sbatch`; a session watcher
+(`vista_watch_homog.log`) resubmits unfinished cases if the 12 h limit ends the job first.
