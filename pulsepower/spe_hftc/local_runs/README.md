@@ -102,3 +102,33 @@ after 10 h 55 m, at 245 us (pulse 5) and 399 us (pulse 7, 13.60 mm, identical to
 job 1089067 is the only run of these cases from here on.
 The Vista free case was stopped by the user at 389 us (pulse 7) on 2026-10-22 at 10:00 PDT; the absorbing
 case continues alone in job 1089067.
+
+## Homogeneous Gc with eta = 0.4, absorbing faces: one pulse on the Mac (2026-10-22, 12:30 PDT)
+
+Test asked for on 2026-10-22: the production design with the Gaussian Gc scatter removed
+(`fracture.i`, constant Gc = 2721 J/m^2) and eta lowered from 0.5 to 0.4, absorbing side faces,
+zeta_pulse = 1e-8 s, one 60 us window on 8 ranks (`section_h0p3_homog_eta0p4_absorb_1pulse.*`,
+21 s per step). It is compared with the Vista Gaussian eta = 0.5 absorbing case at the same
+instant in `section_h0p3_homog_eta0p4_absorb_vs_vista_eta0p5_10us.png` (40 mm view) and
+`section_h0p3_homog_eta0p4_absorb_vs_vista_eta0p5_10us_zoom8mm.png` (16 mm close-up).
+
+| at 10 us                               | homogeneous Gc, eta 0.4 (Mac) | Gaussian Gc, eta 0.5 (Vista) |
+| -------------------------------------- | ----------------------------- | ---------------------------- |
+| peak damage                            | 0.32, a uniform ring at the wall | 1.0                       |
+| d >= 0.5 within 0.5 mm of the wall     | 0 %                           | 33 %                         |
+| d >= 0.5 at 1-2 mm from the wall       | 0 %                           | 11 %                         |
+| cracks longer than 1 mm                | none                          | 18, longest 2.4 mm           |
+| pressure work                          | 594 J/m                       | 699 J/m                      |
+| crack energy                           | 14.5 J/m (diffuse ring)       | 46 J/m                       |
+| v_max                                  | 30 m/s                        | 41 m/s                       |
+
+The homogeneous eta = 0.4 medium does not nucleate anything. The ring reaches d = 0.32 at 6 us
+and is identical at 10 us: the pressure is below 10 % of its peak after 6 us and the absorbing
+faces return nothing, so the remaining 50 us of the pulse cannot change it. Lowering eta from
+0.5 to 0.4 cuts the peak wall pressure by 7 % (206 vs 222 MPa), and without weak spots the
+driving force stays below the AT1 threshold everywhere, in line with the 2026-10-21 local tests
+(eta 0.3 gave a faint ring, eta 1 a crushed collar, and only the scattered Gc localized radial
+cracks). Taken together: the scatter is what nucleates the near-wall cracks, and eta = 0.4 sits
+below the nucleation threshold of the homogeneous model. The two changes work against the
+goal of more near-borehole fracture; a denser crushed zone needs a stronger near-wall driving
+force (compressive split, smaller l, or borehole-fluid pressure in the cracks), not a weaker one.
