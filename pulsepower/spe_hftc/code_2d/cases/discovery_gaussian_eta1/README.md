@@ -23,7 +23,7 @@ usc/13.3.0 gcc/13.3.0 openmpi/5.0.5 openblas/0.3.28 python/3.11.9, farms-opt at
 1. Copy `pulsepower/spe_hftc/{code_2d,mesh/spe_section_h0p3.msh}` to the Discovery clone
    `/home1/zhaochun/projects/farms_cdms/pulsepower/spe_hftc/` (`.msh` files are git-ignored; 3 MB).
 2. `sbatch submit_discovery.sbatch`; if it times out, `sbatch --export=ALL,RECOVER=1 submit_discovery.sbatch`.
-First submission: job 13293853 on 2026-10-21.
+First submission: job 13293853 on 2026-10-21, cancelled by the user after two pulses (1 h 50 min): at eta = 1 the section spalls at the free faces during the first pulse (see local_runs/discovery_snapshot_damage.png). Resubmitted as discovery_gaussian_eta0p3 and discovery_gaussian_eta0p5.
 
 Expected cost: the Mac does 1.5 s per step on 8 ranks for this mesh; 32 Discovery
 cores should be around 0.4 s per step, so roughly 2 hours for the train.
