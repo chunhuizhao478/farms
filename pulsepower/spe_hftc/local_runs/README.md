@@ -213,3 +213,36 @@ v_max 134 m/s. Reading: with Gc tied to ft = 69 MPa, VOLDEV implies a compressiv
 damage zone is at 10.8 mm after about 1.4 pulses against 7.97 mm after 5 pulses measured. VOLDEV
 with this Gc is not a candidate for the production design; it would need a separate (higher)
 compressive threshold, which the AT1 model with one Gc does not have. Recommended: cancel 1090603.
+
+### VOLDEV at 10 us (frame at 10.13 us, read 16:55 PDT, 2026-10-22)
+
+Figures `section_h0p3_gauss_eta0p5_voldev_absorb_vs_spectral_vista_10us.png` and `_zoom8mm.png`
+(local VOLDEV against the Vista spectral frame at 10 us, both Gaussian Gc, eta 0.5, absorbing):
+
+| band from the wall | VOLDEV mean d | VOLDEV d >= 0.9 | spectral mean d | spectral d >= 0.9 |
+|---|---|---|---|---|
+| 0-0.5 mm | 0.96 | 100 % | 0.50 | 9 % |
+| 0.5-1 mm | 0.94 | 96 % | 0.41 | 9 % |
+| 1-2 mm | 0.89 | 45 % | 0.20 | 2 % |
+| 2-4 mm | 0.70 | 3 % | 0.01 | 0 % |
+| 4-8 mm | 0.10 | 0 % | 0.00 | 0 % |
+
+| at 10 us | VOLDEV | spectral |
+|---|---|---|
+| farthest d >= 0.5 from the wall (mm) | 4.90 | 2.36 |
+| crack energy (J/m) | 258 | 46 |
+| equivalent crack length (mm) | 95 | 17 |
+| pressure work (J/m) | 1226 | 699 |
+| elastic energy (J/m) | 575 | 314 |
+| kinetic energy (J/m) | 366 | 266 |
+
+The VOLDEV zone is a continuous crushed mass 4.9 mm deep with d >= 0.9 through the first
+millimetre and radial streaks inside it (the Gc scatter textures it, it does not split it into
+discrete cracks); the spectral case has six or seven discrete radial cracks to 2.4 mm with intact
+material between them. The crushed zone grew from 2.3 mm at 2 us to 4.9 mm at 10 us while the wall
+pressure fell from 114 MPa to 4 MPa, i.e. it is fed by the stored elastic energy of the softened
+annulus (575 J/m against 314 J/m), not by the pressure. 21 % of the pressure work has gone into
+damage (spectral 6.6 %). The look matches the paper's wording for the crushed zone, but the size
+does not: 4.9 mm after one pulse here, 10.8 mm in pulse 2 on Vista, against 7.97 mm total extent
+(crushed zone plus dominant cracks) after 5 pulses measured. The local run is redundant with the
+Vista twin from here on (same mesh and time steps, Exodus every 40 steps on both).
