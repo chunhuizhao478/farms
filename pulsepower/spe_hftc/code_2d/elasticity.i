@@ -58,6 +58,7 @@ dt_max = 1e-7
 
 # ---- metrics ----
 d_th = 0.5                         # damage threshold for the fracture extent (d >= 0.9 also reported)
+r_core = 15e-3                     # radius of the "core" region: extent/area reported inside it exclude face-spall and corner damage
 
 # note: the AD parsed materials (degradation, crack geometric function, psi) require the FParser JIT;
 #       on this Mac the JIT linker fails (see memory note toolchain-macos-tahoe-link-failure) unless
@@ -195,6 +196,14 @@ newmark_gamma = 0.5
     family = LAGRANGE
     order = FIRST
   []
+  [r_damaged_core]
+    family = LAGRANGE
+    order = FIRST
+  []
+  [is_damaged_core]
+    family = MONOMIAL
+    order = CONSTANT
+  []
   [is_damaged]
     family = MONOMIAL
     order = CONSTANT
@@ -283,6 +292,23 @@ newmark_gamma = 0.5
     variable = is_damaged
     coupled_variables = 'd'
     expression = 'if(d >= ${d_th}, 1, 0)'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  # same two measures restricted to r <= r_core around the borehole (radial cracks only)
+  [r_damaged_core_aux]
+    type = ParsedAux
+    variable = r_damaged_core
+    coupled_variables = 'd'
+    use_xyzt = true
+    expression = 'if(d >= ${d_th} & sqrt(x*x + y*y) <= ${r_core}, sqrt(x*x + y*y), 0)'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [is_damaged_core_aux]
+    type = ParsedAux
+    variable = is_damaged_core
+    coupled_variables = 'd'
+    use_xyzt = true
+    expression = 'if(d >= ${d_th} & sqrt(x*x + y*y) <= ${r_core}, 1, 0)'
     execute_on = 'INITIAL TIMESTEP_END'
   []
   [vel_mag_aux]
@@ -511,7 +537,7 @@ newmark_gamma = 0.5
     type = CSV
     execute_on = 'INITIAL TIMESTEP_END'
     time_step_interval = 1
-    show = 'full_energy full_input_energy external_work solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total fracture_extent fracture_extent_090 r_dmg_max r_dmg_max_090 damaged_volume crack_area p_wall_max v_max borehole_area'
+    show = 'full_energy full_input_energy external_work solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total fracture_extent fracture_extent_090 fracture_extent_core r_dmg_max r_dmg_max_090 damaged_volume damaged_volume_core crack_area p_wall_max v_max borehole_area'
   []
 []
 
@@ -595,6 +621,21 @@ newmark_gamma = 0.5
     expression = 'max(r_dmg_max_090 - ${rb}, 0)'
     pp_names = 'r_dmg_max_090'
     execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [r_dmg_max_core]
+    type = NodalExtremeValue
+    variable = r_damaged_core
+    value_type = max
+  []
+  [fracture_extent_core]
+    type = ParsedPostprocessor
+    expression = 'max(r_dmg_max_core - ${rb}, 0)'
+    pp_names = 'r_dmg_max_core'
+    execute_on = 'INITIAL TIMESTEP_END'
+  []
+  [damaged_volume_core]
+    type = ElementIntegralVariablePostprocessor
+    variable = is_damaged_core
   []
   # damaged area (d >= d_th), m^2 per unit thickness
   [damaged_volume]
