@@ -17,11 +17,13 @@ Outputs (in this folder, file base `out`):
   `v_max` (maximum particle velocity), `borehole_area` (2*pi*rb = 2.6075e-2 m).
 - `out_cp/`: checkpoints every 100 steps for `--recover`.
 
-Before submitting:
-1. Copy `pulsepower/spe_hftc/{code_2d,mesh/spe_section_h0p3.msh}` to Discovery
-   (`.msh` files are git-ignored; 3 MB).
-2. Fill the `<<FILL>>` lines in `submit_discovery.sbatch` (account, modules, farms path).
-3. `sbatch submit_discovery.sbatch`; if it times out, `sbatch --export=ALL,RECOVER=1 submit_discovery.sbatch`.
+Submitting (the script is filled for user zhaochun: account scec_608, modules
+usc/13.3.0 gcc/13.3.0 openmpi/5.0.5 openblas/0.3.28 python/3.11.9, farms-opt at
+/home1/zhaochun/projects/farms_cdms/farms-opt, launched with mpirun inside the allocation):
+1. Copy `pulsepower/spe_hftc/{code_2d,mesh/spe_section_h0p3.msh}` to the Discovery clone
+   `/home1/zhaochun/projects/farms_cdms/pulsepower/spe_hftc/` (`.msh` files are git-ignored; 3 MB).
+2. `sbatch submit_discovery.sbatch`; if it times out, `sbatch --export=ALL,RECOVER=1 submit_discovery.sbatch`.
+First submission: job 13293853 on 2026-10-21.
 
 Expected cost: the Mac does 1.5 s per step on 8 ranks for this mesh; 32 Discovery
 cores should be around 0.4 s per step, so roughly 2 hours for the train.
