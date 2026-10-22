@@ -45,3 +45,9 @@ free case ran 25 us per 10 min until pulse 4 and then slowed to about 20 us per 
 fragments at 60-97 m/s keep the adaptive step far below `dt_max`). A job that ends by wall time is
 continued with `sbatch --export=ALL,RECOVER=1 submit_vista_att.sbatch` (the session watcher does
 this, up to three times). Results are tabulated in `../../local_runs/README.md`.
+
+Status 2026-10-22 10:00 PDT: `att_eta0p5_free` was stopped by the user at 389 us (pulse 7, "not giving
+correct results": corner diagonals and a fragmented sample) by killing its `prterun` on the node
+(`$WORK/build_logs/kill_free_case.sh`; on Vista `ibrun` runs OpenMPI's prterun, so the two cases are not
+separate SLURM steps). `att_eta0p5_absorb` continues alone in job 1089067. The sbatch now takes
+`ONLY=<case>` to launch or continue a single case.

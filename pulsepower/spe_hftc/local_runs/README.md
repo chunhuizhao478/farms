@@ -100,3 +100,5 @@ branched tips, a crushed near field, 655 J/m of crack energy and 289 mm2 of dama
 Discovery jobs 13297781 (free) and 13297782 (absorbing) were cancelled on 2026-10-22 at 09:53 PDT
 after 10 h 55 m, at 245 us (pulse 5) and 399 us (pulse 7, 13.60 mm, identical to Vista); the Vista
 job 1089067 is the only run of these cases from here on.
+The Vista free case was stopped by the user at 389 us (pulse 7) on 2026-10-22 at 10:00 PDT; the absorbing
+case continues alone in job 1089067.
