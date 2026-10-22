@@ -154,3 +154,16 @@ Caveat for the text: d = 0.3 leaves (1 - d)^2 = 49 % of the stiffness, so the si
 homogeneous band is partially damaged rather than crushed; the production band reaches a mean
 d of 0.63 at the wall after 13 pulses. Whether repeated pulses grow the homogeneous band is what
 Vista job 1090509 (homogeneous eta 0.4 and 0.5, 20 pulses) tests.
+
+The homogeneous eta = 0.4 run was stopped at 22.4 us on 2026-10-22 at 13:20 PDT to free the Mac
+for the VOLDEV test below; its ring was still d = 0.32 at 18 and 22 us, unchanged since 6 us.
+
+### Production case through pulse 17 (2026-10-22, 13:50 PDT)
+
+`vista_att_eta0p5_extent_vs_pulse.png` and `vista_att_eta0p5_absorb_pulse18_1051us.png` updated.
+Longest crack from the wall after pulses 14-17: 19.07, 19.84, 21.58, 21.58 mm; the leader (at 346 deg)
+hit the right side face during pulse 16 and is capped there (hollow markers in the chart). At 1051 us
+the frame shows five dominant radial cracks (21.6, 15.1, 14.2, 12.7, 10.0 mm), three of 4-5 mm and
+seven 2-3 mm stubs at the wall, no branching and a clean far field. Against the measurements the
+leader runs about a third ahead (19.8 vs 15.7 mm after 15 pulses), the second and third cracks sit
+near the measured curve. Crack energy 330 J/m, pressure work 13.2 kJ/m, dashpot work 9.5 kJ/m.
