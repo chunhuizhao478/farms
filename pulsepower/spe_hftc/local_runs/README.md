@@ -30,3 +30,20 @@ Snapshots pulled while running (`discovery_snapshot_damage.png`, `discovery_snap
 - 85 us (pulse 2): the radial cracks grow to 6-8 mm, the spall planes re-activate.
 Conclusion: eta = 1 is far above the experiment (no face spall was observed there); use the
 `fracture_extent_core` / `damaged_volume_core` measures (r <= 15 mm) to read the radial cracks.
+
+## Face-spall lever study (2026-10-21 evening): eta = 0.5, Gaussian scatter, one window to 30 us
+
+| run | lever | hole cracks (d >= 0.5, from the wall) | faces / corners after the reflections |
+| --- | --- | --- | --- |
+| `section_h0p3_gauss_eta0p5_baseline_14us.png` (cancelled at 14.8 us) | none | 7 cracks, 2.65 mm by 12 us | face-parallel spall bands starting at 14 us, 4-5 mm inside each face |
+| `section_h0p3_gauss_eta0p5_attenuation_30us` | `zeta_pulse = 1e-8` s (Kelvin-Voigt loss factor ~0.06 at 1 MHz) | identical: 7 cracks, 2.65 mm, crack energy 47.5 J/m at 14 us | no face bands at all; only faint diagonal corner streaks (d <= 0.24) at 18-22 us; crack energy 58 J/m at 30 us |
+
+| `section_h0p3_gauss_eta0p5_visc1_30us` | viscous damage, eta_v = 1 Pa s (`fracture_gaussian_viscous.i`) | smaller: 1.37 mm (r = 5.5 mm), crack energy 39 J/m at 14 us | corners still crack at 22 us (total extent 23.1 mm, 311 nodes d > 0.5 outside the core): worse on both counts |
+| `section_h0p3_gauss_eta0p5_rise1us_30us` | rise time 1 us (shape 5.379e5 / 1.672e6), same 6 us duration | larger: 3.7 mm by 14 us, 10.8 mm by 22 us (the fuller pulse injects more impulse) | massive: faces and corners, total extent 32.3 mm, 1128 nodes d > 0.5 outside the core |
+| `section_h0p3_gauss_eta0p5_zp1em7` (see CSV) | `zeta_pulse = 1e-7` s | same pattern as 1e-8 with ~6 % less crack energy | (run to 30 us; no benefit over 1e-8) |
+
+Reading: the sharp front carries the spall tension; damping it at the material's own
+1 MHz loss factor (zeta_pulse = 1e-8 s) removes the face spall without touching the radial
+cracks. Rate-dependent damage slows the hole cracks but not the corner damage; a smoother
+pulse at the same peak carries more impulse and makes everything worse. Picture:
+`section_h0p3_gauss_eta0p5_levers_30us.png`.
