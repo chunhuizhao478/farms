@@ -57,32 +57,42 @@ pulse at the same peak carries more impulse and makes everything worse. Picture:
 
 Picture: `discovery_att_eta0p5_free_vs_absorb_pulse2.png`. Both jobs continue toward 20 pulses.
 
-## Attenuated 20-pulse cases, progress after seven pulses (2026-10-22, 06:00 PDT)
+## Attenuated 20-pulse cases, progress after 13 pulses (2026-10-22, 09:20 PDT)
 
-Vista job 1089067 and Discovery jobs 13297781/13297782 run the same two inputs and agree to the
-step. Crack extent from the borehole wall at the end of each 60 us window: `core` is
-`fracture_extent_core` (d >= 0.5 inside r = 15 mm) and `total` is `fracture_extent` (farthest
-damaged node). The core measure saturates at 10.85 mm (15 mm minus the 4.15 mm hole radius), so
-read the total once the radial cracks pass it; in the free case the total is set by the corner
-cracks instead.
+Vista job 1089067 (72 ranks per case) and Discovery jobs 13297781/13297782 run the same two
+inputs and agree to the step; the table is from the Vista CSVs. Crack extent from the borehole
+wall at the end of each 60 us window, measured as the farthest node with d >= 0.5
+(`fracture_extent`; the d >= 0.9 extent trails it by only 0.5 mm, so the cracks are fully
+formed). `fracture_extent_core` saturates at 10.85 mm (15 mm core minus the 4.15 mm hole
+radius) and is not used here. The free case loses its meaning after pulse 3: the corner
+diagonals cut through, the near field crushes and the window maxima of v_max reach 1.1 km/s
+by pulse 6 (fragments), so only its first three pulses are listed.
 
-| after pulse | absorbing faces, core / total (mm) | crack energy (J/m) | free faces, core / total (mm) | crack energy (J/m) | paper (mm) |
-| --- | --- | --- | --- | --- | --- |
-| 1 | 2.65 / 2.65 | 47.5 | 2.65 / 2.65 | 58 | |
-| 2 | 6.39 / 6.39 | 98 | 6.48 / 21.49 (corner diagonals) | 207 | |
-| 3 | 8.35 / 8.35 | 127 | 10.81 / 32.28 (corners cut through) | 348 | |
-| 4 | 9.83 / 9.83 | 150 | 10.81 / 32.28, core area 62 -> 83 mm2 | 424 | |
-| 5 | 10.85 (cap) / 11.04 | 168 | crawling at 226 us | | 7.97 |
-| 6 | 10.85 (cap) / 12.42 | 184 | | | |
-| 7 (at 378 us) | 10.85 (cap) / 12.71 | 192 | | | |
-| 11 | | | | | 13.90 |
-| 15 | | | | | 15.66 |
-| 20 | | | | | 20.45 |
+| after pulse | absorbing faces (mm) | growth (mm) | crack energy (J/m) | dashpot work (J/m) | free faces (mm) | paper (mm) |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 2.65 | 2.65 | 47.5 | 537 | 2.65 | |
+| 2 | 6.39 | 3.74 | 98.0 | 1078 | 6.48 (corner diagonals break) | |
+| 3 | 8.35 | 1.96 | 127.4 | 1634 | 10.81 (corners cut through) | |
+| 4 | 9.83 | 1.48 | 150.2 | 2191 | | |
+| 5 | 11.04 | 1.21 | 168.4 | 2747 | | 7.97 |
+| 6 | 12.42 | 1.38 | 183.2 | 3298 | | |
+| 7 | 13.60 | 1.18 | 195.2 | 3844 | | |
+| 8 | 14.49 | 0.89 | 205.3 | 4384 | | |
+| 9 | 15.38 | 0.89 | 214.4 | 4919 | | |
+| 10 | 16.27 | 0.89 | 222.9 | 5451 | | |
+| 11 | 17.16 | 0.89 | 231.5 | 5978 | | 13.90 |
+| 12 | 17.87 | 0.71 | 240.1 | 6501 | | |
+| 13 | 18.65 | 0.78 | 248.9 | 7019 | | |
+| 15 | | | | | | 15.66 |
+| 20 | | | | | | 20.45 |
 
-Energy: the pressure work is about 700 J/m per pulse in both cases; the dashpots of the absorbing
-case take 540-560 J/m of it per pulse (3766 J/m after 6.3 pulses) and its far field stays
-undamaged. Growth per pulse of the absorbing case: 2.65, 3.74, 1.96, 1.48, 1.21, 1.38 mm, about
-3 mm ahead of the measured 7.97 mm after five pulses; the next check is 13.90 mm after eleven.
-The free case is no longer comparable after pulse 3: with the corner diagonals cut, pulse 4 spends
-its energy on the fragments (v_max 60-97 m/s through the whole window) and the adaptive step
-collapses.
+Reading. The pressure work is 695-734 J/m per pulse (rising slowly as the borehole gets more
+compliant); the dashpots take 518-557 J/m of it per pulse, the cracks about 10 J/m. Seven
+radial cracks grow all the way (picture `vista_att_eta0p5_damage_absorb788us_free386us.png`);
+the longest one, toward +x, is about 3 mm from the side face after 13 pulses and reaches it
+around pulse 17. Against the measurements (`vista_att_eta0p5_extent_vs_pulse.png`) the model
+runs 23 % to 39 % long: 11.0 vs 7.97 mm at five pulses and 17.2 vs 13.9 mm at eleven. The
+offset is made in the first five pulses (2.65, 3.74, 1.96, 1.48, 1.21 mm); from pulse 7 on the
+model grows 0.7-0.9 mm per pulse, the same slope as the measured 0.83 mm per pulse between
+pulses 5 and 20. The free case at 386 us is a fragmented sample: four corner diagonals with
+branched tips, a crushed near field, 655 J/m of crack energy and 289 mm2 of damaged area.
