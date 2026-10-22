@@ -1,0 +1,5 @@
+#!/bin/bash
+# Shim for the FParser JIT on macOS Tahoe: the conda toolchain's linker cannot resolve libSystem
+# symbols at link time; deferring them to dyld (same workaround as for farms-opt) fixes the JIT.
+# Use:  PATH=/Users/chunhuizhao/projects/farms_cdms/pulsepower/spe_hftc/tools/jit_shim:$PATH farms-opt -i ...
+exec /Users/chunhuizhao/miniforge/envs/moose/bin/mpicxx "$@" -Wl,-undefined,dynamic_lookup
