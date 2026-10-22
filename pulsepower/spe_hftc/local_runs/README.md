@@ -132,3 +132,25 @@ cracks). Taken together: the scatter is what nucleates the near-wall cracks, and
 below the nucleation threshold of the homogeneous model. The two changes work against the
 goal of more near-borehole fracture; a denser crushed zone needs a stronger near-wall driving
 force (compressive split, smaller l, or borehole-fluid pressure in the cracks), not a weaker one.
+
+### Reading the near-wall damage band as the crushed zone (2026-10-22, 13:15 PDT)
+
+The paper describes "a region of intense and closely spaced damaged zone and material appeared
+crushed" at the wall, and beyond it "a small number of dominant fractures" (manuscript, p. 3).
+AT1 with l = 0.6 mm cannot separate cracks spaced closer than about 2l = 1.2 mm, and a damaged
+band only two to three l wide cannot bifurcate into discrete cracks, so fractures of that
+spacing can only appear as a band of partial damage. The band is therefore the model's version
+of the crushed zone, with the regularization length (bounded by the affordable mesh) as the
+reason. Its energy says how much fracture it stands for (crack energy / Gc = equivalent length of
+fully formed crack per unit thickness):
+
+| case                                   | band: mean d at the wall, width (mean d > 0.1) | crack energy | equivalent crack |
+| -------------------------------------- | ---------------------------------------------- | ------------ | ---------------- |
+| homogeneous eta 0.4, 10 us (Mac)       | 0.31, 1.0 mm                                   | 14.5 J/m     | 5.3 mm           |
+| Gaussian eta 0.5, 10 us (Vista)        | 0.51, 2.0 mm, plus 18 cracks to 2.4 mm         | 46 J/m       | 17 mm            |
+| Gaussian eta 0.5, pulse 13 (Vista)     | 0.63, > 4 mm (mean d > 0.2 to 3 mm)            | 249 J/m      | 91 mm            |
+
+Caveat for the text: d = 0.3 leaves (1 - d)^2 = 49 % of the stiffness, so the single-pulse
+homogeneous band is partially damaged rather than crushed; the production band reaches a mean
+d of 0.63 at the wall after 13 pulses. Whether repeated pulses grow the homogeneous band is what
+Vista job 1090509 (homogeneous eta 0.4 and 0.5, 20 pulses) tests.
