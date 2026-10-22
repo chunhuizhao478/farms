@@ -33,3 +33,5 @@ Variants from the same folder (append to ARGS or copy the folder):
 - uniform toughness: drop the `MultiApps/...` term
 - other energy fraction: `eta=0.5`
 - no quench (energy-budget check): `zeta_quench=0`
+
+Status (2026-10-21): job 13295738 on `oneweek` (20 cores, ~3.5-4 s/step) cancelled by the user after 3 h 05 min (in pulse 2): radial cracks 2.65 mm after pulse 1 but face spall and corner cracks on pulse 1. These runs had no attenuation (`zeta_pulse = 0`); they serve as the no-attenuation references. Partial CSV kept in `local_runs/discovery_eta0p5_noatt_partial.csv`.
