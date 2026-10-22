@@ -7,16 +7,14 @@
 # =============================================================================
 #SBATCH --job-name=spe2d_gauss_eta0p3
 #SBATCH --account=scec_608
-#SBATCH --partition=main
+#SBATCH --partition=oneweek      # main had 0 idle nodes and >1000 pending jobs on 2026-10-21; oneweek had 18 idle
 #SBATCH --nodes=1
-#SBATCH --ntasks=32
+#SBATCH --ntasks=20              # oneweek nodes have 20 cores
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=64G
-#SBATCH --time=12:00:00
+#SBATCH --mem=58G
+#SBATCH --time=24:00:00
 #SBATCH --output=%x.o%j
 #SBATCH --error=%x.e%j
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=chunhui3@illinois.edu
 
 module purge
 module load usc/13.3.0 gcc/13.3.0 openmpi/5.0.5 openblas/0.3.28 python/3.11.9   # the set the login shell loads; farms-opt was built against this MOOSE source tree

@@ -15,8 +15,6 @@
 #SBATCH --time=12:00:00
 #SBATCH --output=%x.o%j
 #SBATCH --error=%x.e%j
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=chunhui3@illinois.edu
 
 module purge
 module load usc/13.3.0 gcc/13.3.0 openmpi/5.0.5 openblas/0.3.28 python/3.11.9   # the set the login shell loads; farms-opt was built against this MOOSE source tree
