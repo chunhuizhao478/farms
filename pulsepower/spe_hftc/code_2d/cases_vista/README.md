@@ -19,3 +19,13 @@ Prerequisites on Vista: `$WORK/farms_cdms/farms-opt` built against `$WORK/moose-
 (see `$WORK/build_logs/`), the environment file `$WORK/build_logs/env_moose.sh`, and the
 section mesh `../mesh/spe_section_h0p3.msh` (copied; `.msh` files are git-ignored).
 No email notifications in this script.
+
+## `submit_vista_att.sbatch` (the two cases requested on 2026-10-21)
+
+| case | input | faces | eta | zeta_pulse | pulses |
+| --- | --- | --- | --- | --- | --- |
+| `att_eta0p5_free` | `elasticity.i` | free | 0.5 | 1e-8 s | 20 |
+| `att_eta0p5_absorb` | `elasticity_absorbing.i` | Lysmer dashpots on the four side faces | 0.5 | 1e-8 s | 20 |
+
+72 ranks each on one `gg` node. The same two cases run on Discovery from
+`../cases/discovery_att_eta0p5_{free,absorb}/` (20 cores each, slower).
