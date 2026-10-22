@@ -167,3 +167,49 @@ the frame shows five dominant radial cracks (21.6, 15.1, 14.2, 12.7, 10.0 mm), t
 seven 2-3 mm stubs at the wall, no branching and a clean far field. Against the measurements the
 leader runs about a third ahead (19.8 vs 15.7 mm after 15 pulses), the second and third cracks sit
 near the measured curve. Crack energy 330 J/m, pressure work 13.2 kJ/m, dashpot work 9.5 kJ/m.
+
+## Volumetric-deviatoric split, one pulse on the Mac: first look at 2 and 5 us (2026-10-22, 15:40 PDT)
+
+Run `section_h0p3_gauss_eta0p5_voldev_absorb_1pulse`: the production design (Gaussian Gc, eta 0.5,
+absorbing faces, zeta_pulse 1e-8 s) with `Materials/elasticity/decomposition=VOLDEV` (Amor split:
+only the compressive volumetric energy is inactive, so the deviatoric energy of the confined
+compression at the wall drives damage). 8 ranks at about 105 s per step: 2.7 Picard iterations per
+step against 1.2 in the homogeneous test, because the ring evolves at every step. The 10 us frame
+lands at about 17:00 PDT; the waiter draws `..._voldev_absorb_vs_spectral_vista_10us.png` then.
+
+Frame at 2.1 us (`section_h0p3_gauss_eta0p5_voldev_absorb_vs_spectral_vista_2us.png`, `_zoom8mm.png`)
+against the Vista spectral frame at 2.0 us:
+
+| band from the wall | VOLDEV mean d | VOLDEV d >= 0.5 | spectral mean d | spectral d >= 0.5 |
+|---|---|---|---|---|
+| 0-0.5 mm | 0.88 | 100 % | 0.04 | 0 % |
+| 0.5-1 mm | 0.83 | 100 % | 0.00 | 0 % |
+| 1-2 mm | 0.71 | 100 % | 0.00 | 0 % |
+| 2-4 mm | 0.19 | 11 % | 0.00 | 0 % |
+
+The VOLDEV ring is axisymmetric (the Gc scatter has not split it into cracks), 2.3 mm wide, and
+complete at 2 us: it forms during the pressure peak under confined compression, as the 158 MPa
+threshold estimate predicted (p_peak 222 MPa, ratio 2.0). d is higher than the 0.5 of the
+homogeneous AT1 estimate because the radial stress at the wall equals p, while the estimate used the
+band average. The spectral run has nothing at 2 us; its cracks nucleate from hoop tension at 4-6 us.
+
+CSV at 5.0 us (VOLDEV local / spectral Vista / homogeneous eta 0.4 local):
+
+| quantity | VOLDEV | spectral | homog. eta 0.4 |
+|---|---|---|---|
+| fracture extent (mm) | 3.88 | 0.29 | 0 |
+| crack energy (J/m) | 229 | 24.7 | 14.4 |
+| equivalent crack length (mm) | 84 | 9.1 | 5.3 |
+| pressure work (J/m) | 1187 | 727 | 620 |
+| kinetic energy (J/m) | 460 | 257 | 218 |
+| v_max at 2 us (m/s) | 87 | 68 | 63 |
+
+VOLDEV puts 19 % of the pressure work into damage by 5 us (spectral 3.4 %), and the softened wall
+takes 60 % more pressure work. On Vista the same design (job 1090603, read at 14:56 PDT) was at
+84.9 us, i.e. in pulse 2: core extent 10.78 mm, total extent 32.3 mm (a damaged spot at a corner of
+the section), crack energy 611 J/m (the spectral production case has 356 J/m after 19 pulses),
+v_max 134 m/s. Reading: with Gc tied to ft = 69 MPa, VOLDEV implies a compressive strength of
+73 MPa (measured 124 MPa), the near-wall material crushes in the first 2 us of each pulse, and the
+damage zone is at 10.8 mm after about 1.4 pulses against 7.97 mm after 5 pulses measured. VOLDEV
+with this Gc is not a candidate for the production design; it would need a separate (higher)
+compressive threshold, which the AT1 model with one Gc does not have. Recommended: cancel 1090603.

@@ -78,3 +78,22 @@ compressive strength is 73 MPa against the measured 124 MPa (ASTM D695), so the 
 upper bound. Watch item: whether the softer collar shortens or suppresses the radial cracks. A local
 one-pulse twin runs on the Mac (`local_runs/section_h0p3_gauss_eta0p5_voldev_absorb_1pulse.*`).
 Watcher `vista_watch_voldev.log` resubmits with RECOVER=1 if the 12 h limit ends the job first.
+
+### Status read at 14:41-15:00 PDT, 2026-10-22 (ssh master down since 15:06 PDT, watchers paused)
+
+- 1089067 (production): t = 1138.5 us in pulse 19 at 14:41 with 11:56 h elapsed, so the job hit
+  the 12 h wall at about 14:45; 61.5 us (pulse 20) remain. Total extent 21.61 mm (capped at the side
+  face since pulse 16), core extent 10.85 mm, crack energy 356 J/m, pressure work 3.97 kJ/m, dashpot
+  work 10.05 kJ/m. The watcher submits the recover tail (RECOVER=1, ONLY=att_eta0p5_absorb) as soon
+  as the ssh master is back.
+- 1090509 (homogeneous twins) at 15:00: eta 0.4 at 296.7 us (pulse 5): extent 5.03 mm, crack energy
+  85 J/m; eta 0.5 at 248.7 us (pulse 5): extent 8.37 mm, crack energy 132 J/m. The paper has 7.97 mm
+  after 5 pulses and the Gaussian production case 11.04 mm. The homogeneous eta 0.4 ring (d = 0.32
+  after pulse 1) does ratchet into cracks over the pulses.
+- 1090603 (VOLDEV) at 14:56: t = 84.9 us (pulse 2): core extent 10.78 mm, total extent 32.3 mm
+  (a corner), crack energy 611 J/m, v_max 134 m/s. Reading in `local_runs/README.md` (first look
+  at 2 and 5 us): recommended to cancel.
+- Watcher fix (15:40 PDT): `squeue -j` returns rc 1 ("Invalid job id specified") once a finished
+  job is purged from the queue; the watchers read that as an ssh failure and retried forever, so
+  the production tail was never submitted. They now treat rc 255 as the ssh failure and "invalid
+  job id" as "left the queue" (then sacct decides).
