@@ -5,3 +5,5 @@ Input: `../../elasticity.i` + `../../fracture_gaussian.i` (Gaussian 12 % toughne
 1e-8 s attenuation, then the quench). Free side faces (the physical specimen); the comparison case has absorbing faces.
 Outputs: `out.csv` every step (core and total extents, damaged areas, energies, v_max), `out.e` every 40 steps, `out_cp/` checkpoints.
 Twin case on Vista: `../../cases_vista/submit_vista_att.sbatch` (72 ranks each, same inputs).
+
+Snapshot after two pulses (t = 108 us, 2026-10-22): pulse 1 gives 7 radial cracks to 2.65 mm from the wall with sub-critical corner streaks (d <= 0.24); pulse 2 extends the hole cracks to 6.48 mm by 76 us and then, 20 us after its onset, breaks the four corner diagonals (d = 1 along |x| = |y| at 15-16 mm, about 10 mm from the faces; no face spall). Crack energy 207 J/m, of which ~90 J/m are the corner cracks. Picture: `local_runs/discovery_att_eta0p5_free_vs_absorb_pulse2.png`.

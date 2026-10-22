@@ -47,3 +47,12 @@ Reading: the sharp front carries the spall tension; damping it at the material's
 cracks. Rate-dependent damage slows the hole cracks but not the corner damage; a smoother
 pulse at the same peak carries more impulse and makes everything worse. Picture:
 `section_h0p3_gauss_eta0p5_levers_30us.png`.
+
+## Discovery, 20-pulse production cases (eta = 0.5, zeta_pulse = 1e-8 s, Gaussian scatter), snapshot after two pulses
+
+| case | hole cracks after pulse 1 / 2 (from the wall) | far field after pulse 2 |
+| --- | --- | --- |
+| free faces (job 13297781) | 2.65 / 6.48 mm, 7 cracks | four corner diagonals broken 20 us into pulse 2 (the pulse-1 streaks went critical); no face spall |
+| absorbing faces (job 13297782) | 2.65 / 6.39 mm, 7 cracks | nothing (no node above d = 0.1); dashpots absorb 76 % of the pressure work |
+
+Picture: `discovery_att_eta0p5_free_vs_absorb_pulse2.png`. Both jobs continue toward 20 pulses.
