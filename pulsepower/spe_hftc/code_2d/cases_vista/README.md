@@ -63,3 +63,18 @@ frozen after 6 us), so these cases ask whether repeated pulses grow that ring or
 cracks, and what the homogeneous eta = 0.5 medium does against the Gaussian production case.
 Same RECOVER=1 / ONLY= switches as `submit_vista_att.sbatch`; a session watcher
 (`vista_watch_homog.log`) resubmits unfinished cases if the 12 h limit ends the job first.
+
+## Volumetric-deviatoric split twin (job 1090603, submitted 2026-10-22 13:58 PDT)
+
+`submit_vista_voldev.sbatch` runs `att_eta0p5_voldev_absorb`: the production design (Gaussian Gc,
+eta = 0.5, absorbing faces, zeta_pulse = 1e-8 s, quench, 20 pulses) with
+`Materials/elasticity/decomposition=VOLDEV` instead of SPECTRAL, 72 ranks on half a Grace node
+(node i614-141, ~3 s per step at the start). Purpose (2026-10-22): the spectral split returns zero
+driving force during the confined-compression peak at the wall and only damages through the late
+hoop tension, which leaves a thin ring; the Amor split counts the shear energy of the peak (threshold
+158 MPa radial stress, exceeded by the 222 MPa pulse out to 2-4 mm) and doubles the driving force in
+the tensile stage, so it should give the several-mm crushed zone of the photos. Its implied unconfined
+compressive strength is 73 MPa against the measured 124 MPa (ASTM D695), so the crushed band is an
+upper bound. Watch item: whether the softer collar shortens or suppresses the radial cracks. A local
+one-pulse twin runs on the Mac (`local_runs/section_h0p3_gauss_eta0p5_voldev_absorb_1pulse.*`).
+Watcher `vista_watch_voldev.log` resubmits with RECOVER=1 if the 12 h limit ends the job first.
