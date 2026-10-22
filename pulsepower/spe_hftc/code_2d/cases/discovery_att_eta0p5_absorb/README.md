@@ -7,3 +7,7 @@ Outputs: `out.csv` every step (core and total extents, damaged areas, energies, 
 Twin case on Vista: `../../cases_vista/submit_vista_att.sbatch` (72 ranks each, same inputs).
 
 Snapshot after two pulses (t = 122 us, 2026-10-22): pulse 1 identical to the free case (7 radial cracks, 2.65 mm); pulse 2 extends them to 6.39 mm; no far-field damage at all (no node above d = 0.1 outside the core). The dashpots absorb 1078 J/m of the 1416 J/m pressure work (76 %). Crack energy 98 J/m. Picture: `local_runs/discovery_att_eta0p5_free_vs_absorb_pulse2.png`.
+
+Status 2026-10-22 09:53 PDT: cancelled by the user after 10 h 55 m (too slow at 20 cores; the Vista
+twin `cases_vista/att_eta0p5_absorb` runs the same input three times faster). Partial outputs stay in
+this folder on Discovery.

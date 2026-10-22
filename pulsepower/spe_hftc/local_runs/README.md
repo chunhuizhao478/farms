@@ -96,3 +96,7 @@ offset is made in the first five pulses (2.65, 3.74, 1.96, 1.48, 1.21 mm); from 
 model grows 0.7-0.9 mm per pulse, the same slope as the measured 0.83 mm per pulse between
 pulses 5 and 20. The free case at 386 us is a fragmented sample: four corner diagonals with
 branched tips, a crushed near field, 655 J/m of crack energy and 289 mm2 of damaged area.
+
+Discovery jobs 13297781 (free) and 13297782 (absorbing) were cancelled on 2026-10-22 at 09:53 PDT
+after 10 h 55 m, at 245 us (pulse 5) and 399 us (pulse 7, 13.60 mm, identical to Vista); the Vista
+job 1089067 is the only run of these cases from here on.
