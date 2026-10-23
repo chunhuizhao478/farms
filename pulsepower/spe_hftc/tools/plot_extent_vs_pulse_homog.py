@@ -33,7 +33,7 @@ for f, lab, col, mk in CASES:
     print(f"{lab}: " + ", ".join(f"{p}: {e:.2f}" for p, e in done))
 hp, = ax.plot([p for p, _ in paper], [e for _, e in paper], color=INK, lw=1.5, marker="s", ms=7, mec=PAPER, mew=1, zorder=5)
 for p, e in paper:   # measured values; the first one sits to the right of its marker, clear of the eta 0.45 curve
-    if p == 5: ax.text(p + 0.4, e - 1.0, f"{e:.1f}", color=INK2, fontsize=8, ha="left", va="top")
+    if p == 5: ax.text(p + 0.15, e - 1.05, f"{e:.1f}", color=INK2, fontsize=8, ha="center", va="top")
     else: ax.text(p, e - 0.9, f"{e:.1f}", color=INK2, fontsize=8, ha="center", va="top")
 handles.append(hp); labels.append("experiment (Jin et al.): 144 J pulses, 80 s apart")
 ax.text(20.35, 23.3, "eta 0.5", color=BLUE, fontsize=9.5, ha="left", va="center", fontweight="bold")
