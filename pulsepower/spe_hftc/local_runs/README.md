@@ -287,3 +287,26 @@ column; the extents are unaffected.
 Local VOLDEV one-pulse run stopped at 25.8 us on 2026-10-22 at 21:25 PDT (the user dropped the
 volumetric-deviatoric variant; the Vista twin had already died in the file-system event at 89.5 us
 and is not continued).
+
+### Production case complete: 20 pulses, 1200 us (2026-10-22, 21:35 PDT)
+
+Job 1089067 (12 h, to 1143.9 us) plus the recover tail 1092063 (28 min). Final frame at 1200 us in
+`vista_snapshots_4cases.png` (top left) and the full curve in `vista_extent_vs_pulse_allcases.png`.
+
+| quantity | value |
+|---|---|
+| extent at the end of pulses 16-20 | 21.61 mm (leader on the right side face since pulse 16) |
+| extents at pulses 5 / 11 / 15 (paper 7.97 / 13.90 / 15.66) | 11.04 / 17.16 / 19.84 mm |
+| radial cracks longer than 2 mm | 13; dominant five 21.6, 16.0, 15.2, 13.4, 10.1 mm |
+| crack energy | 388.5 J/m (359.8 at the recover point + 28.7 in the tail), equivalent crack length 143 mm |
+| pressure work | 14.9 kJ/m |
+| dashpot work | 10.55 kJ/m |
+| crack energy / pressure work | 2.6 % |
+
+Growth from pulse 5 to the face: 0.88 mm per pulse (experiment 0.83 per pulse averaged over
+pulses 5-20); the 3 mm offset is built in pulses 1-4. MOOSE appended the recovered rows after the
+old ones in out.csv (one 0.1 us overlap at 1143.9 us), so the window-end reader is unaffected but
+the crack-energy column must be summed across the reset.
+
+Homogeneous twins at the same reading: eta 0.5 ends pulse 5 at 10.16 mm (paper 7.97, Gaussian
+11.04); eta 0.4 ends pulse 6 at 6.69 mm and is at 8.06 mm 18 us into pulse 7.
