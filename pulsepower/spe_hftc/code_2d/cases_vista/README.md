@@ -143,3 +143,59 @@ overshoots as projected, a Gaussian eta 0.4 is the next candidate. The experimen
 between pulses 11 and 15 (0.44 mm per pulse) is not reachable with eta alone.
 
 VOLDEV dropped (user decision, 21:25 PDT): neither the Vista case nor the local run is continued.
+
+## Twins complete; eta 0.45 pair read at 08:15 PDT, 2026-10-23
+
+Job 1092069 (homogeneous twins, recovered from checkpoints 3200 / 2700 of job 1090509) finished at
+07:58 PDT after 10 h 52 min, both cases at 1200 us. Job 1092158 (eta 0.45 pair): the homogeneous
+case reached 1200 us at 07:40 PDT (10.2 h); the Gaussian case was at 1107 us (pulse 19) at 08:07
+with 1.4 h of wall time left, so it will probably time out near 1150 us, and the watcher then
+resubmits it alone with --recover (`ONLY=att_eta0p45_absorb`). Figures (local_runs/):
+`vista_snapshots_4cases.png` is now a 2 x 3 grid (rows Gaussian / homogeneous Gc, columns eta
+0.5 / 0.45 / 0.4; the empty slot holds the table below) and `vista_extent_vs_pulse_allcases.png`
+carries the six cases (colour = eta, solid lines and circles = Gaussian, dashed and triangles =
+homogeneous; VOLDEV removed). Per-pulse numbers from `tools/pulse_table.py`, which drops the
+orphaned rows after a recover checkpoint and sums the crack-energy column across the resets.
+
+Crack extent from the wall at the end of pulses 5 / 11 / 15 / 20 in mm (measured 7.97 / 13.90 /
+15.66 / 20.45); energies per unit thickness at 1200 us (Gaussian eta 0.45 at 1107 us):
+
+| case | 5 | 11 | 15 | 20 | cracks > 2 mm, longest | crack energy | pressure work | dashpot work |
+|---|---|---|---|---|---|---|---|---|
+| Gaussian eta 0.5 (production) | 11.04 | 17.16 | 19.84 | 21.61 (side face) | 13, 21.6 mm | 388 J/m | 14.9 kJ/m | 10.6 kJ/m |
+| Gaussian eta 0.45 (pulse 19 running) | 13.19 | 18.09 | 19.67 | 20.83 in pulse 19 | 10, 20.6 mm | 297 J/m | 12.9 kJ/m | 9.2 kJ/m |
+| homogeneous eta 0.5 | 10.16 | 18.08 | 19.85 | 23.31 | 9, 23.3 mm | 490 J/m | 15.8 kJ/m | 10.7 kJ/m |
+| homogeneous eta 0.45 | 7.56 | 16.11 | 18.95 | 20.01 | 13, 20.0 mm | 281 J/m | 13.5 kJ/m | 10.0 kJ/m |
+| homogeneous eta 0.4 | 5.03 | 10.09 | 10.39 | 10.58 | 8, 10.6 mm | 158 J/m | 12.3 kJ/m | 9.6 kJ/m |
+
+Increments per pulse in mm, pulses 2-20: homogeneous 0.45: 0.5, 2.6, 2.3, 2.2, 1.8, 1.7, 1.4, 1.3,
+1.2, 1.2, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2, 0.3, 0.1, 0.2; homogeneous 0.4: 0.0, 0.5, 2.4, 2.1, 1.7,
+1.4, 1.0, 0.5, 0.3, 0.3, 0.2, then 0.0-0.2 (arrest); homogeneous 0.5: 1.6, 4.1, 2.7, 1.8, 1.3, 1.5,
+1.5, 1.5, 1.4, 0.7, 0.7, 0.4, 0.3, 0.3, 0.6, 0.6, 0.8, 0.6, 0.9; Gaussian 0.45 (to pulse 18): 4.0,
+2.8, 2.5, 1.8, 1.2, 0.8, 0.8, 0.8, 0.8, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.3.
+
+Reading:
+
+- Homogeneous eta 0.45 is the closest history: within 0.5 mm of the measurement at pulses 5 and
+  20, 2.2 and 3.3 mm high at pulses 11 and 15. The model grows at a steady 1.2-1.4 mm per pulse
+  from pulse 5 to 12 and slows only as the leading cracks approach the faces, whereas the
+  experiment has its slow stretch between pulses 11 and 15 (0.44 mm per pulse) and then 1.0 mm
+  per pulse to pulse 20.
+- Homogeneous eta 0.4 arrests: the six-armed star stops at 10.6 mm and nothing moves after pulse
+  12. Between eta 0.4 and 0.45 the extent at pulse 20 doubles, so eta acts as a threshold rather
+  than a slope; an eta 0.425 would arrest somewhere between 11 and 16 mm and could not reach 20 mm
+  at pulse 20.
+- Homogeneous eta 0.5 overshoots at every reading and is still growing at 0.6-0.9 mm per pulse at
+  the end (longest crack 23.3 mm at 60 deg, 2 mm short of the top face).
+- The Gaussian eta 0.45 case runs ahead of the Gaussian eta 0.5 case in pulses 2-5 (13.2 vs
+  11.0 mm at pulse 5) with 4 % less pressure and less crack energy (160 vs 168 J/m at pulse 5, 285
+  vs 330 at pulse 18): same seed, but fewer cracks take off (10 vs 13 longer than 2 mm) and the
+  crack at 346 deg gets a larger share. The maximum extent of one Gaussian realization is
+  therefore a noisy measure, with a realization scatter of about 2 mm, as large as the eta effect;
+  the crack energy is the robust one (homogeneous 490 / 281 / 158 J/m for eta 0.5 / 0.45 / 0.4,
+  about -40 % per 0.05 of eta).
+- Crack energy is 1.3-3.1 % of the pressure work in every case; the dashpots take 9.2-10.7 kJ/m.
+
+Recommendation: calibrate eta on the homogeneous model, where eta 0.45 is the answer. If the
+Gaussian design stays in the paper, run it with two more seeds at eta 0.45 and report the band
+instead of moving eta against one realization. The Gaussian eta 0.4 candidate is withdrawn.

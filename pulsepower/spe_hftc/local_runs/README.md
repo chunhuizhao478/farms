@@ -310,3 +310,19 @@ the crack-energy column must be summed across the reset.
 
 Homogeneous twins at the same reading: eta 0.5 ends pulse 5 at 10.16 mm (paper 7.97, Gaussian
 11.04); eta 0.4 ends pulse 6 at 6.69 mm and is at 8.06 mm 18 us into pulse 7.
+
+### Twins and the homogeneous eta 0.45 case complete (2026-10-23, 08:15 PDT)
+
+Both figures refreshed: `vista_snapshots_4cases.png` is now a 2 x 3 grid (Gaussian Gc on top: eta
+0.5 production, eta 0.45 at 1107 us; homogeneous Gc below: eta 0.5, 0.45, 0.4; the sixth slot is
+the comparison table) and `vista_extent_vs_pulse_allcases.png` shows the six cases with colour =
+eta and line style = Gc model. Numbers, energies and the reading: `code_2d/cases_vista/README.md`
+("Twins complete; eta 0.45 pair"). `tools/pulse_table.py` prints the extent and crack energy at
+the end of every pulse from an out.csv; it drops the orphaned rows of a recovered run and sums the
+crack-energy column across the resets (the eta 0.4 twin has two resets at 308.7 us, jobs 1092065
+and 1092069; the eta 0.5 twin one at 260.6 us with 9.9 us of orphaned rows).
+
+Headline: homogeneous eta 0.45 gives 7.56 / 16.11 / 18.95 / 20.01 mm at pulses 5 / 11 / 15 / 20
+(measured 7.97 / 13.90 / 15.66 / 20.45); homogeneous eta 0.4 arrests at 10.6 mm; homogeneous eta
+0.5 reaches 23.3 mm; the Gaussian eta 0.45 realization is 2 mm ahead of the Gaussian eta 0.5 one
+at pulse 5 with less crack energy, because fewer cracks share the energy.
