@@ -20,7 +20,6 @@ for x, lab in ((tr, "$t_r$"), (td, "$t_d$")):
     ax1.axvline(x * 1e6, color=GREY, lw=0.8, ls=(0, (3, 3)))
     ax1.text(x * 1e6 + 0.12, Pp * 1.02, lab, color=INK, fontsize=9, ha="left", va="bottom")   # values of t_r, t_d, P_p, a, b: caption or table
 ax1.axhline(0.1 * Pp, color=GREY, lw=0.8, ls=(0, (1, 2)))
-ax1.text(0.12, Pp * 1.02, "$P_p$", color=INK, fontsize=9, ha="left", va="bottom") if False else None
 ax1.text(11.9, 0.1 * Pp + 4, "$0.1\\,P_p$", color=INK, fontsize=8.5, ha="right", va="bottom")
 ax1.text(11.9, Pp * 0.98, "$p(t) = P_p\\,\\dfrac{e^{-at} - e^{-bt}}{e^{-a t_r} - e^{-b t_r}}$", color=INK, fontsize=9, ha="right", va="top")
 ax1.set_xlim(0, 12); ax1.set_ylim(0, 240); ax1.set_yticks(range(0, 241, 60))
