@@ -40,3 +40,28 @@ the ends) instead of `exo_last_step.py`.
 Local smoke test (Mac, 8 ranks, coarse mesh `spe_cube_smoke.msh` 0.15 M tets, l = 3 mm):
 `PATH=$PWD/../../tools/jit_shim:$PATH mpiexec -n 8 farms-opt -i ../elasticity_absorbing.i mesh_file=../../mesh/spe_cube_smoke.msh l=3e-3 Np=1 eta=0.45 zeta_pulse=1e-8 Executioner/end_time=6e-7`
 (the conda env's bin must be on PATH for the FParser JIT; result in `local_runs/README.md`).
+
+## Timing run on 8 nodes (job 1093056, 2026-10-23, read at 13:40 PDT)
+
+Production mesh, 14.59 M tets, 2.38 M nodes; 7.15 M displacement dofs, 2.38 M damage dofs; 1152 ranks (6.2 k displacement
+dofs per rank). First 3 us of pulse 1, 49 steps, 48.5 min of wall time: 10 min for the mesh split (8 ranks, 1.7 GB), 45 s
+of setup, 72 s per full-mesh Exodus frame (serialised to rank 0), 38 min of stepping.
+
+| phase (step, dt) | fixed-point its | main app Newton / GMRES | main solve | step wall |
+| --- | --- | --- | --- | --- |
+| rise, dt 30 ns (steps 6-27) | 1 | 2 / 19 | 21 s | about 30 s |
+| plateau before cracking, dt 100 ns (28-35) | 1 | 1 / 5 | 13 s | about 20 s |
+| crack nucleation at the wall, dt 100 ns (36-49) | 4 | 4-5 / 15-20 (summed) | 34-44 s | about 60 s |
+
+The sub-app needs 0 Newton iterations until the wall reaches the strength (step 34, t = 1.5 us) and 7-9 per step
+(summed over the four fixed-point iterations) once cracks nucleate; its solve time is not in the live print (sub-apps do
+not live-print), the step wall times above are the run total minus the printed main-app solves. Picard converges in one
+iteration without damage evolution and in four with it, as in 2D. Pulse law reproduced at the wall (p_wall_max follows the
+double exponential to within 0.1 %), damping work zero before the wave reaches the faces, crack area 31 mm2 at 3 us.
+
+Projection with the 2D step count (12.5 k steps for 20 pulses, dt_max 1e-7): roughly 250 cracking steps and 350 quiet
+steps per pulse give about 7 h per pulse, 140 h for 20 pulses on 8 nodes (about 1100 node-hours of the 25 125 SU balance),
+i.e. three 48 h segments (qgg allows 2 days, 32 nodes per job). Sizing runs on 4 nodes (job 1093797) and 16 nodes
+(job 1093798) decide the node count; both print the perf graph at step 25 and at the end (the inputs now carry a
+PerfGraphOutput every 500 steps, level 2, for the main and the sub app, so that production segments killed by the
+wall limit still leave a cost profile). The production script was switched to 48 h segments.

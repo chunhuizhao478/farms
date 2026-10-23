@@ -11,7 +11,7 @@
 #SBATCH -p gg
 #SBATCH -N 8
 #SBATCH -n 1152
-#SBATCH -t 24:00:00
+#SBATCH -t 48:00:00
 #SBATCH -A EAR20006
 #SBATCH -o spe3d_eta0p45.o%j
 #SBATCH -e spe3d_eta0p45.e%j

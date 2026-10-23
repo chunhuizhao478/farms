@@ -188,4 +188,11 @@ Ly = 51.92e-3
 [Outputs]
   exodus = false
   print_linear_residuals = false
+  [perf]
+    # the sub-app's own wall-time breakdown, same cadence as the main app's
+    type = PerfGraphOutput
+    execute_on = 'TIMESTEP_END FINAL'
+    time_step_interval = 500
+    level = 2
+  []
 []

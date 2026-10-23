@@ -7,6 +7,8 @@
 # are measured before the 20-pulse chain is launched. Same physics as the 2D att_homog_eta0p45_absorb case: AT1, spectral
 # split, Gc = 8 l ft^2/(3E) = 2721 J/m^2 (l = 0.6 mm), P_peak = 214 MPa at the gap, zeta_pulse = 1e-8 s, quench after 25 us.
 # Submit from this folder:  sbatch submit_vista_3d_timing.sbatch      (8 nodes x 144 = 1152 ranks, 1.5 h, about 12 SUs)
+#   other sizes:  sbatch -N 4 -n 576 submit_vista_3d_timing.sbatch ;  sbatch -N 16 -n 2304 submit_vista_3d_timing.sbatch
+#   (the split, the output folder timing_<N>n and the perf graph at step 25 and at the end follow the job size)
 # =============================================================================
 #SBATCH -J spe3d_timing
 #SBATCH -p gg
@@ -34,6 +36,7 @@ if [ ! -d $SPLIT ]; then
 fi
 echo "[$(date)] timing run on $SLURM_NNODES nodes, $NR ranks"
 ibrun $FARMS -i elasticity_absorbing.i $COMMON --use-split --split-file $SPLIT \
-      Executioner/end_time=3e-6 Outputs/exodus/time_step_interval=1000 Outputs/file_base=$OUT/out > $OUT/run.log 2>&1
+      Executioner/end_time=3e-6 Outputs/exodus/time_step_interval=1000 Outputs/perf/time_step_interval=25 \
+      Outputs/file_base=$OUT/out > $OUT/run.log 2>&1
 echo "[$(date)] timing run exit $?"
 grep -E "Time Step|Solve Converged|Finished Executing" $OUT/run.log | tail -5

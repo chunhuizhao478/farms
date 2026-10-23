@@ -647,6 +647,14 @@ newmark_gamma = 0.5
     time_step_interval = 1
     show = 'full_energy full_input_energy external_work damping_work solid_elastic_energy_total solid_kinetic_energy_total dissipated_energy_total fracture_extent fracture_extent_090 fracture_extent_core r_dmg_max r_dmg_max_090 damaged_volume damaged_volume_core crack_area p_wall_max v_max borehole_area'
   []
+  [perf]
+    # wall-time breakdown (solve, sub-app, transfers, aux, postprocessors, output) printed to the log every 500 steps,
+    # so that a segment killed by the wall limit still leaves its cost profile; the timing runs override the interval
+    type = PerfGraphOutput
+    execute_on = 'TIMESTEP_END FINAL'
+    time_step_interval = 500
+    level = 2
+  []
 []
 
 # ============================ energy bookkeeping =============================
