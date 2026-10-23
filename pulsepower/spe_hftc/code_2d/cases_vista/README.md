@@ -124,3 +124,22 @@ Watcher `vista_watch_voldev.log` resubmits with RECOVER=1 if the 12 h limit ends
   out as a production candidate; its checkpoints (0800-1000) stay on Vista if a continuation is
   wanted.
 - Watchers: `vista_watch.sh 1092063` and `vista_watch_homog.sh 1092069`; the VOLDEV watcher is off.
+
+## eta = 0.45 pair (job 1092158, submitted 2026-10-22 21:31 PDT, node i614-061)
+
+`submit_vista_eta0p45.sbatch`: `att_eta0p45_absorb` (Gaussian Gc, the production design at
+eta 0.45) and `att_homog_eta0p45_absorb` (homogeneous Gc), 72 ranks each on one node, 12 h, no mail.
+Pulse pressure 214 MPa (222.5 at eta 0.5, 206 at eta 0.4). Watcher `vista_watch_eta0p45.sh`,
+log `vista_watch_eta0p45.log`.
+
+Why: in the extent-per-pulse chart the production case grows at 0.88 mm per pulse from pulse 5 on
+(experiment 0.83 averaged over pulses 5-20), so the 3 mm overshoot is built in pulses 1-4. Lowering
+eta mainly delays nucleation (first cracks in pulse 1 / 2 / 3 for Gaussian 0.5, homogeneous 0.5,
+homogeneous 0.4) and trims the increments by about 10 % per 0.05 of eta (threshold-like, pressure
+above about 150 MPa). Projection for eta 0.45 from the production increments scaled by 0.9:
+homogeneous 7-8 / 13.5-14.5 / 16-17 / 19.5-20.5 mm at pulses 5 / 11 / 15 / 20 (measured 7.97 /
+13.90 / 15.66 / 20.45); Gaussian 9.5-10 / 16-16.5 / 18.5-19 / at the face. If the Gaussian case
+overshoots as projected, a Gaussian eta 0.4 is the next candidate. The experiment's flat stretch
+between pulses 11 and 15 (0.44 mm per pulse) is not reachable with eta alone.
+
+VOLDEV dropped (user decision, 21:25 PDT): neither the Vista case nor the local run is continued.

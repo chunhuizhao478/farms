@@ -283,3 +283,7 @@ after `--recover` (the production tail reads 10-30 J/m instead of 360 J/m after 
 homogeneous eta 0.4 twin 6.6 J/m instead of 105 J/m), while the dashpot work continues from its
 checkpoint value. Totals for a recovered run are the value at the checkpoint row plus the new
 column; the extents are unaffected.
+
+Local VOLDEV one-pulse run stopped at 25.8 us on 2026-10-22 at 21:25 PDT (the user dropped the
+volumetric-deviatoric variant; the Vista twin had already died in the file-system event at 89.5 us
+and is not continued).
