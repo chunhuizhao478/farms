@@ -148,9 +148,8 @@ VOLDEV dropped (user decision, 21:25 PDT): neither the Vista case nor the local 
 
 Job 1092069 (homogeneous twins, recovered from checkpoints 3200 / 2700 of job 1090509) finished at
 07:58 PDT after 10 h 52 min, both cases at 1200 us. Job 1092158 (eta 0.45 pair): the homogeneous
-case reached 1200 us at 07:40 PDT (10.2 h); the Gaussian case was at 1107 us (pulse 19) at 08:07
-with 1.4 h of wall time left, so it will probably time out near 1150 us, and the watcher then
-resubmits it alone with --recover (`ONLY=att_eta0p45_absorb`). Figures (local_runs/):
+case reached 1200 us at 07:40 PDT (10.2 h), the Gaussian case at 09:27 PDT, five minutes inside
+the 12 h wall (11 h 55 min), so neither needed a recover; final frame and CSV fetched at 09:36 PDT. Figures (local_runs/):
 `vista_snapshots_4cases.png` is now a 2 x 3 grid (rows Gaussian / homogeneous Gc, columns eta
 0.5 / 0.45 / 0.4; the empty slot holds the table below) and `vista_extent_vs_pulse_allcases.png`
 carries the six cases (colour = eta, solid lines and circles = Gaussian, dashed and triangles =
@@ -158,12 +157,12 @@ homogeneous; VOLDEV removed). Per-pulse numbers from `tools/pulse_table.py`, whi
 orphaned rows after a recover checkpoint and sums the crack-energy column across the resets.
 
 Crack extent from the wall at the end of pulses 5 / 11 / 15 / 20 in mm (measured 7.97 / 13.90 /
-15.66 / 20.45); energies per unit thickness at 1200 us (Gaussian eta 0.45 at 1107 us):
+15.66 / 20.45); energies per unit thickness at 1200 us:
 
 | case | 5 | 11 | 15 | 20 | cracks > 2 mm, longest | crack energy | pressure work | dashpot work |
 |---|---|---|---|---|---|---|---|---|
 | Gaussian eta 0.5 (production) | 11.04 | 17.16 | 19.84 | 21.61 (side face) | 13, 21.6 mm | 388 J/m | 14.9 kJ/m | 10.6 kJ/m |
-| Gaussian eta 0.45 (pulse 19 running) | 13.19 | 18.09 | 19.67 | 20.83 in pulse 19 | 10, 20.6 mm | 297 J/m | 12.9 kJ/m | 9.2 kJ/m |
+| Gaussian eta 0.45 | 13.19 | 18.09 | 19.67 | 22.31 (side face) | 10, 22.3 mm | 313 J/m | 13.6 kJ/m | 9.7 kJ/m |
 | homogeneous eta 0.5 | 10.16 | 18.08 | 19.85 | 23.31 | 9, 23.3 mm | 490 J/m | 15.8 kJ/m | 10.7 kJ/m |
 | homogeneous eta 0.45 | 7.56 | 16.11 | 18.95 | 20.01 | 13, 20.0 mm | 281 J/m | 13.5 kJ/m | 10.0 kJ/m |
 | homogeneous eta 0.4 | 5.03 | 10.09 | 10.39 | 10.58 | 8, 10.6 mm | 158 J/m | 12.3 kJ/m | 9.6 kJ/m |
@@ -171,8 +170,9 @@ Crack extent from the wall at the end of pulses 5 / 11 / 15 / 20 in mm (measured
 Increments per pulse in mm, pulses 2-20: homogeneous 0.45: 0.5, 2.6, 2.3, 2.2, 1.8, 1.7, 1.4, 1.3,
 1.2, 1.2, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2, 0.3, 0.1, 0.2; homogeneous 0.4: 0.0, 0.5, 2.4, 2.1, 1.7,
 1.4, 1.0, 0.5, 0.3, 0.3, 0.2, then 0.0-0.2 (arrest); homogeneous 0.5: 1.6, 4.1, 2.7, 1.8, 1.3, 1.5,
-1.5, 1.5, 1.4, 0.7, 0.7, 0.4, 0.3, 0.3, 0.6, 0.6, 0.8, 0.6, 0.9; Gaussian 0.45 (to pulse 18): 4.0,
-2.8, 2.5, 1.8, 1.2, 0.8, 0.8, 0.8, 0.8, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.3.
+1.5, 1.5, 1.4, 0.7, 0.7, 0.4, 0.3, 0.3, 0.6, 0.6, 0.8, 0.6, 0.9; Gaussian 0.45: 4.0, 2.8, 2.5,
+1.8, 1.2, 0.8, 0.8, 0.8, 0.8, 0.6, 0.5, 0.4, 0.4, 0.3, 0.3, 0.3, 0.3, 0.3, 1.5 (the crack at 344 deg
+reaches the right face in pulse 20, as the production's did in pulse 16).
 
 Reading:
 

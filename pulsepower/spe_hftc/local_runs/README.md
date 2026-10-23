@@ -314,7 +314,7 @@ Homogeneous twins at the same reading: eta 0.5 ends pulse 5 at 10.16 mm (paper 7
 ### Twins and the homogeneous eta 0.45 case complete (2026-10-23, 08:15 PDT)
 
 Both figures refreshed: `vista_snapshots_4cases.png` is now a 2 x 3 grid (Gaussian Gc on top: eta
-0.5 production, eta 0.45 at 1107 us; homogeneous Gc below: eta 0.5, 0.45, 0.4; the sixth slot is
+0.5 production, eta 0.45; homogeneous Gc below: eta 0.5, 0.45, 0.4; the sixth slot is
 the comparison table) and `vista_extent_vs_pulse_allcases.png` shows the six cases with colour =
 eta and line style = Gc model. Numbers, energies and the reading: `code_2d/cases_vista/README.md`
 ("Twins complete; eta 0.45 pair"). `tools/pulse_table.py` prints the extent and crack energy at
@@ -331,3 +331,7 @@ at pulse 5 with less crack energy, because fewer cracks share the energy.
 paper figure of the same per-pulse reading for the homogeneous-Gc cases only (legend eta = 0.5 / 0.45 /
 0.4 and "experiment", no title, side-face line, PDF vector plus 300 dpi PNG, 5.2 x 3.7 in). The
 six-case working chart `vista_extent_vs_pulse_allcases.png` is kept.
+
+Gaussian eta 0.45 final (fetched 09:36 PDT, 2026-10-23): 22.31 mm at pulse 20, the crack at 344 deg
+reaching the right face in pulse 20 (20.83 mm at pulse 19); crack energy 313 J/m, pressure work
+13.6 kJ/m, dashpot 9.7 kJ/m; both figures refreshed with its 1200 us frame.
