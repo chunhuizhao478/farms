@@ -335,3 +335,15 @@ six-case working chart `vista_extent_vs_pulse_allcases.png` is kept.
 Gaussian eta 0.45 final (fetched 09:36 PDT, 2026-10-23): 22.31 mm at pulse 20, the crack at 344 deg
 reaching the right face in pulse 20 (20.83 mm at pulse 19); crack energy 313 J/m, pressure work
 13.6 kJ/m, dashpot 9.7 kJ/m; both figures refreshed with its 1200 us frame.
+
+### 3D absorbing input, smoke test on the coarse cube mesh (2026-10-23, 10:24 PDT)
+
+`code_3d/elasticity_absorbing.i` (3D twin of the 2D homogeneous eta 0.45 absorbing case) run for
+0.6 us of pulse 1 on `spe_cube_smoke.msh` (0.15 M tets, l = 3 mm), 8 ranks, eta 0.45, zeta_pulse 1e-8:
+24 steps in 35 min, every solve and Picard iteration converged. CSV checks: p_wall_max 212 MPa
+(sampled; 214 at t_r), borehole area within 0.4 % of 2 pi rb Lz on this coarse mesh, pressure work
+and kinetic plus elastic energy consistent within the attenuation loss, dashpot work still zero at
+0.6 us (the wave reaches the side faces after about 11 us), no damage yet (Gc is 13.6 kJ/m^2 at
+l = 3 mm). The FParser JIT reports "compile failed" on this Mac when the conda env's bin is not on
+PATH; the run then uses the bytecode evaluator and is slower but correct. Files:
+`cube_smoke_homog_eta0p45_absorb.{csv,e,log}`.
