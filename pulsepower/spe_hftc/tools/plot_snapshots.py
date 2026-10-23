@@ -28,7 +28,7 @@ fig, axes = plt.subplots(2, 2, figsize=(11.6, 11.0), dpi=150)
 fig.patch.set_facecolor(PAPER); fig.subplots_adjust(left=0.07, right=0.88, top=0.90, bottom=0.06, wspace=0.22, hspace=0.30)
 for ax, (c, title, sub) in zip(axes.flat, CASES):
     z = np.load(S + c + "_last.npz"); x, y, tri, d, t = z["x"]*1e3, z["y"]*1e3, z["tri"], z["d"], float(z["t"])*1e6
-    r = np.hypot(x, y); pulse = int(t // 60.0) + 1
+    r = np.hypot(x, y); pulse = max(1, int(np.ceil(t / 60.0 - 1e-6)))   # window k covers ((k-1)*60, k*60] us
     e5 = r[d >= 0.5].max() - RH if (d >= 0.5).any() else 0.0
     core = r < RCORE; e5c = r[(d >= 0.5) & core].max() - RH if ((d >= 0.5) & core).any() else 0.0
     cr = cracks_of(x, y, d)
