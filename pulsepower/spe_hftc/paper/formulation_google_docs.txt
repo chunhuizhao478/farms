@@ -1,0 +1,144 @@
+Formulation of the phase-field model for the pulsed-power acrylic-cube experiment
+
+(Paste into Google Docs. Every display equation is written between $$ ... $$ so that the Auto-LaTeX Equations add-on renders it in place; the prose uses plain Unicode symbols and needs no rendering. Equation numbers are given in the sentence that introduces each equation.)
+
+
+1. Problem setup
+
+Specimen. A cast-acrylic cube of Lx × Ly × Lz = 51.11 × 51.92 × 49.14 mm with a through borehole of radius rb = 4.15 mm along z. The electrode gap of length Lg = 7.17 mm is centred at zc = Lz/3 above the bottom face. Two models are used: the full three-dimensional cube, and a plane-strain section through the gap height (a circle of radius rb in the Lx × Ly rectangle), which carries the same material, loading and time schedule.
+
+Material (manuscript Table 1). Density ρ = 1190 kg/m³, Young's modulus E = 2.80 GPa, Poisson ratio ν = 0.35, hence shear modulus G = 1.04 GPa, bulk modulus K = 3.11 GPa, wave speeds cp = 1943 m/s and cs = 934 m/s. Tensile strength ft = 69 MPa. The fracture toughness is not reported; it is tied to ft and the regularisation length by the phase-field model (Section 4).
+
+Unknown fields. The displacement u(x, t) and the damage (phase) field d(x, t) with d = 0 intact and d = 1 fully broken, both defined on the solid Ω.
+
+Loading. A train of Np = 20 pressure pulses on the borehole wall Γb, one pulse per window of Tw = 60 µs, applied as a continuous history with no reset of displacement or damage between pulses (Section 5).
+
+
+2. Strong form
+
+Momentum balance (1). With small strains ε = sym ∇u and a stiffness-proportional (Kelvin–Voigt) damping stress ζ σ̇:
+
+$$\rho\,\ddot{\mathbf{u}} = \nabla\cdot\left(\boldsymbol{\sigma} + \zeta\,\dot{\boldsymbol{\sigma}}\right) \quad \text{in } \Omega\times(0,T]$$
+
+Degraded stress with the spectral split (2). The strain is decomposed into its principal values εi and directions ni, and only the tensile part is degraded by g(d):
+
+$$\boldsymbol{\varepsilon}^{+} = \sum_{i}\langle\varepsilon_i\rangle_{+}\,\mathbf{n}_i\otimes\mathbf{n}_i,\qquad \boldsymbol{\varepsilon}^{-} = \boldsymbol{\varepsilon}-\boldsymbol{\varepsilon}^{+},\qquad \langle x\rangle_{\pm} = \tfrac{1}{2}\left(x \pm |x|\right)$$
+
+$$\boldsymbol{\sigma} = g(d)\,\boldsymbol{\sigma}^{+}(\boldsymbol{\varepsilon}) + \boldsymbol{\sigma}^{-}(\boldsymbol{\varepsilon}),\qquad \boldsymbol{\sigma}^{\pm} = \lambda\,\langle \operatorname{tr}\boldsymbol{\varepsilon}\rangle_{\pm}\,\mathbf{I} + 2G\,\boldsymbol{\varepsilon}^{\pm}$$
+
+Active (tensile) and passive elastic energy densities (3):
+
+$$\psi^{+} = \tfrac{1}{2}\lambda\,\langle \operatorname{tr}\boldsymbol{\varepsilon}\rangle_{+}^{2} + G\,\boldsymbol{\varepsilon}^{+}\!:\!\boldsymbol{\varepsilon}^{+},\qquad \psi^{-} = \tfrac{1}{2}\lambda\,\langle \operatorname{tr}\boldsymbol{\varepsilon}\rangle_{-}^{2} + G\,\boldsymbol{\varepsilon}^{-}\!:\!\boldsymbol{\varepsilon}^{-}$$
+
+Damage evolution (4). The phase field obeys the Karush–Kuhn–Tucker system of the regularised fracture energy with irreversibility:
+
+$$\frac{G_c}{c_0}\left(\frac{\alpha'(d)}{l} - 2\,l\,\Delta d\right) + g'(d)\,\psi^{+} \;\geq\; 0,\qquad \dot{d}\geq 0,\qquad \left[\frac{G_c}{c_0}\left(\frac{\alpha'(d)}{l} - 2\,l\,\Delta d\right) + g'(d)\,\psi^{+}\right]\dot{d} = 0,\qquad 0\leq d\leq 1$$
+
+with the crack geometric function α(d), its normalisation c0 and the degradation function g(d) of Section 4, the regularisation length l and the toughness Gc.
+
+Boundary conditions (5). On the borehole wall Γb the pulse pressure acts as a normal traction; on the four side faces Γa (x = ±Lx/2, y = ±Ly/2) Lysmer–Kuhlemeyer dashpots absorb the outgoing waves; on the two end faces Γe (z = 0 and z = Lz, three-dimensional model only) the holder plates suppress the axial displacement and leave the in-plane motion free; the damage field has a natural boundary condition everywhere:
+
+$$\left(\boldsymbol{\sigma}+\zeta\dot{\boldsymbol{\sigma}}\right)\mathbf{n} = -p(t,\mathbf{x})\,\mathbf{n} \ \text{ on } \Gamma_b,\qquad \left(\boldsymbol{\sigma}+\zeta\dot{\boldsymbol{\sigma}}\right)\mathbf{n} = -\rho\,c_p\,(\mathbf{v}\cdot\mathbf{n})\,\mathbf{n} - \rho\,c_s\left[\mathbf{v}-(\mathbf{v}\cdot\mathbf{n})\,\mathbf{n}\right] \ \text{ on } \Gamma_a$$
+
+$$u_z = 0,\quad \left[\left(\boldsymbol{\sigma}+\zeta\dot{\boldsymbol{\sigma}}\right)\mathbf{n}\right]_{x,y} = \mathbf{0} \ \text{ on } \Gamma_e,\qquad \nabla d\cdot\mathbf{n} = 0 \ \text{ on } \partial\Omega$$
+
+where v = u̇ is the particle velocity and n the outward normal. In the plane-strain section the four edges of the rectangle carry the dashpot condition and there is no end condition. The solid starts at rest and undamaged: u = v = 0 and d = 0 at t = 0.
+
+Damping schedule (6). The damping coefficient ζ is a function of time only. Within each pulse window it is ζpulse = 1e-8 s during the first tfree = 25 µs (the pulse, the primary crack growth and the first reflection) and ζquench = 1e-5 s during the remaining 35 µs. The quench brings the cube to rest before the next pulse, the role that the 80 s interval between pulses plays in the experiment; for a mode of angular frequency ω the damping ratio is
+
+$$\xi(\omega) = \tfrac{1}{2}\,\zeta\,\omega$$
+
+so that with ζquench every mode above 32 kHz is over-damped and decays in about 10 µs, while during the pulse the damping stress is negligible (ζpulse/tr = 0.03 of the elastic stress on the rise).
+
+
+3. Weak form
+
+Displacement problem (7). Let V be the space of kinematically admissible displacements (uz = 0 on Γe in three dimensions) and w a test function in V. Multiplying (1) by w, integrating over Ω and inserting the natural boundary conditions (5) gives
+
+$$\int_{\Omega}\rho\,\ddot{\mathbf{u}}\cdot\mathbf{w}\,dV + \int_{\Omega}\left(\boldsymbol{\sigma}+\zeta\,\dot{\boldsymbol{\sigma}}\right):\nabla\mathbf{w}\,dV + \int_{\Gamma_a}\rho\left[c_p\,(\mathbf{v}\cdot\mathbf{n})(\mathbf{w}\cdot\mathbf{n}) + c_s\left(\mathbf{v}-(\mathbf{v}\cdot\mathbf{n})\mathbf{n}\right)\cdot\mathbf{w}\right]dA = -\int_{\Gamma_b} p(t,\mathbf{x})\,\mathbf{n}\cdot\mathbf{w}\,dA \qquad \forall\,\mathbf{w}\in V$$
+
+The pressure term is the work-conjugate load of the borehole wall; the dashpot term is a boundary damping that removes the energy of the waves leaving through the side faces.
+
+Damage problem (8). The damage field minimises, at fixed displacement, the regularised total energy
+
+$$\Pi[\mathbf{u},d] = \int_{\Omega}\left[g(d)\,\psi^{+}(\boldsymbol{\varepsilon}) + \psi^{-}(\boldsymbol{\varepsilon})\right]dV + \int_{\Omega}\frac{G_c}{c_0}\left(\frac{\alpha(d)}{l} + l\,|\nabla d|^{2}\right)dV$$
+
+over the admissible set K = { d : dold ≤ d ≤ 1 }, where dold is the damage at the previous time step (irreversibility). The first variation gives the variational inequality (9): find d in K such that
+
+$$\int_{\Omega}\left[\frac{G_c}{c_0}\left(\frac{\alpha'(d)}{l}\,(q-d) + 2\,l\,\nabla d\cdot\nabla(q-d)\right) + g'(d)\,\psi^{+}\,(q-d)\right]dV \;\geq\; 0 \qquad \forall\, q\in K$$
+
+Where the constraints are inactive this reduces to the weak form of the equality in (4); where d = dold the crack does not heal, and where d = 1 the material is fully broken.
+
+Space and time discretisation. Both fields use first-order Lagrange elements on the same mesh (triangles in the section, tetrahedra in the cube) with element size h = 0.3 mm = l/2 in the zone where cracks can run (the whole section; a cylinder of radius 28 mm around the borehole in the cube, coarsening to 1 mm in the corners). After assembly the displacement problem is the semi-discrete system (10)
+
+$$\mathbf{M}\,\ddot{\mathbf{U}} + \mathbf{C}\,\dot{\mathbf{U}} + \mathbf{F}_{int}(\mathbf{U},d) = \mathbf{F}_{ext}(t)$$
+
+with the stiffness-proportional damping ζ K(d) and the dashpot matrix contained in C. It is integrated with the Newmark average-acceleration scheme (β = 1/4, γ = 1/2), the damping stress being evaluated as ζ (σn+1 − σn)/Δt. At every time step the two problems are solved in a staggered fixed-point loop: the displacement system with the damage frozen, then the damage inequality (9) with ψ⁺ frozen, repeated until the displacement residual falls below a relative tolerance of 1e-6 (one pass when no damage evolves, about four during crack growth). The inequality is solved with a reduced-space active-set Newton method that enforces the bounds dold ≤ d ≤ 1 exactly. The time step is capped at 30 ns during the first 0.6 µs of each window (ten steps on the pressure rise) and at 100 ns thereafter, is reduced when the Newton iteration count grows, and is forced to land exactly on every pulse onset.
+
+
+4. Choice of the phase-field model
+
+Model. The AT1 model is used: α(d) = d, c0 = 8/3, with the quadratic degradation function with a small residual stiffness k = 1e-6 that keeps the fully broken material numerically stable,
+
+$$\alpha(d) = d,\qquad c_0 = 4\int_0^1\sqrt{\alpha(s)}\,ds = \tfrac{8}{3},\qquad g(d) = (1-d)^2\,(1-k) + k$$
+
+AT1 was chosen because it has an elastic threshold: no damage develops until the active energy reaches a finite value, so the model has a well-defined tensile strength. For a homogeneous state under uniaxial tension the damage criterion of (4) gives (11)
+
+$$\sigma_c = \sqrt{\frac{3\,E\,G_c}{8\,l}} \qquad\Longleftrightarrow\qquad G_c = \frac{8\,l\,\sigma_c^{2}}{3\,E}$$
+
+Strength, toughness and length scale. The three quantities σc, Gc and l are tied by (11) and the mesh fixes the smallest resolvable length (h = l/2). The measured strength is kept exact, σc = ft = 69 MPa, and l = 0.6 mm is the smallest length affordable in the three-dimensional cube; the toughness then follows from (11):
+
+$$G_c = \frac{8\times 0.6\,\mathrm{mm}\times(69\,\mathrm{MPa})^{2}}{3\times 2.80\,\mathrm{GPa}} = 2721\ \mathrm{J/m^{2}},\qquad l_{ch} = \frac{E\,G_c}{f_t^{2}} = 1.6\ \mathrm{mm}$$
+
+This is about eight times the literature toughness of cast acrylic (about 350 J/m²). The choice keeps nucleation and the crushed zone at the borehole physical (they are governed by the strength) and lets the energy-efficiency parameter η of the loading absorb the inflated toughness, which governs how far a crack runs for a given energy input. The alternative, keeping Gc = 350 J/m² at the same l, would lower the strength to 25 MPa and spread damage over a zone twice as large.
+
+Split. The spectral split (2)–(3) lets only tensile principal strains drive damage and degrades only the tensile part of the stress. The borehole pressure puts the wall in radial compression and circumferential (hoop) tension; the split makes the hoop tension open radial cracks while the compressed material keeps its full stiffness, and it prevents the compressive crushing that an undegraded isotropic model would produce.
+
+Toughness field. The reference cases use a homogeneous Gc. A variant with a spatially random Gc (truncated normal, 12 % standard deviation, element-wise) is used to break the symmetry of the radial crack pattern; the extents of the two are compared to quantify the scatter of a single realisation.
+
+Crack measures. The fracture extent reported against the manuscript is the longest crack from the borehole wall in the top view (12), and the crack area (crack length per unit thickness in the section) follows from the dissipated energy:
+
+$$L_f = \max_{\mathbf{x}:\ d(\mathbf{x})\geq 0.5}\sqrt{x^{2}+y^{2}}\;-\;r_b,\qquad \Psi_d = \int_{\Omega}\frac{G_c}{c_0}\left(\frac{\alpha(d)}{l} + l\,|\nabla d|^{2}\right)dV,\qquad A_f = \frac{\Psi_d}{G_c}$$
+
+
+5. Loading
+
+Pressure history (13). Each pulse applies the empirical double-exponential pressure history on the borehole wall, normalised so that the peak Pp is reached at the rise time tr:
+
+$$p(t,\mathbf{x}) = P_p(\mathbf{x})\,\frac{e^{-a\tau}-e^{-b\tau}}{e^{-a t_r}-e^{-b t_r}},\qquad \tau = t-(k-1)\,T_w \ \text{ in window } k,\qquad k = 1,\dots,N_p$$
+
+The two rates follow from the rise time and the discharge duration td, defined as the time at which the pressure has fallen to 10 % of its peak (14):
+
+$$\frac{\ln(b/a)}{b-a} = t_r,\qquad \frac{e^{-a t_d}-e^{-b t_d}}{e^{-a t_r}-e^{-b t_r}} = 0.1$$
+
+With tr = 0.3 µs (the current rise reported in the manuscript, 230 to 350 ns) and td = 6 µs (the middle of the reported 3 to 12 µs) this gives a = 4.10e5 1/s and b = 1.15e7 1/s; the pressure has fallen to about 1e-7 of its peak at 40 µs.
+
+Peak pressure (15). The peak follows the empirical discharge law of the pulse-power model, in which a fraction η of the stored capacitor energy EM is converted into borehole pressure, and the pressure decays with the distance D(x) between the wall point x and the electrode-gap segment:
+
+$$P_p(\mathbf{x}) = 10^{5}\,B\,\frac{(\eta\,E_M)^{\kappa}}{D(\mathbf{x})^{m}}\ \ [\mathrm{Pa}],\qquad E_M \text{ in kJ},\quad D \text{ in mm},\qquad B = 8000,\ \ \kappa = 0.35,\ \ m = 0.25$$
+
+The stored energy is EM = 144 J (60 kV, 80 nF). The conversion efficiency η is the one free parameter of the model: the manuscript does not report the share of the discharge energy that reaches the wall. Next to the gap, D = rb, and the peak pressure is 206, 215 and 223 MPa for η = 0.4, 0.45 and 0.5, all above the strength ft, so damage nucleates at the wall during the rise of every pulse. In the plane-strain section at the gap height the peak is uniform around the wall; in the cube it decays along the borehole with D(x), to about three quarters of the gap value at the near end and six tenths at the far end.
+
+Pulse train (16). Pulses are applied as one continuous history with Np = 20 windows of Tw = 60 µs; the fracture extent (12) is read at the end of every window, and the values after pulses 5, 11, 15 and 20 are compared with the measurements. Within each window the schedule is
+
+$$\zeta(t) = \begin{cases} \zeta_{pulse} = 10^{-8}\ \mathrm{s}, & 0 \leq \tau < t_{free} = 25\ \mu\mathrm{s} \\ \zeta_{quench} = 10^{-5}\ \mathrm{s}, & t_{free} \leq \tau < T_w \end{cases}$$
+
+so that each pulse meets a specimen that is essentially at rest (less than 1 % of the vibration energy survives the quench) while carrying the accumulated damage of all previous pulses. The dashpots on the side faces absorb the waves that would otherwise reflect from the free surfaces and keep feeding the cracks after the pulse; the holder plates enter only through the axial constraint on the end faces.
+
+Energy budget (17). The pressure work, the dashpot work and the stored and dissipated energies are tracked at every step as a consistency check:
+
+$$W_{ext} = \int_0^t\!\!\int_{\Gamma_b} p\,\mathbf{n}\cdot\mathbf{v}\,dA\,dt,\qquad W_{a} = \int_0^t\!\!\int_{\Gamma_a}\mathbf{t}_a\cdot\mathbf{v}\,dA\,dt,\qquad E_{in} = -W_{ext}-W_{a}$$
+
+$$E_{tot} = \int_{\Omega}\tfrac{1}{2}\rho\,|\mathbf{v}|^{2}\,dV + \int_{\Omega}\left[g(d)\,\psi^{+}+\psi^{-}\right]dV + \Psi_d,\qquad E_{in}-E_{tot} = \text{energy removed by } \zeta$$
+
+where ta is the dashpot traction of (5). The crack energy Ψd per pulse is the quantity that the loading efficiency η is calibrated against, together with the measured extents.
+
+
+Parameter summary
+
+ρ = 1190 kg/m³, E = 2.80 GPa, ν = 0.35, cp = 1943 m/s, cs = 934 m/s
+ft = σc = 69 MPa, l = 0.6 mm, Gc = 2721 J/m², k = 1e-6, h = 0.3 mm
+Lx × Ly × Lz = 51.11 × 51.92 × 49.14 mm, rb = 4.15 mm, Lg = 7.17 mm, zc = Lz/3
+EM = 144 J, η = 0.4 / 0.45 / 0.5 (Pp = 206 / 215 / 223 MPa at the gap), tr = 0.3 µs, td = 6 µs, a = 4.10e5 1/s, b = 1.15e7 1/s
+Np = 20, Tw = 60 µs, tfree = 25 µs, ζpulse = 1e-8 s, ζquench = 1e-5 s
+Newmark β = 1/4, γ = 1/2; Δt ≤ 30 ns on the rise (first 0.6 µs), ≤ 100 ns otherwise; fixed-point tolerance 1e-6
