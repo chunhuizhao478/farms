@@ -114,10 +114,13 @@ Watcher `vista_watch_voldev.log` resubmits with RECOVER=1 if the 12 h limit ends
   into the last pulse). The watcher submitted the recover tail as job 1092063 at 22:59 CDT
   (checkpoint 12100 of 16:45 CDT, intact); it is stepping from 1145 us to the 1200 us end on
   i615-014, about 35 minutes of work.
-- Homogeneous twins resubmitted with RECOVER=1 as job 1092065 (23:01 CDT, node i617-134): eta 0.4
-  recovers from checkpoint 3200 (17:12 CDT, before the hang), eta 0.5 from checkpoint 2800
-  (17:29 CDT, written at the onset of the hang; checkpoint 2700 is the fallback if 2800 is bad).
+- Homogeneous twins resubmitted with RECOVER=1 as job 1092065 (23:01 CDT): eta 0.4 recovered from
+  checkpoint 3200 (17:12 CDT, before the hang), but eta 0.5 aborted at once because checkpoint
+  2800 (17:29 CDT, the onset of the hang) holds 5 of its 73 files. Fix: 1092065 cancelled, the
+  partial `out_cp/2800-*` removed so that --recover picks the complete checkpoint 2700, both twins
+  resubmitted together as job 1092069 (23:05 CDT, node i617-141). Rule for next time: after a crash,
+  count the files of the newest checkpoint (73 per checkpoint at 72 ranks) before recovering.
 - VOLDEV not resubmitted: the one-pulse result (local_runs/README.md) and the 89.5 us state rule it
   out as a production candidate; its checkpoints (0800-1000) stay on Vista if a continuation is
   wanted.
-- Watchers: `vista_watch.sh 1092063` and `vista_watch_homog.sh 1092065`; the VOLDEV watcher is off.
+- Watchers: `vista_watch.sh 1092063` and `vista_watch_homog.sh 1092069`; the VOLDEV watcher is off.
