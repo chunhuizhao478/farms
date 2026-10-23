@@ -246,3 +246,40 @@ damage (spectral 6.6 %). The look matches the paper's wording for the crushed zo
 does not: 4.9 mm after one pulse here, 10.8 mm in pulse 2 on Vista, against 7.97 mm total extent
 (crushed zone plus dominant cracks) after 5 pulses measured. The local run is redundant with the
 Vista twin from here on (same mesh and time steps, Exodus every 40 steps on both).
+
+## Snapshots and extent per pulse of every Vista case (2026-10-22, 21:35 PDT)
+
+Figures: `vista_snapshots_4cases.png` (latest Exodus frame of each case, full section) and
+`vista_extent_vs_pulse_allcases.png` (extent at the end of each 60 us window, every case, with the
+paper's four measurements). Scripts in `tools/plot_snapshots.py` and
+`tools/plot_extent_vs_pulse_allcases.py`; frames come from `exo_last_step.py` on Vista (1.1 MB npz
+each), CSVs by gzip over ssh.
+
+Extent from the borehole wall (mm) at the end of each pulse window (`fracture_extent`; the VOLDEV
+and free-face rows use the core measure, which is capped at 10.85 mm by the 15 mm core radius):
+
+| pulse | 1 | 2 | 3 | 4 | 5 | 6 | 8 | 10 | 12 | 14 | 16 | 18 | 19 | paper |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| production (Gaussian, eta 0.5) | 2.65 | 6.39 | 8.35 | 9.83 | 11.04 | 12.42 | 14.49 | 16.27 | 17.87 | 19.07 | 21.58 | 21.61 | 21.61 | 7.97 (5), 13.90 (11), 15.66 (15), 20.45 (20) |
+| homogeneous eta 0.5 | 0 | 1.58 | 5.69 | 8.37 | 10.16 (at 266 us) | | | | | | | | | |
+| homogeneous eta 0.4 | 0 | 0 | 0.52 | 2.93 | 5.03 | 6.43 (at 312 us) | | | | | | | | |
+| VOLDEV (core) | 5.48 | 10.78 (at 89 us) | | | | | | | | | | | | |
+| free faces (core) | 2.65 | 6.48 | 10.81 | | | | | | | | | | | |
+
+Snapshot readings (latest frame): production at 1154 us, pulse 20: 12 radial cracks longer than
+2 mm, the leader at the right side face (21.6 mm), five dominant cracks 21.6, 15.7, 14.7, 13.0 and
+10.1 mm, clean far field. Homogeneous eta 0.5 at 271 us: six-armed star, 11 cracks longer than
+2 mm, longest 10.2 mm, no near-wall crushing. Homogeneous eta 0.4 at 317 us: the same six-armed
+pattern, longest 6.7 mm. VOLDEV at 89 us: a continuous crushed zone to 12.3 mm, no discrete cracks,
+plus a damaged spot at the lower-left corner of the section.
+
+Reading: the homogeneous eta 0.5 case starts one pulse later than the Gaussian one (nothing after
+pulse 1, 1.6 mm after pulse 2) and then grows about 2.5 mm per pulse, so by pulse 4-5 it sits close
+to the paper's 7.97 mm at pulse 5, below the Gaussian case's 11.0 mm. The homogeneous eta 0.4 case
+starts two pulses later still and grows about 2.1 mm per pulse. Both twins continue in job 1092069.
+
+Caveat for the recovered runs: `dissipated_energy_total` (the crack energy) restarts from zero
+after `--recover` (the production tail reads 10-30 J/m instead of 360 J/m after 1144 us; the
+homogeneous eta 0.4 twin 6.6 J/m instead of 105 J/m), while the dashpot work continues from its
+checkpoint value. Totals for a recovered run are the value at the checkpoint row plus the new
+column; the extents are unaffected.
