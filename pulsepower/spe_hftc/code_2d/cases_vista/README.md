@@ -97,3 +97,27 @@ Watcher `vista_watch_voldev.log` resubmits with RECOVER=1 if the 12 h limit ends
   job is purged from the queue; the watchers read that as an ssh failure and retried forever, so
   the production tail was never submitted. They now treat rc 255 as the ssh failure and "invalid
   job id" as "left the queue" (then sacct decides).
+
+### Vista system event on 2026-10-22 (17:00-18:40 CDT) and the resubmissions (21:05 PDT)
+
+- All three runs of jobs 1090509 (homogeneous twins, node i618-022) and 1090603 (VOLDEV, node
+  i614-141) died at the same second, 18:39:32 CDT, each with one rank killed by signal 7 (Bus error)
+  while writing output or computing a residual. Their CSV, Exodus and checkpoint files stop at
+  17:12-17:29 CDT, i.e. the solvers hung for over an hour before the kill, and the ssh master to the
+  login node had dropped at 17:06 CDT. Two nodes failing in the same second on the shared $WORK
+  file system reads as a Lustre event, not a model problem. Slurm reports both jobs as COMPLETED
+  (the job scripts exited normally after ibrun died).
+- Final states: homogeneous eta 0.4 at 317.3 us (pulse 6): extent 6.69 mm, crack energy 105 J/m;
+  homogeneous eta 0.5 at 270.5 us (pulse 5): extent 10.16 mm, crack energy 150 J/m; VOLDEV at
+  89.5 us (pulse 2): core extent 10.78 mm, total extent 32.3 mm, crack energy 615 J/m.
+- 1089067 (production) was unaffected: it timed out at 16:45 CDT at 1143.9 us (pulse 20, 3.9 us
+  into the last pulse). The watcher submitted the recover tail as job 1092063 at 22:59 CDT
+  (checkpoint 12100 of 16:45 CDT, intact); it is stepping from 1145 us to the 1200 us end on
+  i615-014, about 35 minutes of work.
+- Homogeneous twins resubmitted with RECOVER=1 as job 1092065 (23:01 CDT, node i617-134): eta 0.4
+  recovers from checkpoint 3200 (17:12 CDT, before the hang), eta 0.5 from checkpoint 2800
+  (17:29 CDT, written at the onset of the hang; checkpoint 2700 is the fallback if 2800 is bad).
+- VOLDEV not resubmitted: the one-pulse result (local_runs/README.md) and the 89.5 us state rule it
+  out as a production candidate; its checkpoints (0800-1000) stay on Vista if a continuation is
+  wanted.
+- Watchers: `vista_watch.sh 1092063` and `vista_watch_homog.sh 1092065`; the VOLDEV watcher is off.
