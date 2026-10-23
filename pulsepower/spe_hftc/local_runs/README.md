@@ -327,6 +327,7 @@ Headline: homogeneous eta 0.45 gives 7.56 / 16.11 / 18.95 / 20.01 mm at pulses 5
 0.5 reaches 23.3 mm; the Gaussian eta 0.45 realization is 2 mm ahead of the Gaussian eta 0.5 one
 at pulse 5 with less crack energy, because fewer cracks share the energy.
 
-`vista_extent_vs_pulse_homog.png` (2026-10-23, 08:25 PDT; `tools/plot_extent_vs_pulse_homog.py`):
-the same per-pulse reading for the homogeneous-Gc cases only, labelled eta 0.4 / 0.45 / 0.5, against
-the measurements. The six-case chart `vista_extent_vs_pulse_allcases.png` is kept.
+`vista_extent_vs_pulse_homog.{pdf,png}` (2026-10-23, 08:55 PDT; `tools/plot_extent_vs_pulse_homog.py OUT_STEM`):
+paper figure of the same per-pulse reading for the homogeneous-Gc cases only (legend eta = 0.5 / 0.45 /
+0.4 and "experiment", no title, side-face line, PDF vector plus 300 dpi PNG, 5.2 x 3.7 in). The
+six-case working chart `vista_extent_vs_pulse_allcases.png` is kept.
