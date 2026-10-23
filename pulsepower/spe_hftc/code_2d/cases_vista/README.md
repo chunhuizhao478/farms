@@ -199,3 +199,24 @@ Reading:
 Recommendation: calibrate eta on the homogeneous model, where eta 0.45 is the answer. If the
 Gaussian design stays in the paper, run it with two more seeds at eta 0.45 and report the band
 instead of moving eta against one realization. The Gaussian eta 0.4 candidate is withdrawn.
+
+## eta = 0.425 homogeneous (job 1093037, submitted 2026-10-23 09:40 PDT)
+
+`submit_vista_eta0p425.sbatch`: `att_homog_eta0p425_absorb` alone, 72 ranks (the same decomposition as
+the eta 0.4 / 0.45 / 0.5 cases, so that the symmetry breaking of the crack star is seeded the same
+way), 12 h, no mail; pulse pressure about 210 MPa. Watcher `vista_watch_eta0p425.sh`, log
+`vista_watch_eta0p425.log`; it resubmits with `--recover` on a wall-time end. The second half of the
+node is idle (one case per node was the user's choice).
+
+Why: the three homogeneous runs fall into two regimes, not on a slope. eta 0.4 keeps a symmetric
+six-armed star (arms 7.0-10.6 mm) that arrests after pulse 12; eta 0.45 localizes, two diagonal arms
+run to 20.0 and 19.4 mm while the other four stay at 7.8-11.2 mm; the peak pressures differ by 4 %.
+eta 0.425 sits inside that gap. Near such a threshold the star should stall for several pulses before
+one arm breaks away, i.e. a fast-slow-fast history, which is the shape of the measurement (0.44 mm per
+pulse between pulses 11 and 15, 1.0 mm per pulse afterwards). Outcomes: a stall at 11-13 mm followed
+by a late localization gives a calibrated eta with a mechanism behind the measured shape; an arrest
+puts the threshold between 0.425 and 0.45 and leaves eta 0.45 as the calibration, with the overshoot
+at pulses 11 and 15 as the price of being above threshold. Plain interpolation (about 6 / 13 / 14.5 /
+15 mm at pulses 5 / 11 / 15 / 20) is the least likely outcome. Caveats: near the threshold the mesh
+asymmetry decides which arm wins and when, so one run gives the regime, not a precise curve; the 2D
+section cannot carry the 3D crack front.
