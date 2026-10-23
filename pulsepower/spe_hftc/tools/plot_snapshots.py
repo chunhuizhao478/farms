@@ -30,7 +30,7 @@ def cracks_of(x, y, d):
     return sorted(cr, reverse=True)
 def table_panel(ax):
     ax.axis("off")
-    cols = ["", "pulse 5", "pulse 11", "pulse 15", "pulse 20", "E_crack (J/m)", "W_press (kJ/m)"]
+    cols = ["", "pulse 5", "pulse 11", "pulse 15", "pulse 20", "E_c (J/m)", "W_p (kJ/m)"]
     ct = [["experiment", "7.97", "13.90", "15.66", "20.45", "-", "-"]]
     for case in CASES:
         if case is None: continue
@@ -45,7 +45,7 @@ def table_panel(ax):
         cells += [f"({ce:.0f})" if running else f"{ce:.0f}", f"({pw:.1f})" if running else f"{pw:.1f}"]
         ct.append(cells)
     tb = ax.table(cellText=ct, colLabels=cols, loc="center", cellLoc="center", bbox=[-0.04, 0.36, 1.1, 0.46],
-                  colWidths=[0.25, 0.1, 0.1, 0.1, 0.1, 0.175, 0.175])
+                  colWidths=[0.29, 0.1, 0.1, 0.1, 0.1, 0.155, 0.155])
     tb.auto_set_font_size(False); tb.set_fontsize(7.9)
     for (i, j), cell in tb.get_celld().items():
         cell.set_edgecolor(EDGE); cell.set_linewidth(0.6); cell.get_text().set_color(INK)
@@ -56,7 +56,7 @@ def table_panel(ax):
     ax.set_title("Crack extent from the wall at the end of the pulse (mm)", fontsize=9.5, color=INK, loc="left")
     ax.text(0.0, 0.30, "Measured: Jin et al., 144 J pulses, 80 s apart.\nModel: farthest d >= 0.5 from the wall at the end of each\n"
             "60 us window; the nearest side face is 21.4 mm from the wall.\n( ) = pulse or run still in progress.\n"
-            "E_crack = crack energy, W_press = pressure work, per unit thickness\nat the last frame; crack energy summed across the recover resets.\n"
+            "E_c = crack energy, W_p = pressure work, per unit thickness at the\nlast frame; crack energy summed across the recover resets.\n"
             "Gaussian Gc, eta 0.4 has not been run.",
             transform=ax.transAxes, fontsize=8.2, color=INK2, va="top", linespacing=1.4)
 fig, axes = plt.subplots(2, 3, figsize=(16.8, 11.2), dpi=150)
