@@ -85,3 +85,45 @@ and not usable for timing. Decision pending the 16-node point (job 1093798): the
 per-job maximum) with the ring-down cap dt_quiet = 5e-7, which should fit the 20 pulses in a single 48 h job
 (about 35 h, 1100 node-hours) without a recover chain; dt_max = 2e-7 in the growth phase and the custom_pp fixed-point
 criterion are the further levers if a day is required, both to be checked in 2D first (submit_vista_dtcheck.sbatch).
+
+## Timing run on 16 nodes (job 1093798, 2304 ranks, finished 2026-10-24 00:05 CDT) and the node count
+
+Same 49 steps to 3 us, 1614 s of stepping (`Transient::PicardSolve`, 63 fixed-point iterations). Scaling of the
+stepping time:
+
+| nodes | ranks | stepping | s per step | speed-up vs 4 nodes | parallel efficiency |
+| --- | --- | --- | --- | --- | --- |
+| 4 | 576 | 3196 s | 65 | 1 | |
+| 8 | 1152 | 2078 s | 42 | 1.54 | 77 % |
+| 16 | 2304 | 1614 s | 33 | 1.98 | 50 % (64 % from 8 to 16) |
+
+Per call on 16 nodes: Jacobian 3.2 s (7.6 s on 4), residual 2.4 s (4.0 s on 4): the residual assembly scales worse
+than the Jacobian, so the fixed-point norm checks grow to 17 % of the stepping. First Exodus frame 170 s (133 s on 4
+nodes; the serialisation to rank 0 grows with the rank count), console 1 s per step, 18.7 GB on rank 0. The queue wait
+of this 16-node, 1.5 h job was 8 h (submitted 15:23, started 23:2x CDT). Extrapolating the efficiency decay, 32 nodes
+would gain 10-20 % over 16 at twice the node-hours and a longer wait.
+
+Decision: 16 nodes (`spe_cube_h0p3_split2304.cpr` exists, 2.0 GB; the production script defaults to -N 16 -n 2304).
+Projection with the 2D step counts for 20 pulses (240 rise steps, 5129 in the growth phase 0.3-25 us of which 3707
+advance the crack, 7136 in the ring-down 25-60 us) and the 16-node costs (33 s per quiet step, about 46 s per step
+with crack growth, the 8-node ratio 60/42):
+
+| schedule | steps | 16 nodes | 32 nodes (assumed 1.15x) | segments of 48 h |
+| --- | --- | --- | --- | --- |
+| as is (dt_quiet = dt_max = 1e-7) | 12 500 | about 130 h | 110 h | 3 |
+| dt_quiet = 5e-7 (ring-down 1400 steps) | 6 800 | about 75 h | 65 h | 2 (one recover) |
+| dt_quiet = 5e-7 and dt_max = 2e-7 | 4 200 | about 45 h | 39 h | 1 (marginal on 16 nodes) |
+
+This supersedes the 35 h estimate above, which extended the 77 % efficiency to 32 nodes. Under 24 h is out of reach
+at this mesh size: 32 nodes with both caps and the custom_pp fixed-point criterion (removes the 17 % norm checks)
+would land near 33 h. dt_quiet = 5e-7 costs nothing physically (kinetic energy below 3 % of the window peak at 25 us);
+dt_max = 2e-7 in the growth phase changes the crack increments per step and must pass the 2D check first
+(`code_2d/cases_vista/submit_vista_dtcheck.sbatch`: extents at pulses 5/11/15/20 and crack energy against the
+baseline, plus the step count and wall time, which also tell whether larger steps cost more Picard iterations).
+Recommended path: 16 nodes with dt_quiet = 5e-7, two segments through the watcher; switch to one segment only if the
+2D check passes for dt_max = 2e-7.
+
+Submission (from this folder, on Vista): `sbatch --export=ALL,EXTRA="dt_quiet=5e-7" submit_vista_3d_eta0p45.sbatch`;
+continuation `sbatch --export=ALL,RECOVER=1,EXTRA="dt_quiet=5e-7" submit_vista_3d_eta0p45.sbatch` (the watcher
+`vista_watch_3d.sh JOBID NNODES` passes its own EXTRA through). EXTRA is appended to the command line, so any
+input parameter can be overridden there; the input defaults are unchanged (dt_quiet = dt_max).
