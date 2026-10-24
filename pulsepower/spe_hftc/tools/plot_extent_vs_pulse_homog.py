@@ -1,20 +1,23 @@
 # Paper figure: crack extent at the end of each pulse, homogeneous-Gc cases (eta 0.4 / 0.45 / 0.5) vs the measurements.
 #   python3 plot_extent_vs_pulse_homog.py OUT_STEM      -> OUT_STEM.pdf (vector) and OUT_STEM.png (300 dpi)
 #   reads vista_csv/att_homog_eta0p*_absorb.csv; no title (the caption carries it), legend only.
+#   python3 plot_extent_vs_pulse_homog.py OUT_STEM --with-0p425   -> working chart with the eta 0.425 threshold check added (green)
 import sys
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 S = "/private/tmp/claude-501/-Users-chunhuizhao-projects-farms-cdms/4d45f359-e932-438b-a688-5f487c854dc5/scratchpad/"
 sys.path.insert(0, S); from pulse_table import load, windows
-STEM = sys.argv[1]
+STEM = sys.argv[1]; WITH_0P425 = "--with-0p425" in sys.argv[2:]
 plt.rcParams.update({"font.size": 9, "mathtext.fontset": "dejavusans", "axes.linewidth": 0.8, "pdf.fonttype": 42, "ps.fonttype": 42,
                      "xtick.direction": "out", "ytick.direction": "out", "xtick.major.width": 0.8, "ytick.major.width": 0.8})
 INK, GREY = "#000000", "#555555"
-BLUE, MAG, GOLD = "#2a78d6", "#c4379a", "#b8860b"   # validated palette; colour = eta as in the working charts
+BLUE, MAG, GOLD, GREEN = "#2a78d6", "#c4379a", "#b8860b", "#1a9c6e"   # validated palette; colour = eta as in the working charts
 CASES = [("att_homog_eta0p5_absorb.csv", r"$\eta = 0.5$", BLUE, "o", 4.8),
          ("att_homog_eta0p45_absorb.csv", r"$\eta = 0.45$", MAG, "^", 5.2),
          ("att_homog_eta0p4_absorb.csv", r"$\eta = 0.4$", GOLD, "D", 4.2)]
+if WITH_0P425:   # threshold check between 0.4 and 0.45 (job 1093037); working chart only, the paper figure keeps the three calibration values
+    CASES.insert(2, ("att_homog_eta0p425_absorb.csv", r"$\eta = 0.425$", GREEN, "v", 5.0))
 paper = [(5, 7.97), (11, 13.90), (15, 15.66), (20, 20.45)]
 fig, ax = plt.subplots(figsize=(5.2, 3.7), dpi=300)
 ax.axhline(21.4, color=GREY, lw=0.8, ls=(0, (2, 3)), zorder=1)

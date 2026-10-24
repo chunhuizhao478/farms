@@ -220,3 +220,18 @@ at pulses 11 and 15 as the price of being above threshold. Plain interpolation (
 15 mm at pulses 5 / 11 / 15 / 20) is the least likely outcome. Caveats: near the threshold the mesh
 asymmetry decides which arm wins and when, so one run gives the regime, not a precise curve; the 2D
 section cannot carry the 3D crack front.
+
+Result (finished 2026-10-23 20:44 PDT, 8:28 h on 72 ranks, 12 381 steps, no recover): arrest, the
+eta 0.4 regime. The star has the same arms at the same angles as eta 0.4 (two leading arms at 54 and
+310 deg, four at 117-246 deg, so the mesh seeds the pattern); the longest arm is 10.5 mm at pulse 10
+and 11.2 mm at pulse 20 with nothing gained after pulse 16, against 10.6 mm for eta 0.4 and 20.0 mm
+for eta 0.45. Crack energy 169 J/m (158 / 281 J/m for eta 0.4 / 0.45): the extra 2 % of pressure
+feeds the same arms rather than a new one. The early pulses are faster than eta 0.4 (6.7 vs 5.0 mm at
+pulse 5, 1.2 mm under the measurement) and the arrest comes one pulse later; there is no stall
+followed by a late localization. The localization threshold therefore lies between eta 0.425 and
+0.45, eta 0.45 stays the calibration, and the measured slow stretch between pulses 11 and 15 is not
+something a different eta reproduces. Figures: `local_runs/vista_extent_vs_pulse_homog_with_eta0p425.png`
+(`tools/plot_extent_vs_pulse_homog.py STEM --with-0p425`, working chart; the paper figure keeps the
+three calibration values) and `local_runs/vista_snapshots_eta0p4_0p425_0p45_pulse20.png`
+(`tools/fig_snapshot_row.py`). Window-end frames (pulses 4, 8, 10, 12, 16, 20) were extracted on
+Vista with `$WORK/tmp_npz/exo_window_frames.py`.
