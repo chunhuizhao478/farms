@@ -65,3 +65,23 @@ i.e. three 48 h segments (qgg allows 2 days, 32 nodes per job). Sizing runs on 4
 (job 1093798) decide the node count; both print the perf graph at step 25 and at the end (the inputs now carry a
 PerfGraphOutput every 500 steps, level 2, for the main and the sub app, so that production segments killed by the
 wall limit still leave a cost profile). The production script was switched to 48 h segments.
+
+## Timing run on 4 nodes (job 1093797, 576 ranks, 2026-10-23 17:30 PDT) and the cost breakdown
+
+Same 49 steps to 3 us: 3196 s of stepping against 2078 s on 8 nodes, i.e. 8 nodes are 1.54 times faster than 4 (77 %
+parallel efficiency). Level-2 perf graph of the main app over the 63 fixed-point iterations (4 nodes):
+
+| section | share | note |
+| --- | --- | --- |
+| nonlinear solve (AD assembly dominates: Jacobian 7.6 s, residual 4.0 s per call; linear solve small) | 58 % | 1.8 Newton its per fixed-point it |
+| fixed-point residual-norm checks (two extra residual evaluations per iteration) | 14 % | avoidable with a custom_pp criterion |
+| postprocessors (energies, extents, areas over the whole mesh every step) | 9 % | |
+| fracture sub-app (0 to 9 Newton its here; grows with crack growth) | 6 % | |
+| transfers, console, csv | 4 % | |
+| Exodus: 133 s for the first frame (mesh), 9 s per later frame | 1 % at one frame per 100 steps | |
+
+Memory 18.5 GB on rank 0 (Exodus serialisation), far below the node limit. The sub-app perf graph is summed over ranks
+and not usable for timing. Decision pending the 16-node point (job 1093798): the planned production is 32 nodes (the
+per-job maximum) with the ring-down cap dt_quiet = 5e-7, which should fit the 20 pulses in a single 48 h job
+(about 35 h, 1100 node-hours) without a recover chain; dt_max = 2e-7 in the growth phase and the custom_pp fixed-point
+criterion are the further levers if a day is required, both to be checked in 2D first (submit_vista_dtcheck.sbatch).
