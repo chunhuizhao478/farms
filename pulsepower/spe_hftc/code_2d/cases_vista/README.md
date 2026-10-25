@@ -240,6 +240,8 @@ Vista with `$WORK/tmp_npz/exo_window_frames.py`.
 
 `code_2d/` keeps the two inputs every current case uses, `elasticity_absorbing.i` (main app) and `fracture.i` (AT1
 sub-app, homogeneous Gc). The free-face main input `elasticity.i` and the Gaussian / Weibull / viscous sub-app inputs
-moved to `code_2d/archive/` (see its README). The scripts of the finished runs that used them (`submit_vista_att`,
-`submit_vista_sweep`, `submit_vista_voldev`, `submit_vista_eta0p45` here, `../cases/discovery_*` for Discovery) still
-name the old location and carry a note; copy the input back before rerunning one.
+moved to `code_2d/archive/` (see its README). `cases_vista/` likewise keeps one job script,
+`submit_vista_eta0p45.sbatch` (homogeneous eta 0.45, the calibrated reference; its Gaussian run line is commented
+out); the other six scripts are in `cases_vista/archive/` with a README that maps them to cases and job ids. The case
+folders, this README and the Discovery records in `../cases/` are unchanged. The sections above name the scripts by
+their old location.

@@ -1,6 +1,7 @@
 #!/bin/bash
-# NOTE 2026-10-25: elasticity.i and fracture_gaussian.i were moved to ../archive (code_2d keeps elasticity_absorbing.i +
-# fracture.i). This script is the record of a finished run; to rerun it, copy the archived input(s) back to code_2d first.
+# NOTE 2026-10-25: the one job script kept in cases_vista (the other six are in cases_vista/archive, see its README).
+# Case [1] used fracture_gaussian.i, now in code_2d/archive, so its run line is commented out; case [2] (homogeneous Gc,
+# the calibrated reference and the twin of the 3D production case) is the live one.
 # =============================================================================
 # SPE-HFTC 2D section on TACC Vista: two 20-pulse trains on one Grace node (144 cores, 72 ranks each),
 # both with eta = 0.45 (pulse pressure 214 MPa against 222.5 MPa at eta 0.5 and 206 MPa at eta 0.4),
@@ -34,7 +35,7 @@ run() {   # name, input file, fracture sub-app input, rank offset
     echo "[$(date)] launching $name ($input, $frac, eta=0.45) at offset $off"
     ibrun -n 72 -o $off $FARMS -i $input $COMMON MultiApps/fracture/input_files=$frac Outputs/file_base=cases_vista/$name/out $REC > cases_vista/$name/run.log 2>&1 &
 }
-run att_eta0p45_absorb       elasticity_absorbing.i fracture_gaussian.i  0
+# run att_eta0p45_absorb     elasticity_absorbing.i fracture_gaussian.i  0    # Gaussian twin, job 1092158; copy the input back from code_2d/archive to rerun
 run att_homog_eta0p45_absorb elasticity_absorbing.i fracture.i          72
 wait
-echo "[$(date)] both cases finished (or stopped)"
+echo "[$(date)] case(s) finished (or stopped)"
