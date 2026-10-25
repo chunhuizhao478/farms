@@ -1,6 +1,6 @@
 # =============================================================================
 # SPE-HFTC acrylic cube, AT1 phase-field sub-app (2D plane-strain section)
-# Launched by elasticity.i (cli_args pass Gc_const, l, jit, mesh_file); clone_parent_mesh = true.
+# Launched by elasticity_absorbing.i (cli_args pass Gc_const, l, jit, mesh_file); clone_parent_mesh = true.
 # =============================================================================
 
 # defaults for standalone parsing; overridden by the main app's cli_args

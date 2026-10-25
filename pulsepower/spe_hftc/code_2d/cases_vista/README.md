@@ -235,3 +235,11 @@ something a different eta reproduces. Figures: `local_runs/vista_extent_vs_pulse
 three calibration values) and `local_runs/vista_snapshots_eta0p4_0p425_0p45_pulse20.png`
 (`tools/fig_snapshot_row.py`). Window-end frames (pulses 4, 8, 10, 12, 16, 20) were extracted on
 Vista with `$WORK/tmp_npz/exo_window_frames.py`.
+
+## Archive (2026-10-25)
+
+`code_2d/` keeps the two inputs every current case uses, `elasticity_absorbing.i` (main app) and `fracture.i` (AT1
+sub-app, homogeneous Gc). The free-face main input `elasticity.i` and the Gaussian / Weibull / viscous sub-app inputs
+moved to `code_2d/archive/` (see its README). The scripts of the finished runs that used them (`submit_vista_att`,
+`submit_vista_sweep`, `submit_vista_voldev`, `submit_vista_eta0p45` here, `../cases/discovery_*` for Discovery) still
+name the old location and carry a note; copy the input back before rerunning one.

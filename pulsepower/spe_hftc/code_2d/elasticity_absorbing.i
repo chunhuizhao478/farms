@@ -1,11 +1,11 @@
 # =============================================================================
 # SPE-HFTC acrylic cube, 2D plane-strain section at the electrode-gap height, pure solid (main app)
 # ABSORBING-FACE VARIANT: Lysmer dashpots on the four side faces (xmin xmax ymin ymax) instead of free faces.
-# Everything else identical to elasticity.i; the dashpot work enters the energy budget as damping_work.
+# Everything else identical to archive/elasticity.i (the free-face predecessor); the dashpot work enters the energy budget as damping_work.
 # Dynamic elasticity (Newmark) + AT1 phase-field fracture in the sub-app fracture.i
 # Decisions of 2026-10-21 are marked [D]; see ../PLAN.md and ../EXPLORE_3d_solid.md.
 # Mesh: ../mesh/make_spe_section_2d.py (named sidesets borehole xmin xmax ymin ymax, block acrylic)
-# Local run (Mac):  mpiexec -n 8 farms-opt -i elasticity.i Np=1
+# Local run (Mac):  mpiexec -n 8 farms-opt -i elasticity_absorbing.i Np=1
 # =============================================================================
 
 # ---- material: cast acrylic, paper Table 1 (US Plastic Corp. cast acrylic sheet GP) ----

@@ -1,7 +1,7 @@
 # 3D cube cases on TACC Vista
 
 The 3D twin of the 2D section production design: homogeneous Gc, eta = 0.45, absorbing side faces.
-Inputs: `../elasticity_absorbing.i` (main app; the 3D free-face `../elasticity.i` plus Lysmer dashpots
+Inputs: `../elasticity_absorbing.i` (main app; the 3D free-face `../archive/elasticity.i` plus Lysmer dashpots
 on xmin/xmax/ymin/ymax with the dashpot work in the energy budget, holder u_z = 0 on zmin/zmax kept)
 and `../fracture.i` (AT1 sub-app, constant Gc = 8 l ft^2/(3E) = 2721 J/m^2 at l = 0.6 mm). Mesh
 `../../mesh/spe_cube_h0p3.msh`: 14.6 M tets, 2.4 M nodes, 0.3 mm inside r <= 28 mm over the full

@@ -1,7 +1,7 @@
 # =============================================================================
 # SPE-HFTC acrylic cube, pulse-power fracturing, pure solid, 3D (main app)
 # ABSORBING-FACE VARIANT: Lysmer dashpots on the four side faces (xmin xmax ymin ymax) instead of free faces;
-# the end faces keep the holder condition u_z = 0. Everything else identical to elasticity.i; the dashpot work
+# the end faces keep the holder condition u_z = 0. Everything else identical to archive/elasticity.i (free faces); the dashpot work
 # enters the energy budget as damping_work. This is the 3D twin of ../code_2d/elasticity_absorbing.i.
 # Dynamic elasticity (Newmark) + AT1 phase-field fracture in the sub-app fracture.i
 # Decisions of 2026-10-21 are marked [D]; see ../PLAN.md and ../EXPLORE_3d_solid.md.

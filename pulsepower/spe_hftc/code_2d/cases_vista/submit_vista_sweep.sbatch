@@ -1,4 +1,6 @@
 #!/bin/bash
+# NOTE 2026-10-25: elasticity.i and fracture_gaussian.i were moved to ../archive (code_2d keeps elasticity_absorbing.i +
+# fracture.i). This script is the record of a finished run; to rerun it, copy the archived input(s) back to code_2d first.
 # =============================================================================
 # SPE-HFTC 2D section on TACC Vista (Grace CPU node, 144 cores): four cases at once,
 # 36 ranks each, full 20-pulse train. Gaussian-scattered toughness; attenuation
