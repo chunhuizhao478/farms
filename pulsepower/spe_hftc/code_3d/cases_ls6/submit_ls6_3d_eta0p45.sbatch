@@ -1,13 +1,13 @@
 #!/bin/bash
 # =============================================================================
-# SPE-HFTC 3D cube on TACC Lonestar6: continuation of the Vista run cube_homog_eta0p45_absorb (20-pulse train,
+# SPE-HFTC 3D cube on TACC Lonestar6: the Vista case cube_homog_eta0p45_absorb run again from t = 0 (20-pulse train,
 # homogeneous Gc, eta = 0.45, absorbing side faces, mesh spe_cube_h0p3.msh, 14.6 M tets; see ../cases_vista/README.md).
-# Vista segment 1 (job 1104488) reached step 1371, t = 239.9 us (pulse 4 of 20); its checkpoint 1370 is staged by
-# prepare_ls6_case.sh. A recover needs the rank count of the checkpoint: 2304 ranks = 18 LS6 nodes x 128 cores.
-# Inputs and overrides are those of ../cases_vista/submit_vista_3d_eta0p45.sbatch (dt_quiet = 5e-7 through EXTRA).
-# The job exits with the farms exit code, so that an afternotok continuation also starts after a crash.
-# Submit from this folder (after prepare_ls6_case.sh; RECOVER=1 picks the newest checkpoint in the case folder):
-#   sbatch --export=ALL,RECOVER=1,EXTRA="dt_quiet=5e-7" submit_ls6_3d_eta0p45.sbatch
+# Same inputs and overrides as ../cases_vista/submit_vista_3d_eta0p45.sbatch (dt_quiet = 5e-7 through EXTRA).
+# 18 nodes x 128 cores = 2304 ranks, the rank count of the Vista run, so the existing split spe_cube_h0p3_split2304.cpr
+# (linked by prepare_ls6_case.sh) is reused. Checkpoints every 100 steps, 2 kept; a job that hits the 48 h wall is
+# continued with RECOVER=1. The job exits with the farms exit code, so an afternotok continuation also starts after a crash.
+# Submit from this folder:  sbatch --export=ALL,EXTRA="dt_quiet=5e-7" submit_ls6_3d_eta0p45.sbatch
+# Continue:                 sbatch --export=ALL,RECOVER=1,EXTRA="dt_quiet=5e-7" submit_ls6_3d_eta0p45.sbatch
 # =============================================================================
 #SBATCH -J spe3d_eta0p45
 #SBATCH -p normal

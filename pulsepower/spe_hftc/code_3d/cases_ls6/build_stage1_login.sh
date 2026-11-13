@@ -16,7 +16,9 @@ git submodule update --init --recursive petsc libmesh framework/contrib/wasp > $
 for s in petsc libmesh framework/contrib/wasp; do echo "$s $(git -C $s rev-parse HEAD)"; done
 echo "[$(date)] PETSc build start"
 export MOOSE_JOBS=4
-./scripts/update_and_rebuild_petsc.sh --skip-submodule-update > $L/petsc.log 2>&1
+# libCEED (only used by the optional MFEM backend) does not compile with the gcc + Intel MPI wrappers here: its Makefile
+# passes a garbled flag string to gcc ("unrecognized command-line option '-fopenmp-simd -Xcompiler -fPIC ...'"); farms does not use it.
+./scripts/update_and_rebuild_petsc.sh --skip-submodule-update --download-libceed=0 > $L/petsc.log 2>&1
 echo "[$(date)] PETSc exit $?"; tail -5 $L/petsc.log
 ls -la petsc/arch-moose/lib/libpetsc.so* || exit 3
 ldd petsc/arch-moose/lib/libpetsc.so | grep -E "not found|libmpi"
