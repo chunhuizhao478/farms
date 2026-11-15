@@ -597,8 +597,11 @@ newmark_gamma = 0.5
   type = Transient
   solve_type = NEWTON
 
-  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
-  petsc_options_value = 'gmres hypre boomeramg 0.7 4 5 0.3 vinewtonrsls 100'
+  # BoomerAMG coarsening: HMIS instead of the default Falgout. With Falgout the 2304-rank 3D runs dead-locked at random steps
+  # (all ranks in MPI_Waitall inside hypre_BoomerAMGCoarsenFalgout, seen on Vista with OpenMPI and on Lonestar6 with Intel MPI,
+  # hypre 3.1.0 of PETSc 3.25.4; 2026-11-13/15). HMIS does not use that routine; the equations are unchanged.
+  petsc_options_iname = '-ksp_type -pc_type -pc_hypre_type -pc_hypre_boomeramg_coarsen_type -pc_hypre_boomeramg_strong_threshold -pc_hypre_boomeramg_agg_nl -pc_hypre_boomeramg_agg_num_paths -pc_hypre_boomeramg_truncfactor -snes_type -ksp_gmres_restart'
+  petsc_options_value = 'gmres hypre boomeramg HMIS 0.7 4 5 0.3 vinewtonrsls 100'
 
   line_search = 'basic'
   nl_rel_tol = 1e-6
