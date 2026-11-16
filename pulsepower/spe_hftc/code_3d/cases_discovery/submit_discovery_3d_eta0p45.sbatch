@@ -8,6 +8,7 @@
 # (100-step interval, 2 kept) and the split go to /scratch1 (they do not fit the /home1 quota); the mesh file
 # ../mesh/spe_cube_h0p3.msh is not in git and must be copied into the checkout first.
 # The job exits with the farms exit code, so an afternotok continuation also starts after a crash.
+# Project rule (2026-11-16): results, logs and checkpoints on scratch only; create /scratch1/$USER/spe_hftc_3d/slurm_logs first.
 # Submit from this folder:  sbatch --export=ALL,EXTRA="dt_quiet=5e-7" submit_discovery_3d_eta0p45.sbatch
 # Continue:                 sbatch --export=ALL,RECOVER=1,EXTRA="dt_quiet=5e-7" submit_discovery_3d_eta0p45.sbatch
 # =============================================================================
@@ -19,8 +20,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=0
 #SBATCH --time=48:00:00
-#SBATCH --output=%x.o%j
-#SBATCH --error=%x.e%j
+#SBATCH --output=/scratch1/zhaochun/spe_hftc_3d/slurm_logs/%x.o%j
+#SBATCH --error=/scratch1/zhaochun/spe_hftc_3d/slurm_logs/%x.e%j
 
 module purge
 module load usc/13.3.0 gcc/13.3.0 openmpi/5.0.5 openblas/0.3.28 python/3.11.9
