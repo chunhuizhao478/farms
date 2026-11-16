@@ -10,6 +10,11 @@
 # Submit from this folder:  sbatch --export=ALL,EXTRA="dt_quiet=5e-7" submit_vista_3d_eta0p45.sbatch
 # Continue:                 sbatch --export=ALL,RECOVER=1,EXTRA="dt_quiet=5e-7" submit_vista_3d_eta0p45.sbatch
 # Another node count: add -N NN -n $((NN*144)) (the split ../mesh/spe_cube_h0p3_split<ranks>.cpr is built if missing).
+# 2026-11-16: outputs, run.log and checkpoints (about 54 GB each) go to $SCRATCH/spe3d_vista/<case>, never to the checkout
+# (/work has a 1 TB quota that filled up on 2026-11-15). The inputs are read from the checkout this script is submitted
+# from (clean and on GitHub: guard below); the binary is $FARMS_DIR/farms-opt of env_moose.sh. RECOVER_FROM=<dir>/<step>
+# recovers from an explicit checkpoint (e.g. the step-1370 checkpoint of segment 1); RECOVER=1 from the newest one in the
+# case folder. The job exits with the farms exit code. run_chain_vista.sh drives the segments with a stall guard.
 # =============================================================================
 #SBATCH -J spe3d_eta0p45
 #SBATCH -p gg
@@ -22,21 +27,25 @@
 
 source $WORK/build_logs/env_moose.sh
 FARMS=$FARMS_DIR/farms-opt
-CODE=$FARMS_DIR/pulsepower/spe_hftc/code_3d
+CODE=$(cd $SLURM_SUBMIT_DIR/.. && pwd)
 cd $CODE || exit 1
+git fetch -q origin || { echo "ERROR: git fetch failed"; exit 2; }
+[ -z "$(git status --porcelain --untracked-files=no)" ] || { echo "ERROR: uncommitted changes in $CODE"; git status --short; exit 2; }
+[ -n "$(git branch -r --contains HEAD)" ] || { echo "ERROR: HEAD $(git rev-parse --short HEAD) is not on GitHub"; exit 2; }
+echo "farms inputs commit $(git rev-parse HEAD), binary $FARMS"
 NR=$SLURM_NTASKS
 MESH=../mesh/spe_cube_h0p3.msh
 SPLIT=../mesh/spe_cube_h0p3_split${NR}.cpr
 COMMON="mesh_file=$MESH eta=0.45 zeta_pulse=1e-8 Np=20 ${EXTRA:-}"
 CASE=cube_homog_eta0p45_absorb
+OUT=$SCRATCH/spe3d_vista/$CASE
 REC=""; [[ "${RECOVER:-0}" == "1" ]] && REC="--recover"
-mkdir -p cases_vista/$CASE
-if [ ! -d $SPLIT ]; then
-  echo "[$(date)] splitting $MESH for $NR ranks -> $SPLIT"
-  ibrun -n 8 $FARMS -i elasticity_absorbing.i $COMMON --split-mesh $NR --split-file $SPLIT > cases_vista/$CASE/split.log 2>&1
-  echo "[$(date)] split exit $?"
-fi
+[ -n "${RECOVER_FROM:-}" ] && REC="--recover $RECOVER_FROM"
+mkdir -p $OUT || exit 2
+[ -e $SPLIT ] || { echo "ERROR: $SPLIT missing"; exit 2; }
 echo "[$(date)] launching $CASE on $SLURM_NNODES nodes, $NR ranks ${REC} EXTRA=[${EXTRA:-}]"
-ibrun $FARMS -i elasticity_absorbing.i $COMMON --use-split --split-file $SPLIT Outputs/file_base=cases_vista/$CASE/out $REC \
-      >> cases_vista/$CASE/run.log 2>&1
-echo "[$(date)] $CASE finished (or stopped), exit $?"
+ibrun $FARMS -i elasticity_absorbing.i $COMMON --use-split --split-file $SPLIT Outputs/file_base=$OUT/out $REC \
+      >> $OUT/run.log 2>&1
+rc=$?
+echo "[$(date)] $CASE finished (or stopped), farms exit $rc"
+exit $rc
