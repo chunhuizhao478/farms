@@ -7,6 +7,9 @@
 # FIRST_FROM=<dir>/<step> makes the first segment recover from that explicit checkpoint. SBATCH_OPTS adds sbatch options.
 HERE=$(cd $(dirname $0) && pwd); cd $HERE
 FIRST_FROM=${FIRST_FROM:-}
+# one driver at a time: a lock folder on scratch (removed on exit)
+LOCK=$SCRATCH/spe3d_vista/chain.lockdir; mkdir -p $SCRATCH/spe3d_vista; mkdir $LOCK 2>/dev/null || { echo "[$(date)] another chain driver holds $LOCK, exit"; exit 0; }
+trap "rmdir $LOCK" EXIT; trap "exit 1" TERM INT
 REC=${1:-1}; MAXSEG=${MAXSEG:-8}; STALL_S=${STALL_S:-1500}; EXTRA=${EXTRA:-dt_quiet=5e-7}
 L=$SCRATCH/spe3d_vista/cube_homog_eta0p45_absorb/run.log; short=0
 for seg in $(seq 1 $MAXSEG); do

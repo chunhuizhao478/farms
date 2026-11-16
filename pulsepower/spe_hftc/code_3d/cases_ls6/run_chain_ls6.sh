@@ -6,11 +6,14 @@
 #   nohup ./run_chain_ls6.sh [RECOVER_FIRST=1|0] > chain.log 2>&1 &
 HERE=$(cd $(dirname $0) && pwd); cd $HERE
 source $HERE/env_ls6.sh
+# one driver at a time: a lock folder on scratch (removed on exit)
+LOCK=$SCRATCH/spe3d/chain.lockdir; mkdir -p $SCRATCH/spe3d; mkdir $LOCK 2>/dev/null || { echo "[$(date)] another chain driver holds $LOCK, exit"; exit 0; }
+trap "rmdir $LOCK" EXIT; trap "exit 1" TERM INT
 REC=${1:-1}; MAXSEG=${MAXSEG:-8}; STALL_S=${STALL_S:-1500}; EXTRA=${EXTRA:-dt_quiet=5e-7}
 L=$SCRATCH/spe3d/cube_homog_eta0p45_absorb/run.log; short=0
 for seg in $(seq 1 $MAXSEG); do
   mkdir -p $SCRATCH/spe3d/slurm_logs
-  J=$(sbatch -o $SCRATCH/spe3d/slurm_logs/%x.o%j -e $SCRATCH/spe3d/slurm_logs/%x.e%j --export=ALL,RECOVER=$REC,EXTRA="$EXTRA" submit_ls6_3d_eta0p45.sbatch 2>&1 | grep -o "Submitted batch job [0-9]*" | grep -o "[0-9]*$")
+  J=$(sbatch -o $SCRATCH/spe3d/slurm_logs/%x.o%j -e $SCRATCH/spe3d/slurm_logs/%x.e%j ${SBATCH_OPTS:-} --export=ALL,RECOVER=$REC,EXTRA="$EXTRA" submit_ls6_3d_eta0p45.sbatch 2>&1 | grep -o "Submitted batch job [0-9]*" | grep -o "[0-9]*$")
   [ -n "$J" ] || { echo "[$(date)] sbatch failed, stop"; exit 1; }
   echo "[$(date)] segment $seg: job $J (RECOVER=$REC)"; REC=1
   while :; do
