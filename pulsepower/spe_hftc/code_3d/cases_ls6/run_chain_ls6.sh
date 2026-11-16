@@ -7,7 +7,7 @@
 HERE=$(cd $(dirname $0) && pwd); cd $HERE
 source $HERE/env_ls6.sh
 REC=${1:-1}; MAXSEG=${MAXSEG:-8}; STALL_S=${STALL_S:-1500}; EXTRA=${EXTRA:-dt_quiet=5e-7}
-L=$HERE/cube_homog_eta0p45_absorb/run.log; short=0
+L=$SCRATCH/spe3d/cube_homog_eta0p45_absorb/run.log; short=0
 for seg in $(seq 1 $MAXSEG); do
   J=$(sbatch --export=ALL,RECOVER=$REC,EXTRA="$EXTRA" submit_ls6_3d_eta0p45.sbatch 2>&1 | grep -o "Submitted batch job [0-9]*" | grep -o "[0-9]*$")
   [ -n "$J" ] || { echo "[$(date)] sbatch failed, stop"; exit 1; }
