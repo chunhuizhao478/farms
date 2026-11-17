@@ -27,10 +27,12 @@ Cp = ${fparse sqrt((K + 4.0/3.0*G)/density)}
 Lx = 51.11e-3
 Ly = 51.92e-3
 Lz = 49.14e-3
-rb = 4.15e-3                       # [D] 8.3 mm borehole (Fig. 2 caption; Table 2 says 7.94 mm)
+rb = 3.97e-3                       # 7.94 mm (5/16 in.) borehole: Table 2 and Fig. 2b of the manuscript (2026-11-17; the runs up to
+                                   # 2026-11-16 used 8.3 mm, rb = 4.15e-3, with mesh spe_cube_h0p3.msh)
 gap = 7.17e-3                      # electrode gap (Table 2)
-zc = ${fparse Lz/3}                # [D] gap centred at one third of the height, measured from the bottom face
-mesh_file = ../mesh/spe_cube_h0p3.msh
+zc = ${fparse Lz/2}                # [D] gap centred at mid-height: opposing electrodes from both ends (Fig. 1, Fig. 2c); the manuscript
+                                   # gives no depth. Decision of 2026-11-17 (the runs up to 2026-11-16 used Lz/3 from the bottom face)
+mesh_file = ../mesh/spe_cube_d7p94_h0p3.msh
 
 # ---- pulse: paper Table 2 + empirical peak-pressure law coded in ElkPulseLoadExperiment ----
 EM = 0.144                         # stored energy per pulse, kJ (60 kV, 80 nF)
@@ -783,7 +785,7 @@ newmark_gamma = 0.5
     variable = pulse_load_aux
     value_type = max
   []
-  # sideset check: 2*pi*rb*Lz = 1.2813e-3 m^2
+  # sideset check: 2*pi*rb*Lz = 1.2258e-3 m^2 (rb = 3.97 mm)
   # maximum particle velocity over the domain
   [v_max]
     type = NodalExtremeValue
