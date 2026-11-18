@@ -15,7 +15,7 @@ OUTROOT=$SCRATCH/spe3d_vista
 LOCK=$OUTROOT/chain.lockdir; mkdir -p $OUTROOT/slurm_logs; mkdir $LOCK 2>/dev/null || { echo "[$(date)] another chain driver holds $LOCK, exit"; exit 0; }
 trap "rmdir $LOCK" EXIT; trap "exit 1" TERM INT
 REC=${1:-1}; MAXSEG=${MAXSEG:-12}; STALL_S=${STALL_S:-1500}; EXTRA=${EXTRA:-dt_quiet=5e-7}
-L=$OUTROOT/cube_homog_eta0p45_absorb/run.log; short=0; J=${ADOPT:-}; NEXT=""
+L=$OUTROOT/cube_d7p94_mid_eta0p45_absorb/run.log; short=0; J=${ADOPT:-}; NEXT=""
 submit() { # $1 = RECOVER flag, $2 = explicit checkpoint or empty, $3 = extra sbatch options
   sbatch -o $OUTROOT/slurm_logs/%x.o%j -e $OUTROOT/slurm_logs/%x.e%j ${SBATCH_OPTS:-} $3 --export=ALL,RECOVER=$1,RECOVER_FROM=$2,EXTRA="$EXTRA" submit_vista_3d_eta0p45.sbatch 2>&1 | grep -o "Submitted batch job [0-9]*" | grep -o "[0-9]*$"
 }

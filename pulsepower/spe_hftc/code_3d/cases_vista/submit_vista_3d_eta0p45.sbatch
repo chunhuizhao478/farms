@@ -15,6 +15,9 @@
 # from (clean and on GitHub: guard below); the binary is $FARMS_DIR/farms-opt of env_moose.sh. RECOVER_FROM=<dir>/<step>
 # recovers from an explicit checkpoint (e.g. the step-1370 checkpoint of segment 1); RECOVER=1 from the newest one in the
 # case folder. The job exits with the farms exit code. run_chain_vista.sh drives the segments with a stall guard.
+# 2026-11-17 geometry: 7.94 mm borehole, electrode gap at mid-height, mesh spe_cube_d7p94_h0p3.msh, case
+# cube_d7p94_mid_eta0p45_absorb from t = 0 (the header above describes the 8.3 mm / Lz/3 runs up to 2026-11-16).
+# The split is built by the job on scratch if missing.
 # =============================================================================
 #SBATCH -J spe3d_eta0p45
 #SBATCH -p gg
@@ -34,15 +37,20 @@ git fetch -q origin || { echo "ERROR: git fetch failed"; exit 2; }
 [ -n "$(git branch -r --contains HEAD)" ] || { echo "ERROR: HEAD $(git rev-parse --short HEAD) is not on GitHub"; exit 2; }
 echo "farms inputs commit $(git rev-parse HEAD), binary $FARMS"
 NR=$SLURM_NTASKS
-MESH=../mesh/spe_cube_h0p3.msh
-SPLIT=../mesh/spe_cube_h0p3_split${NR}.cpr
+MESH=../mesh/spe_cube_d7p94_h0p3.msh
+SPLIT=$SCRATCH/spe3d_vista/spe_cube_d7p94_h0p3_split${NR}.cpr
 COMMON="mesh_file=$MESH eta=0.45 zeta_pulse=1e-8 Np=20 ${EXTRA:-}"
-CASE=cube_homog_eta0p45_absorb
+CASE=cube_d7p94_mid_eta0p45_absorb
 OUT=$SCRATCH/spe3d_vista/$CASE
 REC=""; [[ "${RECOVER:-0}" == "1" ]] && REC="--recover"
 [ -n "${RECOVER_FROM:-}" ] && REC="--recover $RECOVER_FROM"
 mkdir -p $OUT || exit 2
-[ -e $SPLIT ] || { echo "ERROR: $SPLIT missing"; exit 2; }
+[ -e $MESH ] || { echo "ERROR: $MESH missing (copy it into the checkout, it is not in git)"; exit 2; }
+if [ ! -d $SPLIT ]; then
+  echo "[$(date)] splitting $MESH for $NR ranks -> $SPLIT"
+  ibrun -n 8 $FARMS -i elasticity_absorbing.i $COMMON --split-mesh $NR --split-file $SPLIT > $OUT/split.log 2>&1
+  echo "[$(date)] split exit $?"
+fi
 echo "[$(date)] launching $CASE on $SLURM_NNODES nodes, $NR ranks ${REC} EXTRA=[${EXTRA:-}]"
 ibrun $FARMS -i elasticity_absorbing.i $COMMON --use-split --split-file $SPLIT Outputs/file_base=$OUT/out $REC \
       >> $OUT/run.log 2>&1
