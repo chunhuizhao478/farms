@@ -51,8 +51,29 @@ if [ ! -d $SPLIT ]; then
   ibrun -n 8 $FARMS -i elasticity_absorbing.i $COMMON --split-mesh $NR --split-file $SPLIT > $OUT/split.log 2>&1
   echo "[$(date)] split exit $?"
 fi
-echo "[$(date)] launching $CASE on $SLURM_NNODES nodes, $NR ranks ${REC} EXTRA=[${EXTRA:-}]"
-ibrun $FARMS -i elasticity_absorbing.i $COMMON --use-split --split-file $SPLIT Outputs/file_base=$OUT/out $REC \
+# 2026-11-24 node-local staging: the stalls of jobs 1159778 (i615-004) and 1164089 (i617-063) were one rank in D state
+# (folio_wait_bit_common / ptlrpc_set_wait = a Lustre page-in) while all others waited in VecAssemblyBegin: code pages of
+# farms-opt's libraries on /work (Lustre) were re-read mid-run and the read hung. sbcast copies farms-opt and its shared
+# libraries (Slurm skips /lib,/usr/lib,/lib64,/usr/lib64) to /tmp on every node; a wrapper puts them first on
+# LD_LIBRARY_PATH (farms-opt and the MOOSE libraries use RUNPATH, which LD_LIBRARY_PATH overrides). Falls back to the
+# /work binary if staging fails. STAGE=0 turns it off.
+LAUNCH=$FARMS
+if [ "${STAGE:-1}" = 1 ]; then
+  SEXE=/tmp/farms-opt;   # keep the name farms-opt: the stall watchdog finds ranks with pgrep -x farms-opt
+  SWRAP=/tmp/farms-run.$SLURM_JOB_ID.sh
+  printf '#!/bin/bash\nexport LD_LIBRARY_PATH=%s_libs:$LD_LIBRARY_PATH\nexec %s "$@"\n' $SEXE $SEXE > $SWRAP; chmod 755 $SWRAP
+  if sbcast --force --send-libs=yes $FARMS $SEXE && sbcast --force $SWRAP $SWRAP; then
+    nw=$(LD_LIBRARY_PATH=${SEXE}_libs:$LD_LIBRARY_PATH ldd $SEXE | grep -c '=> /work')
+    echo "[$(date)] staged farms-opt + $(ls ${SEXE}_libs | wc -l) libraries to /tmp on $SLURM_NNODES nodes ($(du -sh ${SEXE}_libs | cut -f1)); libraries still resolved from /work: $nw"
+    LAUNCH=$SWRAP
+  else
+    echo "[$(date)] WARNING: sbcast staging failed, running farms-opt from /work"
+  fi
+fi
+echo "[$(date)] launching $CASE on $SLURM_NNODES nodes, $NR ranks ${REC} EXTRA=[${EXTRA:-}] exe=$LAUNCH"
+# 10 min in: count /work-mapped shared objects in one running rank on this node (0 = staging works)
+( sleep 600; p=$(pgrep -u $USER -x farms-opt | head -1); [ -n "$p" ] && echo "[$(date)] rank pid $p maps $(grep -c '/work/.*\.so' /proc/$p/maps) /work .so mappings, $(grep -c '/tmp/farms-opt' /proc/$p/maps) /tmp ones" ) &
+ibrun $LAUNCH -i elasticity_absorbing.i $COMMON --use-split --split-file $SPLIT Outputs/file_base=$OUT/out $REC \
       >> $OUT/run.log 2>&1
 rc=$?
 echo "[$(date)] $CASE finished (or stopped), farms exit $rc"
